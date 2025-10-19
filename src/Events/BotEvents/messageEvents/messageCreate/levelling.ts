@@ -1,0 +1,791 @@
+import Prisma, { FormulaType, LevelType, type leveling } from '@prisma/client';
+import * as Discord from 'discord.js';
+import * as Jobs from 'node-schedule';
+import * as StringSimilarity from 'string-similarity';
+import ChannelRules from '../../../../BaseClient/Other/ChannelRules.js';
+import * as CT from '../../../../Typings/Typings.js';
+import getPathFromError from '../../../../BaseClient/UtilModules/getPathFromError.js';
+
+type LevelData = { oldXP: number; newXP: number; newLevel: number; oldLevel: number };
+
+export default async (msg: RMessage) => {
+ if (msg.author.bot) return;
+
+ globalLevelling(msg);
+ levelling(msg);
+};
+
+const globalLevelling = async (msg: RMessage) => {
+ if (msg.client.util.cache.globalLevellingCD.has(msg.author.id)) return;
+
+ const lastMessage = msg.client.util.cache.lastMessageGlobal.get(msg.author.id);
+ if (lastMessage && StringSimilarity.compareTwoStrings(msg.content, lastMessage) > 0.9) return;
+ msg.client.util.cache.lastMessageGlobal.set(msg.author.id, msg.content);
+
+ msg.client.util.cache.globalLevellingCD.add(msg.author.id);
+
+ Jobs.scheduleJob(getPathFromError(new Error()), new Date(Date.now() + 60000), () => {
+  msg.client.util.cache.globalLevellingCD.delete(msg.author.id);
+ });
+
+ const level = await msg.client.util.DataBase.level.findFirst({
+  where: { type: 'global', userid: msg.author.id },
+ });
+
+ if (level) updateLevels(msg, null, level, [10, 20], 'global', [1]);
+ else insertLevels(msg, 'global', [10, 20], [1]);
+};
+
+const levelling = async (msg: RMessage) => {
+ await checkLevelRoles(msg);
+ if (msg.client.util.cache.guildLevellingCD.has(msg.author.id)) return;
+
+ const lastMessage = msg.client.util.cache.lastMessageGuild.get(msg.author.id);
+ if (lastMessage && StringSimilarity.compareTwoStrings(msg.content, lastMessage) > 0.9) return;
+ msg.client.util.cache.lastMessageGuild.set(msg.author.id, msg.content);
+ msg.client.util.cache.guildLevellingCD.add(msg.author.id);
+
+ Jobs.scheduleJob(getPathFromError(new Error()), new Date(Date.now() + 5000), () => {
+  msg.client.util.cache.guildLevellingCD.delete(msg.author.id);
+ });
+
+ if (msg.client.util.cache.levellingCD.get(msg.guildId)?.has(msg.author.id)) return;
+ if (msg.client.util.cache.levellingCD.get(msg.channelId)?.has(msg.author.id)) return;
+
+ const settings = await checkEnabled(msg);
+ if (settings && (!settings.active || !settings.textenabled)) return;
+
+ if (!settings?.cooldownType) {
+  if (msg.client.util.cache.levellingCD.has(msg.guildId)) {
+   msg.client.util.cache.levellingCD.get(msg.guildId)?.add(msg.author.id);
+  } else msg.client.util.cache.levellingCD.set(msg.guildId, new Set([msg.author.id]));
+ } else {
+  if (msg.client.util.cache.levellingCD.has(msg.channelId)) {
+   msg.client.util.cache.levellingCD.get(msg.channelId)?.add(msg.author.id);
+  } else msg.client.util.cache.levellingCD.set(msg.channelId, new Set([msg.author.id]));
+ }
+
+ const cooldown = settings ? Number(settings.cooldown) : 60;
+
+ Jobs.scheduleJob(
+  getPathFromError(new Error()),
+  new Date(Date.now() + (cooldown < 1 ? 1000 : cooldown * 1000)),
+  () => {
+   msg.client.util.cache.levellingCD.get(msg.guildId)?.delete(msg.author.id);
+   msg.client.util.cache.levellingCD.get(msg.channelId)?.delete(msg.author.id);
+  },
+ );
+
+ if (
+  !(await getRules(msg)) &&
+  Number(msg.content.match(/\s+/g)?.length) < Number(settings?.minwords)
+ ) {
+  return;
+ }
+
+ if (
+  settings?.ignoreprefixes &&
+  settings?.prefixes.length &&
+  settings.prefixes.some((w) => msg.content.toLowerCase().startsWith(w.toLowerCase()))
+ ) {
+  return;
+ }
+
+ const isUserAllowed = settings?.wluserid?.includes(msg.author.id);
+ const isUserDenied = settings?.bluserid?.includes(msg.author.id);
+
+ const isRoleAllowed = settings?.wlroleid?.length
+  ? msg.member?.roles.cache.some((r) => settings.wlroleid.includes(r.id))
+  : false;
+ const isRoleDenied = settings?.blroleid?.length
+  ? msg.member?.roles.cache.some((r) => settings.blroleid.includes(r.id))
+  : false;
+
+ const isChannelAllowed = settings?.wlchannelid?.length
+  ? settings.wlchannelid.includes(msg.channel.id)
+  : false;
+
+ const getIsChannelDenied = () => {
+  if (settings?.wlchannelid?.length && !isChannelAllowed) return true;
+  if (settings?.blchannelid?.includes(msg.channel.id)) return true;
+  return false;
+ };
+
+ const isChannelDenied = getIsChannelDenied();
+
+ if (isUserDenied) return;
+ if (isRoleDenied && !isUserAllowed) return;
+ if (isChannelDenied && !isUserAllowed && !isRoleAllowed) return;
+
+ const rules = await getRules(msg);
+ if (rules.length && !checkRules(msg, rules)) return;
+
+ const level = await msg.client.util.DataBase.level.findUnique({
+  where: { userid_guildid_type: { userid: msg.author.id, guildid: msg.guildId, type: 'guild' } },
+ });
+
+ const rewardroles = await msg.client.util.DataBase.rolerewards.findMany({
+  where: { guildid: msg.guildId, active: true, xpmultiplier: { not: 1 } },
+ });
+
+ const rewardXPMult = rewardroles.map((r) => Number(r.xpmultiplier)).reduce((a, b) => a + b, 0);
+ const xpTop = Math.abs(settings ? Number(settings.msgXpRangeTop) : 25);
+ const xpBottom = Math.abs(settings ? Number(settings.msgXpRangeBottom) : 15);
+
+ if (level) {
+  updateLevels(msg, settings, level, [xpBottom, xpTop], 'guild', [
+   settings ? Number(settings.xpmultiplier) + rewardXPMult : 1,
+  ]);
+
+  return;
+ }
+
+ insertLevels(msg, 'guild', [xpBottom, xpTop], [settings ? Number(settings.xpmultiplier) : 1]);
+};
+
+const getRules = async (msg: RMessage) => {
+ const settings = await msg.client.util.DataBase.levelingruleschannels.findMany({
+  where: { guildid: msg.guildId },
+ });
+
+ if (!settings.length) return [];
+ return settings.filter((s) => s.channels.includes(msg.channel.id));
+};
+
+const checkEnabled = async (msg: RMessage) =>
+ msg.client.util.DataBase.leveling.findUnique({
+  where: { guildid: msg.guildId },
+ });
+
+const updateLevels = async (
+ msg: RMessage,
+ settings: Prisma.leveling | null,
+ level: Prisma.level,
+ xpRange: [number, number],
+ type: LevelType,
+ xpMultiplier = [1],
+) => {
+ if (settings) {
+  xpMultiplier.push(await getRoleMultiplier(msg));
+  xpMultiplier.push(await getChannelMultiplier(msg));
+ }
+
+ const newXP = Math.floor(
+  (xpMultiplier.length ? xpMultiplier : [1])
+   .map((m) => Math.floor(msg.client.util.getRandom(...xpRange)) * m)
+   .reduce((a, b) => a + b) / xpMultiplier.length || 1,
+ );
+
+ const oldLevel = xpToLevel[settings?.formulaType || FormulaType.polynomial](
+  Number(level.xp),
+  settings ? Number(settings.curveModifier) : 100,
+ );
+ const xp = newXP + Number(level.xp) < 1 ? 1 : newXP + Number(level.xp);
+ let neededXP = levelToXP[settings?.formulaType || FormulaType.polynomial](
+  oldLevel + 1,
+  settings ? Number(settings.curveModifier) : 100,
+ );
+
+ let newLevel = oldLevel;
+
+ if (xp >= neededXP) {
+  while (xp >= neededXP) {
+   newLevel += 1;
+   neededXP = levelToXP[settings?.formulaType || FormulaType.polynomial](
+    newLevel,
+    settings ? Number(settings.curveModifier) : 100,
+   );
+   if (xp < neededXP) break;
+  }
+
+  if (newLevel > oldLevel) {
+   levelUp(
+    { oldXP: Number(level.xp), newXP: xp, newLevel, oldLevel },
+    settings as Prisma.leveling,
+    await msg.client.util.request.guilds.getMember(msg.guild, msg.author.id, msg.guild),
+    msg,
+   );
+  }
+ }
+
+ if (type === 'guild') {
+  msg.client.util.DataBase.level
+   .update({
+    where: { userid_guildid_type: { type, userid: msg.author.id, guildid: msg.guildId } },
+    data: { xp },
+   })
+   .then();
+
+  msg.client.util.DataBase.levelchannels
+   .upsert({
+    where: {
+     userid_guildid_channelid: {
+      userid: msg.author.id,
+      guildid: msg.guildId,
+      channelid: msg.channelId,
+     },
+    },
+    update: { xp: { increment: newXP } },
+    create: {
+     xp: newXP,
+     userid: msg.author.id,
+     guildid: msg.guildId,
+     channelid: msg.channelId,
+    },
+   })
+   .then();
+  return;
+ }
+
+ msg.client.util.DataBase.level
+  .update({
+   where: { userid_guildid_type: { type, userid: msg.author.id, guildid: '1' } },
+   data: {
+    xp,
+    type,
+    userid: msg.author.id,
+   },
+  })
+  .then();
+};
+
+const insertLevels = (
+ msg: RMessage,
+ type: LevelType,
+ xpRange: [number, number],
+ xpMultiplier: number[] = [],
+) => {
+ const xp = Math.floor(
+  (xpMultiplier.length ? xpMultiplier : [1])
+   .map((m) => Math.floor(msg.client.util.getRandom(...xpRange)) * m)
+   .reduce((a, b) => a + b) / xpMultiplier.length || 1,
+ );
+
+ msg.client.util.DataBase.level
+  .create({
+   data: {
+    type,
+    userid: msg.author.id,
+    xp,
+    guildid: type === 'global' ? '1' : msg.guildId,
+   },
+  })
+  .then();
+
+ if (type !== 'global') {
+  msg.client.util.DataBase.levelchannels
+   .create({
+    data: {
+     guildid: msg.guildId,
+     xp,
+     userid: msg.author.id,
+     channelid: msg.channelId,
+    },
+   })
+   .then();
+ }
+};
+
+const getRoleMultiplier = async (msg: RMessage) => {
+ if (!msg.guildId) return 1;
+
+ const mps = await msg.client.util.DataBase.levelingmultiroles.findMany({
+  where: { guildid: msg.guildId },
+ });
+ if (!mps.length) return 1;
+
+ const mp = mps.filter((r) => msg.member?.roles.cache.some((r2) => r.roles.includes(r2.id)));
+ return mp.length ? mp.reduce((a, b) => a + Number(b.multiplier), 0) / mp.length : 1;
+};
+
+const getChannelMultiplier = async (msg: RMessage) => {
+ if (!msg.guildId) return 1;
+
+ const mps = await msg.client.util.DataBase.levelingmultichannels.findMany({
+  where: { guildid: msg.guildId },
+ });
+ if (!mps.length) return 1;
+
+ const mp = mps.filter((r) => r.channels.includes(msg.channel.id));
+ return mp.length ? mp.reduce((a, b) => a + Number(b.multiplier), 0) / mp.length : 1;
+};
+
+const checkRules = (msg: RMessage, settings: Prisma.levelingruleschannels[]) => {
+ const passes = settings.map((s) => {
+  const rules = new ChannelRules(s).toArray();
+  if (!rules.length) return true;
+
+  const appliedRules: Partial<{ [key in (typeof rules)[number]]: number }> = {};
+
+  rules.forEach((uppercaseKey) => {
+   const key = uppercaseKey.toLowerCase() as keyof typeof appliedRules;
+   appliedRules[key] = Number(settings[key as keyof typeof settings]);
+  });
+
+  const willLevel: boolean[] = [];
+
+  Object.entries(appliedRules).forEach(([key, num]) => {
+   switch (key) {
+    case 'has_least_attachments': {
+     if (msg.attachments.size < num) willLevel.push(false);
+     break;
+    }
+    case 'has_most_attachments': {
+     if (msg.attachments.size > num) willLevel.push(false);
+     break;
+    }
+    case 'has_least_characters': {
+     if (msg.content.length < num) willLevel.push(false);
+     break;
+    }
+    case 'has_most_characters': {
+     if (msg.content.length > num) willLevel.push(false);
+     break;
+    }
+    case 'has_least_words': {
+     if (msg.content.split(' ').length < num) willLevel.push(false);
+     break;
+    }
+    case 'has_most_words': {
+     if (msg.content.split(' ').length > num) willLevel.push(false);
+     break;
+    }
+    case 'mentions_least_users': {
+     if (msg.mentions.users.size < num) willLevel.push(false);
+     break;
+    }
+    case 'mentions_most_users': {
+     if (msg.mentions.users.size > num) willLevel.push(false);
+     break;
+    }
+    case 'mentions_least_roles': {
+     if (msg.mentions.roles.size < num) willLevel.push(false);
+     break;
+    }
+    case 'mentions_most_roles': {
+     if (msg.mentions.roles.size > num) willLevel.push(false);
+     break;
+    }
+    case 'mentions_least_channels': {
+     if (msg.mentions.channels.size < num) willLevel.push(false);
+     break;
+    }
+    case 'mentions_most_channels': {
+     if (msg.mentions.channels.size > num) willLevel.push(false);
+     break;
+    }
+    case 'has_least_links': {
+     if (
+      Number(
+       msg.content.match(
+        /(http|https):\/\/(?:[a-z0-9]+(?:[-][a-z0-9]+)*\.)+[a-z]{2,}(?::\d+)?(?:\/\S*)?/gi,
+       )?.length,
+      ) < num
+     ) {
+      willLevel.push(false);
+     }
+     break;
+    }
+    case 'has_most_links': {
+     if (
+      Number(
+       msg.content.match(
+        /(http|https):\/\/(?:[a-z0-9]+(?:[-][a-z0-9]+)*\.)+[a-z]{2,}(?::\d+)?(?:\/\S*)?/gi,
+       )?.length,
+      ) > num
+     ) {
+      willLevel.push(false);
+     }
+     break;
+    }
+    case 'has_least_emotes': {
+     if (Number(msg.content.match(/<(a)?:[a-zA-Z0-9_]+:[0-9]+>/gi)?.length) < num) {
+      willLevel.push(false);
+     }
+     break;
+    }
+    case 'has_most_emotes': {
+     if (Number(msg.content.match(/<(a)?:[a-zA-Z0-9_]+:[0-9]+>/gi)?.length) > num) {
+      willLevel.push(false);
+     }
+     break;
+    }
+    case 'has_least_mentions': {
+     if (msg.mentions.users.size + msg.mentions.channels.size + msg.mentions.roles.size < num) {
+      willLevel.push(false);
+     }
+     break;
+    }
+    case 'has_most_mentions': {
+     if (msg.mentions.users.size + msg.mentions.channels.size + msg.mentions.roles.size > num) {
+      willLevel.push(false);
+     }
+     break;
+    }
+    default: {
+     willLevel.push(true);
+     break;
+    }
+   }
+   willLevel.push(true);
+  });
+
+  return !willLevel.includes(false);
+ });
+
+ if (passes.includes(false)) return false;
+ return true;
+};
+
+export const levelUp = async (
+ levelData: LevelData,
+ setting: Prisma.leveling | null,
+ member: RMember | Discord.DiscordAPIError | Error,
+ msg: RMessage | Discord.BaseGuildVoiceChannel,
+) => {
+ if ('message' in member) return;
+ if (!setting) return;
+ const language = await member.client.util.getLanguage(member.guild.id);
+
+ switch (setting.lvlupmode) {
+  case 'messages': {
+   await doEmbed(msg, language, levelData, setting, member.user);
+   break;
+  }
+  case 'reactions': {
+   if (!(msg instanceof RMessage)) {
+    doVoiceStatus(msg, levelData, setting, language, member.user);
+    break;
+   }
+   await doReact(msg, setting, levelData.newLevel, language);
+   break;
+  }
+  default: {
+   break;
+  }
+ }
+
+ roleAssign(member, setting.rolemode, levelData.newLevel, language);
+};
+
+const doVoiceStatus = async (
+ channel: Discord.BaseGuildVoiceChannel,
+ levelData: LevelData,
+ settings: leveling,
+ language: CT.Language,
+ user: RUser,
+) => {
+ channel.client.util.channelStatusManager.add(
+  channel,
+  `${settings.lvlupemotes
+   .map((e) => (e.startsWith('a') ? `<${e}>` : `<:${e}>`))
+   .join('')} ${channel.client.util.stp(
+   settings.lvluptext?.length
+    ? settings.lvluptext
+    : language.slashCommands.settings.categories.leveling.status,
+   { ...levelData, user },
+  )}`,
+  Number(settings.lvlupdeltimeout) * 1000,
+ );
+};
+
+const roleAssign = async (
+ member: RMember,
+ rolemode: boolean,
+ newLevel: number,
+ language: CT.Language,
+) => {
+ const roles = await member.client.util.DataBase.levelingroles.findMany({
+  where: { guildid: member.guild.id, level: { lte: newLevel } },
+ });
+ if (!roles.length) return;
+
+ let add: string[] = [];
+ let remove: string[] = [];
+
+ switch (rolemode) {
+  case false: {
+   roles
+    .filter((r) => Number(r.level) <= newLevel)
+    .forEach((r) => {
+     const roleMap = r.roles
+      .map((roleId) => {
+       if (!member.roles.cache.has(roleId)) return roleId;
+       return undefined;
+      })
+      .filter((role): role is string => !!role);
+
+     if (!roleMap.length) return;
+     add = [...new Set([...add, ...roleMap])];
+    });
+   break;
+  }
+  default: {
+   if (!roles.find((r) => Number(r.level) === newLevel)) return;
+
+   roles
+    .filter((r) => Number(r.level) <= newLevel)
+    .forEach((r) => {
+     const remr: string[] = [];
+     const addr: string[] = [];
+
+     r.roles?.forEach((roleId) => {
+      if (
+       Number(r.level) < newLevel &&
+       member.roles.cache.has(roleId) &&
+       member.guild.roles.cache.get(roleId)
+      ) {
+       remr.push(roleId);
+      }
+
+      if (
+       Number(r.level) === newLevel &&
+       !member.roles.cache.has(roleId) &&
+       member.guild.roles.cache.get(roleId)
+      ) {
+       addr.push(roleId);
+      }
+     });
+
+     if (addr.length) add = [...new Set([...add, ...addr])];
+     if (remr.length) remove = [...new Set([...remove, ...remr])];
+    });
+  }
+ }
+
+ if (!member) return;
+ if (add.length) {
+  await member.client.util.roleManager.add(member, add, language.autotypes.leveling);
+ }
+ if (remove.length) {
+  await member.client.util.roleManager.remove(member, remove, language.autotypes.leveling);
+ }
+};
+
+const doReact = async (
+ msg: RMessage,
+ setting: Prisma.leveling,
+ newLevel: number,
+ language: CT.Language,
+) => {
+ const reactions = setting.lvlupemotes.length
+  ? setting.lvlupemotes
+  : msg.client.util.emotes.levelupemotes.map((e) => (!e.id ? e.name : `${e.name}:${e.id}`));
+
+ if (newLevel === 1) infoEmbed(msg, reactions, language);
+
+ await Promise.all(reactions.map((e) => msg.client.util.request.channels.addReaction(msg, e)));
+
+ Jobs.scheduleJob(getPathFromError(new Error()), new Date(Date.now() + 10000), () => {
+  msg.reactions.cache.forEach((r) => {
+   if (msg) msg.client.util.request.channels.deleteOwnReaction(msg, r.emoji.identifier);
+  });
+ });
+};
+
+const infoEmbed = async (
+ msg: RMessage,
+ reactions: string[],
+ language: CT.Language,
+) => {
+ const emotes = reactions.map((r) => {
+  const animated = r.startsWith('a:');
+  const name = animated ? r.split(/:/g)[1] : r.split(/:/g)[0];
+  const id = animated ? r.split(/:/g)[2] : r.split(/:/g)[1];
+
+  return msg.client.util.constants.standard.getEmote({ name, id, animated });
+ });
+
+ const embed: Discord.APIEmbed = {
+  color: msg.client.util.getColor(await msg.client.util.getBotMemberFromGuild(msg.guild)),
+  description: language.leveling.description(emotes.join(', ')),
+ };
+
+ const m = await msg.client.util.replyMsg(msg, {
+  embeds: [embed],
+ });
+
+ Jobs.scheduleJob(getPathFromError(new Error()), new Date(Date.now() + 30000), async () => {
+  if (!m) return;
+  if (await msg.client.util.isDeleteable(m)) msg.client.util.request.channels.deleteMessage(m);
+ });
+};
+
+const doEmbed = async (
+ msg: RMessage | Discord.BaseGuildVoiceChannel,
+ language: CT.Language,
+ levelData: LevelData,
+ setting: Prisma.leveling,
+ user: RUser,
+) => {
+ const getDefaultEmbed = async (): Promise<Discord.APIEmbed> => ({
+  author: {
+   name: language.leveling.author(user, String(levelData.newLevel)),
+   icon_url: 'https://cdn.discordapp.com/emojis/807752347782086707.webp?size=4096',
+  },
+  color: user.client.util.getColor(await user.client.util.getBotMemberFromGuild(msg.guild)),
+ });
+
+ const options = [
+  ['msg', msg],
+  ['user', user],
+  ['newLevel', levelData.newLevel],
+  ['oldLevel', levelData.oldLevel],
+  ['newXP', levelData.newXP],
+  ['oldXP', levelData.oldXP],
+ ];
+
+ let embed = !setting.embed
+  ? user.client.util.dynamicToEmbed(await getDefaultEmbed(), options)
+  : undefined;
+ if (setting.embed) {
+  const customEmbed = await user.client.util.DataBase.customembeds.findUnique({
+   where: { uniquetimestamp: setting.embed },
+  });
+
+  if (customEmbed) {
+   embed = user.client.util.dynamicToEmbed(user.client.util.getDiscordEmbed(customEmbed), options);
+  } else embed = user.client.util.dynamicToEmbed(await getDefaultEmbed(), options);
+ }
+
+ if (!embed) return;
+ send(msg, embed, setting, user);
+};
+
+const send = async <T extends RMessage | Discord.BaseGuildVoiceChannel>(
+ msg: T,
+ embed: Discord.APIEmbed,
+ setting: Prisma.leveling,
+ user: T extends RMessage ? undefined : RUser,
+) => {
+ const channelId = msg instanceof RMessage ? msg.channelId : msg.id;
+
+ const messages = await msg.client.util
+  .send(
+   {
+    id: setting.lvlupchannels.length ? setting.lvlupchannels : [channelId],
+    guildId: msg.guildId,
+   },
+   {
+    embeds: [embed],
+    content:
+     setting.pingUser && setting.lvlupchannels.length
+      ? `<@${(msg instanceof RMessage ? msg.author : user)!.id}>`
+      : undefined,
+    allowed_mentions: { replied_user: setting.pingUser },
+   },
+  )
+  .then((m) => m?.filter((ms): ms is RMessage => !!ms));
+
+ if (!messages) return;
+ if (!setting.lvlupdeltimeout) return;
+
+ Jobs.scheduleJob(
+  getPathFromError(new Error()),
+  new Date(
+   Date.now() +
+    (Number(setting.lvlupdeltimeout) > 5 ? Number(setting.lvlupdeltimeout) * 1000 : 5000) * 100,
+  ),
+  async () => {
+   const deleteable = await Promise.all(messages.map((m) => msg.client.util.isDeleteable(m)));
+
+   messages?.forEach((m, i) => {
+    if (deleteable[i]) msg.client.util.request.channels.deleteMessage(m);
+   });
+  },
+ );
+};
+
+const checkLevelRoles = async (msg: RMessage) => {
+ if (!msg.member) return;
+
+ const msgsFromUserLastHour = msg.channel.messages.cache.filter(
+  (m) => m.createdTimestamp > Date.now() - 3600000 && m.author?.id === msg.author.id,
+ );
+ if (msgsFromUserLastHour.size > 2) return;
+
+ const level = await msg.client.util.DataBase.level.findUnique({
+  where: { userid_guildid_type: { userid: msg.author.id, guildid: msg.guildId, type: 'guild' } },
+ });
+ if (!level) return;
+
+ const settings = await msg.client.util.DataBase.leveling.findUnique({
+  where: { guildid: msg.guildId, active: true, textenabled: true },
+ });
+ if (!settings) return;
+ const currentLevel = xpToLevel[settings.formulaType || FormulaType.polynomial](
+  Number(level.xp),
+  settings.curveModifier ? Number(settings.curveModifier) : 100,
+ );
+
+ const roles = await msg.client.util.DataBase.levelingroles.findMany({
+  where: { guildid: msg.guildId, level: { lte: currentLevel } },
+ });
+ if (!roles.length) return;
+
+ await roleAssign(
+  msg.member,
+  settings.rolemode,
+  currentLevel,
+  await msg.client.util.getLanguage(msg.guildId),
+ );
+};
+
+// default curveModifier = 100
+export const levelToXP = {
+ logarithmic: (level: number, curveModifier: number) =>
+  Math.log(level + 1) * Math.pow(level, 0.5) * curveModifier * 1000,
+ linear: (level: number, curveModifier: number) => level * curveModifier * 100,
+ quadratic: (level: number, curveModifier: number) => level * level * curveModifier,
+ cubic: (level: number, curveModifier: number) => (level * level * level * curveModifier) / 100,
+ polynomial: (level: number, curveModifier: number) =>
+  (5 / 6) * level * (2 * level * level + 27 * level + 91) * Math.pow(curveModifier / 100, 0.5),
+ exponential: (level: number, curveModifier: number) =>
+  Math.pow(1.5, level / 10) * curveModifier * 100,
+};
+
+export const xpToLevel = {
+ logarithmic: (xp: number, curveModifier: number) => {
+  const targetXp = xp / (curveModifier * 1000);
+  let level = Math.max(1, targetXp);
+
+  for (let i = 0; i < 20; i++) {
+   const f = Math.log(level + 1) * Math.pow(level, 0.5) - targetXp;
+   const fPrime =
+    Math.pow(level, 0.5) / (level + 1) + (0.5 * Math.log(level + 1)) / Math.pow(level, 0.5);
+
+   const nextLevel = level - f / fPrime;
+   if (Math.abs(nextLevel - level) < 0.0001) break;
+   level = nextLevel;
+  }
+
+  return Math.round(level);
+ },
+ linear: (xp: number, curveModifier: number) => xp / (curveModifier * 100),
+ quadratic: (xp: number, curveModifier: number) => Math.sqrt(xp / curveModifier),
+ cubic: (xp: number, curveModifier: number) => Math.cbrt((xp * 100) / curveModifier),
+ polynomial: (xp: number, curveModifier: number) => {
+  const adjustedXp = xp / Math.sqrt(curveModifier / 100);
+
+  return (
+   Math.round(
+    (3 ** 0.5 * (3888 * adjustedXp ** 2 + 233280 * adjustedXp - 3366425) ** 0.5 +
+     108 * adjustedXp +
+     3240) **
+     (1 / 3) /
+     (2 * 3 ** (2 / 3) * 5 ** (1 / 3)) +
+     (65 * (5 / 3) ** (1 / 3)) /
+      (2 *
+       (3 ** 0.5 * (3888 * adjustedXp ** 2 + 233280 * adjustedXp - 3366425) ** 0.5 +
+        108 * adjustedXp +
+        3240) **
+        (1 / 3)) -
+     9 / 2,
+   ) || 0
+  );
+ },
+ exponential: (xp: number, curveModifier: number) => {
+  const level = (10 * Math.log(xp / (curveModifier * 100))) / Math.log(1.5);
+  return Math.round(level);
+ },
+};

@@ -1,0 +1,62 @@
+export enum EmbedFields {
+ AuthorName = 'author-name',
+ AuthorIcon = 'author-icon',
+ AuthorURL = 'author-url',
+ Thumbnail = 'thumbnail',
+ Title = 'title',
+ URL = 'url',
+ Description = 'description',
+ Image = 'image',
+ Color = 'color',
+ FooterText = 'footer-text',
+ FooterIcon = 'footer-icon',
+ Timestamp = 'timestamp',
+ FieldName = 'field-name',
+ FieldValue = 'field-value',
+ FieldInline = 'field-inline',
+}
+
+export enum EmbedFieldType {
+ String = 'string',
+ Link = 'link',
+ Img = 'img',
+ Timestamp = 'timestamp',
+ Hex = 'hex',
+ Boolean = 'boolean',
+}
+
+export default {
+ type: {
+  [EmbedFields.AuthorName]: EmbedFieldType.String,
+  [EmbedFields.AuthorIcon]: EmbedFieldType.Img,
+  [EmbedFields.AuthorURL]: EmbedFieldType.Link,
+  [EmbedFields.Thumbnail]: EmbedFieldType.Img,
+  [EmbedFields.Title]: EmbedFieldType.String,
+  [EmbedFields.URL]: EmbedFieldType.Link,
+  [EmbedFields.Description]: EmbedFieldType.String,
+  [EmbedFields.Image]: EmbedFieldType.Img,
+  [EmbedFields.Color]: EmbedFieldType.Hex,
+  [EmbedFields.FooterText]: EmbedFieldType.String,
+  [EmbedFields.FooterIcon]: EmbedFieldType.Img,
+  [EmbedFields.Timestamp]: EmbedFieldType.Timestamp,
+  [EmbedFields.FieldName]: EmbedFieldType.String,
+  [EmbedFields.FieldValue]: EmbedFieldType.String,
+  [EmbedFields.FieldInline]: EmbedFieldType.Boolean,
+ },
+ needsOneOf: [
+  EmbedFields.Title,
+  EmbedFields.AuthorName,
+  EmbedFields.Description,
+  EmbedFields.Thumbnail,
+  'fields',
+  EmbedFields.Image,
+  EmbedFields.FooterText,
+ ],
+ acceptsMentions: [EmbedFields.Description, EmbedFields.FieldName],
+ acceptsEmojis: [
+  EmbedFields.Title,
+  EmbedFields.Description,
+  EmbedFields.FieldName,
+  EmbedFields.FieldValue,
+ ],
+};
