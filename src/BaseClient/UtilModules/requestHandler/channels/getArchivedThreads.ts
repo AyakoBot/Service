@@ -14,7 +14,7 @@ import { getAPI } from './addReaction.js';
  * @returns A Promise that resolves with an array of parsed thread objects.
  */
 export default async (
- channel: Discord.NewsChannel | Discord.TextChannel | Discord.ForumChannel,
+ channel: RChannel | RChannel | Discord.ForumChannel,
  status: 'private' | 'public',
  query: Discord.RESTGetAPIChannelThreadsArchivedQuery,
 ) => {
@@ -22,7 +22,7 @@ export default async (
   const e = requestHandlerError(
    `Cannot get archived threads in ${channel.name} / ${channel.id}`,
    status === 'private'
-    ? [Discord.PermissionFlagsBits.ManageThreads, Discord.PermissionFlagsBits.ReadMessageHistory]
+    ? [PermissionFlagsBits.ManageThreads, PermissionFlagsBits.ReadMessageHistory]
     : [],
   );
 
@@ -62,6 +62,6 @@ export const canGetArchivedThreads = (
  me: RMember,
 ) =>
  status === 'private'
-  ? me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageThreads) &&
-    me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ReadMessageHistory)
+  ? me.permissionsIn(channelId).has(PermissionFlagsBits.ManageThreads) &&
+    me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory)
   : true;

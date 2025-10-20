@@ -17,10 +17,10 @@ export default async (channel: Discord.BaseGuildVoiceChannel, status: string) =>
 
  if (!canSetVCStatus(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot show typing indicator in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ViewChannel,
-   Discord.PermissionFlagsBits.ReadMessageHistory,
-   ...([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(channel.type)
-    ? [Discord.PermissionFlagsBits.Connect]
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.ReadMessageHistory,
+   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
+    ? [PermissionFlagsBits.Connect]
     : []),
   ]);
 
@@ -46,4 +46,4 @@ export default async (channel: Discord.BaseGuildVoiceChannel, status: string) =>
 export const canSetVCStatus = (channelId: string, me: RMember) =>
  (me.guild.voiceStates.cache.find((c) => c.channelId === channelId && c.member?.id === me.id) &&
   me.permissionsIn(channelId).has(281474976710656n)) ||
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageChannels);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);

@@ -18,7 +18,7 @@ export default async (member: RMember, reason?: string) => {
  if (!canRemoveMember(await getBotMemberFromGuild(member.guild), member)) {
   const e = requestHandlerError(
    `Cannot remove member ${member.displayName} / ${member.id} from ${member.guild.name} / ${member.guild.id}`,
-   [Discord.PermissionFlagsBits.KickMembers],
+   [PermissionFlagsBits.KickMembers],
   );
 
   error(member.guild, e);
@@ -40,6 +40,6 @@ export default async (member: RMember, reason?: string) => {
  * @returns True if the guild member has the permission to remove members, false otherwise.
  */
 export const canRemoveMember = (me: RMember, member: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.KickMembers) &&
+ me.permissions.has(PermissionFlagsBits.KickMembers) &&
  me.roles.highest.comparePositionTo(member.roles.highest) > 0 &&
  member.guild.ownerId !== member.id;

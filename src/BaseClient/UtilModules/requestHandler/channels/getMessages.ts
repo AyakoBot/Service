@@ -14,15 +14,15 @@ import { canGetMessage } from './getMessage.js';
  * @returns A promise that resolves with an array of parsed messages.
  */
 export default async (
- channel: Discord.GuildTextBasedChannel,
+ channel: RChannel,
  query?: Discord.RESTGetAPIChannelMessagesQuery,
 ) => {
  if (!canGetMessage(channel, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot get messages in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ViewChannel,
-   Discord.PermissionFlagsBits.ReadMessageHistory,
-   ...([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(channel.type)
-    ? [Discord.PermissionFlagsBits.Connect]
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.ReadMessageHistory,
+   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
+    ? [PermissionFlagsBits.Connect]
     : []),
   ]);
 

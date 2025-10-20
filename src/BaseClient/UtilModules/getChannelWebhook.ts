@@ -10,11 +10,11 @@ import { guildTextChannel } from './getChannel.js';
  * @returns The webhook for the channel, or undefined if it could not be retrieved or created.
  */
 export default async (
- rawChannel: Discord.GuildTextBasedChannel | Discord.ForumChannel | Discord.MediaChannel | string,
+ rawChannel: RChannel | Discord.ForumChannel | Discord.MediaChannel | string,
 ) => {
  let channel =
   typeof rawChannel === 'string'
-   ? ((await guildTextChannel(rawChannel)) as Discord.GuildTextBasedChannel | undefined)
+   ? ((await guildTextChannel(rawChannel)) as RChannel | undefined)
    : rawChannel;
 
  if (!channel) return undefined;
@@ -27,9 +27,9 @@ export default async (
 
  const fetchWebhooks = async (
   c:
-   | Discord.NewsChannel
    | RChannel
-   | Discord.TextChannel
+   | RChannel
+   | RChannel
    | Discord.VoiceChannel
    | Discord.ForumChannel
    | Discord.MediaChannel,
@@ -42,9 +42,9 @@ export default async (
 
  const createWebhook = async (
   c:
-   | Discord.NewsChannel
    | RChannel
-   | Discord.TextChannel
+   | RChannel
+   | RChannel
    | Discord.VoiceChannel
    | Discord.ForumChannel
    | Discord.MediaChannel,

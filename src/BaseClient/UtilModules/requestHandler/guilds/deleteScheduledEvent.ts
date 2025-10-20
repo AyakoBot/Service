@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, eventId: string, reason?: string) =>
 
  if (!canDeleteScheduledEvent(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete scheduled event ${eventId}`, [
-   Discord.PermissionFlagsBits.ManageEvents,
+   PermissionFlagsBits.ManageEvents,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild, eventId: string, reason?: string) =>
  * @returns True if the guild member has the necessary permissions, false otherwise.
  */
 export const canDeleteScheduledEvent = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageEvents);
+ me.permissions.has(PermissionFlagsBits.ManageEvents);

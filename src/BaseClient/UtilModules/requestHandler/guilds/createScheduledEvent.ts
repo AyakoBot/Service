@@ -21,7 +21,7 @@ export default async (
 ) => {
  if (!canCreateScheduledEvent(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot create scheduled event`, [
-   Discord.PermissionFlagsBits.ManageEvents,
+   PermissionFlagsBits.ManageEvents,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -50,5 +50,5 @@ export default async (
  * @returns True if the guild member has the "Manage Events" permission, false otherwise.
  */
 export const canCreateScheduledEvent = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.CreateEvents) ||
- me.permissions.has(Discord.PermissionFlagsBits.ManageEvents);
+ me.permissions.has(PermissionFlagsBits.CreateEvents) ||
+ me.permissions.has(PermissionFlagsBits.ManageEvents);

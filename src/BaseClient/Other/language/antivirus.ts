@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../Typings/Typings.js';
 
 export default (t: CT.Language) => ({
@@ -10,10 +9,10 @@ export default (t: CT.Language) => ({
   vtStats: (m: string, s: string, h: string, u: string) =>
    t.stp(t.JSON.antivirus.log.vtStats, { m, s, h, u }),
   detectedAs: (c: string) => t.stp(t.JSON.antivirus.log.detectedAs, { c }),
-  value: (msg: RMessage) =>
+  value: async (msg: RMessage) =>
    t.stp(t.JSON.antivirus.log.value, {
     msg,
-    name: 'name' in msg.channel ? msg.channel.name : t.JSON.t.Unknown,
+    name: (await t.cache.channels.get(msg.channel_id)) || t.JSON.t.Unknown,
    }),
  },
 });

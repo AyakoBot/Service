@@ -22,36 +22,36 @@ export default async (
 
  const channel =
   (settings?.notifychannel
-   ? (target.guild.channels.cache.get(settings.notifychannel) as Discord.GuildTextBasedChannel)
+   ? (target.guild.channels.cache.get(settings.notifychannel) as RChannel)
    : null) ??
   target.guild.rulesChannel ??
   target.guild.systemChannel ??
   (target.guild.channels.cache.find(
    (c) =>
     ![
-     Discord.ChannelType.AnnouncementThread,
-     Discord.ChannelType.GuildCategory,
-     Discord.ChannelType.GuildDirectory,
-     Discord.ChannelType.GuildForum,
-     Discord.ChannelType.GuildMedia,
-     Discord.ChannelType.GuildStageVoice,
-     Discord.ChannelType.PrivateThread,
-     Discord.ChannelType.PublicThread,
-    ].includes(c.type) && c.permissionsFor(target).has(Discord.PermissionFlagsBits.ViewChannel),
+     ChannelType.AnnouncementThread,
+     ChannelType.GuildCategory,
+     ChannelType.GuildDirectory,
+     ChannelType.GuildForum,
+     ChannelType.GuildMedia,
+     ChannelType.GuildStageVoice,
+     ChannelType.PrivateThread,
+     ChannelType.PublicThread,
+    ].includes(c.type) && c.permissionsFor(target).has(PermissionFlagsBits.ViewChannel),
   ) as Exclude<
    Discord.Channel,
    {
     type:
-     | Discord.ChannelType.DM
-     | Discord.ChannelType.GroupDM
-     | Discord.ChannelType.AnnouncementThread
-     | Discord.ChannelType.GuildCategory
-     | Discord.ChannelType.GuildDirectory
-     | Discord.ChannelType.GuildForum
-     | Discord.ChannelType.GuildMedia
-     | Discord.ChannelType.GuildStageVoice
-     | Discord.ChannelType.PrivateThread
-     | Discord.ChannelType.PublicThread;
+     | ChannelType.DM
+     | ChannelType.GroupDM
+     | ChannelType.AnnouncementThread
+     | ChannelType.GuildCategory
+     | ChannelType.GuildDirectory
+     | ChannelType.GuildForum
+     | ChannelType.GuildMedia
+     | ChannelType.GuildStageVoice
+     | ChannelType.PrivateThread
+     | ChannelType.PublicThread;
    }
   >);
  if (!channel || !('threads' in channel)) return undefined;
@@ -77,7 +77,7 @@ export default async (
  }
 
  const thread = await target.client.util.request.channels.createThread(channel, {
-  type: Discord.ChannelType.PrivateThread,
+  type: ChannelType.PrivateThread,
   invitable: false,
   name: target.client.util.constants.standard.getEmote(target.client.util.emotes.warning) ?? '⚠️',
  });

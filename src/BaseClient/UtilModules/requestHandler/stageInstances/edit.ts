@@ -24,7 +24,7 @@ export default async (
  if (!canEdit(await getBotMemberFromGuild(channel.guild), channel.id)) {
   const e = requestHandlerError(
    `Cannot edit stage instance in ${channel.guild.name} / ${channel.guild.id}`,
-   [Discord.PermissionFlagsBits.ManageChannels],
+   [PermissionFlagsBits.ManageChannels],
   );
 
   error(channel.guild, e);
@@ -47,4 +47,4 @@ export default async (
  * @returns A boolean indicating whether the guild member can edit stage instances.
  */
 export const canEdit = (me: RMember, channelId: string) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageChannels);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);

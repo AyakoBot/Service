@@ -23,7 +23,7 @@ export default async (
 
  if (!canEditTemplate(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot edit template ${templateCode}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -45,4 +45,4 @@ export default async (
  * @returns True if the guild member has permission to edit templates, false otherwise.
  */
 export const canEditTemplate = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

@@ -16,7 +16,7 @@ export default async (guild: Discord.Guild) => {
 
  if (!canDelete(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete guild ${guild.name} / ${guild.id}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));

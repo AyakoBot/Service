@@ -14,7 +14,7 @@ import { getAPI } from './addReaction.js';
 export default async (channel: Discord.GuildBasedChannel) => {
  if (!canGetInvites(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot get invites in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ManageChannels,
+   PermissionFlagsBits.ManageChannels,
   ]);
 
   error(channel.guild, e);
@@ -44,4 +44,4 @@ export default async (channel: Discord.GuildBasedChannel) => {
  * @returns A boolean indicating whether the user has permission to get invites.
  */
 export const canGetInvites = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageChannels);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);

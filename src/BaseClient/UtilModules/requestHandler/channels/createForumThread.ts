@@ -26,7 +26,7 @@ export default async (
 
  if (!canCreateForumThread(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot create forum post in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.SendMessages,
+   PermissionFlagsBits.SendMessages,
   ]);
 
   error(channel.guild, e);
@@ -49,4 +49,4 @@ export default async (
  * @returns True if the user has permission to create a forum thread, false otherwise.
  */
 export const canCreateForumThread = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.SendMessages);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.SendMessages);

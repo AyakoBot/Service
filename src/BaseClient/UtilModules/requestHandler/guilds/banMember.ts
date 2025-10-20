@@ -22,7 +22,7 @@ export default async (
 
  if (!canBanUser(await getBotMemberFromGuild(member.guild))) {
   const e = requestHandlerError(`Cannot ban member in ${member.displayName} / ${member.id}`, [
-   Discord.PermissionFlagsBits.BanMembers,
+   PermissionFlagsBits.BanMembers,
   ]);
 
   error(member.guild, e);

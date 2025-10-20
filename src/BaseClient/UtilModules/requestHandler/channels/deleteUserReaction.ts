@@ -18,7 +18,7 @@ export default async (msg: RMessage, userId: string, emoji: string) => {
  if (!canDeleteUserReaction(msg.channel.id, await getBotMemberFromGuild(msg.guild))) {
   const e = requestHandlerError(
    `Cannot delete user reaction in ${msg.guild.name} / ${msg.guild.id}`,
-   [Discord.PermissionFlagsBits.ManageMessages],
+   [PermissionFlagsBits.ManageMessages],
   );
 
   error(msg.guild, e);
@@ -55,4 +55,4 @@ export default async (msg: RMessage, userId: string, emoji: string) => {
  * @returns True if the user has permission to manage messages in the channel, false otherwise.
  */
 export const canDeleteUserReaction = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageMessages);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);

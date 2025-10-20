@@ -23,7 +23,7 @@ export default async (
 
  if (!canEditWelcomeScreen(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot edit welcome screen`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -45,4 +45,4 @@ export default async (
  * false otherwise.
  */
 export const canEditWelcomeScreen = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

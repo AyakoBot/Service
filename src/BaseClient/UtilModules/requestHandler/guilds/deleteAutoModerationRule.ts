@@ -18,7 +18,7 @@ export default async (guild: Discord.Guild, ruleId: string, reason?: string) => 
 
  if (!canDeleteAutoModerationRule(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete auto-moderation rule ${ruleId}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild, ruleId: string, reason?: string) => 
  * @returns A boolean indicating whether the GuildMember has the required permission.
  */
 export const canDeleteAutoModerationRule = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

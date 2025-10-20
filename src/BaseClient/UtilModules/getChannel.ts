@@ -66,7 +66,7 @@ export const guildVoiceChannel = async (channelId: string) => {
 export const categoryChannel = async (channelId: string) => {
  const channel = await getChannel(channelId);
  if (!channel) return undefined;
- if (channel.type !== Discord.ChannelType.GuildCategory) return undefined;
+ if (channel.type !== ChannelType.GuildCategory) return undefined;
  return channel;
 };
 
@@ -81,9 +81,9 @@ export const parentChannel = async (channelId: string) => {
  if (!channel) return undefined;
  if (
   ![
-   Discord.ChannelType.GuildCategory,
-   Discord.ChannelType.GuildText,
-   Discord.ChannelType.GuildForum,
+   ChannelType.GuildCategory,
+   ChannelType.GuildText,
+   ChannelType.GuildForum,
   ].includes(channel.type)
  ) {
   return undefined;

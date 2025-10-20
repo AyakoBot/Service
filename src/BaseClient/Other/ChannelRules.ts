@@ -1,8 +1,3 @@
-// TODO: install discord.js for this
-import Discord from 'discord.js';
-import Prisma from '@prisma/client';
-
-// eslint-disable-next-line no-shadow
 export declare enum ActivityFlags {
  'HasLeastAttachments' = 1,
  'HasMostAttachments' = 2,
@@ -22,42 +17,4 @@ export declare enum ActivityFlags {
  'HasMostEmotes' = 32768,
  'HasLeastMentions' = 65536,
  'HasMostMentions' = 131072,
-}
-
-export default class ChannelRules extends Discord.BitField<keyof typeof ActivityFlags> {
- All: unknown;
- defaultBit: bigint;
-
- static Flags = {
-  HasLeastAttachments: 1 << 0,
-  HasMostAttachments: 1 << 1,
-  HasLeastCharacters: 1 << 2,
-  HasMostCharacters: 1 << 3,
-  HasLeastWords: 1 << 4,
-  HasMostWords: 1 << 5,
-  MentionsLeastUsers: 1 << 6,
-  MentionsMostUsers: 1 << 7,
-  MentionsLeastChannels: 1 << 8,
-  MentionsMostChannels: 1 << 9,
-  MentionsLeastRoles: 1 << 10,
-  MentionsMostRoles: 1 << 11,
-  HasLeastLinks: 1 << 12,
-  HasMostLinks: 1 << 13,
-  HasLeastEmotes: 1 << 14,
-  HasMostEmotes: 1 << 15,
-  HasLeastMentions: 1 << 16,
-  HasMostMentions: 1 << 17,
- };
-
- constructor(s: Prisma.levelingruleschannels) {
-  const bits = Object.values(s)
-   .filter((_, i) => i > 2)
-   .map((v, i) => (v ? 2 ** i : 0))
-   .reduce((partialSum, a) => partialSum + a, 0);
-  super(bits);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  this.All = Object.values(ChannelRules.Flags).reduce((all: any, p: any) => all | p, 0);
-  this.defaultBit = BigInt(0);
- }
 }

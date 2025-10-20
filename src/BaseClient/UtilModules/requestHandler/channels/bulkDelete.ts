@@ -11,12 +11,12 @@ import { getAPI } from './addReaction.js';
  * @param msgs - An array of message IDs to delete.
  * @returns A promise that resolves with the deleted messages or rejects with a DiscordAPIError.
  */
-export default async (channel: Discord.GuildTextBasedChannel, msgs: string[]) => {
+export default async (channel: RChannel, msgs: string[]) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canBulkDelete(channel.id, await getBotMemberFromGuild(channel.guild), msgs.length)) {
   const e = requestHandlerError(`Cannot bulk-delete messages in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ManageMessages,
+   PermissionFlagsBits.ManageMessages,
   ]);
 
   error(channel.guild, e);
@@ -38,6 +38,6 @@ export default async (channel: Discord.GuildTextBasedChannel, msgs: string[]) =>
  * @returns A boolean indicating whether the user has the necessary permissions.
  */
 export const canBulkDelete = (channelId: string, me: RMember, amount: number) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageMessages) &&
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages) &&
  amount > 1 &&
  amount < 101;

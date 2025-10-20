@@ -1,34 +1,33 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../Typings/Typings.js';
 
 export default (t: CT.Language) => ({
  ...t.JSON.ticketing,
  logs: {
   ...t.JSON.ticketing.logs,
-  descCreate: (user: RUser, channel: Discord.GuildTextBasedChannel) =>
+  descCreate: (user: RUser, channel: RChannel) =>
    t.stp(t.JSON.ticketing.logs.descCreate, {
     user: t.languageFunction.getUser(user),
     channel: t.languageFunction.getChannel(channel),
    }),
-  descClose: (user: RUser, channel: Discord.GuildTextBasedChannel) =>
+  descClose: (user: RUser, channel: RChannel) =>
    t.stp(t.JSON.ticketing.logs.descClose, {
     user: t.languageFunction.getUser(user),
     channel: t.languageFunction.getChannel(channel),
    }),
   descLeave: (
    user: RUser | { bot: boolean; id: string; username: string; discriminator: string },
-   channel: Discord.GuildTextBasedChannel,
+   channel: RChannel,
   ) =>
    t.stp(t.JSON.ticketing.logs.descLeave, {
     user: t.languageFunction.getUser(user),
     channel: t.languageFunction.getChannel(channel),
    }),
-  descDelete: (user: RUser, channel: Discord.GuildTextBasedChannel) =>
+  descDelete: (user: RUser, channel: RChannel) =>
    t.stp(t.JSON.ticketing.logs.descDelete, {
     user: t.languageFunction.getUser(user),
     channel: t.languageFunction.getChannel(channel),
    }),
-  descClaimed: (user: RUser, channel: Discord.GuildTextBasedChannel) =>
+  descClaimed: (user: RUser, channel: RChannel) =>
    t.stp(t.JSON.ticketing.logs.descClaimed, {
     user: t.languageFunction.getUser(user),
     channel: t.languageFunction.getChannel(channel),

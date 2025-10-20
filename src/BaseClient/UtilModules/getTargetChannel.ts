@@ -4,7 +4,7 @@ import * as getChannel from './getChannel.js';
 export default async (
  msg: RMessage,
  args: string[],
-): Promise<{ channel: Discord.GuildTextBasedChannel; reason: string }> => {
+): Promise<{ channel: RChannel; reason: string }> => {
  let channel = msg.mentions.channels.first();
 
  if (!channel?.isTextBased()) channel = msg.channel;
@@ -21,5 +21,5 @@ export default async (
   return { channel: msg.channel, reason: args.slice(1).join(' ') };
  }
 
- return { channel: channel as Discord.GuildTextBasedChannel, reason: args.slice(2).join(' ') };
+ return { channel: channel as RChannel, reason: args.slice(2).join(' ') };
 };

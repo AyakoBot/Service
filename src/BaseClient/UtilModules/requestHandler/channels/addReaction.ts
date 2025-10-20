@@ -21,9 +21,9 @@ export default async (msg: RMessage, emoji: string) => {
   const e = requestHandlerError(
    `Cannot apply ${emoji} as reaction in ${msg.channel.name} / ${msg.channel.id}`,
    [
-    Discord.PermissionFlagsBits.AddReactions,
-    Discord.PermissionFlagsBits.ReadMessageHistory,
-    ...(emoji.includes(':') ? [Discord.PermissionFlagsBits.UseExternalEmojis] : []),
+    PermissionFlagsBits.AddReactions,
+    PermissionFlagsBits.ReadMessageHistory,
+    ...(emoji.includes(':') ? [PermissionFlagsBits.UseExternalEmojis] : []),
    ],
   );
 
@@ -65,10 +65,10 @@ export default async (msg: RMessage, emoji: string) => {
  * @returns A boolean indicating whether the message is reactable.
  */
 export const isReactable = (msg: RMessage, emoji: string, me: RMember) =>
- msg.channel.permissionsFor(me).has(Discord.PermissionFlagsBits.AddReactions) &&
- msg.channel.permissionsFor(me).has(Discord.PermissionFlagsBits.ReadMessageHistory) &&
+ msg.channel.permissionsFor(me).has(PermissionFlagsBits.AddReactions) &&
+ msg.channel.permissionsFor(me).has(PermissionFlagsBits.ReadMessageHistory) &&
  (emoji.includes(':')
-  ? msg.channel.permissionsFor(me).has(Discord.PermissionFlagsBits.UseExternalEmojis)
+  ? msg.channel.permissionsFor(me).has(PermissionFlagsBits.UseExternalEmojis)
   : true);
 
 /**

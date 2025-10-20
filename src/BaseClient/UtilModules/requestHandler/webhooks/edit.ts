@@ -24,7 +24,7 @@ export default async (
 
  if (!canEdit(await getBotMemberFromGuild(guild), webhook)) {
   const e = requestHandlerError(`Cannot edit webhook ${webhook.id}`, [
-   Discord.PermissionFlagsBits.ManageWebhooks,
+   PermissionFlagsBits.ManageWebhooks,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -55,5 +55,5 @@ export default async (
 export const canEdit = (me: RMember, webhook: RWebhook) =>
  !webhook.token
   ? true
-  : me.permissions.has(Discord.PermissionFlagsBits.ManageWebhooks) ||
-    me.permissionsIn(webhook.channelId).has(Discord.PermissionFlagsBits.ManageWebhooks);
+  : me.permissions.has(PermissionFlagsBits.ManageWebhooks) ||
+    me.permissionsIn(webhook.channelId).has(PermissionFlagsBits.ManageWebhooks);

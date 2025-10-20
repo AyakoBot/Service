@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import type { APIInviteGuild } from '@discordjs/core';
 
 /**
  * Represents a cache for Discord invite guilds.
@@ -9,14 +9,14 @@ export interface InviteGuilds {
   * @param guildId The ID of the invite guild to retrieve.
   * @returns The invite guild, or undefined if it is not in the cache.
   */
- get: (guildId: string) => RInviteGuild | undefined;
+ get: (guildId: string) => APIInviteGuild | undefined;
 
  /**
   * Adds or updates the invite guild with the specified ID in the cache.
   * @param guildId The ID of the invite guild to add or update.
   * @param inviteGuild The invite guild to add or update.
   */
- set: (guildId: string, inviteGuild: RInviteGuild) => void;
+ set: (guildId: string, inviteGuild: APIInviteGuild) => void;
 
  /**
   * Removes the invite guild with the specified ID from the cache.
@@ -27,7 +27,7 @@ export interface InviteGuilds {
  /**
   * The underlying map that stores the invite guilds in the cache.
   */
- cache: Map<string, RInviteGuild>;
+ cache: Map<string, APIInviteGuild>;
 }
 
 const self: InviteGuilds = {

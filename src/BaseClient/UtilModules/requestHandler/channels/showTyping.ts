@@ -12,15 +12,15 @@ import { canGetMessage } from './getMessage.js';
  * @returns A promise that resolves when the typing indicator is successfully shown,
  * or rejects with an error.
  */
-export default async (channel: Discord.GuildTextBasedChannel) => {
+export default async (channel: RChannel) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canGetMessage(channel, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot show typing indicator in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ViewChannel,
-   Discord.PermissionFlagsBits.ReadMessageHistory,
-   ...([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(channel.type)
-    ? [Discord.PermissionFlagsBits.Connect]
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.ReadMessageHistory,
+   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
+    ? [PermissionFlagsBits.Connect]
     : []),
   ]);
 

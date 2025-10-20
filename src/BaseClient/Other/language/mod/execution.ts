@@ -1,4 +1,5 @@
 import * as CT from '../../../../Typings/Typings.js';
+
 import banAdd from './execution/banAdd.js';
 import banRemove from './execution/banRemove.js';
 import channelBanAdd from './execution/channelBanAdd.js';

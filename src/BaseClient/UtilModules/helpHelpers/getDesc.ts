@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as util from '../util.js';
 
 /**
@@ -16,11 +15,7 @@ export default (
   subCommand?: string;
  },
 ) => {
- let c: {
-  options: RCommandOption[];
-  description: string;
-  name: string;
- } = command;
+ let c = structuredClone(command);
 
  if (rawCommand.subCommandGroup) {
   c = (c.options?.find((o) => o.name === rawCommand.subCommandGroup) as typeof c | undefined) ?? c;

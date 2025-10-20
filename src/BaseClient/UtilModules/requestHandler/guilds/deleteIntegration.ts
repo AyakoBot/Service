@@ -18,7 +18,7 @@ export default async (guild: Discord.Guild, integrationId: string, reason?: stri
 
  if (!canDeleteIntegration(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete integration ${integrationId}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -39,4 +39,4 @@ export default async (guild: Discord.Guild, integrationId: string, reason?: stri
  * @returns A boolean indicating whether the guild member can delete integrations.
  */
 export const canDeleteIntegration = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

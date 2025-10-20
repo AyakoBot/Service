@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
 
 export default (t: CT.Language) => ({
@@ -15,15 +14,15 @@ export default (t: CT.Language) => ({
   t.stp(t.JSON.slashCommands.emojis.editReason, {
    user,
   }),
- created: (e: Discord.GuildEmoji) =>
+ created: (e: REmoji) =>
   t.stp(t.JSON.slashCommands.emojis.created, {
    e: t.languageFunction.getEmote(e),
   }),
- deleted: (e: Discord.GuildEmoji) =>
+ deleted: (e: REmoji) =>
   t.stp(t.JSON.slashCommands.emojis.deleted, {
    e: t.languageFunction.getEmote(e),
   }),
- edited: (e: Discord.GuildEmoji) =>
+ edited: (e: REmoji) =>
   t.stp(t.JSON.slashCommands.emojis.edited, {
    e: t.languageFunction.getEmote(e),
   }),

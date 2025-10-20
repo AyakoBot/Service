@@ -22,7 +22,7 @@ export default async (
 
  if (!canCreateInvite(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot create invite in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.CreateInstantInvite,
+   PermissionFlagsBits.CreateInstantInvite,
   ]);
 
   error(channel.guild, e);
@@ -45,4 +45,4 @@ export default async (
  * @returns A boolean indicating whether the user can create an invite in the channel.
  */
 export const canCreateInvite = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.CreateInstantInvite);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.CreateInstantInvite);

@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, userId: string, reason?: string) => 
 
  if (!canUnbanUser(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot unban user ${userId}`, [
-   Discord.PermissionFlagsBits.BanMembers,
+   PermissionFlagsBits.BanMembers,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild, userId: string, reason?: string) => 
  * @returns A boolean indicating whether the user can unban a user.
  */
 export const canUnbanUser = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.BanMembers);
+ me.permissions.has(PermissionFlagsBits.BanMembers);

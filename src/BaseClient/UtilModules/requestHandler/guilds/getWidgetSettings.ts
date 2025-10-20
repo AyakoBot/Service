@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
 export default async (guild: Discord.Guild) => {
  if (!canGetWidgetSettings(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get widget settings`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -35,4 +35,4 @@ export default async (guild: Discord.Guild) => {
  * @returns True if the guild member has the permission to get widget settings, false otherwise.
  */
 export const canGetWidgetSettings = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

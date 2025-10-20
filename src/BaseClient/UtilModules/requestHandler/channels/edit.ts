@@ -21,8 +21,8 @@ export default async (
  if (!canEdit(channel, body, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot edit channel ${channel.name} / ${channel.id}`, [
    channel.isThread()
-    ? Discord.PermissionFlagsBits.ManageThreads
-    : Discord.PermissionFlagsBits.ManageChannels,
+    ? PermissionFlagsBits.ManageThreads
+    : PermissionFlagsBits.ManageChannels,
   ]);
 
   error(channel.guild, e);
@@ -51,9 +51,9 @@ export const canEdit = (
  me: RMember,
 ) =>
  me.guild.ownerId === me.id ||
- (me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.ManageChannels) &&
+ (me.permissionsIn(channel.id).has(PermissionFlagsBits.ManageChannels) &&
   (body.permission_overwrites
-   ? me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.ManageRoles) &&
+   ? me.permissionsIn(channel.id).has(PermissionFlagsBits.ManageRoles) &&
      body.permission_overwrites.every(
       (overwrite) =>
        me

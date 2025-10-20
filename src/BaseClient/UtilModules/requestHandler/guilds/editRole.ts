@@ -24,7 +24,7 @@ export default async (
 
  if (!canEditRole(await getBotMemberFromGuild(guild), roleId)) {
   const e = requestHandlerError(`Cannot edit role ${roleId}`, [
-   Discord.PermissionFlagsBits.ManageRoles,
+   PermissionFlagsBits.ManageRoles,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -53,5 +53,5 @@ export default async (
  */
 export const canEditRole = (me: RMember, roleId: string) =>
  me.guild.ownerId === me.id ||
- (me.permissions.has(Discord.PermissionFlagsBits.ManageRoles) &&
+ (me.permissions.has(PermissionFlagsBits.ManageRoles) &&
   me.roles.highest.comparePositionTo(roleId) > 0);

@@ -62,7 +62,7 @@ async function send(
  if (Array.isArray(channels.id)) {
   const sentMessages = await Promise.all(
    channels.id.map((id) =>
-    send({ id, guildId: (channels as Discord.TextChannel).guildId }, payload, timeout),
+    send({ id, guildId: (channels as RChannel).guildId }, payload, timeout),
    ),
   );
   return sentMessages;
@@ -96,7 +96,7 @@ async function send(
  });
 
  if (timeout && 'guild' in channel && payload.embeds?.length) {
-  combineMessages(channel as Discord.TextChannel, payload.embeds, timeout);
+  combineMessages(channel as RChannel, payload.embeds, timeout);
   return null;
  }
 
@@ -137,8 +137,8 @@ export default send;
 const combineMessages = async (
  channel:
   | Discord.AnyThreadChannel
-  | Discord.NewsChannel
-  | Discord.TextChannel
+  | RChannel
+  | RChannel
   | Discord.VoiceChannel,
  embeds: Discord.APIEmbed[],
  timeout: number,
@@ -193,7 +193,7 @@ const getChannel = async (
   const dm = await API.users.createDM(channels.id).catch(() => undefined);
   if (!dm) return dm;
 
-  return Classes.Channel<Discord.ChannelType.DM>(client, dm, undefined as never);
+  return Classes.Channel<ChannelType.DM>(client, dm, undefined as never);
  }
  return 'name' in channels ? channels : client.channels.cache.get(channels.id);
 };

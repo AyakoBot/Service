@@ -17,12 +17,12 @@ export default async (channel: Discord.GuildBasedChannel) => {
  if (!canDelete(channel, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot delete channel ${channel.name} / ${channel.id}`, [
    [
-    Discord.ChannelType.PrivateThread,
-    Discord.ChannelType.PublicThread,
-    Discord.ChannelType.AnnouncementThread,
+    ChannelType.PrivateThread,
+    ChannelType.PublicThread,
+    ChannelType.AnnouncementThread,
    ].includes(channel.type)
-    ? Discord.PermissionFlagsBits.ManageThreads
-    : Discord.PermissionFlagsBits.ManageChannels,
+    ? PermissionFlagsBits.ManageThreads
+    : PermissionFlagsBits.ManageChannels,
   ]);
 
   error(channel.guild, e);
@@ -45,9 +45,9 @@ export default async (channel: Discord.GuildBasedChannel) => {
  */
 export const canDelete = (channel: Discord.GuildBasedChannel, me: RMember) =>
  [
-  Discord.ChannelType.PrivateThread,
-  Discord.ChannelType.PublicThread,
-  Discord.ChannelType.AnnouncementThread,
+  ChannelType.PrivateThread,
+  ChannelType.PublicThread,
+  ChannelType.AnnouncementThread,
  ].includes(channel.type)
-  ? me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.ManageThreads)
-  : me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.ManageChannels);
+  ? me.permissionsIn(channel.id).has(PermissionFlagsBits.ManageThreads)
+  : me.permissionsIn(channel.id).has(PermissionFlagsBits.ManageChannels);

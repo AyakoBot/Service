@@ -18,10 +18,10 @@ export default async (
 ) => {
  if (!canGetMessage(channel, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot get message ${msgId} in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ViewChannel,
-   Discord.PermissionFlagsBits.ReadMessageHistory,
-   ...([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(channel.type)
-    ? [Discord.PermissionFlagsBits.Connect]
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.ReadMessageHistory,
+   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
+    ? [PermissionFlagsBits.Connect]
     : []),
   ]);
 
@@ -50,8 +50,8 @@ export default async (
  * @returns A boolean indicating whether the user has the necessary permissions.
  */
 export const canGetMessage = (channel: Discord.GuildBasedChannel, me: RMember) =>
- me.permissionsIn(channel).has(Discord.PermissionFlagsBits.ViewChannel) &&
- me.permissionsIn(channel).has(Discord.PermissionFlagsBits.ReadMessageHistory) &&
- ([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(channel.type)
-  ? me.permissionsIn(channel).has(Discord.PermissionFlagsBits.Connect)
+ me.permissionsIn(channel).has(PermissionFlagsBits.ViewChannel) &&
+ me.permissionsIn(channel).has(PermissionFlagsBits.ReadMessageHistory) &&
+ ([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
+  ? me.permissionsIn(channel).has(PermissionFlagsBits.Connect)
   : true);

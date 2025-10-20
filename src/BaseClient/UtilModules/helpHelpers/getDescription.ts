@@ -1,6 +1,6 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../Typings/Typings.js';
 import SlashCommands from '../../../SlashCommands/index.js';
+import { ApplicationCommandType } from '@discordjs/core';
 
 /**
  * Returns the description of a command or subcommand group in the specified language.
@@ -21,14 +21,13 @@ export default (language: CT.Language, command: string, subCommandGroup?: string
  })();
 
  if ('description' in c) return c.description;
- if (c.type === RCommandType.Message) {
+ if (c.type === ApplicationCommandType.Message) {
   return language.contextCommands.message[command as keyof typeof language.contextCommands.message]
    ?.desc;
  }
- // if (cJSON.type === RCommandType.User) {
- //  return language.contextCommands.user[
- //  command as keyof typeof language.contextCommands.user
- // ]?.desc;
+
+ // if (cJSON.type === ApplicationCommandType.User) {
+ //  return language.contextCommands.user[command as keyof typeof language.contextCommands.user]?.desc;
  // }
  return '';
 };

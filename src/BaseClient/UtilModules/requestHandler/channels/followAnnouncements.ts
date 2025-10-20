@@ -13,12 +13,12 @@ import { getAPI } from './addReaction.js';
  * and the ID of the created webhook,
  * or rejects with a DiscordAPIError.
  */
-export default async (channel: Discord.GuildTextBasedChannel, followedChannelId: string) => {
+export default async (channel: RChannel, followedChannelId: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canFollowAnnouncements(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot follow announcements in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ManageWebhooks,
+   PermissionFlagsBits.ManageWebhooks,
   ]);
 
   error(channel.guild, e);
@@ -41,5 +41,5 @@ export default async (channel: Discord.GuildTextBasedChannel, followedChannelId:
  * @returns A boolean indicating whether the user can follow announcements in the channel.
  */
 export const canFollowAnnouncements = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageWebhooks) &&
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ViewChannel);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageWebhooks) &&
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ViewChannel);

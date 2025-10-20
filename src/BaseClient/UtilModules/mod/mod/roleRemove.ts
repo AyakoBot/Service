@@ -82,7 +82,7 @@ export default async (
  options.roles = options.roles.filter((r) => r.position < Number(me.roles.highest.position));
 
  if (
-  (!me.permissions.has(Discord.PermissionFlagsBits.ManageRoles) ||
+  (!me.permissions.has(PermissionFlagsBits.ManageRoles) ||
    !canEditMember(me, targetMember, { roles: [] }) ||
    !options.roles.length) &&
   !options.skipChecks

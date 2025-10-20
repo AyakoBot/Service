@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  */
 export default async (guild: Discord.Guild) => {
  if (!canGetInvites(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot get invites`, [Discord.PermissionFlagsBits.ManageGuild]);
+  const e = requestHandlerError(`Cannot get invites`, [PermissionFlagsBits.ManageGuild]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -41,4 +41,4 @@ export default async (guild: Discord.Guild) => {
  * indicating whether the guild member can get guild invites.
  */
 export const canGetInvites = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

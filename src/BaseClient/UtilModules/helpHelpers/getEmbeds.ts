@@ -1,12 +1,17 @@
-import * as Discord from 'discord.js';
+import type {
+ APIChatInputApplicationCommandGuildInteraction,
+ APIMessageComponentInteraction,
+} from '@discordjs/core';
+
 import * as CT from '../../../Typings/Typings.js';
 import constants from '../../Other/constants.js';
-import cache from '../cache.js';
+
 import emotes from '../emotes.js';
 import * as util from '../util.js';
 
 import getDesc from './getDesc.js';
 import getDescription from './getDescription.js';
+import { cache } from 'src/BaseClient/Redis.js';
 
 /**
  * Returns an array of embeds to be used in a help command response.
@@ -22,10 +27,10 @@ import getDescription from './getDescription.js';
  * - An array of unique subcommand groups with subcommands.
  * @param type
  * - The type of command category to display.
- * @returns An array of embeds to be used in a help command response.
+ * @returns A promise that resolves to an array of embeds to be used in a help command response.
  */
-export default (
- cmd: Discord.ChatInputCommandInteraction | Discord.StringSelectMenuInteraction,
+export default async (
+ cmd: APIChatInputApplicationCommandGuildInteraction | APIMessageComponentInteraction,
  language: CT.Language,
  commands: CT.HelpCommand[],
  uniqueParentCommands: string[],
@@ -33,9 +38,8 @@ export default (
  type: CT.CommandCategories,
 ) => {
  const lan = language.slashCommands.help;
- const guildCommands = cmd.guildId
-  ? [...[...(cache.commands.cache.get(cmd.guildId)?.values() ?? [])].filter((c) => !c.guildId)]
-  : [];
+
+ const guildCommands = cmd.guild_id ? await cache.guildCommands.getAll(cmd.guild_id) : [];
  const globalCommands = cmd.client.application.commands.cache.map((c) => c);
 
  const fetchedCommands = cmd.guildId && guildCommands.length ? guildCommands : globalCommands;

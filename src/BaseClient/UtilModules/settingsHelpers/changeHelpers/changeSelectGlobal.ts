@@ -33,24 +33,24 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  if (menu.type === Discord.ComponentType.ChannelSelect) {
   switch (channelType) {
    case 'voice': {
-    menu.channel_types = [Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice];
+    menu.channel_types = [ChannelType.GuildVoice, ChannelType.GuildStageVoice];
     break;
    }
    case 'category': {
-    menu.channel_types = [Discord.ChannelType.GuildCategory];
+    menu.channel_types = [ChannelType.GuildCategory];
     break;
    }
    default: {
     menu.channel_types = [
-     Discord.ChannelType.AnnouncementThread,
-     Discord.ChannelType.GuildAnnouncement,
-     Discord.ChannelType.GuildForum,
-     Discord.ChannelType.GuildStageVoice,
-     Discord.ChannelType.GuildText,
-     Discord.ChannelType.GuildVoice,
-     Discord.ChannelType.PrivateThread,
-     Discord.ChannelType.PublicThread,
-     Discord.ChannelType.GuildMedia,
+     ChannelType.AnnouncementThread,
+     ChannelType.GuildAnnouncement,
+     ChannelType.GuildForum,
+     ChannelType.GuildStageVoice,
+     ChannelType.GuildText,
+     ChannelType.GuildVoice,
+     ChannelType.PrivateThread,
+     ChannelType.PublicThread,
+     ChannelType.GuildMedia,
     ];
     break;
    }

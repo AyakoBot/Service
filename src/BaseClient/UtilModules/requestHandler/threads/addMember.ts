@@ -17,7 +17,7 @@ export default async (thread: RThread, userId: string) => {
  if (!canAddMember(await getBotMemberFromGuild(thread.guild), thread)) {
   const e = requestHandlerError(
    `Cannot add member ${userId} to thread ${thread.name} / ${thread.id} in ${thread.guild.name} / ${thread.guild.id}`,
-   [Discord.PermissionFlagsBits.SendMessages],
+   [PermissionFlagsBits.SendMessages],
   );
 
   error(thread.guild, e);
@@ -30,7 +30,7 @@ export default async (thread: RThread, userId: string) => {
    if (e.message.includes('Missing Access')) {
     const e2 = requestHandlerError(
      `Cannot add User ${userId} to thread ${thread.name} / ${thread.id} because they are not a member`,
-     [Discord.PermissionFlagsBits.SendMessages],
+     [PermissionFlagsBits.SendMessages],
     );
 
     error(thread.guild, e2);
@@ -53,4 +53,4 @@ export default async (thread: RThread, userId: string) => {
  * @returns A boolean indicating whether the guild member can add members to threads.
  */
 export const canAddMember = (me: RMember, thread: RThread) =>
- me.permissionsIn(thread.id).has(Discord.PermissionFlagsBits.SendMessages) && !thread.archived;
+ me.permissionsIn(thread.id).has(PermissionFlagsBits.SendMessages) && !thread.archived;

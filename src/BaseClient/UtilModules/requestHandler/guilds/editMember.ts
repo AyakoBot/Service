@@ -25,11 +25,11 @@ export default async (
   const e = requestHandlerError(
    `Cannot edit member ${member.user.username} / ${member.user.id}\nCheck role hierarchy.`,
    [
-    Discord.PermissionFlagsBits.ManageGuild,
-    Discord.PermissionFlagsBits.ModerateMembers,
-    Discord.PermissionFlagsBits.MoveMembers,
-    Discord.PermissionFlagsBits.ManageNicknames,
-    Discord.PermissionFlagsBits.ManageRoles,
+    PermissionFlagsBits.ManageGuild,
+    PermissionFlagsBits.ModerateMembers,
+    PermissionFlagsBits.MoveMembers,
+    PermissionFlagsBits.ManageNicknames,
+    PermissionFlagsBits.ManageRoles,
    ],
   );
 
@@ -66,23 +66,23 @@ export const canEditMember = (
 
  switch (true) {
   case 'channel_id' in body && body.channel_id !== member.voice.channelId: {
-   if (!body.channel_id) return me.permissions.has(Discord.PermissionFlagsBits.MoveMembers);
+   if (!body.channel_id) return me.permissions.has(PermissionFlagsBits.MoveMembers);
 
-   return me.permissionsIn(body.channel_id).has(Discord.PermissionFlagsBits.Connect);
+   return me.permissionsIn(body.channel_id).has(PermissionFlagsBits.Connect);
   }
   case 'communication_disabled_until' in body:
    return (
-    !member.permissions.has(Discord.PermissionFlagsBits.Administrator) &&
-    me.permissions.has(Discord.PermissionFlagsBits.ModerateMembers) &&
+    !member.permissions.has(PermissionFlagsBits.Administrator) &&
+    me.permissions.has(PermissionFlagsBits.ModerateMembers) &&
     member.roles.highest.comparePositionTo(me.roles.highest) < 0
    );
   case 'mute' in body:
-   return !!member.voice.channelId && me.permissions.has(Discord.PermissionFlagsBits.MuteMembers);
+   return !!member.voice.channelId && me.permissions.has(PermissionFlagsBits.MuteMembers);
   case 'deaf' in body:
-   return !!member.voice.channelId && me.permissions.has(Discord.PermissionFlagsBits.DeafenMembers);
+   return !!member.voice.channelId && me.permissions.has(PermissionFlagsBits.DeafenMembers);
   case 'nick' in body:
    return (
-    me.permissions.has(Discord.PermissionFlagsBits.ManageNicknames) &&
+    me.permissions.has(PermissionFlagsBits.ManageNicknames) &&
     member.roles.highest.comparePositionTo(me.roles.highest) < 0
    );
   case 'roles' in body: {
@@ -100,7 +100,7 @@ export const canEditMember = (
    if (addedRoles.some((r) => me.guild.roles.cache.get(r)?.managed)) return false;
 
    return (
-    me.permissions.has(Discord.PermissionFlagsBits.ManageRoles) &&
+    me.permissions.has(PermissionFlagsBits.ManageRoles) &&
     addedRoles.every(
      (r) => Number(me.guild.roles.cache.get(r)?.comparePositionTo(me.roles.highest)) < 0,
     )

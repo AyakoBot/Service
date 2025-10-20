@@ -13,15 +13,15 @@ import { getAPI } from './addReaction.js';
  */
 export default async (
  channel:
-  | Discord.NewsChannel
   | RChannel
-  | Discord.TextChannel
+  | RChannel
+  | RChannel
   | Discord.VoiceChannel
   | Discord.ThreadOnlyChannel,
 ) => {
  if (!canGetWebhooks(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot get webhooks in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ManageWebhooks,
+   PermissionFlagsBits.ManageWebhooks,
   ]);
 
   error(channel.guild, e);
@@ -54,4 +54,4 @@ export default async (
  * @returns A boolean indicating whether the user has permission to manage webhooks in the channel.
  */
 export const canGetWebhooks = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageWebhooks);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageWebhooks);

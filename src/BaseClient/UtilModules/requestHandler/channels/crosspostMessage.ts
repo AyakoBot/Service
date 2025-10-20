@@ -19,8 +19,8 @@ export default async (msg: RMessage) => {
 
  if (!canCrosspostMessages(msg, me)) {
   const e = requestHandlerError(`Cannot crosspost message in ${msg.guild.name} / ${msg.guild.id}`, [
-   Discord.PermissionFlagsBits.SendMessages,
-   ...(msg.author.id === me.id ? [Discord.PermissionFlagsBits.ManageMessages] : []),
+   PermissionFlagsBits.SendMessages,
+   ...(msg.author.id === me.id ? [PermissionFlagsBits.ManageMessages] : []),
   ]);
 
   error(msg.guild, e);
@@ -43,7 +43,7 @@ export default async (msg: RMessage) => {
  * @returns A boolean indicating whether the message can be crossposted.
  */
 export const canCrosspostMessages = (message: RMessage, me: RMember) =>
- me.permissionsIn(message.channel).has(Discord.PermissionFlagsBits.SendMessages) &&
+ me.permissionsIn(message.channel).has(PermissionFlagsBits.SendMessages) &&
  (message.author.id === me.id
   ? true
-  : me.permissionsIn(message.channel).has(Discord.PermissionFlagsBits.ManageMessages));
+  : me.permissionsIn(message.channel).has(PermissionFlagsBits.ManageMessages));

@@ -19,7 +19,7 @@ export default async (channel: Discord.GuildBasedChannel, overwriteId: string, r
  if (!canDeletePermissionOverwrite(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(
    `Cannot delete permission overwrite in ${channel.name} / ${channel.id}`,
-   [Discord.PermissionFlagsBits.ManageRoles],
+   [PermissionFlagsBits.ManageRoles],
   );
 
   error(channel.guild, e);
@@ -41,4 +41,4 @@ export default async (channel: Discord.GuildBasedChannel, overwriteId: string, r
  * delete the permission overwrite.
  */
 export const canDeletePermissionOverwrite = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageRoles);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageRoles);

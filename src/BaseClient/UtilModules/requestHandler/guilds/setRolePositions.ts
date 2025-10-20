@@ -23,7 +23,7 @@ export default async (
 
  if (!canSetRolePositions(await getBotMemberFromGuild(guild), body)) {
   const e = requestHandlerError(`Cannot set role positions`, [
-   Discord.PermissionFlagsBits.ManageRoles,
+   PermissionFlagsBits.ManageRoles,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -48,7 +48,7 @@ export const canSetRolePositions = (
  body: Discord.RESTPatchAPIGuildRolePositionsJSONBody,
 ) =>
  me.guild.ownerId === me.id ||
- (me.permissions.has(Discord.PermissionFlagsBits.ManageRoles) &&
+ (me.permissions.has(PermissionFlagsBits.ManageRoles) &&
   body.every(
    (r) =>
     me.roles.highest.comparePositionTo(r.id) > 0 && me.roles.highest.position > Number(r.position),

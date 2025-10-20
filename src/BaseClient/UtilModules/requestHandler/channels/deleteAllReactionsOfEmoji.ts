@@ -18,7 +18,7 @@ export default async (msg: RMessage, emoji: string) => {
  if (!canDeleteAllreactionsOfEmoji(msg.channel.id, await getBotMemberFromGuild(msg.guild))) {
   const e = requestHandlerError(
    `Cannot delete all reactions of emoji ${emoji} in ${msg.guild.name} / ${msg.guild.id}`,
-   [Discord.PermissionFlagsBits.ManageMessages],
+   [PermissionFlagsBits.ManageMessages],
   );
 
   error(msg.guild, e);
@@ -55,4 +55,4 @@ export default async (msg: RMessage, emoji: string) => {
  * has the permission to delete all reactions of the emoji.
  */
 export const canDeleteAllreactionsOfEmoji = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageMessages);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);

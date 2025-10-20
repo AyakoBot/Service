@@ -1,6 +1,5 @@
-import type { GuildBasedChannel } from 'discord.js';
-import * as CT from '../../../../Typings/Typings.js';
 import type { AppealStatus, StoredPunishmentTypes } from '@prisma/client';
+import * as CT from '../../../../Typings/Typings.js';
 
 export default (t: CT.Language) => ({
  ...t.JSON.slashCommands.appeal,
@@ -8,7 +7,7 @@ export default (t: CT.Language) => ({
   reason: string,
   type: StoredPunishmentTypes,
   date: number,
-  channel: GuildBasedChannel | { id: string; name: string },
+  channel: RChannel | { id: string; name: string },
   status: AppealStatus | null,
   decisionReason: string | null,
  ) =>

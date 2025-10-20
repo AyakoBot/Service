@@ -14,12 +14,12 @@ import { canGetMessage } from './getMessage.js';
  */
 export default async (
  channel:
-  | Discord.GuildTextBasedChannel
+  | RChannel
   | {
      id: string;
      name: string;
      guild: Discord.Guild;
-     type: Discord.ChannelType;
+     type: ChannelType;
      skip: true;
      client: Discord.Client<true>;
     },
@@ -28,15 +28,15 @@ export default async (
   'skip' in channel && channel.skip
    ? false
    : !canGetMessage(
-      channel as Discord.GuildTextBasedChannel,
+      channel as RChannel,
       await getBotMemberFromGuild(channel.guild),
      )
  ) {
   const e = requestHandlerError(`Cannot get pinned messages in ${channel.name} / ${channel.id}`, [
-   Discord.PermissionFlagsBits.ViewChannel,
-   Discord.PermissionFlagsBits.ReadMessageHistory,
-   ...([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(channel.type)
-    ? [Discord.PermissionFlagsBits.Connect]
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.ReadMessageHistory,
+   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
+    ? [PermissionFlagsBits.Connect]
     : []),
   ]);
 
@@ -50,7 +50,7 @@ export default async (
    const parsed = msgs.map((msg) => new Classes.Message(channel.client, msg));
    parsed.forEach((p) => {
     if ('skip' in channel ? true : channel.messages.cache.get(p.id)) return;
-    (channel as Discord.GuildTextBasedChannel).messages.cache.set(p.id, p);
+    (channel as RChannel).messages.cache.set(p.id, p);
    });
    return parsed;
   })

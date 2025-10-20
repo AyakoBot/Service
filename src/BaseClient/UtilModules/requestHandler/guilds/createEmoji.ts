@@ -23,7 +23,7 @@ export default async (
 
  if (!canCreateEmoji(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot create emoji`, [
-   Discord.PermissionFlagsBits.ManageGuildExpressions,
+   PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -52,5 +52,5 @@ export default async (
  * @returns True if the guild member has the permission to create an emoji, false otherwise.
  */
 export const canCreateEmoji = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.CreateGuildExpressions) ||
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuildExpressions);
+ me.permissions.has(PermissionFlagsBits.CreateGuildExpressions) ||
+ me.permissions.has(PermissionFlagsBits.ManageGuildExpressions);

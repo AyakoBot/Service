@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, emojiId: string, reason?: string) =>
 
  if (!canDeleteEmoji(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete emoji ${emojiId}`, [
-   Discord.PermissionFlagsBits.ManageGuildExpressions,
+   PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild, emojiId: string, reason?: string) =>
  * @returns A boolean indicating whether the guild member can delete emojis.
  */
 export const canDeleteEmoji = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuildExpressions);
+ me.permissions.has(PermissionFlagsBits.ManageGuildExpressions);

@@ -18,7 +18,7 @@ export default async (thread: RThread, userId: string) => {
  if (!canRemoveMember(await getBotMemberFromGuild(thread.guild), thread)) {
   const e = requestHandlerError(
    `Cannot remove member ${userId} from thread ${thread.id} in ${thread.guild.name} / ${thread.guild.id}`,
-   [Discord.PermissionFlagsBits.ManageThreads],
+   [PermissionFlagsBits.ManageThreads],
   );
 
   error(thread.guild, e);
@@ -41,5 +41,5 @@ export default async (thread: RThread, userId: string) => {
  */
 export const canRemoveMember = (me: RMember, thread: RThread) =>
  !thread.archived &&
- (me.permissionsIn(thread.id).has(Discord.PermissionFlagsBits.ManageThreads) ||
+ (me.permissionsIn(thread.id).has(PermissionFlagsBits.ManageThreads) ||
   me.id === thread.ownerId);

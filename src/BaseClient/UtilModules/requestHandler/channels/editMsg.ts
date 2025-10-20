@@ -21,7 +21,7 @@ export default async (
 
  if (!canEditMessage(msg, payload, await getBotMemberFromGuild(msg.guild))) {
   const e = requestHandlerError(`Cannot edit message in ${msg.guild.name} / ${msg.guild.id}`, [
-   Discord.PermissionFlagsBits.ManageMessages,
+   PermissionFlagsBits.ManageMessages,
   ]);
 
   error(msg.guild, e);
@@ -52,5 +52,5 @@ export const canEditMessage = (
 ) =>
  msg.author.id === me.id
   ? true
-  : me.permissionsIn(msg.channelId).has(Discord.PermissionFlagsBits.ManageMessages) &&
+  : me.permissionsIn(msg.channelId).has(PermissionFlagsBits.ManageMessages) &&
     !!payload.flags;

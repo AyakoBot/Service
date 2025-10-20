@@ -23,12 +23,12 @@ export default async (
   const e = requestHandlerError(
    `Cannot get reactions of emoji ${emoji} in ${msg.guild.name} / ${msg.guild.id}`,
    [
-    Discord.PermissionFlagsBits.ViewChannel,
-    Discord.PermissionFlagsBits.ReadMessageHistory,
-    ...([Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice].includes(
+    PermissionFlagsBits.ViewChannel,
+    PermissionFlagsBits.ReadMessageHistory,
+    ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(
      msg.channel.type,
     )
-     ? [Discord.PermissionFlagsBits.Connect]
+     ? [PermissionFlagsBits.Connect]
      : []),
    ],
   );

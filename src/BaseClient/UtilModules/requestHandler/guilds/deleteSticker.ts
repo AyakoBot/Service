@@ -18,7 +18,7 @@ export default async (guild: Discord.Guild, stickerId: string, reason?: string) 
 
  if (!canDeleteSticker(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete sticker ${stickerId}`, [
-   Discord.PermissionFlagsBits.ManageGuildExpressions,
+   PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild, stickerId: string, reason?: string) 
  * @returns True if the guild member has the permission to delete stickers, false otherwise.
  */
 export const canDeleteSticker = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuildExpressions);
+ me.permissions.has(PermissionFlagsBits.ManageGuildExpressions);

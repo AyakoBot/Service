@@ -98,7 +98,7 @@ const runJob = async (guild: Discord.Guild) => {
  if (!memberCaches) return;
 
  const me = await getBotMemberFromGuild(guild);
- if (!me?.permissions.has(Discord.PermissionFlagsBits.ManageRoles)) {
+ if (!me?.permissions.has(PermissionFlagsBits.ManageRoles)) {
   GuildCache.delete(guild.id);
   return;
  }

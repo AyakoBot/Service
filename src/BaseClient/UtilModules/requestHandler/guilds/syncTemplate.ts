@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, templateCode: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canSyncTemplate(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot sync template`, [Discord.PermissionFlagsBits.ManageGuild]);
+  const e = requestHandlerError(`Cannot sync template`, [PermissionFlagsBits.ManageGuild]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild, templateCode: string) => {
  * @returns A boolean indicating whether the guild member can create a template.
  */
 export const canSyncTemplate = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

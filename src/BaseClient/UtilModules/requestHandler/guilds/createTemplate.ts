@@ -18,7 +18,7 @@ export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildTempla
 
  if (!canCreateTemplate(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot create template`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -39,4 +39,4 @@ export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildTempla
  * @returns A boolean indicating whether the guild member can create a template.
  */
 export const canCreateTemplate = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

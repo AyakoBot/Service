@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  */
 export default async (guild: Discord.Guild, userId: string) => {
  if (!canGetMemberBan(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot get member ban`, [Discord.PermissionFlagsBits.BanMembers]);
+  const e = requestHandlerError(`Cannot get member ban`, [PermissionFlagsBits.BanMembers]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -41,4 +41,4 @@ export default async (guild: Discord.Guild, userId: string) => {
  * @returns True if the user has the "Ban Members" permission, false otherwise.
  */
 export const canGetMemberBan = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.BanMembers);
+ me.permissions.has(PermissionFlagsBits.BanMembers);

@@ -1,28 +1,9 @@
-import type { RAuditLog } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/auditlog.js';
-import type {
- RAutomod,
- RChannel,
- RCommand,
- REmoji,
- REvent,
- RGuild,
- RIntegration,
- RInvite,
- RMessage,
- RRole,
- RStageInstance,
- RSticker,
- RThread,
- RUser,
- RWebhook,
-} from '@ayako/gateway/src/Typings/Redis.js';
 import {
  ChannelType,
  type APIApplication,
  type APIGuildForumTag,
  type APIGuildIntegrationApplication,
  type APIMessageReference,
- type APIMessageSnapshotFields,
  type APIPartialGuild,
 } from '@discordjs/core';
 import { cache } from 'src/BaseClient/Client.js';
@@ -70,7 +51,7 @@ export default (t: CT.Language) => ({
   `**${t.JSON.t.AutoModRule} ${t.util.util.makeInlineCode(rule.name)} / ${t.util.util.makeInlineCode(
    rule.id,
   )}**\n`,
- getMessage: (msg: RMessage | APIMessageReference | APIMessageSnapshotFields) =>
+ getMessage: (msg: RMessage | APIMessageReference) =>
   `**[${t.JSON.t.thisMessage}](${t.util.constants.standard.msgurl(
    msg.guild_id,
    msg.channel_id || '@me',
@@ -116,7 +97,7 @@ export default (t: CT.Language) => ({
   )}`,
  getSticker: (sticker: RSticker) =>
   `**${t.JSON.t.Sticker} \`${sticker.name}\` / \`${sticker.id}\`**\n`,
- async getStageInstance(stageInstance: RStageInstance) {
+ async getStageInstance(stageInstance: RStage) {
   return `**${t.JSON.t.stageInstance} \`${stageInstance.topic}\` / \`${stageInstance.id}\`**\n> ${this.getChannel(
    await cache.channels.get(stageInstance.channel_id),
    t.channelTypes[ChannelType.GuildStageVoice],

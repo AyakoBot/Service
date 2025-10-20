@@ -20,7 +20,7 @@ export default async (
 
  if (msg.guild ? !canUnPinMessage(msg.channelId, await getBotMemberFromGuild(g)) : false) {
   const e = requestHandlerError(`Cannot unpin message in ${g.name} / ${g.id}`, [
-   Discord.PermissionFlagsBits.ManageMessages,
+   PermissionFlagsBits.ManageMessages,
   ]);
 
   error(g, e);
@@ -42,4 +42,4 @@ export default async (
  * @returns A boolean indicating whether the user can pin messages in the channel.
  */
 export const canUnPinMessage = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageMessages);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);

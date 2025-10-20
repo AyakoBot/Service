@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, body: Discord.RESTPatchAPIGuildJSONB
 
  if (!canEdit(await getBotMemberFromGuild(guild), guild, body)) {
   const e = requestHandlerError(`Cannot edit guild ${guild.name} / ${guild.id}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -52,8 +52,8 @@ export const canEdit = (
  guild: Discord.Guild,
  body: Discord.RESTPatchAPIGuildJSONBody,
 ) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild) &&
+ me.permissions.has(PermissionFlagsBits.ManageGuild) &&
  (!!guild.features.find((f) => f === Discord.GuildFeature.Community) !==
  !!body.features?.find((f) => f === Discord.GuildFeature.Community)
-  ? me.permissions.has(Discord.PermissionFlagsBits.Administrator)
+  ? me.permissions.has(PermissionFlagsBits.Administrator)
   : true);

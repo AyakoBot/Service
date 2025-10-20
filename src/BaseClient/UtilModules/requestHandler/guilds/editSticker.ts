@@ -24,7 +24,7 @@ export default async (
 
  if (!canEditSticker(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot edit sticker ${stickerId}`, [
-   Discord.PermissionFlagsBits.ManageGuildExpressions,
+   PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -45,4 +45,4 @@ export default async (
  * @returns True if the guild member has permission to edit stickers, false otherwise.
  */
 export const canEditSticker = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuildExpressions);
+ me.permissions.has(PermissionFlagsBits.ManageGuildExpressions);

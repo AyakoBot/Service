@@ -15,7 +15,7 @@ import { canGetAutoModerationRule } from './getAutoModerationRule.js';
 export default async (guild: Discord.Guild) => {
  if (!canGetAutoModerationRule(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get auto moderation rules`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));

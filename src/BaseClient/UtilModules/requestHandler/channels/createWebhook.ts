@@ -23,7 +23,7 @@ export default async (
 
  if (!canCreateWebhook(channelId, await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot create webhook`, [
-   Discord.PermissionFlagsBits.ManageWebhooks,
+   PermissionFlagsBits.ManageWebhooks,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -49,5 +49,5 @@ export default async (
  * @returns A boolean indicating whether the user can create a webhook in the channel.
  */
 export const canCreateWebhook = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageWebhooks) &&
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageWebhooks) &&
  Number(me.client.util.cache.webhooks.cache.get(me.guild.id)?.get(channelId)?.size) < 15;

@@ -23,7 +23,7 @@ export default async (
 
  if (!canBanUser(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot ban user ${userId}`, [
-   Discord.PermissionFlagsBits.BanMembers,
+   PermissionFlagsBits.BanMembers,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -44,4 +44,4 @@ export default async (
  * @returns True if the guild member has the permission to ban members, false otherwise.
  */
 export const canBanUser = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.BanMembers);
+ me.permissions.has(PermissionFlagsBits.BanMembers);

@@ -38,7 +38,7 @@ async function fn(
     const parsed = Classes.Channel(c, channel, guild);
 
     if (guild?.channels.cache.get(parsed.id)) return parsed;
-    if (![Discord.ChannelType.DM, Discord.ChannelType.GroupDM].includes(parsed.type)) {
+    if (![ChannelType.DM, ChannelType.GroupDM].includes(parsed.type)) {
      guild?.channels.cache.set(parsed.id, parsed as Discord.GuildBasedChannel);
     }
 

@@ -20,7 +20,7 @@ export default async (
 
  if (!canSetVoiceState(await getBotMemberFromGuild(guild), body)) {
   const e = requestHandlerError(`Cannot set voice state`, [
-   Discord.PermissionFlagsBits.RequestToSpeak,
+   PermissionFlagsBits.RequestToSpeak,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -47,7 +47,7 @@ export const canSetVoiceState = (
 
  if (!body.channel_id) return true;
  if (!body.suppress) {
-  return me.permissionsIn(body.channel_id).has(Discord.PermissionFlagsBits.RequestToSpeak);
+  return me.permissionsIn(body.channel_id).has(PermissionFlagsBits.RequestToSpeak);
  }
  return true;
 };

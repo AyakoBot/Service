@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildsJSONB
 
  if (!canCreate(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot create guild ${guild.name} / ${guild.id}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));

@@ -16,7 +16,7 @@ export default async (thread: RThread) => {
  if (!canLeave(thread)) {
   const e = requestHandlerError(
    `Cannot leave thread ${thread.id} in ${thread.guild.name} / ${thread.guild.id}`,
-   [Discord.PermissionFlagsBits.SendMessages],
+   [PermissionFlagsBits.SendMessages],
   );
 
   error(thread.guild, e);

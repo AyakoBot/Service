@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, level: Discord.GuildMFALevel, reason
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canEditMFALevel(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot edit MFA level`, [Discord.PermissionFlagsBits.ManageGuild]);
+  const e = requestHandlerError(`Cannot edit MFA level`, [PermissionFlagsBits.ManageGuild]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;

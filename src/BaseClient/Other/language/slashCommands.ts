@@ -1,12 +1,13 @@
 import * as CT from '../../../Typings/Typings.js';
+
 import afk from './slashCommands/afk.js';
+import appeal from './slashCommands/appeal.js';
 import balance from './slashCommands/balance.js';
 import check from './slashCommands/check.js';
 import clear from './slashCommands/clear.js';
 import edit from './slashCommands/edit.js';
 import embedbuilder from './slashCommands/embedbuilder.js';
 import emojis from './slashCommands/emojis.js';
-import stickers from './slashCommands/stickers.js';
 import giveaway from './slashCommands/giveaway.js';
 import info from './slashCommands/info.js';
 import interactions from './slashCommands/interactions.js';
@@ -23,9 +24,9 @@ import rp from './slashCommands/rp.js';
 import setLevel from './slashCommands/setLevel.js';
 import settings from './slashCommands/settings.js';
 import slowmode from './slashCommands/slowmode.js';
+import stickers from './slashCommands/stickers.js';
 import suggest from './slashCommands/suggest.js';
 import vc from './slashCommands/vc.js';
-import appeal from './slashCommands/appeal.js';
 
 export default (t: CT.Language) => ({
  ...t.JSON.slashCommands,

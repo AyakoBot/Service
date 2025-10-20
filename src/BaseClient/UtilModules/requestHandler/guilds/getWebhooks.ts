@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
 export default async (guild: Discord.Guild) => {
  if (!canGetWebhooks(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get webhooks`, [
-   Discord.PermissionFlagsBits.ManageWebhooks,
+   PermissionFlagsBits.ManageWebhooks,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -45,4 +45,4 @@ export default async (guild: Discord.Guild) => {
  * @returns True if the guild member has the permission to get webhooks, false otherwise.
  */
 export const canGetWebhooks = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageWebhooks);
+ me.permissions.has(PermissionFlagsBits.ManageWebhooks);

@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
 export default async (guild: Discord.Guild) => {
  if (!canGetIntegrations(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get integrations`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -38,4 +38,4 @@ export default async (guild: Discord.Guild) => {
  * indicating whether the guild member can manage guild integrations.
  */
 export const canGetIntegrations = (me: RMember) =>
- me.permissions?.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions?.has(PermissionFlagsBits.ManageGuild);

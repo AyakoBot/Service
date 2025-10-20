@@ -32,7 +32,7 @@ export default async (
  ) {
   const e = requestHandlerError(
    `Cannot edit permission overwrite in ${channel.name} / ${channel.id}`,
-   [Discord.PermissionFlagsBits.ManageRoles],
+   [PermissionFlagsBits.ManageRoles],
   );
 
   return e;
@@ -61,7 +61,7 @@ export const canEditPermissionOverwrite = (
  me: RMember,
 ) =>
  me.guild.ownerId === me.id ||
- (me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageRoles) &&
+ (me.permissionsIn(channelId).has(PermissionFlagsBits.ManageRoles) &&
   (overwriteId === me.id
    ? me.permissionsIn(channelId).has(body.allow ? BigInt(body.allow) : 0n)
    : true));

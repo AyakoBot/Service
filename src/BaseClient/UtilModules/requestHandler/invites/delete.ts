@@ -17,8 +17,8 @@ export default async (guild: Discord.Guild, code: string, reason?: string) => {
 
  if (!canDeleteInvite(await getBotMemberFromGuild(guild), code)) {
   const e = requestHandlerError(`Cannot delete invite ${code}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
-   Discord.PermissionFlagsBits.ManageChannels,
+   PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageChannels,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -39,5 +39,5 @@ export default async (guild: Discord.Guild, code: string, reason?: string) => {
  * @returns True if the guild member has the necessary permissions, false otherwise.
  */
 export const canDeleteInvite = (me: RMember, channelId: string) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild) ||
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageChannels);
+ me.permissions.has(PermissionFlagsBits.ManageGuild) ||
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);

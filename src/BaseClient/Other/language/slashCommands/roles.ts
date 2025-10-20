@@ -1,10 +1,9 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
-import shop from './roles/shop.js';
-import customRole from './roles/customRole.js';
 import builders from './roles/builders.js';
+import customRole from './roles/customRole.js';
 import _delete from './roles/delete.js';
 import give from './roles/give.js';
+import shop from './roles/shop.js';
 
 export default (t: CT.Language) => ({
  ...t.JSON.slashCommands.roles,

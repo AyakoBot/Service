@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../../../Typings/Typings.js';
 
 export default (t: CT.Language) => ({
@@ -7,7 +6,7 @@ export default (t: CT.Language) => ({
   webhook: RWebhook,
   webhookType: string,
   user: RUser,
-  channel: Discord.GuildTextBasedChannel,
+  channel: RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.webhook.descCreateAudit, {
@@ -15,12 +14,7 @@ export default (t: CT.Language) => ({
    channel: t.languageFunction.getChannel(channel, channelType),
    webhook: t.languageFunction.getWebhook(webhook, webhookType),
   }),
- descCreate: (
-  webhook: RWebhook,
-  webhookType: string,
-  channel: Discord.GuildTextBasedChannel,
-  channelType: string,
- ) =>
+ descCreate: (webhook: RWebhook, webhookType: string, channel: RChannel, channelType: string) =>
   t.stp(t.JSON.events.logs.webhook.descCreate, {
    channel: t.languageFunction.getChannel(channel, channelType),
    webhook: t.languageFunction.getWebhook(webhook, webhookType),
@@ -29,7 +23,7 @@ export default (t: CT.Language) => ({
   webhook: RWebhook,
   webhookType: string,
   user: RUser,
-  channel: Discord.GuildTextBasedChannel,
+  channel: RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.webhook.descDeleteAudit, {
@@ -37,12 +31,7 @@ export default (t: CT.Language) => ({
    channel: t.languageFunction.getChannel(channel, channelType),
    webhook: t.languageFunction.getWebhook(webhook, webhookType),
   }),
- descDelete: (
-  webhook: RWebhook,
-  webhookType: string,
-  channel: Discord.GuildTextBasedChannel,
-  channelType: string,
- ) =>
+ descDelete: (webhook: RWebhook, webhookType: string, channel: RChannel, channelType: string) =>
   t.stp(t.JSON.events.logs.webhook.descDelete, {
    channel: t.languageFunction.getChannel(channel, channelType),
    webhook: t.languageFunction.getWebhook(webhook, webhookType),
@@ -51,7 +40,7 @@ export default (t: CT.Language) => ({
   webhook: RWebhook,
   webhookType: string,
   user: RUser,
-  channel: Discord.GuildTextBasedChannel,
+  channel: RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.webhook.descUpdateAudit, {
@@ -59,12 +48,7 @@ export default (t: CT.Language) => ({
    channel: t.languageFunction.getChannel(channel, channelType),
    webhook: t.languageFunction.getWebhook(webhook, webhookType),
   }),
- descUpdate: (
-  webhook: RWebhook,
-  webhookType: string,
-  channel: Discord.GuildTextBasedChannel,
-  channelType: string,
- ) =>
+ descUpdate: (webhook: RWebhook, webhookType: string, channel: RChannel, channelType: string) =>
   t.stp(t.JSON.events.logs.webhook.descUpdate, {
    channel: t.languageFunction.getChannel(channel, channelType),
    webhook: t.languageFunction.getWebhook(webhook, webhookType),

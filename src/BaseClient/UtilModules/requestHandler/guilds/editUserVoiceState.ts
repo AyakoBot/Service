@@ -24,7 +24,7 @@ export default async (
 
  if (!canEditUserVoiceState(await getBotMemberFromGuild(guild), body)) {
   const e = requestHandlerError(`Cannot edit user voice state`, [
-   Discord.PermissionFlagsBits.MuteMembers,
+   PermissionFlagsBits.MuteMembers,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -50,4 +50,4 @@ export default async (
 export const canEditUserVoiceState = (
  me: RMember,
  body: Discord.RESTPatchAPIGuildVoiceStateUserJSONBody,
-) => me.permissionsIn(body.channel_id).has(Discord.PermissionFlagsBits.MuteMembers);
+) => me.permissionsIn(body.channel_id).has(PermissionFlagsBits.MuteMembers);

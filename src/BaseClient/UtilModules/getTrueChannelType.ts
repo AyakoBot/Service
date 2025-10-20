@@ -7,10 +7,10 @@ import * as Discord from 'discord.js';
  * @returns The true type of the channel.
  * @throws An error if the channel type is unknown.
  */
-export default (channel: Discord.Channel | Discord.GuildChannel, guild: Discord.Guild) => {
+export default (channel: Discord.Channel | RChannel, guild: Discord.Guild) => {
  if (!channel) return 'Unknown';
  switch (channel?.type) {
-  case Discord.ChannelType.GuildText: {
+  case ChannelType.GuildText: {
    switch (true) {
     case guild.rulesChannelId === channel.id:
      return 'Rules';
@@ -22,10 +22,10 @@ export default (channel: Discord.Channel | Discord.GuildChannel, guild: Discord.
      return 'TextChannel';
    }
   }
-  case Discord.ChannelType.DM: {
+  case ChannelType.DM: {
    return 'DM';
   }
-  case Discord.ChannelType.GuildVoice: {
+  case ChannelType.GuildVoice: {
    switch (true) {
     case !!channel.permissionOverwrites:
      return 'LockedVoice';
@@ -33,21 +33,21 @@ export default (channel: Discord.Channel | Discord.GuildChannel, guild: Discord.
      return 'Voice';
    }
   }
-  case Discord.ChannelType.GroupDM:
+  case ChannelType.GroupDM:
    return 'GroupDm';
-  case Discord.ChannelType.GuildCategory:
+  case ChannelType.GuildCategory:
    return 'Category';
-  case Discord.ChannelType.GuildAnnouncement:
+  case ChannelType.GuildAnnouncement:
    return 'NewsChannel';
-  case Discord.ChannelType.AnnouncementThread:
-  case Discord.ChannelType.PublicThread:
-  case Discord.ChannelType.PrivateThread:
+  case ChannelType.AnnouncementThread:
+  case ChannelType.PublicThread:
+  case ChannelType.PrivateThread:
    return 'Thread';
-  case Discord.ChannelType.GuildStageVoice:
+  case ChannelType.GuildStageVoice:
    return 'Stage';
-  case Discord.ChannelType.GuildDirectory as (typeof channel)['type']:
+  case ChannelType.GuildDirectory as (typeof channel)['type']:
    return 'Directory';
-  case Discord.ChannelType.GuildForum: {
+  case ChannelType.GuildForum: {
    switch (true) {
     case 'nsfw' in channel && channel.nsfw:
      return 'NSFWForum';
@@ -55,12 +55,12 @@ export default (channel: Discord.Channel | Discord.GuildChannel, guild: Discord.
      return 'Forum';
    }
   }
-  case Discord.ChannelType.GuildMedia:
+  case ChannelType.GuildMedia:
    return 'MediaChannel';
   default:
    throw new Error(
     // @ts-ignore
-    `Unknown Channel Type: ${channel?.type} / ${channel ? Discord.ChannelType[channel.type] : ''}`,
+    `Unknown Channel Type: ${channel?.type} / ${channel ? ChannelType[channel.type] : ''}`,
    );
  }
 };

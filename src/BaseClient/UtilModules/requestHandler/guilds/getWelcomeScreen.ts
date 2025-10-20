@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
 export default async (guild: Discord.Guild) => {
  if (!canGetWelcomeScreen(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get welcome screen`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -39,4 +39,4 @@ export default async (guild: Discord.Guild) => {
 export const canGetWelcomeScreen = (me: RMember) =>
  me.guild.features.find((f) => f === Discord.GuildFeature.WelcomeScreenEnabled)
   ? true
-  : me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+  : me.permissions.has(PermissionFlagsBits.ManageGuild);

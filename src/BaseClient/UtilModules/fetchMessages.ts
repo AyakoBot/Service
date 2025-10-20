@@ -11,7 +11,7 @@ import { request } from './requestHandler.js';
  * filtered by the before parameter if it exists.
  */
 export default async (
- channel: Discord.GuildTextBasedChannel,
+ channel: RChannel,
  filter: {
   amount: number;
   before?: string;

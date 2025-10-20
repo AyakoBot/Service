@@ -1,20 +1,6 @@
-import * as DiscordCore from '@discordjs/core';
-import * as Discord from 'discord.js';
 import * as Jobs from 'node-schedule';
 
-import auditLogs, { type AuditLogs } from './cache/discord/auditLogs.js';
-import commandPermissions, { type CommandPermissions } from './cache/discord/commandPermissions.js';
-import commands, { type Commands } from './cache/discord/commands.js';
-import integrations, { type Integrations } from './cache/discord/integrations.js';
 import inviteGuilds, { type InviteGuilds } from './cache/discord/inviteGuilds.js';
-import invites, { type Invites } from './cache/discord/invites.js';
-import onboarding, { type Onboarding } from './cache/discord/onboarding.js';
-import pins, { type Pins } from './cache/discord/pins.js';
-import scheduledEventUsers, {
- type ScheduledEventUsers,
-} from './cache/discord/scheduledEventUsers.js';
-import webhooks, { type Webhooks } from './cache/discord/webhooks.js';
-import welcomeScreens, { type WelcomeScreens } from './cache/discord/welcomeScreens.js';
 
 import bans, { type Bans } from './cache/bot/bans.js';
 import channelBans, { type ChannelBans } from './cache/bot/channelBans.js';
@@ -39,22 +25,14 @@ import votes, { type Votes } from './cache/bot/votes.js';
 import fishFish, { type FishFish } from './cache/urls/fishFish.js';
 import sinkingYachts, { type SinkingYachts } from './cache/urls/sinkingYachts.js';
 import urlTLDs, { type UrlTLDs } from './cache/urls/urlTLDs.js';
+import type { API, APIEmbed } from '@discordjs/core';
 
 /**
  * Discord and Cache data stored in the client.
  */
 const cache: {
  // Discord Cache
- invites: Invites;
- webhooks: Webhooks;
- integrations: Integrations;
- scheduledEventUsers: ScheduledEventUsers;
- welcomeScreens: WelcomeScreens;
- pins: Pins;
  inviteGuilds: InviteGuilds;
- onboarding: Onboarding;
- commandPermissions: CommandPermissions;
- auditLogs: AuditLogs;
  voiceChannelStatus: Map<string, string>;
 
  // Cache
@@ -69,8 +47,7 @@ const cache: {
  giveaways: Giveaways;
  stickyTimeouts: StickyTimeouts;
  deleteThreads: DeleteThreads;
- apis: Map<string, DiscordCore.API>;
- commands: Commands;
+ apis: Map<string, API>;
  punishments: Set<string>;
  antispam: Map<string, RMessage[]>;
  deleteSuggestions: DeleteSuggestions;
@@ -107,25 +84,13 @@ const cache: {
   string,
   {
    job: Jobs.Job;
-   embeds: Discord.APIEmbed[];
-   channel:
-    | Discord.AnyThreadChannel
-    | Discord.NewsChannel
-    | Discord.TextChannel
-    | Discord.VoiceChannel;
+   embeds: APIEmbed[];
+   channel: RThread | RChannel;
   }
  >;
 } = {
  // Discord Cache
- invites,
- webhooks,
- integrations,
- scheduledEventUsers,
- welcomeScreens,
- pins,
  inviteGuilds,
- onboarding,
- commandPermissions,
  interactedGuilds: new Set(),
  interactedChannels: new Set(),
  customClients: new Map(),
@@ -142,10 +107,8 @@ const cache: {
  votes,
  giveaways,
  stickyTimeouts,
- auditLogs,
  deleteThreads,
  apis: new Map(),
- commands,
  punishments: new Set(),
  antispam: new Map(),
  deleteSuggestions,

@@ -1,58 +1,68 @@
+import type { APIMessageReference } from '@discordjs/core';
 import * as CT from '../../../../../Typings/Typings.js';
-import type { APIMessageSnapshot } from '@discordjs/core';
 
 export default (t: CT.Language) => ({
  ...t.JSON.events.logs.message,
- descDeleteForward: async (msg: APIMessageSnapshot, originalMsg: RMessage) =>
+ descDeleteForward: async (msg: RMessage | APIMessageReference, originalMsg: RMessage) =>
   t.stp(t.JSON.events.logs.message.descDeleteForward, {
    originalMsgAuthor: t.languageFunction.getUser(await t.cache.users.get(originalMsg.author_id)),
    originalMsg: t.languageFunction.getMessage(originalMsg),
    forwardedMsg: t.languageFunction.getMessage(msg),
-   forwardMsgAuthor: msg.author ? t.languageFunction.getUser(msg.author) : t.JSON.t.Unknown,
+   forwardMsgAuthor:
+    'author_id' in msg
+     ? t.languageFunction.getUser(await t.cache.users.get(msg.author_id))
+     : t.JSON.t.Unknown,
   }),
- descDeleteForwardAudit: (user: RUser, msg: APIMessageSnapshot, originalMsg: RMessage) =>
+ descDeleteForwardAudit: async (
+  user: RUser,
+  msg: RMessage | APIMessageReference,
+  originalMsg: RMessage,
+ ) =>
   t.stp(t.JSON.events.logs.message.descDeleteForwardAudit, {
-   originalMsgAuthor: t.languageFunction.getUser(originalMsg.author),
+   originalMsgAuthor: t.languageFunction.getUser(await t.cache.users.get(originalMsg.author_id)),
    originalMsg: t.languageFunction.getMessage(originalMsg),
    forwardedMsg: t.languageFunction.getMessage(msg),
-   forwardMsgAuthor: msg.author ? t.languageFunction.getUser(msg.author) : t.JSON.t.Unknown,
+   forwardMsgAuthor:
+    'author_id' in msg
+     ? t.languageFunction.getUser(await t.cache.users.get(msg.author_id))
+     : t.JSON.t.Unknown,
    auditUser: t.languageFunction.getUser(user),
   }),
- descDeleteAudit: (user: RUser, msg: RMessage) =>
+ descDeleteAudit: async (user: RUser, msg: RMessage) =>
   t.stp(t.JSON.events.logs.message.descDeleteAudit, {
    user: t.languageFunction.getUser(user),
    msg: t.languageFunction.getMessage(msg),
-   author: t.languageFunction.getUser(msg.author),
+   author: t.languageFunction.getUser(await t.cache.users.get(msg.author_id)),
   }),
- descDelete: (msg: RMessage) =>
+ descDelete: async (msg: RMessage) =>
   t.stp(t.JSON.events.logs.message.descDelete, {
    msg: t.languageFunction.getMessage(msg),
-   author: t.languageFunction.getUser(msg.author),
+   author: t.languageFunction.getUser(await t.cache.users.get(msg.author_id)),
   }),
- descDeleteBulkAudit: (user: RUser, size: number, channel: Discord.GuildTextBasedChannel) =>
+ descDeleteBulkAudit: (user: RUser, size: number, channel: RChannel) =>
   t.stp(t.JSON.events.logs.message.descDeleteBulkAudit, {
    user: t.languageFunction.getUser(user),
    size,
    channel: t.languageFunction.getChannel(channel),
   }),
- descDeleteBulk: (size: number, channel: Discord.GuildTextBasedChannel) =>
+ descDeleteBulk: (size: number, channel: RChannel) =>
   t.stp(t.JSON.events.logs.message.descDeleteBulk, {
    size,
    channel: t.languageFunction.getChannel(channel),
   }),
- descUpdateMaybe: (msg: RMessage) =>
+ descUpdateMaybe: async (msg: RMessage) =>
   t.stp(t.JSON.events.logs.message.descUpdateMaybe, {
    msg: t.languageFunction.getMessage(msg),
-   user: t.languageFunction.getUser(msg.author),
+   user: t.languageFunction.getUser(await t.cache.users.get(msg.author_id)),
   }),
  descUpdate: (msg: RMessage) =>
   t.stp(t.JSON.events.logs.message.descUpdate, {
    msg: t.languageFunction.getMessage(msg),
   }),
- descUpdateAuthor: (msg: RMessage) =>
+ descUpdateAuthor: async (msg: RMessage) =>
   t.stp(t.JSON.events.logs.message.descUpdateAuthor, {
    msg: t.languageFunction.getMessage(msg),
-   user: t.languageFunction.getUser(msg.author),
+   user: t.languageFunction.getUser(await t.cache.users.get(msg.author_id)),
   }),
  activity: {
   1: t.JSON.events.logs.message.activity[1],

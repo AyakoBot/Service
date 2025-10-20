@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  */
 export default async (guild: Discord.Guild) => {
  if (!canGetTemplates(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot get template`, [Discord.PermissionFlagsBits.KickMembers]);
+  const e = requestHandlerError(`Cannot get template`, [PermissionFlagsBits.KickMembers]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -34,4 +34,4 @@ export default async (guild: Discord.Guild) => {
  * @returns True if the guild member has the permission to get templates, false otherwise.
  */
 export const canGetTemplates = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

@@ -18,7 +18,7 @@ export default async (guild: Discord.Guild, channelId: string, reason?: string) 
 
  if (!canDelete(await getBotMemberFromGuild(guild), channelId)) {
   const e = requestHandlerError(`Cannot delete stage instance`, [
-   Discord.PermissionFlagsBits.ManageChannels,
+   PermissionFlagsBits.ManageChannels,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -40,4 +40,4 @@ export default async (guild: Discord.Guild, channelId: string, reason?: string) 
  * @returns A boolean indicating whether the guild member can delete stage instances.
  */
 export const canDelete = (me: RMember, channelId: string) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageChannels);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);

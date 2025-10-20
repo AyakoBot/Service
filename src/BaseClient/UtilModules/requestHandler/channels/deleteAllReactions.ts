@@ -16,7 +16,7 @@ export default async (msg: RMessage) => {
  if (!canDeleteAllReactions(msg.channel.id, await getBotMemberFromGuild(msg.guild))) {
   const e = requestHandlerError(
    `Cannot delete all reactions of messages in ${msg.guild.name} / ${msg.guild.id}`,
-   [Discord.PermissionFlagsBits.ManageMessages],
+   [PermissionFlagsBits.ManageMessages],
   );
 
   error(msg.guild, e);
@@ -38,4 +38,4 @@ export default async (msg: RMessage) => {
  * @returns A boolean indicating whether the user has the permission to delete all reactions.
  */
 export const canDeleteAllReactions = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageMessages);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);

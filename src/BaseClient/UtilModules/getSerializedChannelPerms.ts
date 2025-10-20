@@ -5,7 +5,7 @@ import * as Discord from 'discord.js';
  * @param channel - The guild channel to get serialized permissions for.
  * @returns An array of serialized permission objects.
  */
-export default (channel: Discord.GuildChannel) =>
+export default (channel: RChannel) =>
  channel.permissionOverwrites.cache.map((o) => ({
   id: o.id,
   type: o.type,

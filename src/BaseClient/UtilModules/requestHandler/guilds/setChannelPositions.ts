@@ -22,7 +22,7 @@ export default async (
 
  if (!canSetChannelPositions(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot set channel positions`, [
-   Discord.PermissionFlagsBits.ManageChannels,
+   PermissionFlagsBits.ManageChannels,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -43,4 +43,4 @@ export default async (
  * @returns A boolean indicating whether the user can set channel positions.
  */
 export const canSetChannelPositions = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageChannels);
+ me.permissions.has(PermissionFlagsBits.ManageChannels);

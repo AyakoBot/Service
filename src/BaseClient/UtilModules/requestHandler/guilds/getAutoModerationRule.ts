@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
 export default async (guild: Discord.Guild, ruleId: string) => {
  if (!canGetAutoModerationRule(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get auto moderation rule`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -45,4 +45,4 @@ export default async (guild: Discord.Guild, ruleId: string) => {
  * @returns True if the guild member has permission to view auto moderation rules, false otherwise.
  */
 export const canGetAutoModerationRule = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

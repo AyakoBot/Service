@@ -25,7 +25,7 @@ export default async (
 
  if (!canEditAutoModerationRule(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot edit auto-moderation rule ${ruleId}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -47,4 +47,4 @@ export default async (
  * @returns True if the guild member has the "ManageGuild" permission, false otherwise.
  */
 export const canEditAutoModerationRule = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

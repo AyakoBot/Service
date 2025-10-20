@@ -21,7 +21,7 @@ export default async (guild: Discord.Guild) => {
  }
 
  if (!canGetVanityURL(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot get vanity URL`, [Discord.PermissionFlagsBits.ManageGuild]);
+  const e = requestHandlerError(`Cannot get vanity URL`, [PermissionFlagsBits.ManageGuild]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -88,4 +88,4 @@ export default async (guild: Discord.Guild) => {
  * @returns A boolean indicating whether the user can get the vanity URL.
  */
 export const canGetVanityURL = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

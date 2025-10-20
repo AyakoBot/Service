@@ -18,7 +18,7 @@ export default async (msg: RMessage, guild: Discord.Guild) => {
  if (msg.guild ? !canPinMessage(msg.channelId, await getBotMemberFromGuild(g)) : false) {
   const e = requestHandlerError(
    `Cannot pin message in ${'name' in msg.channel ? msg.channel.name : 'DM'} / ${msg.channel.id}`,
-   [Discord.PermissionFlagsBits.ManageMessages],
+   [PermissionFlagsBits.ManageMessages],
   );
 
   error(g, e);
@@ -40,4 +40,4 @@ export default async (msg: RMessage, guild: Discord.Guild) => {
  * @returns A boolean indicating whether the user can pin messages in the channel.
  */
 export const canPinMessage = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ManageMessages);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);

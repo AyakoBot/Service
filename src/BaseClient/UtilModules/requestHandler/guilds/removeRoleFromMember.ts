@@ -23,7 +23,7 @@ export default async (
 
  if (!canRemoveRoleFromMember(await getBotMemberFromGuild(guild), role)) {
   const e = requestHandlerError(`Cannot remove role ${role.name} / ${role.id}`, [
-   Discord.PermissionFlagsBits.ManageRoles,
+   PermissionFlagsBits.ManageRoles,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -45,5 +45,5 @@ export default async (
  * @returns True if the guild member has the permission to remove roles, false otherwise.
  */
 export const canRemoveRoleFromMember = (me: RMember, role: RRole) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageRoles) &&
+ me.permissions.has(PermissionFlagsBits.ManageRoles) &&
  role.comparePositionTo(me.roles.highest) < 0;

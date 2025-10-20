@@ -17,7 +17,7 @@ export default async (guild: Discord.Guild, templateCode: string) => {
 
  if (!canDeleteTemplate(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete template ${templateCode}`, [
-   Discord.PermissionFlagsBits.ManageGuild,
+   PermissionFlagsBits.ManageGuild,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -32,4 +32,4 @@ export default async (guild: Discord.Guild, templateCode: string) => {
   });
 };
 export const canDeleteTemplate = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageGuild);
+ me.permissions.has(PermissionFlagsBits.ManageGuild);

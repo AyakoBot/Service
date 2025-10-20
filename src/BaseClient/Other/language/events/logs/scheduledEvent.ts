@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../../../Typings/Typings.js';
 
 export default (t: CT.Language) => ({
@@ -6,12 +5,7 @@ export default (t: CT.Language) => ({
  descUserRemoveChannel: (
   user: RUser,
   event: REvent,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
+  channel: RThread | RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descUserRemoveChannel, {
@@ -27,12 +21,7 @@ export default (t: CT.Language) => ({
  descUserAddChannel: (
   user: RUser,
   event: REvent,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
+  channel: RThread | RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descUserAddChannel, {
@@ -48,12 +37,7 @@ export default (t: CT.Language) => ({
  descDeleteChannelAudit: (
   event: REvent,
   user: RUser,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
+  channel: RThread | RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descDeleteChannelAudit, {
@@ -66,16 +50,7 @@ export default (t: CT.Language) => ({
    user: t.languageFunction.getUser(user),
    event: t.languageFunction.getScheduledEvent(event),
   }),
- descDeleteChannel: (
-  event: REvent,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
-  channelType: string,
- ) =>
+ descDeleteChannel: (event: REvent, channel: RThread | RChannel, channelType: string) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descDeleteChannel, {
    event: t.languageFunction.getScheduledEvent(event),
    channel: t.languageFunction.getChannel(channel, channelType),
@@ -87,12 +62,7 @@ export default (t: CT.Language) => ({
  descCreateChannelAudit: (
   event: REvent,
   user: RUser,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
+  channel: RThread | RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descDeleteChannelAudit, {
@@ -105,16 +75,7 @@ export default (t: CT.Language) => ({
    user: t.languageFunction.getUser(user),
    event: t.languageFunction.getScheduledEvent(event),
   }),
- descCreateChannel: (
-  event: REvent,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
-  channelType: string,
- ) =>
+ descCreateChannel: (event: REvent, channel: RThread | RChannel, channelType: string) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descCreateChannel, {
    event: t.languageFunction.getScheduledEvent(event),
    channel: t.languageFunction.getChannel(channel, channelType),
@@ -126,12 +87,7 @@ export default (t: CT.Language) => ({
  descUpdateChannelAudit: (
   event: REvent,
   user: RUser,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
+  channel: RThread | RChannel,
   channelType: string,
  ) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descUpdateChannelAudit, {
@@ -144,16 +100,7 @@ export default (t: CT.Language) => ({
    user: t.languageFunction.getUser(user),
    event: t.languageFunction.getScheduledEvent(event),
   }),
- descUpdateChannel: (
-  event: REvent,
-  channel:
-   | Discord.NewsChannel
-   | Discord.TextChannel
-   | Discord.PrivateThreadChannel
-   | Discord.PublicThreadChannel<boolean>
-   | Discord.VoiceBasedChannel,
-  channelType: string,
- ) =>
+ descUpdateChannel: (event: REvent, channel: RThread | RChannel, channelType: string) =>
   t.stp(t.JSON.events.logs.scheduledEvent.descUpdateChannel, {
    event: t.languageFunction.getScheduledEvent(event),
    channel: t.languageFunction.getChannel(channel, channelType),

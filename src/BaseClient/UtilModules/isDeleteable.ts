@@ -13,8 +13,8 @@ export default async (msg: RMessage) => {
  if (Discord.Constants.UndeletableMessageTypes.includes(msg.type)) return false;
  if (msg.author.id === executor.id) return true;
  if (executor.id === msg.guild.ownerId) return true;
- if (executor.permissions.has(Discord.PermissionFlagsBits.Administrator)) return true;
- if (executor.permissionsIn(msg.channel).has(Discord.PermissionFlagsBits.ManageMessages)) {
+ if (executor.permissions.has(PermissionFlagsBits.Administrator)) return true;
+ if (executor.permissionsIn(msg.channel).has(PermissionFlagsBits.ManageMessages)) {
   return true;
  }
 

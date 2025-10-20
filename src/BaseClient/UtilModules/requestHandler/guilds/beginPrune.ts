@@ -21,7 +21,7 @@ export default async (
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canPrune(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot prune members`, [Discord.PermissionFlagsBits.KickMembers]);
+  const e = requestHandlerError(`Cannot prune members`, [PermissionFlagsBits.KickMembers]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -40,4 +40,4 @@ export default async (
  * @returns A boolean indicating whether the user can prune members.
  */
 export const canPrune = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.KickMembers);
+ me.permissions.has(PermissionFlagsBits.KickMembers);

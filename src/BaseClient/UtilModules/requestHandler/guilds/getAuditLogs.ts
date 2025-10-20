@@ -16,7 +16,7 @@ import { getAPI } from '../channels/addReaction.js';
 export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIAuditLogQuery) => {
  if (!canViewAuditLogs(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot view audit logs`, [
-   Discord.PermissionFlagsBits.ViewAuditLog,
+   PermissionFlagsBits.ViewAuditLog,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
@@ -58,4 +58,4 @@ export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIAuditLogQu
  * @returns True if the guild member has permission to view audit logs, false otherwise.
  */
 export const canViewAuditLogs = (me: RMember) =>
- me.permissions?.has(Discord.PermissionFlagsBits.ViewAuditLog);
+ me.permissions?.has(PermissionFlagsBits.ViewAuditLog);

@@ -29,7 +29,7 @@ export default async <T extends Message>(
 
  if (!canDeleteMessages(msg, await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot delete message in ${guild.name} / ${guild.id}`, [
-   Discord.PermissionFlagsBits.ManageMessages,
+   PermissionFlagsBits.ManageMessages,
   ]);
 
   error(guild, e);
@@ -54,5 +54,5 @@ export const canDeleteMessages = (msg: Message, me: RMember) => {
  if (msg.author?.id === me.id) return true;
  if (!msg.guild) return false;
 
- return me.permissionsIn(msg.channel).has(Discord.PermissionFlagsBits.ManageMessages);
+ return me.permissionsIn(msg.channel).has(PermissionFlagsBits.ManageMessages);
 };

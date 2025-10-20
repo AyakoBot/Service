@@ -69,11 +69,11 @@ async function fn(
   !canSendMessage(channelId, { ...payload, files }, await getBotMemberFromGuild(guild))
  ) {
   const e = requestHandlerError(`Cannot send message`, [
-   Discord.PermissionFlagsBits.ViewChannel,
-   Discord.PermissionFlagsBits.SendMessages,
-   Discord.PermissionFlagsBits.SendMessagesInThreads,
-   Discord.PermissionFlagsBits.ReadMessageHistory,
-   Discord.PermissionFlagsBits.AttachFiles,
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.SendMessages,
+   PermissionFlagsBits.SendMessagesInThreads,
+   PermissionFlagsBits.ReadMessageHistory,
+   PermissionFlagsBits.AttachFiles,
   ]);
 
   error(guild, e, false);
@@ -127,34 +127,34 @@ export const canSendMessage = (
 
  switch (true) {
   case payload.message_reference &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ReadMessageHistory, true):
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory, true):
    return false;
-  case !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ViewChannel, true):
+  case !me.permissionsIn(channelId).has(PermissionFlagsBits.ViewChannel, true):
    return false;
   case Number(me.communicationDisabledUntilTimestamp) > Date.now():
    return false;
   case channel &&
    !channel?.isThread() &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.SendMessages, true):
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.SendMessages, true):
   case channel &&
    channel?.isThread() &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.SendMessagesInThreads, true):
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.SendMessagesInThreads, true):
    return false;
   case payload.tts &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.SendTTSMessages, true): {
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.SendTTSMessages, true): {
    payload.tts = false;
    return true;
   }
   case payload.message_reference &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ReadMessageHistory, true): {
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory, true): {
    payload.message_reference = undefined;
    return true;
   }
   case payload.files?.length &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.AttachFiles, true):
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.AttachFiles, true):
    return false;
   case payload.embeds?.length &&
-   !me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.EmbedLinks, true):
+   !me.permissionsIn(channelId).has(PermissionFlagsBits.EmbedLinks, true):
    return false;
   default:
    return true;

@@ -25,10 +25,10 @@ export default async (
  const me = await getBotMemberFromGuild(guild);
 
  const needs2Steps =
-  !me.permissions.has(Discord.PermissionFlagsBits.Administrator) &&
+  !me.permissions.has(PermissionFlagsBits.Administrator) &&
   body.permission_overwrites?.some((p) =>
    p.allow
-    ? new Discord.PermissionsBitField(BigInt(p.allow)).has(Discord.PermissionFlagsBits.ManageRoles)
+    ? new Discord.PermissionsBitField(BigInt(p.allow)).has(PermissionFlagsBits.ManageRoles)
     : false,
   ) &&
   body.parent_id &&
@@ -36,12 +36,12 @@ export default async (
    me.guild.channels.cache.get(String(body.parent_id)) as Discord.CategoryChannel
   )?.permissionOverwrites.cache
    .get(me.id)
-   ?.allow.has(Discord.PermissionFlagsBits.ManageRoles) ??
+   ?.allow.has(PermissionFlagsBits.ManageRoles) ??
    false);
 
  if (!canCreateChannel(await getBotMemberFromGuild(guild), body)) {
   const e = requestHandlerError(`Cannot create channel`, [
-   Discord.PermissionFlagsBits.ManageChannels,
+   PermissionFlagsBits.ManageChannels,
   ]);
 
   e.message += `\n${
@@ -53,19 +53,19 @@ export default async (
      ) || [0n],
     )
      .toArray()
-     .map((perm) => Discord.PermissionFlagsBits[perm]),
+     .map((perm) => PermissionFlagsBits[perm]),
    ).message
   }`;
 
   if (
    body.permission_overwrites?.some((p) =>
     new Discord.PermissionsBitField(BigInt(p.allow ?? 0n)).has(
-     Discord.PermissionFlagsBits.ManageRoles,
+     PermissionFlagsBits.ManageRoles,
     ),
    ) &&
    !needs2Steps
   ) {
-   e.message += `\n${requestHandlerError('Permissions in the parent channel', [Discord.PermissionFlagsBits.ManageRoles]).message}`;
+   e.message += `\n${requestHandlerError('Permissions in the parent channel', [PermissionFlagsBits.ManageRoles]).message}`;
   }
 
   error(guild, new Error(e.message));
@@ -113,21 +113,21 @@ export const canCreateChannel = (
  body: Discord.RESTPostAPIGuildChannelJSONBody,
 ) =>
  me.guild.ownerId === me.id ||
- me.permissions.has(Discord.PermissionFlagsBits.Administrator) ||
- (me.permissions.has(Discord.PermissionFlagsBits.ManageChannels) &&
+ me.permissions.has(PermissionFlagsBits.Administrator) ||
+ (me.permissions.has(PermissionFlagsBits.ManageChannels) &&
   (body.permission_overwrites
    ? body.permission_overwrites.every((p) =>
-      me.permissions.has(Discord.PermissionFlagsBits.ManageRoles) &&
+      me.permissions.has(PermissionFlagsBits.ManageRoles) &&
       me.permissions.has(BigInt(p.allow ?? 0n)) &&
       new Discord.PermissionsBitField(BigInt(p.allow ?? 0n)).has(
-       Discord.PermissionFlagsBits.ManageRoles,
+       PermissionFlagsBits.ManageRoles,
       )
        ? body.parent_id &&
          ((
           me.guild.channels.cache.get(String(body.parent_id)) as Discord.CategoryChannel
          )?.permissionOverwrites.cache
           .get(me.id)
-          ?.allow.has(Discord.PermissionFlagsBits.ManageRoles) ??
+          ?.allow.has(PermissionFlagsBits.ManageRoles) ??
           false)
        : true,
      )

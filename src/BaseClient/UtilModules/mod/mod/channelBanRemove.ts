@@ -62,8 +62,8 @@ export default async (
 
  const me = await getBotMemberFromGuild(options.guild);
  if (
-  (!me.permissions.has(Discord.PermissionFlagsBits.ManageChannels) ||
-   !options.channel.permissionsFor(me).has(Discord.PermissionFlagsBits.ManageChannels)) &&
+  (!me.permissions.has(PermissionFlagsBits.ManageChannels) ||
+   !options.channel.permissionsFor(me).has(PermissionFlagsBits.ManageChannels)) &&
   !options.skipChecks
  ) {
   permissionError(cmd, message, language, type);

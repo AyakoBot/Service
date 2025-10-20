@@ -13,13 +13,13 @@ import { getAPI } from './addReaction.js';
  * @returns A promise that resolves with an array of parsed thread channels.
  */
 export default async (
- channel: Discord.NewsChannel | Discord.TextChannel | Discord.ForumChannel,
+ channel: RChannel | RChannel | Discord.ForumChannel,
  query: Discord.RESTGetAPIChannelThreadsArchivedQuery,
 ) => {
  if (!canGetjoinedPrivateArchivedThreads(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(
    `Cannot get joined private archived threads in ${channel.name} / ${channel.id}`,
-   [Discord.PermissionFlagsBits.ReadMessageHistory],
+   [PermissionFlagsBits.ReadMessageHistory],
   );
 
   error(channel.guild, e);
@@ -52,4 +52,4 @@ export default async (
  * @returns A boolean indicating whether the user has the required permissions permissions.
  */
 export const canGetjoinedPrivateArchivedThreads = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(Discord.PermissionFlagsBits.ReadMessageHistory);
+ me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory);

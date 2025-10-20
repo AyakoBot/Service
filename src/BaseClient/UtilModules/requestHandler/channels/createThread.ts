@@ -15,7 +15,7 @@ import { getAPI } from './addReaction.js';
  * @returns A promise that resolves with the created thread or rejects with a DiscordAPIError.
  */
 export default async (
- channel: Discord.GuildTextBasedChannel,
+ channel: RChannel,
  body: Discord.RESTPostAPIChannelThreadsJSONBody,
  msgId?: string,
 ) => {
@@ -24,12 +24,12 @@ export default async (
  if (!(await canCreateThread(channel, body, await getBotMemberFromGuild(channel.guild)))) {
   const e = requestHandlerError(
    `Cannot create ${
-    body.type === Discord.ChannelType.PrivateThread ? 'private' : 'public / announcement'
+    body.type === ChannelType.PrivateThread ? 'private' : 'public / announcement'
    } threads in ${channel.name} / ${channel.id}`,
    [
-    body.type === Discord.ChannelType.PublicThread
-     ? Discord.PermissionFlagsBits.CreatePublicThreads
-     : Discord.PermissionFlagsBits.CreatePrivateThreads,
+    body.type === ChannelType.PublicThread
+     ? PermissionFlagsBits.CreatePublicThreads
+     : PermissionFlagsBits.CreatePrivateThreads,
    ],
   );
 
@@ -45,8 +45,8 @@ export default async (
    e.message += ` in ${channel.id} - Reported ${
     channel.guild.channels.cache.filter(
      (c) =>
-      (c.type === Discord.ChannelType.PrivateThread ||
-       c.type === Discord.ChannelType.PublicThread) &&
+      (c.type === ChannelType.PrivateThread ||
+       c.type === ChannelType.PublicThread) &&
       c.parentId === channel.id,
     ).size
    } threads`;
@@ -63,21 +63,21 @@ export default async (
  * @returns A boolean indicating whether the bot can create a thread in the channel.
  */
 export const canCreateThread = async (
- channel: Discord.GuildTextBasedChannel,
+ channel: RChannel,
  body: Discord.RESTPostAPIChannelThreadsJSONBody,
  me: RMember,
 ) =>
  [
-  Discord.ChannelType.GuildAnnouncement,
-  Discord.ChannelType.GuildStageVoice,
-  Discord.ChannelType.GuildText,
-  Discord.ChannelType.GuildVoice,
+  ChannelType.GuildAnnouncement,
+  ChannelType.GuildStageVoice,
+  ChannelType.GuildText,
+  ChannelType.GuildVoice,
  ].includes(channel.type) &&
- me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.ViewChannel) &&
- (body.type === Discord.ChannelType.PublicThread
-  ? me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.CreatePublicThreads)
-  : me.permissionsIn(channel.id).has(Discord.PermissionFlagsBits.CreatePrivateThreads) &&
-    channel.type !== Discord.ChannelType.GuildAnnouncement) &&
+ me.permissionsIn(channel.id).has(PermissionFlagsBits.ViewChannel) &&
+ (body.type === ChannelType.PublicThread
+  ? me.permissionsIn(channel.id).has(PermissionFlagsBits.CreatePublicThreads)
+  : me.permissionsIn(channel.id).has(PermissionFlagsBits.CreatePrivateThreads) &&
+    channel.type !== ChannelType.GuildAnnouncement) &&
  Number(
   (await getActiveThreads(channel.guild).then((m) => ('message' in m ? undefined : m)))?.filter(
    (t) => t.parentId === channel.id,

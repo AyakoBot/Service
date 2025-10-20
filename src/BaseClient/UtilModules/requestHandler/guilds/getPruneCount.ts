@@ -16,7 +16,7 @@ import { canPrune } from './beginPrune.js';
 export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIGuildPruneCountQuery) => {
  if (!canPrune(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get prune count`, [
-   Discord.PermissionFlagsBits.KickMembers,
+   PermissionFlagsBits.KickMembers,
   ]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));

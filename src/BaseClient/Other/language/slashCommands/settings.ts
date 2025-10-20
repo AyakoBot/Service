@@ -1,5 +1,5 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
+
 import antiSpam from './settings/anti-spam.js';
 import antiVirus from './settings/anti-virus.js';
 import basic from './settings/basic.js';
@@ -8,6 +8,7 @@ import denylistRules from './settings/denylist-rules.js';
 import expiry from './settings/expiry.js';
 import invites from './settings/invites.js';
 import leveling from './settings/leveling.js';
+import linkedRolesDeco from './settings/linked-roles-deco.js';
 import multiChannels from './settings/multi-channels.js';
 import multiRoles from './settings/multi-roles.js';
 import newlines from './settings/newlines.js';
@@ -15,15 +16,13 @@ import reactionRoles from './settings/reaction-roles.js';
 import roleRewards from './settings/role-rewards.js';
 import separators from './settings/separators.js';
 import voteRewards from './settings/vote-rewards.js';
-import linkedRolesDeco from './settings/linked-roles-deco.js';
 
 const self = (t: CT.Language) => ({
  ...t.JSON.slashCommands.settings,
  authorType: (type: string) => t.stp(t.JSON.slashCommands.settings.authorType, { type, t }),
  reactionEditor: {
   ...t.JSON.slashCommands.settings.reactionEditor,
-  desc: (thread: RThread) =>
-   t.stp(t.JSON.slashCommands.settings.reactionEditor.desc, { thread }),
+  desc: (thread: RThread) => t.stp(t.JSON.slashCommands.settings.reactionEditor.desc, { thread }),
  },
  log: {
   ...t.JSON.slashCommands.settings.log,

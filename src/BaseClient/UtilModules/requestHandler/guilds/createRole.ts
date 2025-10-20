@@ -21,7 +21,7 @@ export default async (
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canCreateRole(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot create role`, [Discord.PermissionFlagsBits.ManageRoles]);
+  const e = requestHandlerError(`Cannot create role`, [PermissionFlagsBits.ManageRoles]);
 
   error(guild, new Error((e as Discord.DiscordAPIError).message));
   return e;
@@ -45,4 +45,4 @@ export default async (
  * @returns A boolean indicating whether the guild member can create a role.
  */
 export const canCreateRole = (me: RMember) =>
- me.permissions.has(Discord.PermissionFlagsBits.ManageRoles);
+ me.permissions.has(PermissionFlagsBits.ManageRoles);
