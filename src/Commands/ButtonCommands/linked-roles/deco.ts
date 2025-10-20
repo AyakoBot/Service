@@ -48,7 +48,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
       custom_id: `linked-roles/deco_${settingsId}`,
       max_values: 25,
       min_values: 1,
-      channel_types: [...AllNonThreadGuildChannelTypes, Discord.ChannelType.GuildCategory],
+      channel_types: [...AllNonThreadGuildChannelTypes, ChannelType.GuildCategory],
      },
     ],
    },

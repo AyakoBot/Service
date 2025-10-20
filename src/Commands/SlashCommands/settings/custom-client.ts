@@ -182,8 +182,8 @@ const updateApp = async (
   custom_install_url: process.env.customInstallURL,
   install_params: null!,
   integration_types_config: {
-   [Discord.ApplicationIntegrationType.GuildInstall]: {},
-   [Discord.ApplicationIntegrationType.UserInstall]: {},
+   [ApplicationIntegrationType.GuildInstall]: {},
+   [ApplicationIntegrationType.UserInstall]: {},
   },
   flags:
    Discord.ApplicationFlags.GatewayMessageContentLimited |

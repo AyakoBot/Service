@@ -36,7 +36,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   return;
  }
 
- if (!channel?.permissionsFor(me)?.has(Discord.PermissionFlagsBits.ManageChannels)) {
+ if (!channel?.permissionsFor(me)?.has(PermissionFlagsBits.ManageChannels)) {
   cmd.client.util.errorCmd(cmd, language.errors.cantManageInvite, language);
   return;
  }

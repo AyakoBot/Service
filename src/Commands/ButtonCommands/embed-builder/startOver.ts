@@ -18,9 +18,9 @@ export default async (
  if (Number.isNaN(selectedField)) selectedField = null;
 
  const inThread = [
-  Discord.ChannelType.PublicThread,
-  Discord.ChannelType.AnnouncementThread,
-  Discord.ChannelType.PrivateThread,
+  ChannelType.PublicThread,
+  ChannelType.AnnouncementThread,
+  ChannelType.PrivateThread,
  ].includes(cmd.channel.type);
 
  const author =

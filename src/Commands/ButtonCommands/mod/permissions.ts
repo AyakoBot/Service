@@ -54,12 +54,12 @@ export const registerCmd = (commandName: CommandType, guild: Discord.Guild) => {
   return undefined;
  }
 
- const submitCmd = new Discord.SlashCommandBuilder()
+ const submitCmd = new SlashCommandBuilder()
   .setName(cmdData.name)
   .setDescription(cmdData.description)
-  .setDefaultMemberPermissions(Discord.PermissionFlagsBits.ManageGuild)
-  .setContexts([Discord.InteractionContextType.Guild])
-  .setIntegrationTypes([Discord.ApplicationIntegrationType.GuildInstall])
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .setContexts([InteractionContextType.Guild])
+  .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
   .setNameLocalizations(cmdData.name_localizations || null)
   .setDescriptionLocalizations(cmdData.description_localizations || null)
   .toJSON();

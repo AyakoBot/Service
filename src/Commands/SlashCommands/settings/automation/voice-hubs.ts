@@ -68,7 +68,7 @@ export const showAll: NonNullable<CT.SettingsFile<typeof name>['showAll']> = asy
  const fields = settings?.map((s) => ({
   name: `${lan.fields.channelid.name}: ${
    s.channelid
-    ? ((client.channels.cache.get(s.channelid) as Discord.GuildTextBasedChannel)?.name ??
+    ? ((client.channels.cache.get(s.channelid) as RChannel)?.name ??
       language.t.None)
     : language.t.None
   } - ${lan.fields.categoryid.name}: ${

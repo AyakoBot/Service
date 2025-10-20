@@ -5,7 +5,7 @@ import * as CT from '../../../../Typings/Typings.js';
 export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
  if (!cmd.inCachedGuild()) return;
  if (
-  !cmd.client.util.settingsHelpers.permissionCheck(cmd, Discord.PermissionFlagsBits.Administrator)
+  !cmd.client.util.settingsHelpers.permissionCheck(cmd, PermissionFlagsBits.Administrator)
  ) {
   return;
  }

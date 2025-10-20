@@ -25,7 +25,7 @@ const f: CT.AutoCompleteFile['default'] = async (cmd) => {
         ([TicketType.dmToThread, TicketType.Thread].includes(s.type)
          ? s.channelId
          : s.categoryId) || '',
-       ) as Discord.GuildTextBasedChannel | Discord.CategoryChannel
+       ) as RChannel | Discord.CategoryChannel
       )?.name || language.t.None
     : language.t.None
   }`,

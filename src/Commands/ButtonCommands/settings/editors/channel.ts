@@ -14,7 +14,7 @@ export default async (
 ) => {
  if (!cmd.inCachedGuild()) return;
  if (
-  !cmd.client.util.settingsHelpers.permissionCheck(cmd, Discord.PermissionFlagsBits.ManageChannels)
+  !cmd.client.util.settingsHelpers.permissionCheck(cmd, PermissionFlagsBits.ManageChannels)
  ) {
   return;
  }

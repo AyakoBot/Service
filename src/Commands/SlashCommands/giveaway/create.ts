@@ -13,14 +13,14 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
  const winners = cmd.options.getInteger('winners', true);
  const channel =
   cmd.options.getChannel('channel', false, [
-   Discord.ChannelType.GuildAnnouncement,
-   Discord.ChannelType.GuildText,
-   Discord.ChannelType.GuildVoice,
-   Discord.ChannelType.GuildStageVoice,
-   Discord.ChannelType.PublicThread,
-   Discord.ChannelType.PrivateThread,
-   Discord.ChannelType.AnnouncementThread,
-  ]) || (cmd.channel as Discord.GuildTextBasedChannel);
+   ChannelType.GuildAnnouncement,
+   ChannelType.GuildText,
+   ChannelType.GuildVoice,
+   ChannelType.GuildStageVoice,
+   ChannelType.PublicThread,
+   ChannelType.PrivateThread,
+   ChannelType.AnnouncementThread,
+  ]) || (cmd.channel as RChannel);
  if (!channel) {
   cmd.client.util.error(cmd.guild, new Error('Channel not found'));
   return;

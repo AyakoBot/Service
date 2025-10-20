@@ -21,7 +21,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
     const guild = cl.guilds?.cache.get(guildId);
     if (!guild) return undefined;
 
-    const channel = cl.channels?.cache.get(channelId) as Discord.GuildTextBasedChannel;
+    const channel = cl.channels?.cache.get(channelId) as RChannel;
     if (!channel) return undefined;
     if (!('messages' in channel)) return undefined;
 

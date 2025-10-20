@@ -29,7 +29,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], multi: boo
  const channel = await cmd.client.util.getChannel.guildTextChannel(cmd.channelId);
  if (!channel) return;
 
- if (!('threads' in channel) || channel.type === Discord.ChannelType.GuildAnnouncement) {
+ if (!('threads' in channel) || channel.type === ChannelType.GuildAnnouncement) {
   cmd.update({
    embeds: [
     {
@@ -57,7 +57,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], multi: boo
  const thread = await cmd.client.util.request.channels.createThread(channel, {
   name: language.slashCommands.settings.reactionEditor.name,
   invitable: false,
-  type: Discord.ChannelType.PrivateThread,
+  type: ChannelType.PrivateThread,
  });
 
  if ('message' in thread) {

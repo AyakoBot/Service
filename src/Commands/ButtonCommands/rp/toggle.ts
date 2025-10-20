@@ -1,5 +1,11 @@
-import * as Discord from 'discord.js';
+import type { APIMessageComponentButtonInteraction } from '@discordjs/core';
+import type Interactions from '../../../BaseClient/Other/constants/interactions.js';
 import rp from '../../SlashCommands/rp/manager.js';
+import {
+ SlashCommandBuilder,
+ SlashCommandStringOption,
+ SlashCommandUserOption,
+} from '@discordjs/builders';
 
 export default async (cmd: Discord.ButtonInteraction) => {
  if (!cmd.inCachedGuild()) return;
@@ -49,7 +55,7 @@ export default async (cmd: Discord.ButtonInteraction) => {
  rp(cmd, [], true);
 };
 
-const deleteAll = async (cmd: Discord.ButtonInteraction<'cached'>) => {
+const deleteAll = async (cmd: APIMessageComponentButtonInteraction) => {
  const commands = await cmd.guild.client.util.request.commands.getGuildCommands(cmd.guild);
  if ('message' in commands) {
   cmd.guild.client.util.error(cmd.guild, new Error(commands.message));
@@ -100,15 +106,13 @@ export const create = async (guild: Discord.Guild) => {
  });
 };
 
-export const getRegisterCommands = (
- interactions: Discord.Client<true>['util']['constants']['commands']['interactions'],
-) =>
+export const getRegisterCommands = (interactions: typeof Interactions) =>
  interactions.map((c) => {
-  const command = new Discord.SlashCommandBuilder().setName(c.name).setDescription(c.desc);
+  const command = new SlashCommandBuilder().setName(c.name).setDescription(c.desc);
 
   if (c.users) {
    command.addUserOption(
-    new Discord.SlashCommandUserOption()
+    new SlashCommandUserOption()
      .setDescription('The User to interact with')
      .setRequired(c.reqUser)
      .setName('user'),
@@ -116,7 +120,7 @@ export const getRegisterCommands = (
   }
 
   command.addStringOption(
-   new Discord.SlashCommandStringOption()
+   new SlashCommandStringOption()
     .setName('text')
     .setDescription('The text to Display')
     .setRequired(false),
@@ -125,10 +129,7 @@ export const getRegisterCommands = (
   if ('specialOptions' in c && c.specialOptions) {
    c.specialOptions.forEach((o) =>
     command.addStringOption(
-     new Discord.SlashCommandStringOption()
-      .setName(o.name)
-      .setDescription(o.desc)
-      .setRequired(false),
+     new SlashCommandStringOption().setName(o.name).setDescription(o.desc).setRequired(false),
     ),
    );
   }
@@ -136,7 +137,7 @@ export const getRegisterCommands = (
   if (c.users) {
    new Array(5).fill(null).forEach((_, i) => {
     command.addUserOption(
-     new Discord.SlashCommandUserOption()
+     new SlashCommandUserOption()
       .setDescription(`Another User to interact with`)
       .setRequired(false)
       .setName(`user-${i}`),

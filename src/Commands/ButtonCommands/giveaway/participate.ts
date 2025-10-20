@@ -87,7 +87,7 @@ const edit = async (
 
  if (
   !msg.flags.has(RMessageFlags.Crossposted) ||
-  msg.channel.type !== Discord.ChannelType.GuildAnnouncement
+  msg.channel.type !== ChannelType.GuildAnnouncement
  ) {
   cmd.client.util.request.channels.editMsg(msg, {
    embeds: [await getGiveawayEmbed(language, giveaway)],

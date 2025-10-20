@@ -5,7 +5,7 @@ export default async (cmd: Discord.ButtonInteraction<'cached'>, args: string[]) 
  if (args[0] && args[0] !== cmd.user.id) return;
 
  if (
-  ![Discord.ChannelType.PublicThread, Discord.ChannelType.PrivateThread].includes(cmd.channel.type)
+  ![ChannelType.PublicThread, ChannelType.PrivateThread].includes(cmd.channel.type)
  ) {
   return;
  }

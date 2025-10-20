@@ -64,7 +64,7 @@ export const updateChannels = async (
 
  const editChannels = (channels?.length ? channels : guild.channels.cache.map((c) => c)).filter(
   (c) =>
-   [...AllNonThreadGuildChannelTypes, Discord.ChannelType.GuildCategory].includes(c.type) &&
+   [...AllNonThreadGuildChannelTypes, ChannelType.GuildCategory].includes(c.type) &&
    'permissionOverwrites' in c &&
    !c.permissionOverwrites.cache.has(roleId) &&
    ('permissionsLocked' in c ? !c.permissionsLocked : true) &&

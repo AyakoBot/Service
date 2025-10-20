@@ -46,14 +46,14 @@ export default async (
  const amount = isCmd ? cmd.options.getInteger('amount', false) : rawAmount;
  const channel = isCmd
   ? (cmd.options.getChannel('channel', false, [
-     Discord.ChannelType.AnnouncementThread,
-     Discord.ChannelType.PublicThread,
-     Discord.ChannelType.GuildAnnouncement,
-     Discord.ChannelType.PrivateThread,
-     Discord.ChannelType.GuildStageVoice,
-     Discord.ChannelType.GuildText,
-     Discord.ChannelType.GuildVoice,
-    ]) ?? (cmd.channel as Discord.GuildTextBasedChannel))
+     ChannelType.AnnouncementThread,
+     ChannelType.PublicThread,
+     ChannelType.GuildAnnouncement,
+     ChannelType.PrivateThread,
+     ChannelType.GuildStageVoice,
+     ChannelType.GuildText,
+     ChannelType.GuildVoice,
+    ]) ?? (cmd.channel as RChannel))
   : cmd.channel;
 
  const language = await cmd.client.util.getLanguage(cmd.guildId);
@@ -62,7 +62,7 @@ export default async (
   await getMessages(
    type,
    cmd as Parameters<typeof getMessages>[1],
-   channel as Discord.GuildTextBasedChannel,
+   channel as RChannel,
   )
  )
   .sort((a, b) => b.createdTimestamp - a.createdTimestamp)
@@ -86,7 +86,7 @@ export default async (
    100,
   )
   .forEach((c) => {
-   cmd.client.util.request.channels.bulkDelete(channel as Discord.GuildTextBasedChannel, c);
+   cmd.client.util.request.channels.bulkDelete(channel as RChannel, c);
   });
 
  if (!isCmd) return;
@@ -99,8 +99,8 @@ export default async (
 
 const getMessages = async (
  type: ClearType,
- cmd: Discord.ChatInputCommandInteraction<'cached'> & { channel: Discord.GuildTextBasedChannel },
- channel: Discord.GuildTextBasedChannel,
+ cmd: Discord.ChatInputCommandInteraction<'cached'> & { channel: RChannel },
+ channel: RChannel,
 ) => {
  switch (type) {
   case 'user':

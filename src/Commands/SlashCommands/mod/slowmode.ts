@@ -3,13 +3,13 @@ import { canEdit } from '../../../BaseClient/UtilModules/requestHandler/channels
 
 export default async (cmd: Discord.ChatInputCommandInteraction<'cached'>) => {
  const channel = cmd.options.getChannel('channel', true, [
-  Discord.ChannelType.GuildAnnouncement,
-  Discord.ChannelType.GuildText,
-  Discord.ChannelType.GuildVoice,
-  Discord.ChannelType.GuildStageVoice,
-  Discord.ChannelType.PublicThread,
-  Discord.ChannelType.PrivateThread,
-  Discord.ChannelType.AnnouncementThread,
+  ChannelType.GuildAnnouncement,
+  ChannelType.GuildText,
+  ChannelType.GuildVoice,
+  ChannelType.GuildStageVoice,
+  ChannelType.PublicThread,
+  ChannelType.PrivateThread,
+  ChannelType.AnnouncementThread,
  ]);
  const time = cmd.options.getNumber('time', true);
  const language = await cmd.client.util.getLanguage(cmd.guildId);
@@ -33,7 +33,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction<'cached'>) => {
  cmd.client.util.replyCmd(cmd, {
   content:
    time === 0
-    ? lan.deleted(channel as Discord.GuildChannel)
-    : lan.success(channel as Discord.GuildChannel, cmd.client.util.moment(time * 1000, language)),
+    ? lan.deleted(channel as RChannel)
+    : lan.success(channel as RChannel, cmd.client.util.moment(time * 1000, language)),
  });
 };

@@ -29,7 +29,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], multi: boo
     (await cmd.client.util.request.channels.getMessages(cmd.channel, { limit: 1 })))
   : undefined;
 
- if (cmd.channel?.type === Discord.ChannelType.PrivateThread) {
+ if (cmd.channel?.type === ChannelType.PrivateThread) {
   cmd.client.util.request.channels.delete(cmd.channel);
  }
 
