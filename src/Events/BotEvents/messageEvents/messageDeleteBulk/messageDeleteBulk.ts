@@ -4,7 +4,7 @@ import welcomeGifChannel from './welcomeGifChannel.js';
 
 export default async (
  msgs: Discord.Collection<Discord.Snowflake, RMessage>,
- channel: Discord.GuildTextBasedChannel,
+ channel: RChannel,
 ) => {
  welcomeGifChannel(msgs, channel)
  log(msgs, channel);

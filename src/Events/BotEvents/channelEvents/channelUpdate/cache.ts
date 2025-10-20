@@ -4,27 +4,27 @@ import * as Discord from 'discord.js';
 export default async (
  _oldChannel:
   | Discord.CategoryChannel
-  | Discord.NewsChannel
   | RChannel
-  | Discord.TextChannel
-  | Discord.PrivateThreadChannel
-  | Discord.PublicThreadChannel<boolean>
+  | RChannel
+  | RChannel
+  | RThread
+  | RThread
   | Discord.VoiceChannel
   | Discord.ForumChannel
   | Discord.MediaChannel
   | undefined,
  channel:
   | Discord.CategoryChannel
-  | Discord.NewsChannel
   | RChannel
-  | Discord.TextChannel
+  | RChannel
+  | RChannel
   | Discord.AnyThreadChannel
   | Discord.VoiceChannel
   | Discord.MediaChannel
   | Discord.ForumChannel,
 ) => {
  if (channel.isThread()) return;
- if (channel.type === Discord.ChannelType.GuildCategory) return;
+ if (channel.type === ChannelType.GuildCategory) return;
 
  const perms = channel.permissionOverwrites.cache
   .filter((p) => p.type === Discord.OverwriteType.Member)
@@ -47,11 +47,11 @@ export default async (
    if (!applyingPerm) return true;
 
    return (
-    !applyingPerm.deny.has(Discord.PermissionFlagsBits.SendMessages) ||
-    !applyingPerm.deny.has(Discord.PermissionFlagsBits.SendMessagesInThreads) ||
-    !applyingPerm.deny.has(Discord.PermissionFlagsBits.ViewChannel) ||
-    !applyingPerm.deny.has(Discord.PermissionFlagsBits.AddReactions) ||
-    !applyingPerm.deny.has(Discord.PermissionFlagsBits.Connect)
+    !applyingPerm.deny.has(PermissionFlagsBits.SendMessages) ||
+    !applyingPerm.deny.has(PermissionFlagsBits.SendMessagesInThreads) ||
+    !applyingPerm.deny.has(PermissionFlagsBits.ViewChannel) ||
+    !applyingPerm.deny.has(PermissionFlagsBits.AddReactions) ||
+    !applyingPerm.deny.has(PermissionFlagsBits.Connect)
    );
   })
   .forEach(async (data) => {

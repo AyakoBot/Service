@@ -4,10 +4,10 @@ import * as CT from '../../../../Typings/Typings.js';
 export default async (
  oldChannel:
   | Discord.CategoryChannel
-  | Discord.NewsChannel
   | RChannel
-  | Discord.TextChannel
-  | Discord.PrivateThreadChannel
+  | RChannel
+  | RChannel
+  | RThread
   | Discord.PublicThreadChannel
   | Discord.VoiceChannel
   | Discord.ForumChannel
@@ -16,10 +16,10 @@ export default async (
   | undefined,
  channel:
   | Discord.CategoryChannel
-  | Discord.NewsChannel
   | RChannel
-  | Discord.TextChannel
-  | Discord.PrivateThreadChannel
+  | RChannel
+  | RChannel
+  | RThread
   | Discord.PublicThreadChannel
   | Discord.VoiceChannel
   | Discord.ForumChannel
@@ -61,10 +61,10 @@ export default async (
      c,
     ): c is
      | Discord.CategoryChannel
-     | Discord.NewsChannel
      | RChannel
-     | Discord.TextChannel
-     | Discord.PrivateThreadChannel
+     | RChannel
+     | RChannel
+     | RThread
      | Discord.PublicThreadChannel
      | Discord.VoiceChannel
      | Discord.ForumChannel

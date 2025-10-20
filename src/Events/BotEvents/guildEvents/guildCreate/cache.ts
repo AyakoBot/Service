@@ -8,11 +8,11 @@ export default (guild: Discord.Guild) => {
  guild.channels.cache
   .filter(
    (c) =>
-    c.type !== Discord.ChannelType.PublicThread &&
-    c.type !== Discord.ChannelType.PrivateThread &&
-    c.type !== Discord.ChannelType.AnnouncementThread,
+    c.type !== ChannelType.PublicThread &&
+    c.type !== ChannelType.PrivateThread &&
+    c.type !== ChannelType.AnnouncementThread,
   )
-  .forEach((c) => stickyPerms(undefined, c as Discord.GuildChannel));
+  .forEach((c) => stickyPerms(undefined, c as RChannel));
 
  guild.client.util.DataBase.guilds
   .create({

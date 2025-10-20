@@ -12,7 +12,7 @@ export default async (member: RMember) => {
   member.guild.rulesChannel &&
   !(await canCreateThread(
    member.guild.rulesChannel,
-   { type: Discord.ChannelType.PrivateThread, name: '' },
+   { type: ChannelType.PrivateThread, name: '' },
    member.guild.members.me,
   ))
  ) {

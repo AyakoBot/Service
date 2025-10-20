@@ -277,10 +277,10 @@ export default async (
    array: RAutomod['actions'],
    channel: (
     | RChannel
-    | Discord.PrivateThreadChannel
-    | Discord.PublicThreadChannel<boolean>
-    | Discord.NewsChannel
-    | Discord.TextChannel
+    | RThread
+    | RThread
+    | RChannel
+    | RChannel
     | Discord.VoiceChannel
     | undefined
    )[],

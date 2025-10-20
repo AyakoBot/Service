@@ -109,7 +109,7 @@ const amMessageCheck = (msg: RMessage) => {
   if (msg.author.bot) return;
 
   const messages = await msg.client.util.request.channels
-   .getMessages(msg.channel as Discord.GuildTextBasedChannel, { limit: 100 })
+   .getMessages(msg.channel as RChannel, { limit: 100 })
    .then((msgs) => ('message' in msgs ? undefined : msgs.map((m) => m)));
   const messagesFromSameAuthor = messages?.filter((m) => m.author.id === msg.author.id);
 

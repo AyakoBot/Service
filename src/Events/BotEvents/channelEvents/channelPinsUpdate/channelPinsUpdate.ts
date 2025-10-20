@@ -4,9 +4,9 @@ import channelPinsDelete from './channelPinsDelete/channelPinsDelete.js';
 
 export default async (
  channel:
-  | Discord.NewsChannel
-  | Discord.TextChannel
-  | Discord.PrivateThreadChannel
+  | RChannel
+  | RChannel
+  | RThread
   | Discord.PublicThreadChannel
   | Discord.VoiceChannel,
  date: Date,

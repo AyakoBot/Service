@@ -4,9 +4,9 @@ import * as CT from '../../../../../Typings/Typings.js';
 export default async (
  msg: RMessage,
  channel:
-  | Discord.NewsChannel
-  | Discord.TextChannel
-  | Discord.PrivateThreadChannel
+  | RChannel
+  | RChannel
+  | RThread
   | Discord.PublicThreadChannel
   | Discord.VoiceChannel,
 ) => {

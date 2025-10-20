@@ -18,6 +18,6 @@ export default async (oldChannel: Discord.Channel | undefined, channel: Discord.
  voiceHub(channel);
 
  Jobs.scheduleJob(getPathFromError(new Error(channel.id)), new Date(Date.now() + 10000), () => {
-  stickyPerms(oldChannel as Discord.GuildChannel, channel as Discord.GuildChannel);
+  stickyPerms(oldChannel as RChannel, channel as RChannel);
  });
 };

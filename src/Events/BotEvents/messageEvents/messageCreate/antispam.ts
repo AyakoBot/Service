@@ -54,7 +54,7 @@ export default async (msg: RMessage) => {
  if (settings.deletespam) {
   const channels = [...new Set(sentMessages.map((m) => m.channelId))]
    .map((id) => sentMessages.find((m) => m.channelId === id)?.channel)
-   .filter((c): c is Discord.GuildTextBasedChannel => !!c)
+   .filter((c): c is RChannel => !!c)
    .map((c) => ({
     channel: c,
     messages: sentMessages.filter((m) => m.channelId === c.id),

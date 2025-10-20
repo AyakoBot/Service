@@ -3,7 +3,7 @@ import webhooksCreates from './webhooksCreates/webhooksCreates.js';
 import webhooksDeletes from './webhooksDeletes/webhooksDeletes.js';
 import webhooksUpdates from './webhooksUpdates/webhooksUpdates.js';
 
-export default async (channel: Discord.GuildTextBasedChannel) => {
+export default async (channel: RChannel) => {
  if (channel.isThread()) return;
 
  const newWebhooks = await channel.client.util.request.channels.getWebhooks(channel);

@@ -5,7 +5,7 @@ import * as CT from '../../../../Typings/Typings.js';
 export default async (msg: RMessage) => {
  if (msg.author.bot) return;
  if (!msg.guildId) return;
- if (msg.member?.permissions.has(Discord.PermissionFlagsBits.Administrator)) return;
+ if (msg.member?.permissions.has(PermissionFlagsBits.Administrator)) return;
 
  const settings = await msg.client.util.DataBase.invites.findUnique({
   where: { guildid: msg.guildId ?? msg.guild.id, active: true },

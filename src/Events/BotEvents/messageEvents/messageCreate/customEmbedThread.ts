@@ -6,7 +6,7 @@ import startOver from '../../../../Commands/ButtonCommands/embed-builder/startOv
 
 export default async (msg: RMessage) => {
  if (!msg.guild) return;
- if (msg.channel.type !== Discord.ChannelType.PrivateThread) return;
+ if (msg.channel.type !== ChannelType.PrivateThread) return;
 
  const filter = (m: RMessage) => {
   const url = new URL(m.embeds[0]?.url ?? 'https://ayakobot.com');

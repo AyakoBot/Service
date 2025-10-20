@@ -36,14 +36,14 @@ export default async (state: Discord.VoiceState) => {
   Jobs.scheduleJob(
    getPathFromError(new Error(settings.channelid ?? undefined)),
    new Date(Date.now() + Number(settings.deletetime) * 1000),
-   () => del(state.channel as Discord.VoiceBasedChannel),
+   () => del(state.channel as RChannel),
   ),
   state.guild.id,
   state.channel.id,
  );
 };
 
-export const del = (channel: Discord.VoiceBasedChannel) => {
+export const del = (channel: RChannel) => {
  if (channel.members.size) return;
 
  channel.client.util.DataBase.voicechannels

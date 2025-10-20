@@ -14,7 +14,7 @@ export default async (reaction: RMessageReaction, user: RUser) => {
  );
 
  const msg = await reaction.client.util.request.channels
-  .getMessage(reaction.message.channel as Discord.GuildTextBasedChannel, reaction.message.id)
+  .getMessage(reaction.message.channel as RChannel, reaction.message.id)
   .then((m) => ('message' in m ? undefined : m));
  if (!msg) return;
 

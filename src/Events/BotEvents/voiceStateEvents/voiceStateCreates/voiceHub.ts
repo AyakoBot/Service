@@ -5,22 +5,22 @@ import { type Language } from '../../../../Typings/Typings.js';
 import { del } from '../voiceStateDeletes/voiceHub.js';
 
 export const memberPermissions = [
- Discord.PermissionFlagsBits.Connect,
- Discord.PermissionFlagsBits.Speak,
- Discord.PermissionFlagsBits.Stream,
- Discord.PermissionFlagsBits.UseVAD,
- Discord.PermissionFlagsBits.SendMessages,
+ PermissionFlagsBits.Connect,
+ PermissionFlagsBits.Speak,
+ PermissionFlagsBits.Stream,
+ PermissionFlagsBits.UseVAD,
+ PermissionFlagsBits.SendMessages,
 ] as const;
 
 export const managerPermissions = [
  ...memberPermissions,
- Discord.PermissionFlagsBits.ManageMessages,
- Discord.PermissionFlagsBits.ManageChannels,
- Discord.PermissionFlagsBits.ManageRoles,
- Discord.PermissionFlagsBits.MuteMembers,
- Discord.PermissionFlagsBits.DeafenMembers,
- Discord.PermissionFlagsBits.PrioritySpeaker,
- Discord.PermissionFlagsBits.ModerateMembers,
+ PermissionFlagsBits.ManageMessages,
+ PermissionFlagsBits.ManageChannels,
+ PermissionFlagsBits.ManageRoles,
+ PermissionFlagsBits.MuteMembers,
+ PermissionFlagsBits.DeafenMembers,
+ PermissionFlagsBits.PrioritySpeaker,
+ PermissionFlagsBits.ModerateMembers,
 ] as const;
 
 export default async (state: Discord.VoiceState, member?: RMember) => {
@@ -63,14 +63,14 @@ export const createVC = async (
 
  const channelsWithParent = member.guild.channels.cache.filter((c) => c.parentId === hub.parentId);
  const lowestChannel = channelsWithParent
-  .filter((c): c is Discord.VoiceChannel => c.type === Discord.ChannelType.GuildVoice)
+  .filter((c): c is Discord.VoiceChannel => c.type === ChannelType.GuildVoice)
   .sort((a, b) => b.rawPosition - a.rawPosition)
   .first();
 
  const channel = (await client.util.request.guilds.createChannel(guild, {
   parent_id: settings.categoryid,
   name: member.displayName,
-  type: Discord.ChannelType.GuildVoice,
+  type: ChannelType.GuildVoice,
   position: lowestChannel?.rawPosition ?? hub.rawPosition,
   permission_overwrites: [
    {
@@ -84,7 +84,7 @@ export const createVC = async (
         id: member.guild.roles.everyone.id,
         type: Discord.OverwriteType.Role,
         deny: new Discord.PermissionsBitField([
-         Discord.PermissionFlagsBits.Connect,
+         PermissionFlagsBits.Connect,
         ]).bitfield.toString(),
        },
       ]

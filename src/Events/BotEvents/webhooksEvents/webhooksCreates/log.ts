@@ -1,7 +1,7 @@
 import type * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
 
-export default async (webhook: RWebhook, channel: Discord.GuildTextBasedChannel) => {
+export default async (webhook: RWebhook, channel: RChannel) => {
  const channels = await webhook.client.util.getLogChannels('webhookevents', channel.guild);
  if (!channels) return;
 

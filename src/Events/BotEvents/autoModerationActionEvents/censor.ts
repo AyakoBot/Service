@@ -156,9 +156,9 @@ const getWebhook = async (msg: Discord.AutoModerationActionExecution) => {
   : undefined;
  const isThread = channelOrThread
   ? [
-     Discord.ChannelType.PublicThread,
-     Discord.ChannelType.PrivateThread,
-     Discord.ChannelType.AnnouncementThread,
+     ChannelType.PublicThread,
+     ChannelType.PrivateThread,
+     ChannelType.AnnouncementThread,
     ].includes(channelOrThread?.type)
   : false;
 
@@ -175,7 +175,7 @@ const getWebhook = async (msg: Discord.AutoModerationActionExecution) => {
  if (
   !(await msg.guild.client.util.getBotMemberFromGuild(msg.guild))
    ?.permissionsIn(channel.id)
-   .has(Discord.PermissionFlagsBits.ManageWebhooks)
+   .has(PermissionFlagsBits.ManageWebhooks)
  ) {
   msg.guild.client.util.error(msg.guild, new Error('Insufficent Permissions to manage Webhooks'));
   return undefined;

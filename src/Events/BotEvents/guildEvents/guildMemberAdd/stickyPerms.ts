@@ -10,8 +10,8 @@ export default async (member: RMember) => {
  const language = await member.client.util.getLanguage(member.guild.id);
 
  member.guild.channels.cache.forEach(async (channel) => {
-  if (!me?.permissionsIn(channel).has(Discord.PermissionFlagsBits.ManageChannels)) return;
-  if (!me?.permissionsIn(channel).has(Discord.PermissionFlagsBits.ManageRoles)) return;
+  if (!me?.permissionsIn(channel).has(PermissionFlagsBits.ManageChannels)) return;
+  if (!me?.permissionsIn(channel).has(PermissionFlagsBits.ManageRoles)) return;
 
   const sticky = await member.client.util.DataBase.stickypermmembers.findUnique({
    where: { userid_channelid: { userid: member.id, channelid: channel.id } },

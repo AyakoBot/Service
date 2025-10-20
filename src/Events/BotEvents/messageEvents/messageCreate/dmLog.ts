@@ -8,7 +8,7 @@ export default async (msg: RMessage<boolean>) => {
 
  const channel = msg.client.channels.cache.get(
   process.env.dmChannelId ?? '',
- ) as Discord.GuildTextBasedChannel;
+ ) as RChannel;
  if (!channel) return;
 
  const user = await msg.client.util.DataBase.dmLog
@@ -97,14 +97,14 @@ export default async (msg: RMessage<boolean>) => {
  if ('message' in err) throw new Error(err.message);
 };
 
-const createDMLog = async (user: RUser, channel: Discord.GuildTextBasedChannel) => {
+const createDMLog = async (user: RUser, channel: RChannel) => {
  const log = await channel.client.util.request.channels.createThread(
-  channel as Discord.GuildTextBasedChannel,
+  channel as RChannel,
   {
    name: user.id,
    auto_archive_duration: Discord.ThreadAutoArchiveDuration.OneHour,
    invitable: false,
-   type: Discord.ChannelType.PublicThread,
+   type: ChannelType.PublicThread,
   },
  );
  if ('message' in log) return log;

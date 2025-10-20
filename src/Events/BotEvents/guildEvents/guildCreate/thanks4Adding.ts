@@ -2,8 +2,8 @@ import * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
 
 const threadPerms = new Discord.PermissionsBitField([
- Discord.PermissionFlagsBits.CreatePrivateThreads,
- Discord.PermissionFlagsBits.SendMessagesInThreads,
+ PermissionFlagsBits.CreatePrivateThreads,
+ PermissionFlagsBits.SendMessagesInThreads,
 ]);
 
 export default async (guild: Discord.Guild) => {
@@ -11,14 +11,14 @@ export default async (guild: Discord.Guild) => {
  if (!rawChannel.channel) return;
 
  let channel:
-  | Discord.GuildTextBasedChannel
+  | RChannel
   | RThread
   | Error
   | Discord.DiscordAPIError
   | undefined = rawChannel.thread
   ? await guild.client.util.request.channels.createThread(rawChannel.channel, {
      name: '💝',
-     type: Discord.ChannelType.PrivateThread,
+     type: ChannelType.PrivateThread,
     })
   : rawChannel.channel;
 
@@ -26,7 +26,7 @@ export default async (guild: Discord.Guild) => {
  if (!channel) return;
 
  const adder = await getAdder(guild);
- if (channel.type === Discord.ChannelType.PrivateThread && !adder) return;
+ if (channel.type === ChannelType.PrivateThread && !adder) return;
 
  guild.client.util.send(
   channel,
@@ -116,23 +116,23 @@ const getChannel = (guild: Discord.Guild, sendable?: true) => {
    (c) =>
     guild.members.me?.permissionsIn(c).has(threadPerms) &&
     [
-     Discord.ChannelType.PublicThread,
-     Discord.ChannelType.AnnouncementThread,
-     Discord.ChannelType.PrivateThread,
+     ChannelType.PublicThread,
+     ChannelType.AnnouncementThread,
+     ChannelType.PrivateThread,
     ].includes(c.type),
-  ) as Discord.NewsChannel | Discord.TextChannel | undefined;
+  ) as RChannel | RChannel | undefined;
 
  const getAnySendableChannel = () =>
   guild.channels.cache.find(
    (c) =>
-    guild.members.me?.permissionsIn(c).has(Discord.PermissionFlagsBits.SendMessages) &&
-    [Discord.ChannelType.GuildText, Discord.ChannelType.GuildVoice].includes(c.type) &&
+    guild.members.me?.permissionsIn(c).has(PermissionFlagsBits.SendMessages) &&
+    [ChannelType.GuildText, ChannelType.GuildVoice].includes(c.type) &&
     ![
-     Discord.ChannelType.GuildNewsThread,
-     Discord.ChannelType.GuildPublicThread,
-     Discord.ChannelType.GuildPrivateThread,
+     ChannelType.GuildNewsThread,
+     ChannelType.GuildPublicThread,
+     ChannelType.GuildPrivateThread,
     ].includes(c.type),
-  ) as Discord.GuildTextBasedChannel | undefined;
+  ) as RChannel | undefined;
 
  if (sendable) return { thread: false, channel: getAnySendableChannel() };
 

@@ -325,7 +325,7 @@ export default async (guild: Discord.Guild, oldGuild: Discord.Guild) => {
        ? language.languageFunction.getEmote(newEmoji)
        : newEmoji) ?? language.t.None,
       'string',
-      lan.welcomeChannelEmoji(channel as Discord.GuildChannel),
+      lan.welcomeChannelEmoji(channel as RChannel),
      );
     }
    });

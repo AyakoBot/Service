@@ -4,10 +4,10 @@ import * as CT from '../../../../Typings/Typings.js';
 export default async (
  channel:
   | Discord.CategoryChannel
-  | Discord.NewsChannel
   | RChannel
-  | Discord.TextChannel
-  | Discord.PrivateThreadChannel
+  | RChannel
+  | RChannel
+  | RThread
   | Discord.PublicThreadChannel
   | Discord.VoiceChannel
   | Discord.ForumChannel

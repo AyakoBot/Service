@@ -1,8 +1,8 @@
 import * as Discord from 'discord.js';
 
 export default async (
- oldChannel: Discord.GuildChannel | undefined,
- channel: Discord.GuildChannel,
+ oldChannel: RChannel | undefined,
+ channel: RChannel,
 ) => {
  Promise.all(
   channel.permissionOverwrites.cache

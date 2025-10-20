@@ -4,7 +4,7 @@ import messageDelete from '../messageDelete/messageDelete.js';
 
 export default async (
  msgs: Discord.Collection<Discord.Snowflake, RMessage>,
- channel: Discord.GuildTextBasedChannel,
+ channel: RChannel,
 ) => {
  const channels = await channel.client.util.getLogChannels('messageevents', channel.guild);
  if (!channels) return;
