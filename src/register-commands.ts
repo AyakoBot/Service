@@ -2,7 +2,7 @@
 import * as DiscordCore from '@discordjs/core';
 import * as DiscordRest from '@discordjs/rest';
 import { PrismaClient } from '@prisma/client';
-import * as Discord from 'discord.js';
+
 import 'dotenv/config';
 import commands from './SlashCommands/index.js';
 
@@ -42,8 +42,8 @@ await fetch(`https://discordbotlist.com/api/v1/bots/${process.env.mainId}/comman
      .filter((c) => !c.name.includes('action'))
      .map((c) =>
       c
-       .setContexts(Discord.InteractionContextType.Guild)
-       .setIntegrationTypes(Discord.ApplicationIntegrationType.GuildInstall)
+       .setContexts(DiscordCore.InteractionContextType.Guild)
+       .setIntegrationTypes(DiscordCore.ApplicationIntegrationType.GuildInstall)
        .toJSON(),
      ),
    )

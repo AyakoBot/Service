@@ -2,6 +2,7 @@
 /// <reference path="./gateway.d.ts" />
 
 import type { RAutomod as _RAutomod } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/automod.js';
+import type { RAuditLog as _RAuditLog } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/auditlog';
 import type { RBan as _RBan } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/ban.js';
 import type { RChannel as _RChannel } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/channel.js';
 import type { RCommand as _RCommand } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/command.js';
@@ -25,8 +26,10 @@ import type { RUser as _RUser } from '@ayako/gateway/src/BaseClient/Bot/CacheCla
 import type { RVoice as _RVoice } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/voice.js';
 import type { RWebhook as _RWebhook } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/webhook.js';
 
+
 declare global {
  type RAutomod = _RAutomod;
+ type RAuditLog = _RAuditLog;
  type RBan = _RBan;
  type RChannel = _RChannel;
  type RCommand = _RCommand;
