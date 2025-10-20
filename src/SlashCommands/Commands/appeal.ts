@@ -1,9 +1,5 @@
-import {
- ApplicationIntegrationType,
- InteractionContextType,
- SlashCommandBuilder,
- SlashCommandStringOption,
-} from 'discord.js';
+import { SlashCommandBuilder, SlashCommandStringOption } from "@discordjs/builders";
+import { ApplicationIntegrationType, InteractionContextType } from "@discordjs/core";
 
 export default new SlashCommandBuilder()
  .setName('appeal')

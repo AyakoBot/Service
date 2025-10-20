@@ -1,6 +1,14 @@
-import * as Discord from 'discord.js';
+import {
+ SlashCommandBooleanOption,
+ SlashCommandBuilder,
+ SlashCommandSubcommandBuilder
+} from '@discordjs/builders';
+import {
+ ApplicationIntegrationType,
+ InteractionContextType
+} from '@discordjs/core';
 
-export const ephemeral = new Discord.SlashCommandBooleanOption()
+export const ephemeral = new SlashCommandBooleanOption()
  .setName('hide')
  .setDescription('Whether to hide the Response and make it ephemeral')
  .setRequired(false);
@@ -20,22 +28,22 @@ const categories = {
  shiro: 'Get a random Shiro Image',
 };
 
-const images = new Discord.SlashCommandBuilder()
+const images = new SlashCommandBuilder()
  .setName('images')
  .setDescription('Get a random Image')
  .setContexts([
-  Discord.InteractionContextType.BotDM,
-  Discord.InteractionContextType.Guild,
-  Discord.InteractionContextType.PrivateChannel,
+  InteractionContextType.BotDM,
+  InteractionContextType.Guild,
+  InteractionContextType.PrivateChannel,
  ])
  .setIntegrationTypes([
-  Discord.ApplicationIntegrationType.GuildInstall,
-  Discord.ApplicationIntegrationType.UserInstall,
+  ApplicationIntegrationType.GuildInstall,
+  ApplicationIntegrationType.UserInstall,
  ]);
 
 Object.entries(categories).forEach(([name, description]) => {
  images.addSubcommand(
-  new Discord.SlashCommandSubcommandBuilder()
+  new SlashCommandSubcommandBuilder()
    .setName(name)
    .setDescription(description)
    .addBooleanOption(ephemeral),
