@@ -13,7 +13,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
 ): Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [buttonParsers.create(language, name)],
  },
 ];

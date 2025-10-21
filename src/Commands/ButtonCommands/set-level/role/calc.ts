@@ -98,21 +98,21 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: components[0],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: components[1],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: (
      cmd.message.components[2] as Discord.ActionRow<RMessageActionRowComponent>
     ).components.map((c) => c.data),
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: (
      cmd.message.components[3] as Discord.ActionRow<RMessageActionRowComponent>
     ).components.map((c) => c.data),

@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import { ChannelBanBits } from '../../../../Typings/Channel.js';
 import * as CT from '../../../../Typings/Typings.js';
 
@@ -40,15 +39,15 @@ export default async (
    ],
   };
 
-  if (message instanceof RMessage) request.channels.editMsg(message, payload);
-  else if (!(cmd instanceof RMessage) && cmd) cmd.editReply(payload);
+  if ('application_id' in message) request.channels.editMsg(message, payload);
+  else if (cmd && 'token' in cmd) cmd.editReply(payload);
   return false;
  }
 
  const memberRes = await getMembers(cmd, options, language, message, type);
  if (memberRes && !memberRes.canExecute) return false;
 
- rmVotePunish(options, memberRes?.executorMember, cmd?.channelId);
+ rmVotePunish(options, memberRes?.executorMember, cmd?.channel_id);
 
  if (!memberRes) {
   const sticky = await DataBase.sticky.findUnique({ where: { guildid: options.guild.id } });

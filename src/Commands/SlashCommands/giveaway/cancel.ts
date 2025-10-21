@@ -37,7 +37,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
    embeds: [giveawayEmbed],
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [participateButton],
     },
    ],

@@ -47,7 +47,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
       { exempt_roles: [] },
       cmd.user.username,
      )
- ).catch((e) => e as Discord.DiscordAPIError);
+ ).catch((e) => e as DiscordAPIError);
 
  if ('message' in updatedRule) {
   cmd.client.util.errorCmd(cmd, updatedRule, language);

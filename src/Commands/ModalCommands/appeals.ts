@@ -47,11 +47,11 @@ export default async (cmd: Discord.ModalSubmitInteraction, args: string[]) => {
   embeds: [mainEmbed, embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: accept ? Discord.ButtonStyle.Success : Discord.ButtonStyle.Danger,
+      type: ComponentType.Button,
+      style: accept ? ButtonStyle.Success : ButtonStyle.Danger,
       label: accept ? lan.accepted : lan.rejected,
       disabled: true,
       custom_id: '-',

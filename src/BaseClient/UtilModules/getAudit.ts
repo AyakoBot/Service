@@ -11,7 +11,7 @@ import sleep from './sleep.js';
  * @returns The latest audit log entry of the given type
  * and target ID (if provided), or undefined if no such entry exists.
  */
-export default async (guild: Discord.Guild, type: number, targetId?: string) => {
+export default async (guild: RGuild, type: number, targetId?: string) => {
  await sleep(1000);
 
  const audits = await cache.auditLogs.get(guild, type);

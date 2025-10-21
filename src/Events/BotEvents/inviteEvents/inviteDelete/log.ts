@@ -1,7 +1,7 @@
 import type * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
 
-export default async (invite: RInvite, guild: Discord.Guild) => {
+export default async (invite: RInvite, guild: RGuild) => {
  const channels = await invite.client.util.getLogChannels('inviteevents', guild);
  if (!channels) return;
 

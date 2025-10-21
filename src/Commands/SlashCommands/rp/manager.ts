@@ -63,12 +63,12 @@ export const getComponents = (
  guildsettings?: CT.DataBaseTables['guildsettings'] & { appid: string | null },
 ): Discord.APIActionRowComponent<Discord.APIButtonComponent>[] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     label: lan.button,
-    style: guildsettings?.enabledrp ? Discord.ButtonStyle.Success : Discord.ButtonStyle.Danger,
+    style: guildsettings?.enabledrp ? ButtonStyle.Success : ButtonStyle.Danger,
     custom_id: 'rp/toggle',
     emoji: guildsettings?.enabledrp
      ? cmd.client.util.emotes.enabled
@@ -79,9 +79,9 @@ export const getComponents = (
      cmd.client.util.cache.interactionInstallmentRunningFor.has(cmd.guildId),
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     label: lan.sync,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     custom_id: 'rp/sync',
     emoji: cmd.client.util.emotes.refresh,
     disabled:
@@ -90,9 +90,9 @@ export const getComponents = (
      Number(guildsettings?.lastrpsyncrun) > Date.now() - 3600000,
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     label: language.t.login,
-    style: Discord.ButtonStyle.Link,
+    style: ButtonStyle.Link,
     url: `https://discord.com/oauth2/authorize?client_id=${
      guildsettings?.appid ?? process.env.mainId
     }&response_type=code&redirect_uri=https%3A%2F%2Fayakobot.com%2Flogin&scope=${

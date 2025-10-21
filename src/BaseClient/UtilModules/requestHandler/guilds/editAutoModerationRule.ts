@@ -16,7 +16,7 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  ruleId: string,
  body: Discord.RESTPatchAPIAutoModerationRuleJSONBody,
  reason?: string,
@@ -28,15 +28,15 @@ export default async (
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .editAutoModerationRule(guild.id, ruleId, body, { reason })
   .then((r) => new Classes.AutoModerationRule(guild.client, r, guild))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

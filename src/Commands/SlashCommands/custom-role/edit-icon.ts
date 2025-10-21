@@ -9,7 +9,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
 
  const { language, lan } = settings;
 
- if (!cmd.guild.features.includes(Discord.GuildFeature.RoleIcons)) {
+ if (!cmd.guild.features.includes(RGuildFeature.RoleIcons)) {
   cmd.client.util.errorCmd(cmd, lan.iconsNotAvailable, language);
   return;
  }

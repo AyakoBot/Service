@@ -166,8 +166,8 @@ export const putComponents = async (
         animated: emote?.animated,
        },
        custom_id: `roles/button-roles/takeRole_${s.uniquetimestamp}`,
-       style: Discord.ButtonStyle.Secondary,
-       type: Discord.ComponentType.Button,
+       style: ButtonStyle.Secondary,
+       type: ComponentType.Button,
       };
      }),
      5,
@@ -176,7 +176,7 @@ export const putComponents = async (
 
  const action = await message.client.util.request.channels.editMsg(message, {
   components: chunks.map((c) => ({
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: c,
   })),
  });

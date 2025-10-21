@@ -13,7 +13,7 @@ import { getAPI } from './addReaction.js';
  * @returns A promise that resolves with the deleted permission overwrite,
  * or rejects with a DiscordAPIError.
  */
-export default async (channel: Discord.GuildBasedChannel, overwriteId: string, reason?: string) => {
+export default async (channel: RChannel, overwriteId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDeletePermissionOverwrite(channel.id, await getBotMemberFromGuild(channel.guild))) {
@@ -22,14 +22,14 @@ export default async (channel: Discord.GuildBasedChannel, overwriteId: string, r
    [PermissionFlagsBits.ManageRoles],
   );
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .deletePermissionOverwrite(channel.id, overwriteId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

@@ -1,6 +1,8 @@
-import * as Discord from 'discord.js';
+import type {
+ APIChatInputApplicationCommandGuildInteraction,
+ APIInteractionResponseCallbackData,
+} from '@discordjs/core';
 import * as CT from '../../Typings/Typings.js';
-
 import cache from './cache.js';
 import { getLanguage } from './getLanguage.js';
 import log from './log.js';
@@ -13,11 +15,8 @@ import mod from './mod/mod.js';
 import notifyTarget from './mod/notifyTarget.js';
 import startLoading from './mod/startLoading.js';
 
-export type CmdType =
- | Discord.ChatInputCommandInteraction<'cached'>
- | RMessage
- | undefined;
-export type ResponseMessage = Discord.InteractionResponse<true> | RMessage | undefined;
+export type CmdType = APIChatInputApplicationCommandGuildInteraction | RMessage | undefined;
+export type ResponseMessage = APIInteractionResponseCallbackData | RMessage | undefined;
 
 /**
  * Runs the specified moderation action based on the given command type,

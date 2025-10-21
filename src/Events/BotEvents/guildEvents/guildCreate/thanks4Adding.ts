@@ -6,7 +6,7 @@ const threadPerms = new Discord.PermissionsBitField([
  PermissionFlagsBits.SendMessagesInThreads,
 ]);
 
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  const rawChannel = getChannel(guild);
  if (!rawChannel.channel) return;
 
@@ -14,7 +14,7 @@ export default async (guild: Discord.Guild) => {
   | RChannel
   | RThread
   | Error
-  | Discord.DiscordAPIError
+  | DiscordAPIError
   | undefined = rawChannel.thread
   ? await guild.client.util.request.channels.createThread(rawChannel.channel, {
      name: '💝',
@@ -35,7 +35,7 @@ export default async (guild: Discord.Guild) => {
 };
 
 export const getPayload = (
- guild: Discord.Guild,
+ guild: RGuild,
  adder: string | undefined,
  language: CT.Language,
 ): CT.UsualMessagePayload => ({
@@ -53,45 +53,45 @@ export const getPayload = (
  ],
  components: [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.events.guildMemberAdd.thanks4Adding.buttons.mod,
-     style: Discord.ButtonStyle.Primary,
+     style: ButtonStyle.Primary,
      custom_id: 'thanks4Adding/mod',
      emoji: guild.client.util.emotes.ban,
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.events.guildMemberAdd.thanks4Adding.buttons.rp,
-     style: Discord.ButtonStyle.Primary,
+     style: ButtonStyle.Primary,
      custom_id: 'thanks4Adding/rp',
      emoji: guild.client.util.emotes.rp,
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.events.guildMemberAdd.thanks4Adding.buttons.settings,
-     style: Discord.ButtonStyle.Primary,
+     style: ButtonStyle.Primary,
      custom_id: 'thanks4Adding/settings',
      emoji: guild.client.util.emotes.settings,
     },
    ],
   },
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: 'YouTube',
      url: 'https://youtube.com/@AyakoBot',
-     style: Discord.ButtonStyle.Link,
+     style: ButtonStyle.Link,
      emoji: guild.client.util.emotes.youtube,
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.events.guildMemberAdd.thanks4Adding.buttons.support,
-     style: Discord.ButtonStyle.Link,
+     style: ButtonStyle.Link,
      url: guild.client.util.constants.standard.support,
      emoji: guild.client.util.emotes.userFlags.DiscordEmployee,
     },
@@ -100,7 +100,7 @@ export const getPayload = (
  ],
 });
 
-const getAdder = async (guild: Discord.Guild) => {
+const getAdder = async (guild: RGuild) => {
  const logs = await guild.client.util.request.guilds.getAuditLogs(guild, {
   action_type: Discord.AuditLogEvent.BotAdd,
   limit: 50,
@@ -110,7 +110,7 @@ const getAdder = async (guild: Discord.Guild) => {
  return logs.entries.find((e) => e.targetId === guild.client.user?.id)?.executorId;
 };
 
-const getChannel = (guild: Discord.Guild, sendable?: true) => {
+const getChannel = (guild: RGuild, sendable?: true) => {
  const getAnyThreadableChannel = () =>
   guild.channels.cache.find(
    (c) =>

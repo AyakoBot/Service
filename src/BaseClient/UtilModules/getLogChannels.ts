@@ -27,7 +27,7 @@ export default (
   | 'settingslog'
   | 'modlog'
   | 'memberevents',
- guild: Discord.Guild,
+ guild: RGuild,
 ): Promise<string[] | undefined> =>
  DataBase.logchannels
   .findUnique({ where: { guildid: guild.id }, select: { [columnName]: true } })

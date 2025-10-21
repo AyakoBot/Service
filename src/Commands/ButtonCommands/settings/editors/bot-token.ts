@@ -46,12 +46,12 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      cmd.client.util.settingsHelpers.changeHelpers.back(settingName, Number(uniquetimestamp)),
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Success,
+      type: ComponentType.Button,
+      style: ButtonStyle.Success,
       custom_id: `settings/editors/string_${fieldName}_${settingName}_${uniquetimestamp}`,
       label: (
        language.slashCommands.settings.categories[settingName].fields[fieldName as never] as Record<

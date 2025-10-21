@@ -128,13 +128,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, !!settings?.active, CT.GlobalDescType.Active, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.disableinvites, 'disableinvites', name, undefined),
    buttonParsers.boolean(language, settings?.actiontof, 'actiontof', name, undefined),
@@ -144,14 +144,14 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings?.jointhreshold, 'jointhreshold', name, undefined),
    buttonParsers.specific(language, settings?.timeout, 'timeout', name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.posttof, 'posttof', name, undefined),
    ...(settings?.posttof

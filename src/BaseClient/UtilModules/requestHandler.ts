@@ -1,13 +1,14 @@
 import * as DiscordCore from '@discordjs/core';
 import * as DiscordRest from '@discordjs/rest';
-import type { Guild } from 'discord.js';
-import { API } from '../Client.js';
-import cache from './cache.js';
+
+import { api } from '../Client.js';
+import db from '../DataBase.js';
 
 import rateLimited from '../../Events/RestEvents/rateLimited.js';
 import response from '../../Events/RestEvents/response.js';
 import restDebug from '../../Events/RestEvents/restDebug.js';
 
+import cache from './cache.js';
 import applications from './requestHandler/applications.js';
 import channels from './requestHandler/channels.js';
 import commands from './requestHandler/commands.js';
@@ -19,6 +20,7 @@ import threads from './requestHandler/threads.js';
 import users from './requestHandler/users.js';
 import voice from './requestHandler/voice.js';
 import webhooks from './requestHandler/webhooks.js';
+
 
 /**
  * Sets up a new API instance for the given guild ID and token.
@@ -66,8 +68,8 @@ const getOwnGuild = async (guildId: string, api: DiscordCore.API) => {
 
 export default requestHandler;
 
-export const makeRequestHandler = async (guild: Guild) => {
- const ccSettings = await guild.client.util.DataBase.customclients.findUnique({
+export const makeRequestHandler = async (guild: RGuild) => {
+ const ccSettings = await db.customclients.findUnique({
   where: { guildid: guild.id, token: { not: null } },
  });
  if (!ccSettings) return false;
@@ -83,13 +85,16 @@ export const request = {
  commands,
  channels,
  guilds,
- webhooks,
+ interactions: api.interactions,
  invites,
- oAuth2: API.oauth2,
- roleConnections: API.roleConnections,
+ monetization: api.monetization,
+ oauth2: api.oauth2,
+ poll: api.poll,
+ roleConnections: api.roleConnections,
  stageInstances,
  stickers,
  threads,
  users,
  voice,
+ webhooks,
 };

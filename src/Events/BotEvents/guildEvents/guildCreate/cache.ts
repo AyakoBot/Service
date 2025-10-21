@@ -2,7 +2,7 @@ import * as Discord from 'discord.js';
 import stickyPerms from '../../channelEvents/channelUpdate/stickyPerms.js';
 import { startupTasks } from '../../readyEvents/startupTasks/cache.js';
 
-export default (guild: Discord.Guild) => {
+export default (guild: RGuild) => {
  Object.values(startupTasks).forEach((t) => t([guild.id]));
 
  guild.channels.cache

@@ -13,7 +13,7 @@ export default async (cmd: Discord.Interaction) => {
   `${process.cwd()}${process.cwd().includes('dist') ? '' : '/dist'}/Commands/**/*`,
  );
 
- const path = `${RCommandType[cmd.commandType]}/${cmd.commandName
+ const path = `${ApplicationCommandType[cmd.commandType]}/${cmd.commandName
   .replace(/\s+/g, '-')
   .toLowerCase()}`;
 

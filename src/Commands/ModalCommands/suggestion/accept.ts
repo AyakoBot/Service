@@ -27,8 +27,8 @@ export default async (cmd: Discord.ModalSubmitInteraction, args: string[], accep
   return;
  }
 
- const paragraph = cmd.fields.getField('paragraph', Discord.ComponentType.TextInput)?.value;
- const short = cmd.fields.getField('short', Discord.ComponentType.TextInput)?.value;
+ const paragraph = cmd.fields.getField('paragraph', ComponentType.TextInput)?.value;
+ const short = cmd.fields.getField('short', ComponentType.TextInput)?.value;
 
  const embed: Discord.APIEmbed = {
   author: {
@@ -53,11 +53,11 @@ export default async (cmd: Discord.ModalSubmitInteraction, args: string[], accep
   embeds: [...message.embeds.map((e) => e.data), embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       label: language.t.Delete,
       emoji: client.util.emotes.trash,
       custom_id: `suggestion/delete`,

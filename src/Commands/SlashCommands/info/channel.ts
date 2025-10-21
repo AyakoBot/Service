@@ -41,7 +41,7 @@ const getEmbed = async (
    const rawMember = await cl.util.request.guilds.getMember(g, mid);
    const member = 'message' in rawMember ? undefined : rawMember;
 
-   const c = cl.channels?.cache.get(id) as Discord.GuildBasedChannel;
+   const c = cl.channels?.cache.get(id) as RChannel;
    if (!c) return undefined;
 
    const language = await cl.util.getLanguage(gid);

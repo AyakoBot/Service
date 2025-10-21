@@ -25,23 +25,23 @@ export default async (
  cmd.update({
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components:
-     cmd.message.components[0].type === Discord.ComponentType.ActionRow
+     cmd.message.components[0].type === ComponentType.ActionRow
       ? cmd.message.components[0].components
          .map((c) => c.toJSON())
          .filter((c) => ('custom_id' in c ? !c.custom_id.includes('voteReminder') : true))
       : [],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.events.vote.reminder.reminders,
       emoji: isEnableAction ? cmd.client.util.emotes.enabled : cmd.client.util.emotes.disabled,
       custom_id: isEnableAction ? 'voteReminder/disable' : 'voteReminder/enable',
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
      },
     ],
    },

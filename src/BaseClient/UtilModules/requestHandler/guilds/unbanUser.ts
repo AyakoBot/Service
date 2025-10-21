@@ -12,7 +12,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param reason - The reason for unbanning the user (optional).
  * @returns A promise that resolves with the DiscordAPIError if an error occurs, otherwise void.
  */
-export default async (guild: Discord.Guild, userId: string, reason?: string) => {
+export default async (guild: RGuild, userId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canUnbanUser(await getBotMemberFromGuild(guild))) {
@@ -20,14 +20,14 @@ export default async (guild: Discord.Guild, userId: string, reason?: string) => 
    PermissionFlagsBits.BanMembers,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .unbanUser(guild.id, userId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

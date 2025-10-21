@@ -79,12 +79,12 @@ export default async (msg: RMessage) => {
       ),
      components: [
       {
-       type: Discord.ComponentType.ActionRow,
+       type: ComponentType.ActionRow,
        components: [
         {
          label: lan.button,
-         type: Discord.ComponentType.Button,
-         style: Discord.ButtonStyle.Secondary,
+         type: ComponentType.Button,
+         style: ButtonStyle.Secondary,
          disabled: true,
          custom_id: '-',
         },

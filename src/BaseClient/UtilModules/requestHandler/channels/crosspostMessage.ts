@@ -1,10 +1,12 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
+import { cache } from '../../../Client.js';
 
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from './addReaction.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 
 /**
  * Crossposts a message to all following channels.
@@ -15,35 +17,41 @@ import { getAPI } from './addReaction.js';
 export default async (msg: RMessage) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- const me = await getBotMemberFromGuild(msg.guild);
+ const me = await getBotMemberFromGuild(msg.guild_id);
 
- if (!canCrosspostMessages(msg, me)) {
-  const e = requestHandlerError(`Cannot crosspost message in ${msg.guild.name} / ${msg.guild.id}`, [
+ if (!canCrosspostMessages(msg, me.user_id)) {
+  const e = requestHandlerError(`Cannot crosspost message in ${msg.guild_id}`, [
    PermissionFlagsBits.SendMessages,
-   ...(msg.author.id === me.id ? [PermissionFlagsBits.ManageMessages] : []),
+   ...(msg.author_id === me.user_id ? [PermissionFlagsBits.ManageMessages] : []),
   ]);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- return (await getAPI(msg.guild)).channels
-  .crosspostMessage(msg.channelId, msg.id)
-  .then((m) => new Classes.Message(msg.client, m))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(msg.guild, e);
+ return (await getAPI(msg.guild_id)).channels
+  .crosspostMessage(msg.channel_id, msg.id)
+  .then((m) => cache.messages.apiToR(m, msg.guild_id || '@me'))
+  .catch((e: DiscordAPIError) => {
+   error(msg.guild_id, e);
    return e;
   });
 };
 
 /**
- * Checks if a message can be crossposted.
- * @param message - The message to check.
- * @param me - The guild member representing the bot.
- * @returns A boolean indicating whether the message can be crossposted.
+ * Checks if a user can crosspost a message in a channel.
+ *
+ * @param message - The message to check crosspost permissions for
+ * @param userId - The ID of the user attempting to crosspost the message
+ * @returns A promise that resolves to true if the user can crosspost the message, false otherwise
  */
-export const canCrosspostMessages = (message: RMessage, me: RMember) =>
- me.permissionsIn(message.channel).has(PermissionFlagsBits.SendMessages) &&
- (message.author.id === me.id
+export const canCrosspostMessages = async (message: RMessage, userId: string) =>
+ (await checkChannelPermissions(message.guild_id, message.channel_id, ['SendMessages'], userId)) &&
+ (message.author_id === userId
   ? true
-  : me.permissionsIn(message.channel).has(PermissionFlagsBits.ManageMessages));
+  : await checkChannelPermissions(
+     message.guild_id,
+     message.channel_id,
+     ['ManageMessages'],
+     userId,
+    ));

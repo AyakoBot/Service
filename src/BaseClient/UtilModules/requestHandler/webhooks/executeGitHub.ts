@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with an error.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  webhookId: string,
  token: string,
  body: unknown,
@@ -23,8 +23,8 @@ export default async (
 
  return (await getAPI(guild)).webhooks
   .executeGitHub(webhookId, token, body, query)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -24,13 +24,13 @@ export default async (
    PermissionFlagsBits.ManageWebhooks,
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
  const me = await channel.client.util.getBotMemberFromGuild(channel.guild);
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .getWebhooks(channel.id)
   .then((raw) => {
    const webhooks = raw.map((w) => new Classes.Webhook(channel.client, w));
@@ -41,8 +41,8 @@ export default async (
 
    return webhooks;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the deleted role,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild, roleId: string, reason?: string) => {
+export default async (guild: RGuild, roleId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDeleteRole(await getBotMemberFromGuild(guild), roleId)) {
@@ -21,14 +21,14 @@ export default async (guild: Discord.Guild, roleId: string, reason?: string) => 
    PermissionFlagsBits.ManageRoles,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .deleteRole(guild.id, roleId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -10,7 +10,7 @@ import { getAPI } from '../channels/addReaction.js';
  */
 export default async (channel: RChannel) =>
  channel.guild.stageInstances.cache.find((s) => s.channelId === channel.id) ??
- (await getAPI(channel.guild)).stageInstances
+ (await getAPI(channel.guild_id)).stageInstances
   .get(channel.id)
   .then((s) => {
    const parsed = new Classes.StageInstance(channel.client, s, channel);
@@ -18,7 +18,7 @@ export default async (channel: RChannel) =>
    channel.guild.stageInstances.cache.set(parsed.id, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });

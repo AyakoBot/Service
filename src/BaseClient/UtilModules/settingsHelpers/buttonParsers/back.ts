@@ -14,8 +14,8 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
  uniquetimestamp: UTS,
 ): Discord.APIButtonComponent => ({
- type: Discord.ComponentType.Button,
- style: Discord.ButtonStyle.Danger,
+ type: ComponentType.Button,
+ style: ButtonStyle.Danger,
  custom_id: getWithUTS(`settings/settingsDisplay_${String(name)}`, uniquetimestamp),
  emoji: emotes.back,
 });

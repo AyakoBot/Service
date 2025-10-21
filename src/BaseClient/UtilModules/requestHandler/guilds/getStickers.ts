@@ -8,7 +8,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild The guild to retrieve the stickers for.
  * @returns A Promise that resolves with an array of parsed Sticker objects.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getStickers(guild.id)
   .then((stickers) => {
@@ -19,7 +19,7 @@ export default async (guild: Discord.Guild) =>
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

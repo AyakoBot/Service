@@ -12,7 +12,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param reason - The reason for deleting the scheduled event.
  * @returns A promise that resolves with the deleted event, or rejects with a DiscordAPIError.
  */
-export default async (guild: Discord.Guild, eventId: string, reason?: string) => {
+export default async (guild: RGuild, eventId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDeleteScheduledEvent(await getBotMemberFromGuild(guild))) {
@@ -20,14 +20,14 @@ export default async (guild: Discord.Guild, eventId: string, reason?: string) =>
    PermissionFlagsBits.ManageEvents,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .deleteScheduledEvent(guild.id, eventId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

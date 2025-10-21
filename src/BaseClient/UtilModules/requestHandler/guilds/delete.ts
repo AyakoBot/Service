@@ -11,7 +11,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the deleted guild ID if successful,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDelete(await getBotMemberFromGuild(guild))) {
@@ -19,12 +19,12 @@ export default async (guild: Discord.Guild) => {
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
- return (await getAPI(guild)).guilds.delete(guild.id).catch((e: Discord.DiscordAPIError) => {
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+ return (await getAPI(guild)).guilds.delete(guild.id).catch((e: DiscordAPIError) => {
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  });
 };

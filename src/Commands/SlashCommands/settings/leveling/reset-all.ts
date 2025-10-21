@@ -17,13 +17,13 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
 
  await client.util.replyCmd(cmd, {
   content: lan.areYouSure(client.util.constants.standard.getTime(now)),
-  components: [{ type: Discord.ComponentType.ActionRow, components: buttons }],
+  components: [{ type: ComponentType.ActionRow, components: buttons }],
  });
 
  Jobs.scheduleJob(getPathFromError(new Error()), new Date(now), () => {
   cmd.editReply({
    content: lan.areYouSure2,
-   components: [{ type: Discord.ComponentType.ActionRow, components: getButtons() }],
+   components: [{ type: ComponentType.ActionRow, components: getButtons() }],
   });
  });
 };
@@ -31,14 +31,14 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
 const getButtons = (): Discord.APIButtonComponent[] => [
  {
   emoji: client.util.emotes.tickWithBackground,
-  style: Discord.ButtonStyle.Danger,
+  style: ButtonStyle.Danger,
   custom_id: 'reset-levels/confirm_all',
-  type: Discord.ComponentType.Button,
+  type: ComponentType.Button,
  },
  {
   emoji: client.util.emotes.crossWithBackground,
-  style: Discord.ButtonStyle.Secondary,
+  style: ButtonStyle.Secondary,
   custom_id: 'reset-levels/reject_all',
-  type: Discord.ComponentType.Button,
+  type: ComponentType.Button,
  },
 ];

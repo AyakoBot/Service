@@ -3,7 +3,7 @@ import client from '../../../BaseClient/Client.js';
 
 export default async (
  data: RCommandPermissionsUpdateData,
- guild: Discord.Guild,
+ guild: RGuild,
 ) => {
  const cache = () => {
   client.util.cache.commandPermissions.set(

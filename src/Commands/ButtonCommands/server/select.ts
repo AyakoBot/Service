@@ -12,10 +12,10 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   custom_id: `server`,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Short,
       custom_id: 'page',
       placeholder: language.t.Page,

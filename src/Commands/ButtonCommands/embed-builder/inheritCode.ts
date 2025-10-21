@@ -9,10 +9,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
   customId: 'embed-builder/inheritCode',
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: '0',
       label: lan.label,
@@ -22,10 +22,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: '1',
       label: lan.label,
@@ -35,10 +35,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: '2',
       label: lan.label,
@@ -48,10 +48,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: '3',
       label: lan.label,
@@ -61,10 +61,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: '4',
       placeholder: lan.placeholder4,

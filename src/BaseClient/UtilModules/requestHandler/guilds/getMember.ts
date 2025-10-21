@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import * as Classes from '../../../Other/classes.js';
 import { getAPI } from '../channels/addReaction.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 
 /**
  * Retrieves a member from a guild by their user ID.
@@ -12,23 +12,23 @@ import { API } from '../../../Client.js';
  * or rejects with a DiscordAPIError if an error occurs.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  userId: string,
- saveGuild: Discord.Guild,
+ saveGuild: RGuild,
  forceMainAPI?: boolean,
-): Promise<RMember | Discord.DiscordAPIError | Error>;
+): Promise<RMember | DiscordAPIError | Error>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  saveGuild?: undefined,
  forceMainAPI?: boolean,
-): Promise<RMember | Discord.DiscordAPIError | Error>;
+): Promise<RMember | DiscordAPIError | Error>;
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  userId: string,
- saveGuild?: Discord.Guild,
+ saveGuild?: RGuild,
  forceMainAPI: boolean = false,
-): Promise<RMember | Discord.DiscordAPIError | Error> {
+): Promise<RMember | DiscordAPIError | Error> {
  const g = (guild ?? saveGuild)!;
  if (!g) return new Error('guild is not defined');
 
@@ -42,7 +42,7 @@ async function fn(
     g.members.cache.set(parsed.id, parsed);
     return parsed;
    })
-   .catch((e: Discord.DiscordAPIError) => e as Discord.DiscordAPIError)
+   .catch((e: DiscordAPIError) => e as DiscordAPIError)
  );
 }
 

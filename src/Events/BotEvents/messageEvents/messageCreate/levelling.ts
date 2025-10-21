@@ -440,7 +440,7 @@ const checkRules = (msg: RMessage, settings: Prisma.levelingruleschannels[]) => 
 export const levelUp = async (
  levelData: LevelData,
  setting: Prisma.leveling | null,
- member: RMember | Discord.DiscordAPIError | Error,
+ member: RMember | DiscordAPIError | Error,
  msg: RMessage | Discord.BaseGuildVoiceChannel,
 ) => {
  if ('message' in member) return;

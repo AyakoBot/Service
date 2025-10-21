@@ -43,7 +43,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], multi: boo
    ],
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       cmd.client.util.settingsHelpers.changeHelpers.back(settingName, Number(uniquetimestamp)),
      ],
@@ -82,18 +82,18 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], multi: boo
    ],
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Secondary,
+       type: ComponentType.Button,
+       style: ButtonStyle.Secondary,
        custom_id: 'deleteThread',
        emoji: cmd.client.util.emotes.trash,
        label: language.t.Delete,
       },
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Success,
+       type: ComponentType.Button,
+       style: ButtonStyle.Success,
        custom_id: `settings/done/emote${multi ? 's' : ''}_${settingName}_${fieldName}_${uniquetimestamp}`,
        label: language.t.Detect,
       },
@@ -114,7 +114,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], multi: boo
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      cmd.client.util.settingsHelpers.changeHelpers.back(settingName, Number(uniquetimestamp)),
     ],

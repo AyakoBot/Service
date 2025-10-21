@@ -14,10 +14,10 @@ export default async (cmd: Discord.StringSelectMenuInteraction, args: string[]) 
   customId: `embed-builder/editor_${args[0]}`,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: 'input',
       label: lan.modals.hex.label,
@@ -29,10 +29,10 @@ export default async (cmd: Discord.StringSelectMenuInteraction, args: string[]) 
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: '-',
       label: lan.modals.hex.label,

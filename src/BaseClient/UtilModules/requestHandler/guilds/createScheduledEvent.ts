@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPostAPIGuildScheduledEventJSONBody,
  reason?: string,
 ) => {
@@ -24,7 +24,7 @@ export default async (
    PermissionFlagsBits.ManageEvents,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -38,8 +38,8 @@ export default async (
    { reason },
   )
   .then((e) => new Classes.GuildScheduledEvent(guild.client, e))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

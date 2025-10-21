@@ -40,12 +40,12 @@ export default async (
  if (cmd instanceof Discord.ButtonInteraction) {
   cmd.update({
    embeds: [embed],
-   components: compChunks.map((c) => ({ type: Discord.ComponentType.ActionRow, components: c })),
+   components: compChunks.map((c) => ({ type: ComponentType.ActionRow, components: c })),
   });
  } else {
   client.util.replyCmd(cmd, {
    embeds: [embed],
-   components: compChunks.map((c) => ({ type: Discord.ComponentType.ActionRow, components: c })),
+   components: compChunks.map((c) => ({ type: ComponentType.ActionRow, components: c })),
   });
  }
 };
@@ -71,7 +71,7 @@ export const getXPComponents = (
    {
     label: language.slashCommands.leaderboard.xp,
     custom_id: `set-level/${type}/xp_${roleOrUserId}`,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
    },
    {
     label: `+1${'0'.repeat(zerosXP)}`,
@@ -83,7 +83,7 @@ export const getXPComponents = (
     emoji: { name: '✖️' },
    },
   ] as const
- ).map((b) => ({ type: Discord.ComponentType.Button, style: Discord.ButtonStyle.Primary, ...b }));
+ ).map((b) => ({ type: ComponentType.Button, style: ButtonStyle.Primary, ...b }));
 
 export const getLevelComponents = (
  roleOrUserId: string,
@@ -106,7 +106,7 @@ export const getLevelComponents = (
    {
     label: language.slashCommands.leaderboard.level,
     custom_id: `set-level/${type}/lvl_${roleOrUserId}`,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
    },
    {
     label: `+1${'0'.repeat(zerosLevel)}`,
@@ -118,7 +118,7 @@ export const getLevelComponents = (
     emoji: { name: '✖️' },
    },
   ] as const
- ).map((b) => ({ type: Discord.ComponentType.Button, style: Discord.ButtonStyle.Primary, ...b }));
+ ).map((b) => ({ type: ComponentType.Button, style: ButtonStyle.Primary, ...b }));
 
 const getSave = (
  roleOrUserId: string,
@@ -130,11 +130,11 @@ const getSave = (
    {
     label: language.slashCommands.setLevel.save,
     custom_id: `set-level/${type}/save_${roleOrUserId}`,
-    style: Discord.ButtonStyle.Success,
+    style: ButtonStyle.Success,
     emoji: client.util.emotes.tickWithBackground,
    },
   ] as const
- ).map((b) => ({ type: Discord.ComponentType.Button, ...b }));
+ ).map((b) => ({ type: ComponentType.Button, ...b }));
 
 export const getComponents = (
  roleOrUserId: string,

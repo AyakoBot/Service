@@ -46,8 +46,8 @@ export default async (
  const res = memberRes?.targetMember
   ? await request.guilds.removeMember(memberRes.targetMember, options.reason)
   : false;
- if (res && (res as Discord.DiscordAPIError).message) {
-  err(cmd, res as Discord.DiscordAPIError, language, message, options.guild);
+ if (res && (res as DiscordAPIError).message) {
+  err(cmd, res as DiscordAPIError, language, message, options.guild);
   if (!options.dm) return false;
 
   me.client.util.request.channels.deleteMessage(options.dm as RMessage, options.guild);

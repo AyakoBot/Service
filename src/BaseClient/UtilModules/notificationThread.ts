@@ -124,7 +124,7 @@ const convertLinkButtons2EmbedLinks = (payload: UsualMessagePayload): UsualMessa
  const linkButtons = payload.components
   ?.map((c) =>
    c.components.filter(
-    (b) => b.type === Discord.ComponentType.Button && b.style === Discord.ButtonStyle.Link,
+    (b) => b.type === ComponentType.Button && b.style === ButtonStyle.Link,
    ),
   )
   .flat() as Discord.APIButtonComponentWithURL[] | undefined;
@@ -134,11 +134,11 @@ const convertLinkButtons2EmbedLinks = (payload: UsualMessagePayload): UsualMessa
   | Discord.APIActionRowComponent<Discord.APIButtonComponent | Discord.APISelectMenuComponent>[]
   | undefined = (
   payload.components?.map((c) => ({
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: c.components.filter(
     (b) =>
-     b.type !== Discord.ComponentType.Button ||
-     (b.type === Discord.ComponentType.Button && b.style !== Discord.ButtonStyle.Link),
+     b.type !== ComponentType.Button ||
+     (b.type === ComponentType.Button && b.style !== ButtonStyle.Link),
    ),
   })) as
    | Discord.APIActionRowComponent<Discord.APIButtonComponent | Discord.APISelectMenuComponent>[]

@@ -4,11 +4,11 @@ export default (
  components: Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[],
 ): Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] =>
  components.map((c) => ({
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: c.components.map((button) => ({
    ...button,
    disabled: !(
-    button.type === Discord.ComponentType.Button && button.style === Discord.ButtonStyle.Link
+    button.type === ComponentType.Button && button.style === ButtonStyle.Link
    ),
   })),
  }));

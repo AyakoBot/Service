@@ -129,10 +129,10 @@ const getComponents = (
  type: 'button-roles' | 'reaction-roles',
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.StringSelect,
+    type: ComponentType.StringSelect,
     customId: `roles/${type}`,
     maxValues: 1,
     minValues: 1,
@@ -150,26 +150,26 @@ const getComponents = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     customId: `roles/${type}/refresh`,
     label: lan.refreshCommand,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     emoji: client.util.emotes.refresh,
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     label: lan.reactHere,
-    style: Discord.ButtonStyle.Link,
+    style: ButtonStyle.Link,
     url: message.url,
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     customId: `roles/${type}/resetReactions`,
     label: lan.resetReactions,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     emoji: client.util.emotes.trash,
    },
   ],

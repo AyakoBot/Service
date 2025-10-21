@@ -13,13 +13,13 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves to a GuildAuditLogs object
  * representing the audit logs for the guild.
  */
-export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIAuditLogQuery) => {
+export default async (guild: RGuild, query?: Discord.RESTGetAPIAuditLogQuery) => {
  if (!canViewAuditLogs(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot view audit logs`, [
    PermissionFlagsBits.ViewAuditLog,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -46,8 +46,8 @@ export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIAuditLogQu
 
    return logs;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

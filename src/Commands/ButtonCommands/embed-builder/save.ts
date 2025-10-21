@@ -9,10 +9,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
   customId: 'embed-builder/save',
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Short,
       customId: 'name',
       label: lan.label,

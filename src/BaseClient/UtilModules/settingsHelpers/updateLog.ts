@@ -23,7 +23,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
  changedSetting: keyof CT.FieldName<T>,
  settingName: T,
  uniquetimestamp: number | string | undefined,
- guild: Discord.Guild,
+ guild: RGuild,
  language: CT.Language,
  lan: CT.Categories[T],
 ) => {

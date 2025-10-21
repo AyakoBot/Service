@@ -28,10 +28,10 @@ export default async (cmd: Discord.ButtonInteraction, args: string[], accept: bo
   customId: `appeals_${args[0]}_${accept ? 'accept' : 'reject'}`,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       customId: `reason`,
       label: language.t.Reason,

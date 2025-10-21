@@ -41,7 +41,7 @@ export default async (msg: RMessage, emoji: string) => {
     ? `${resolvedEmoji.animated ? 'a:' : ''}${resolvedEmoji.name}:${resolvedEmoji.id}`
     : (resolvedEmoji.name as string),
   )
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    error(msg.guild, e);
    return e;
   });

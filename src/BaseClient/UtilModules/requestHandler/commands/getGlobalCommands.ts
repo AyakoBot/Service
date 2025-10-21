@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import * as Classes from '../../../Other/classes.js';
@@ -12,11 +12,11 @@ import error from '../../error.js';
  * @returns A Promise that resolves to an array of parsed ApplicationCommand objects.
  */
 export default async (
- guild: Discord.Guild | undefined,
+ guild: RGuild | undefined,
  client: Discord.Client<true>,
  query?: Discord.RESTGetAPIApplicationCommandsQuery,
 ) =>
- (guild ? (cache.apis.get(guild.id) ?? API) : API).applicationCommands
+ (guild ? (cache.apis.get(guild.id) ?? api) : api).applicationCommands
   .getGlobalCommands(guild ? await getBotIdFromGuild(guild) : client.user.id, query)
   .then((cmds) => {
    const parsed = cmds.map((cmd) => new Classes.ApplicationCommand(client, cmd));
@@ -31,7 +31,7 @@ export default async (
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

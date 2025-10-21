@@ -6,7 +6,7 @@ import * as CT from '../../../src/Typings/Typings.js';
 
 export default async (
  vote: CT.TopGGVote,
- guild: Discord.Guild,
+ guild: RGuild,
  user: RUser,
  member: RMember | undefined,
  setting: Prisma.votesettings,
@@ -103,7 +103,7 @@ export default async (
 export const doAnnouncement = async (
  settings: Prisma.votesettings,
  user: RUser,
- voted: RUser | Discord.Guild,
+ voted: RUser | RGuild,
  language: CT.Language,
  rewards: Prisma.voterewards[],
 ) => {
@@ -147,7 +147,7 @@ export const doAnnouncement = async (
  });
 };
 
-export const end = async (vote: votes, guild: Discord.Guild) => {
+export const end = async (vote: votes, guild: RGuild) => {
  guild.client.util.cache.votes.delete(guild.id, vote.voted, vote.userid);
 
  const appliedRewards = await guild.client.util.DataBase.votesappliedrewards.findMany({
@@ -208,11 +208,11 @@ export const end = async (vote: votes, guild: Discord.Guild) => {
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Link,
+      type: ComponentType.Button,
+      style: ButtonStyle.Link,
       label:
        'username' in voted
         ? lan.reminder.voteBotButton(voted)
@@ -226,8 +226,8 @@ export const end = async (vote: votes, guild: Discord.Guild) => {
       ? []
       : [
          {
-          type: Discord.ComponentType.Button,
-          style: Discord.ButtonStyle.Link,
+          type: ComponentType.Button,
+          style: ButtonStyle.Link,
           label: lan.reminder.voteAyakoButton,
           url: `https://top.gg/bot/${process.env.mainId}/vote`,
          },
@@ -235,11 +235,11 @@ export const end = async (vote: votes, guild: Discord.Guild) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       label: lan.reminder.reminders,
       emoji: guild.client.util.emotes.enabled,
       custom_id: 'voteReminder/disable',
@@ -250,7 +250,7 @@ export const end = async (vote: votes, guild: Discord.Guild) => {
  });
 };
 
-export const currency = (r: Prisma.voterewards, user: RUser, guild: Discord.Guild) => {
+export const currency = (r: Prisma.voterewards, user: RUser, guild: RGuild) => {
  if (!r.rewardcurrency) return;
 
  guild.client.util.DataBase.balance
@@ -274,7 +274,7 @@ export const roles = async (
  bot.client.util.roleManager.add(member, r, language.events.vote.botReason(bot), 1);
 };
 
-export const xp = (r: Prisma.voterewards, user: RUser, guild: Discord.Guild) => {
+export const xp = (r: Prisma.voterewards, user: RUser, guild: RGuild) => {
  if (!r.rewardxp) return;
 
  guild.client.util.DataBase.level
@@ -286,7 +286,7 @@ export const xp = (r: Prisma.voterewards, user: RUser, guild: Discord.Guild) => 
   .then();
 };
 
-export const xpmultiplier = (r: Prisma.voterewards, user: RUser, guild: Discord.Guild) => {
+export const xpmultiplier = (r: Prisma.voterewards, user: RUser, guild: RGuild) => {
  if (!r.rewardxpmultiplier) return;
 
  guild.client.util.DataBase.level

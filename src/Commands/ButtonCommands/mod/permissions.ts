@@ -46,7 +46,7 @@ export default async (cmd: Discord.ButtonInteraction, args: CommandType[]) => {
  permissions(cmd, [], response);
 };
 
-export const registerCmd = (commandName: CommandType, guild: Discord.Guild) => {
+export const registerCmd = (commandName: CommandType, guild: RGuild) => {
  const mainCmd = Commands.public.mod.toJSON();
  const cmdData = mainCmd.options?.find((o) => o.name === commandName);
  if (!cmdData) {

@@ -30,7 +30,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
 export const getPayload = async (
  baseInfo: {
   user: RUser;
-  guild: Discord.Guild;
+  guild: RGuild;
   language?: CT.Language;
   member?: RMember;
  },
@@ -81,8 +81,8 @@ export const getPayload = async (
   Object.entries(lan.punishmentTypes).map(([key, value]) => ({
    label: value,
    custom_id: `mod/check/type_${key}_${baseInfo.user.id}`,
-   type: Discord.ComponentType.Button,
-   style: selected.type === key ? Discord.ButtonStyle.Primary : Discord.ButtonStyle.Secondary,
+   type: ComponentType.Button,
+   style: selected.type === key ? ButtonStyle.Primary : ButtonStyle.Secondary,
    disabled: !allPunishments?.filter((p) => keys[key as keyof typeof keys].includes(p.type)).length,
   })),
   5,
@@ -194,15 +194,15 @@ export const getPayload = async (
    ...componentChunks.map(
     (c) =>
      ({
-      type: Discord.ComponentType.ActionRow,
+      type: ComponentType.ActionRow,
       components: c,
      }) as Discord.APIActionRowComponent<Discord.APIButtonComponentWithCustomId>,
    ),
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       placeholder: lan.placeholder,
       max_values:
        Number(punishmentsOfPage?.length) > 9 ? 9 : Number(punishmentsOfPage?.length) || 1,
@@ -225,18 +225,18 @@ export const getPayload = async (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
       emoji: client.util.emotes.back,
       custom_id: `mod/check/page_${selected.type}_${baseInfo.user.id}_back_${selected.page}`,
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       disabled: selected.page === 1 || !selected.type,
      },
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       label: `${selected.page}/${Math.ceil(Number(punishmentsOfType?.length) / 25) || 1}`,
       disabled: Number(punishmentsOfType?.length) <= 25 || !selected.type,
       custom_id: `mod/check/select_${selected.type}_${baseInfo.user.id}_${selected.page}_${
@@ -246,8 +246,8 @@ export const getPayload = async (
      {
       emoji: client.util.emotes.forth,
       custom_id: `mod/check/page_${selected.type}_${baseInfo.user.id}_forth_${selected.page}`,
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       disabled:
        Math.ceil(Number(punishmentsOfType?.length) / 25) === selected.page || !selected.type,
      },

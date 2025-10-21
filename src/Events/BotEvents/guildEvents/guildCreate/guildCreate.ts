@@ -6,7 +6,7 @@ import log from './log.js';
 import ayakoRole from './ayakoRole.js';
 import nitro from './nitro.js';
 
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  thanks4Adding(guild);
  log(guild);
  cache(guild);

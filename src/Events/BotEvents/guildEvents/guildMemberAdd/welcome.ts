@@ -49,7 +49,7 @@ const getDefaultEmbed = async (member: RMember) => {
 
 const getEmbedImage = async (
  gifChannelId: string | null,
- guild: Discord.Guild,
+ guild: RGuild,
  currentImage: APIEmbedImage | undefined,
 ) => {
  if (!gifChannelId) return currentImage;

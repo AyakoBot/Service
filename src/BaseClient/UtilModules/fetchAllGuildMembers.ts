@@ -6,7 +6,7 @@ import { request } from './requestHandler.js';
  * @param guild - The guild to fetch members from.
  * @returns An array of guild members.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (guild.memberCount === guild.members.cache.size) {
   return Array.from(guild.members.cache.values());
  }

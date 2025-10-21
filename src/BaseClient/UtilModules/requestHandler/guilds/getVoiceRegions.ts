@@ -8,11 +8,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to retrieve the voice regions for.
  * @returns A promise that resolves with an array of voice regions for the guild.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getVoiceRegions(guild.id)
   .then((voiceRegions) => voiceRegions.map((vR) => new Classes.VoiceRegion(vR)))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

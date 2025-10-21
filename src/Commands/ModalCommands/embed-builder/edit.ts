@@ -33,11 +33,11 @@ export default async (cmd: Discord.ModalSubmitInteraction) => {
   ephemeral: true,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Link,
+      type: ComponentType.Button,
+      style: ButtonStyle.Link,
       label: lan.view,
       url: cmd.client.util.constants.standard.msgurl(guild.id, channel.id, message.id),
      },

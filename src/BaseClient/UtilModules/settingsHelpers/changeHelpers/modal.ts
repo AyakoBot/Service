@@ -6,8 +6,8 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
  fieldName: string,
 ): Discord.APIButtonComponent => ({
- type: Discord.ComponentType.Button,
- style: Discord.ButtonStyle.Danger,
+ type: ComponentType.Button,
+ style: ButtonStyle.Danger,
  custom_id: `settings/modal_${String(name)}_${fieldName}`,
  emoji: emotes.back,
 });

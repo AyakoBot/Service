@@ -230,7 +230,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  guild,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.back(name, undefined),
    buttonParsers.global(
@@ -251,7 +251,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    ...([TicketType.Thread, TicketType.dmToThread].includes(settings.type)
     ? [
@@ -309,7 +309,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -354,11 +354,11 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
-    style: Discord.ButtonStyle.Success,
+    type: ComponentType.Button,
+    style: ButtonStyle.Success,
     custom_id: `tickets/sendInit_${Number(settings?.uniquetimestamp)}`,
     label: language.slashCommands.settings.categories.ticketing.sendInit,
    },

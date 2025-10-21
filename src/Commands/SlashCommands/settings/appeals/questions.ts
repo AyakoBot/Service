@@ -166,7 +166,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.back(name, undefined),
    buttonParsers.global(
@@ -180,7 +180,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,

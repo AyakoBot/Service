@@ -30,11 +30,11 @@ const getParsedInteraction = (i: Discord.APIInteraction) => {
  switch (i.type) {
   case Discord.InteractionType.ApplicationCommand: {
    switch (i.data.type) {
-    case RCommandType.ChatInput:
+    case ApplicationCommandType.ChatInput:
      return new Classes.ChatInputCommandInteraction(client, i);
-    case RCommandType.User:
+    case ApplicationCommandType.User:
      return new Classes.UserContextMenuCommandInteraction(client, i);
-    case RCommandType.Message:
+    case ApplicationCommandType.Message:
      return new Classes.MessageContextMenuCommandInteraction(client, i);
     default:
      throw new Error('Unhandled Application Command Type');
@@ -44,17 +44,17 @@ const getParsedInteraction = (i: Discord.APIInteraction) => {
    return new Classes.AutocompleteInteraction(client, i);
   case Discord.InteractionType.MessageComponent: {
    switch (i.data.component_type) {
-    case Discord.ComponentType.Button:
+    case ComponentType.Button:
      return new Classes.ButtonInteraction(client, i as never);
-    case Discord.ComponentType.ChannelSelect:
+    case ComponentType.ChannelSelect:
      return new Classes.ChannelSelect(client, i as never);
-    case Discord.ComponentType.MentionableSelect:
+    case ComponentType.MentionableSelect:
      return new Classes.MentionableSelect(client, i as never);
-    case Discord.ComponentType.RoleSelect:
+    case ComponentType.RoleSelect:
      return new Classes.RoleSelect(client, i as never);
-    case Discord.ComponentType.StringSelect:
+    case ComponentType.StringSelect:
      return new Classes.StringSelect(client, i as never);
-    case Discord.ComponentType.UserSelect:
+    case ComponentType.UserSelect:
      return new Classes.UserSelect(client, i as never);
     default:
      throw new Error('Unhandled Message Component Type');
@@ -63,7 +63,7 @@ const getParsedInteraction = (i: Discord.APIInteraction) => {
   case Discord.InteractionType.ModalSubmit:
    return new Classes.ModalSubmit(client, i);
   default:
-   throw new Error(`Unhandled Interaction Type ${i.type} ${Discord.ComponentType[i.type]}`);
+   throw new Error(`Unhandled Interaction Type ${i.type} ${ComponentType[i.type]}`);
  }
 };
 

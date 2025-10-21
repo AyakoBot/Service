@@ -24,14 +24,14 @@ export default <T extends keyof CT.Categories>(
   constants.commands.settings.types[settingName as keyof typeof constants.commands.settings.types];
 
  return {
-  type: Discord.ComponentType.Button,
+  type: ComponentType.Button,
   label: (
    (
     language.slashCommands.settings.categories[settingName as CT.SettingNames]
      .fields as CT.FieldName<T>
    )[name] as unknown as Record<'name', string>
   ).name,
-  style: setting ? Discord.ButtonStyle.Primary : Discord.ButtonStyle.Danger,
+  style: setting ? ButtonStyle.Primary : ButtonStyle.Danger,
   custom_id: getWithUTS(
    `settings/editors/${constantTypes[name as keyof typeof constantTypes]}_${String(
     name,

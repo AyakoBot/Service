@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the deleted stage instance,
  * or rejects with a DiscordAPIError.
  */
-export default async (guild: Discord.Guild, channelId: string, reason?: string) => {
+export default async (guild: RGuild, channelId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDelete(await getBotMemberFromGuild(guild), channelId)) {
@@ -21,14 +21,14 @@ export default async (guild: Discord.Guild, channelId: string, reason?: string) 
    PermissionFlagsBits.ManageChannels,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).stageInstances
   .delete(channelId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

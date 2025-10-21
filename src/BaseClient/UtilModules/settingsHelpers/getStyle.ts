@@ -7,7 +7,7 @@ import * as Discord from 'discord.js';
  */
 export default (setting: boolean | string | string[] | null) => {
  if (typeof setting === 'boolean' || !setting) {
-  return setting ? Discord.ButtonStyle.Success : Discord.ButtonStyle.Danger;
+  return setting ? ButtonStyle.Success : ButtonStyle.Danger;
  }
- return setting?.length ? Discord.ButtonStyle.Primary : Discord.ButtonStyle.Danger;
+ return setting?.length ? ButtonStyle.Primary : ButtonStyle.Danger;
 };

@@ -207,7 +207,7 @@ export const startupTasks = {
 };
 
 const tasks = {
- vote: (vote: Prisma.votes, guild: Discord.Guild) => {
+ vote: (vote: Prisma.votes, guild: RGuild) => {
   client.util.cache.votes.set(
    Jobs.scheduleJob(
     getPathFromError(new Error(String(vote.endtime))),
@@ -225,7 +225,7 @@ const tasks = {
  vcDeleteTimeouts: async (
   vc: Prisma.voicechannels,
   applyingSetting: Prisma.voicehubs | undefined,
-  guild: Discord.Guild,
+  guild: RGuild,
  ) => {
   const delDB = () =>
    client.util.DataBase.voicechannels
@@ -267,7 +267,7 @@ const tasks = {
  deleteSuggestions: (
   s: Prisma.suggestionvotes,
   settings: Prisma.suggestionsettings,
-  guild: Discord.Guild,
+  guild: RGuild,
  ) => {
   client.util.cache.deleteSuggestions.set(
    Jobs.scheduleJob(
@@ -286,7 +286,7 @@ const tasks = {
    s.msgid,
   );
  },
- disboard: (s: Prisma.disboard, guild: Discord.Guild) => {
+ disboard: (s: Prisma.disboard, guild: RGuild) => {
   client.util.cache.disboardBumpReminders.set(
    Jobs.scheduleJob(
     getPathFromError(new Error(guild.id)),
@@ -342,7 +342,7 @@ const tasks = {
       event: CT.ModTypes.VcDeafenRemove;
      },
   m: Prisma.punishments,
-  guild: Discord.Guild,
+  guild: RGuild,
  ) => {
   const time = Number(m.uniquetimestamp) + Number(m.duration) * 1000;
 
@@ -413,7 +413,7 @@ const tasks = {
    m.userid,
   );
  },
- claimTimeouts: (t: Prisma.giveawaycollection, guild: Discord.Guild) => {
+ claimTimeouts: (t: Prisma.giveawaycollection, guild: RGuild) => {
   client.util.cache.giveawayClaimTimeout.set(
    Jobs.scheduleJob(
     getPathFromError(new Error(guild.id)),
@@ -426,7 +426,7 @@ const tasks = {
    t.msgid,
   );
  },
- enableInvites: (s: Prisma.guildsettings, guild: Discord.Guild) => {
+ enableInvites: (s: Prisma.guildsettings, guild: RGuild) => {
   client.util.cache.enableInvites.set(
    guild.id,
    Jobs.scheduleJob(

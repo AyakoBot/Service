@@ -8,7 +8,7 @@ export default async (channel: RChannel) => {
 
  const newWebhooks = await channel.client.util.request.channels.getWebhooks(channel);
  if ('message' in newWebhooks) {
-  channel.client.util.error(channel.guild, new Error(newWebhooks.message));
+  channel.client.util.error(channel.guild_id, new Error(newWebhooks.message));
   return;
  }
 

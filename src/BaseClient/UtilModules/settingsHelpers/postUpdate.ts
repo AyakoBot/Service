@@ -17,7 +17,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
  newSetting: unknown,
  changedSetting: keyof CT.FieldName<T>,
  settingName: T,
- guild: Discord.Guild,
+ guild: RGuild,
  uniquetimestamp: number | string | undefined,
 ) => {
  if (String(uniquetimestamp)?.length > 16) return;

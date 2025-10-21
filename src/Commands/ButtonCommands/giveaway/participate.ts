@@ -70,18 +70,18 @@ const edit = async (
 ) => {
  const channel = await cmd.client.util.getChannel.guildTextChannel(cmd.channelId);
  if (!channel) {
-  cmd.client.util.error(cmd.guild as Discord.Guild, new Error('Cannot find channel'));
+  cmd.client.util.error(cmd.guild as RGuild, new Error('Cannot find channel'));
   return;
  }
 
  const msg = await cmd.client.util.request.channels.getMessage(channel, cmd.message.id);
  if ('message' in msg) {
-  cmd.client.util.error(cmd.guild as Discord.Guild, msg);
+  cmd.client.util.error(cmd.guild as RGuild, msg);
   return;
  }
 
  if (!(await cmd.client.util.isEditable(msg))) {
-  cmd.client.util.error(cmd.guild as Discord.Guild, new Error('Cannot edit Message'));
+  cmd.client.util.error(cmd.guild as RGuild, new Error('Cannot edit Message'));
   return;
  }
 

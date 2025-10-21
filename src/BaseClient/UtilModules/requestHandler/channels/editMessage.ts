@@ -13,7 +13,7 @@ import { getAPI } from './addReaction.js';
  * @returns A Promise that resolves with the edited message or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  channelId: string,
  msgId: string,
  payload: Parameters<DiscordCore.ChannelsAPI['editMessage']>[2],
@@ -23,8 +23,8 @@ export default async (
  return (await getAPI(guild)).channels
   .editMessage(channelId, msgId, payload)
   .then((m) => new Classes.Message(guild.client, m))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

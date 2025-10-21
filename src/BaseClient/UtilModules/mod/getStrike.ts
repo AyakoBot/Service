@@ -3,7 +3,7 @@ import * as Discord from 'discord.js';
 import DataBase from '../../DataBase.js';
 import getPunishment from '../getPunishment.js';
 
-export default async (user: RUser, guild: Discord.Guild) => {
+export default async (user: RUser, guild: RGuild) => {
  const punishments = await getPunishment(user.id, { identType: 'all-on', guildid: guild.id });
 
  return DataBase.autopunish.findFirst({

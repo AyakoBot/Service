@@ -9,9 +9,9 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves to an array of user connections or an error object.
  */
 export default async (
- guild: Discord.Guild,
-): Promise<Discord.RESTGetAPICurrentUserConnectionsResult | Discord.DiscordAPIError> =>
- (await getAPI(guild)).users.getConnections().catch((e: Discord.DiscordAPIError) => {
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+ guild: RGuild,
+): Promise<Discord.RESTGetAPICurrentUserConnectionsResult | DiscordAPIError> =>
+ (await getAPI(guild)).users.getConnections().catch((e: DiscordAPIError) => {
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  });

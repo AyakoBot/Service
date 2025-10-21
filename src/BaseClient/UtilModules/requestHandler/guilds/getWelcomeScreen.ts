@@ -12,22 +12,22 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves with a new WelcomeScreen instance if successful,
  * or rejects with a DiscordAPIError if unsuccessful.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!canGetWelcomeScreen(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get welcome screen`, [
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .getWelcomeScreen(guild.id)
   .then((w) => new Classes.WelcomeScreen(guild, w))
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    if (e.code === 10069) return undefined;
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

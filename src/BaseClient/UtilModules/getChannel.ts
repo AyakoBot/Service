@@ -1,4 +1,5 @@
-import * as Discord from 'discord.js';
+import { ChannelType } from '@discordjs/core';
+import { request } from './requestHandler.js';
 
 /**
  * Fetches a channel by its ID.
@@ -7,12 +8,12 @@ import * as Discord from 'discord.js';
  * or undefined if the channel was not found.
  */
 const getChannel = async (channelId: string, fetch: boolean = false) => {
- const client = (await import('../Client.js')).default;
+ const { cache } = await import('../Client.js');
  return (
-  client.channels.cache.get(channelId) ??
+  (await cache.channels.get(channelId)) ??
   (fetch
-   ? client.util.request.channels
-      .get(undefined, channelId, client as Discord.Client<true>)
+   ? request.channels
+      .get(undefined, channelId)
       .then((r) => (!r || 'message' in r ? undefined : r))
    : undefined)
  );
@@ -80,11 +81,7 @@ export const parentChannel = async (channelId: string) => {
  const channel = await getChannel(channelId);
  if (!channel) return undefined;
  if (
-  ![
-   ChannelType.GuildCategory,
-   ChannelType.GuildText,
-   ChannelType.GuildForum,
-  ].includes(channel.type)
+  ![ChannelType.GuildCategory, ChannelType.GuildText, ChannelType.GuildForum].includes(channel.type)
  ) {
   return undefined;
  }

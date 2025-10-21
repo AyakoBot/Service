@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import * as Classes from '../../../Other/classes.js';
@@ -13,7 +13,7 @@ import error from '../../error.js';
  * @returns A Promise that resolves with the updated command.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  commandId: string,
  body: Discord.RESTPatchAPIApplicationCommandJSONBody,
 ) => {
@@ -30,8 +30,8 @@ export default async (
    guild.client.application.commands.cache.set(parsed.id, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

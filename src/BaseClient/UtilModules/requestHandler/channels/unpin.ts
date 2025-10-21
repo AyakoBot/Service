@@ -12,7 +12,7 @@ import { getAPI } from './addReaction.js';
  */
 export default async (
  msg: RMessage | { guild: undefined; id: string; channelId: string },
- guild: Discord.Guild,
+ guild: RGuild,
 ) => {
  const g = (msg.guild || guild)!;
 
@@ -29,7 +29,7 @@ export default async (
 
  return (await getAPI(msg.guild)).channels
   .unpinMessage(msg.channelId, msg.id)
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    error(msg.guild, e);
    return e;
   });

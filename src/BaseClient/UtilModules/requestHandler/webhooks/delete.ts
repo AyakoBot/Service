@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError if unsuccessful.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  webhook: RWebhook,
  data?: { token?: string; reason?: string },
 ) => {
@@ -25,14 +25,14 @@ export default async (
    PermissionFlagsBits.ManageWebhooks,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).webhooks
   .delete(webhook.id, { ...data, token: webhook.token ?? data?.token })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

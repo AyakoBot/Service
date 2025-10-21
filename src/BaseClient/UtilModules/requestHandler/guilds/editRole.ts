@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the edited role or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  roleId: string,
  body: Discord.RESTPatchAPIGuildRoleJSONBody,
  reason?: string,
@@ -27,7 +27,7 @@ export default async (
    PermissionFlagsBits.ManageRoles,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -39,8 +39,8 @@ export default async (
    { reason },
   )
   .then((r) => new Classes.Role(guild.client, r, guild))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

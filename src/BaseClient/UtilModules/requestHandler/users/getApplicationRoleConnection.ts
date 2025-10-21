@@ -11,13 +11,13 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  applicationId: string,
-): Promise<Discord.APIApplicationRoleConnection | Discord.DiscordAPIError> {
+): Promise<Discord.APIApplicationRoleConnection | DiscordAPIError> {
  return (await getAPI(guild)).users
   .getApplicationRoleConnection(applicationId)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 }

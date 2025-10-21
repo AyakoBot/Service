@@ -91,7 +91,7 @@ export const getEmbeds: CT.SettingsFile<typeof name>['getEmbeds'] = async (
      name: lan.fields.lvlupemotes.name,
      value: (settings.lvlupemotes?.length
       ? (await Promise.all(settings.lvlupemotes.map((e) => client.util.getEmote(e)))).filter(
-         (e): e is Discord.GuildEmoji => !!e,
+         (e): e is RGuildEmoji => !!e,
         )
       : client.util.emotes.levelupemotes
      )
@@ -127,15 +127,15 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
 ) => {
  const components: Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] = [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [buttonParsers.specific(language, settings.lvlupmode, 'lvlupmode', name, undefined)],
   },
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [],
   },
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [buttonParsers.back(name, undefined)],
   },
  ];

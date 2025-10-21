@@ -79,13 +79,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings?.token, 'token', name, undefined),
    buttonParsers.specific(language, settings?.secret, 'secret', name, undefined),
    {
-    type: Discord.ComponentType.Button,
-    style: Discord.ButtonStyle.Link,
+    type: ComponentType.Button,
+    style: ButtonStyle.Link,
     label: language.t.InviteCustomBot,
     disabled: !settings.token,
     url: settings.token
@@ -120,7 +120,7 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
  }
 };
 
-const tokenDelete = (guild: Discord.Guild) => {
+const tokenDelete = (guild: RGuild) => {
  client.util.cache.customClients.delete(guild.id);
  client.util.cache.apis.delete(guild.id);
  client.util.DataBase.customclients
@@ -135,7 +135,7 @@ const tokenDelete = (guild: Discord.Guild) => {
 };
 
 const tokenCreate = async (
- guild: Discord.Guild,
+ guild: RGuild,
  newSettings: CT.MakeRequired<
   NonNullable<Parameters<NonNullable<CT.SettingsFile<typeof name>['postChange']>>[1]>,
   'token'
@@ -154,7 +154,7 @@ const tokenCreate = async (
   new Discord.REST({ version: '10', api: 'http://nirn:8080/api' }).setToken(newSettings.token),
  );
 
- const me = await api.applications.getCurrent().catch((e: Discord.DiscordAPIError) => e);
+ const me = await api.applications.getCurrent().catch((e: DiscordAPIError) => e);
  await updateApp(api, me, guild);
  if (!meIsValid(guild, me)) return;
 
@@ -167,8 +167,8 @@ const tokenCreate = async (
 
 const updateApp = async (
  api: API,
- me: Discord.APIApplication | Discord.DiscordAPIError,
- guild: Discord.Guild,
+ me: Discord.APIApplication | DiscordAPIError,
+ guild: RGuild,
 ) => {
  if ('verify_key' in me && me.verify_key) {
   await client.util.DataBase.customclients.update({
@@ -201,8 +201,8 @@ const deleteEntry = (guildId: string) => {
 };
 
 const meIsValid = (
- guild: Discord.Guild,
- me: Discord.DiscordAPIError | Discord.APIApplication,
+ guild: RGuild,
+ me: DiscordAPIError | Discord.APIApplication,
 ): me is Discord.APIApplication => {
  if (!me || 'message' in me) {
   client.util.error(guild, new Error(me ? me.message : 'Unknown Application'));
@@ -234,7 +234,7 @@ const meIsValid = (
  return true;
 };
 
-const sendWebhookRequest = (guild: Discord.Guild, meId: string) =>
+const sendWebhookRequest = (guild: RGuild, meId: string) =>
  client.util.request.webhooks.execute(
   guild,
   process.env.alertWebhookId ?? '',
@@ -244,11 +244,11 @@ const sendWebhookRequest = (guild: Discord.Guild, meId: string) =>
    allowed_mentions: { users: [process.env.ownerId ?? ''] },
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: ['1155145303167602838', '1155145225459744780', '1155150048393441411'].map(
       (id, i) => ({
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Link,
+       type: ComponentType.Button,
+       style: ButtonStyle.Link,
        label: `Invite ${i + 1}`,
        url: `https://discord.com/api/oauth2/authorize?client_id=${meId}&scope=bot&guild_id=${id}`,
       }),
@@ -258,7 +258,7 @@ const sendWebhookRequest = (guild: Discord.Guild, meId: string) =>
   },
  );
 
-export const doCommands = async (guild: Discord.Guild, me: Discord.APIApplication) => {
+export const doCommands = async (guild: RGuild, me: Discord.APIApplication) => {
  if (!guild.members.cache.has(me.id)) return;
 
  const language = new Lang('en-GB');

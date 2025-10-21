@@ -72,10 +72,10 @@ export const respond = async (
   ],
   components: [
    ...options.map((opts, i) => ({
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       customId: `rp/block_${i}`,
       placeholder: lan.blockPlaceholder,
       options: opts,
@@ -87,11 +87,11 @@ export const respond = async (
    ...(user
     ? [
        {
-        type: Discord.ComponentType.ActionRow,
+        type: ComponentType.ActionRow,
         components: [
          {
-          type: Discord.ComponentType.Button,
-          style: Discord.ButtonStyle.Danger,
+          type: ComponentType.Button,
+          style: ButtonStyle.Danger,
           customId: 'rp/unblock',
           label: lan.unblock,
          },

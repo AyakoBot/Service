@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the deleted auto-moderation rule,
  * or rejects with an error.
  */
-export default async (guild: Discord.Guild, ruleId: string, reason?: string) => {
+export default async (guild: RGuild, ruleId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDeleteAutoModerationRule(await getBotMemberFromGuild(guild))) {
@@ -21,14 +21,14 @@ export default async (guild: Discord.Guild, ruleId: string, reason?: string) => 
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .deleteAutoModerationRule(guild.id, ruleId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

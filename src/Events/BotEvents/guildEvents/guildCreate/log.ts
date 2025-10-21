@@ -2,7 +2,7 @@ import type * as Discord from 'discord.js';
 import client from '../../../../BaseClient/Client.js';
 import * as CT from '../../../../Typings/Typings.js';
 
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  const totalguildcount =
   ((await client.cluster?.fetchClientValues('guilds.cache.size')) as number[] | undefined)?.reduce(
    (acc, count) => acc + count,

@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the edited guild emoji, or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  emojiId: string,
  body: Discord.RESTPatchAPIGuildEmojiJSONBody,
  reason?: string,
@@ -27,15 +27,15 @@ export default async (
    PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .editEmoji(guild.id, emojiId, body, { reason })
   .then((e) => new Classes.GuildEmoji(guild.client, e, guild))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

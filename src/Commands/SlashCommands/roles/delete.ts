@@ -12,12 +12,12 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   content: lan.areYouSure(role as RRole),
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.t.Yes,
-      style: Discord.ButtonStyle.Danger,
+      style: ButtonStyle.Danger,
       custom_id: `roles/delete_${role.id}`,
       emoji: cmd.client.util.emotes.warning,
      },

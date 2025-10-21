@@ -106,15 +106,15 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: c[0],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: c[1],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: (
      cmd.message.components[2] as Discord.ActionRow<RMessageActionRowComponent>
     ).components.map((c2) => c2.data),

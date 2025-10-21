@@ -1,9 +1,13 @@
-import type {
- APIChatInputApplicationCommandGuildInteraction,
- APIMessageComponentInteraction,
+import {
+ ApplicationCommandType,
+ type APIChatInputApplicationCommandGuildInteraction,
+ type APIEmbed,
+ type APIMessageComponentInteraction,
 } from '@discordjs/core';
 
+import { cache, user } from '../../../BaseClient/Client.js';
 import * as CT from '../../../Typings/Typings.js';
+
 import constants from '../../Other/constants.js';
 
 import emotes from '../emotes.js';
@@ -11,7 +15,6 @@ import * as util from '../util.js';
 
 import getDesc from './getDesc.js';
 import getDescription from './getDescription.js';
-import { cache } from 'src/BaseClient/Redis.js';
 
 /**
  * Returns an array of embeds to be used in a help command response.
@@ -40,11 +43,11 @@ export default async (
  const lan = language.slashCommands.help;
 
  const guildCommands = cmd.guild_id ? await cache.guildCommands.getAll(cmd.guild_id) : [];
- const globalCommands = cmd.client.application.commands.cache.map((c) => c);
+ const globalCommands = await cache.commands.getAll(user.id);
 
- const fetchedCommands = cmd.guildId && guildCommands.length ? guildCommands : globalCommands;
+ const fetchedCommands = cmd.guild_id && guildCommands.length ? guildCommands : globalCommands;
 
- const embed: Discord.APIEmbed = {
+ const embed: APIEmbed = {
   color: CT.Colors.Base,
   title: lan.categories[type as keyof typeof lan.categories],
   description: '',
@@ -57,13 +60,13 @@ export default async (
 
    const getCommandMention = () => {
     switch (command.type) {
-     case RCommandType.Message: {
+     case ApplicationCommandType.Message: {
       return `${constants.standard.getEmote(emotes.Message)} ${rawCommand.parentCommand}`;
      }
-     case RCommandType.User: {
+     case ApplicationCommandType.User: {
       return `${constants.standard.getEmote(emotes.MemberBright)} ${rawCommand.parentCommand}`;
      }
-     case RCommandType.ChatInput:
+     case ApplicationCommandType.ChatInput:
      default: {
       return `</${`${rawCommand.parentCommand} ${rawCommand.subCommandGroup ?? ''} ${
        rawCommand.subCommand ?? ''

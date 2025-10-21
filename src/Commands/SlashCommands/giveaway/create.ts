@@ -90,7 +90,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   embeds: [await getGiveawayEmbed(language, giveaway)],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [getButton(language, giveaway)],
    },
   ],

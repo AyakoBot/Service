@@ -8,10 +8,10 @@ import errorMsg from '../errorMsg.js';
 
 export default (
  cmd: ModTypes.CmdType,
- errs: Discord.DiscordAPIError | Error,
+ errs: DiscordAPIError | Error,
  language: CT.Language,
  message: ModTypes.ResponseMessage,
- guild: Discord.Guild,
+ guild: RGuild,
 ) => {
  if (cmd instanceof RMessage) {
   errorMsg(cmd, errs.message, language, message as RMessage);

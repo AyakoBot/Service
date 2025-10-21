@@ -1,10 +1,16 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import {
+ PermissionFlagsBits,
+ type RESTPostAPIChannelWebhookJSONBody,
+} from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
+import { resolveImage } from '../../util.js';
 
+import type { DiscordAPIError } from '@discordjs/rest';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from './addReaction.js';
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 
 /**
  * Creates a webhook for a given guild and channel with the provided data.
@@ -15,39 +21,48 @@ import { getAPI } from './addReaction.js';
  * or rejects with a DiscordAPIError if unsuccessful.
  */
 export default async (
- guild: Discord.Guild,
+ guildId: string,
  channelId: string,
- body: Discord.RESTPostAPIChannelWebhookJSONBody,
+ body: RESTPostAPIChannelWebhookJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canCreateWebhook(channelId, await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot create webhook`, [
-   PermissionFlagsBits.ManageWebhooks,
-  ]);
+ if (
+  !(await canCreateWebhook(guildId, channelId, (await getBotMemberFromGuild(guildId)).user_id))
+ ) {
+  const e = requestHandlerError(`Cannot create webhook`, [PermissionFlagsBits.ManageWebhooks]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guildId, new Error((e as DiscordAPIError).message));
   return e;
  }
 
- return (await getAPI(guild)).channels
+ return (await getAPI(guildId)).channels
   .createWebhook(channelId, {
    ...body,
-   avatar: body.avatar ? await guild.client.util.util.resolveImage(body.avatar) : body.avatar,
+   avatar: body.avatar ? await resolveImage(body.avatar) : body.avatar,
   })
-  .then((w) => new Classes.Webhook(guild.client, w))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .then((w) => cache.webhooks.apiToR(w))
+  .catch((e: DiscordAPIError) => {
+   error(guildId, new Error((e as DiscordAPIError).message));
    return e;
   });
 };
 
 /**
- * Checks if the user has the necessary permissions to create a webhook in a given channel.
- * @param channelId - The ID of the guild-based channel where the webhook will be created.
- * @param me - The guild member representing the user.
- * @returns A boolean indicating whether the user can create a webhook in the channel.
+ * Checks if a webhook can be created in a specific channel.
+ *
+ * Verifies that the user has the required permissions (ManageWebhooks) for the channel
+ * and that the channel hasn't reached the maximum limit of 15 webhooks.
+ *
+ * @param guildId - The ID of the guild where the channel is located
+ * @param channelId - The ID of the channel where the webhook should be created
+ * @param userId - The ID of the user attempting to create the webhook
+ * @returns A promise that resolves to true if the webhook can be created, false otherwise
  */
-export const canCreateWebhook = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageWebhooks) &&
- Number(me.client.util.cache.webhooks.cache.get(me.guild.id)?.get(channelId)?.size) < 15;
+export const canCreateWebhook = async (guildId: string, channelId: string, userId: string) =>
+ (await checkChannelPermissions(guildId, channelId, ['ManageWebhooks'], userId)) &&
+ Number(
+  await cache.webhooks
+   .getAll(guildId)
+   .then((webhooks) => webhooks.filter((w) => w.channel_id === channelId).length),
+ ) < 15;

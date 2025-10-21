@@ -37,7 +37,7 @@ export default async (
  language: CT.Language,
  type: MentionTypes,
  value: string,
- guild: Discord.Guild,
+ guild: RGuild,
 ) => {
  switch (type) {
   case CT.EditorTypes.Channel:

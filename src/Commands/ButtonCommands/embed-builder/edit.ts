@@ -9,10 +9,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
   customId: 'embed-builder/edit',
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Short,
       customId: 'message',
       placeholder: cmd.client.util.constants.standard.msgurl('xxx', 'xxx', 'xxx'),

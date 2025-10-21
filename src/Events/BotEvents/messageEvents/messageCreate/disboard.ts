@@ -64,7 +64,7 @@ export const disboardSent = async (
  }
 };
 
-export const bumpReminder = async (guild: Discord.Guild, cacheSettings?: Prisma.disboard) => {
+export const bumpReminder = async (guild: RGuild, cacheSettings?: Prisma.disboard) => {
  client.util.cache.disboardBumpReminders.delete(guild.id);
 
  const settings =
@@ -91,11 +91,11 @@ export const bumpReminder = async (guild: Discord.Guild, cacheSettings?: Prisma.
   disabled: boolean = true,
  ): Discord.APIActionRowComponent<Discord.APIButtonComponentWithCustomId>[] => [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Secondary,
+     type: ComponentType.Button,
+     style: ButtonStyle.Secondary,
      label: language.events.ready.disboard.button,
      custom_id: 'disboard/bump',
      disabled,

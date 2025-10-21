@@ -142,7 +142,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.back(name, undefined),
    buttonParsers.global(
@@ -156,7 +156,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -227,16 +227,16 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
         relatedSettings
          .map((s) => ({
           label: s.text ?? undefined,
-          style: Discord.ButtonStyle.Secondary,
+          style: ButtonStyle.Secondary,
           emoji: s.emote ? (Discord.parseEmoji(s.emote) ?? undefined) : undefined,
-          type: Discord.ComponentType.Button,
+          type: ComponentType.Button,
           custom_id: `roles/button-roles/takeRole_${s.uniquetimestamp}`,
          }))
          .filter((c) => c.label || c.emoji) as Discord.APIButtonComponentWithCustomId[],
         5,
        )
        .map((c) => ({
-        type: Discord.ComponentType.ActionRow,
+        type: ComponentType.ActionRow,
         components: c,
        }));
 

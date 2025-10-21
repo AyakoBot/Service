@@ -27,15 +27,15 @@ export default async (
    [PermissionFlagsBits.ManageChannels],
   );
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).stageInstances
+ return (await getAPI(channel.guild_id)).stageInstances
   .edit(channel.id, body, { reason })
   .then((s) => new Classes.StageInstance(channel.client, s, channel))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

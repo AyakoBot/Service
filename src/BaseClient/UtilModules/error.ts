@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle, ComponentType } from '@discordjs/core';
 import * as CT from '../../Typings/Typings.js';
 import DataBase from '../DataBase.js';
 import constants from '../Other/constants.js';
@@ -6,23 +6,24 @@ import objectEmotes from './emotes.js';
 import { getLanguage } from './getLanguage.js';
 import { request } from './requestHandler.js';
 import { canSendMessage } from './requestHandler/channels/sendMessage.js';
+import { DiscordAPIError } from '@discordjs/rest';
 
 /**
  * Sends an error message to the configured error channel of the guild.
- * @param guild - The guild where the error occurred.
+ * @param guildId - The guildId where the error occurred.
  * @param err - The error object to be sent.
  * @returns Promise<void>
  */
 export default async (
- guild: Discord.Guild | undefined | null,
- err: Error | Discord.DiscordAPIError,
+ guildId: string | undefined | null,
+ err: Error | DiscordAPIError,
  postDebug: boolean = true,
 ) => {
  if (process.argv.includes('--silent')) return;
- if (!guild && !postDebug) return;
- if (!(err instanceof Discord.DiscordAPIError)) postDebug = false;
+ if (!guildId && !postDebug) return;
+ if (!(err instanceof DiscordAPIError)) postDebug = false;
 
- const language = await getLanguage(guild?.id ?? 'en-GB');
+ const language = await getLanguage(guildId ?? 'en-GB');
 
  const filteredStack = err.stack
   ?.replace(/file:\/\/\/root\/Ayako\/packages\/Bot/g, '')
@@ -53,11 +54,11 @@ export default async (
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Link,
+      type: ComponentType.Button,
+      style: ButtonStyle.Link,
       label: language.slashCommands.help.clickMe,
       url: constants.standard.support,
      },
@@ -67,12 +68,12 @@ export default async (
  };
 
  if (postDebug) sendDebugMessage(payload, err.cause);
- if (!guild) return;
+ if (!guildId) return;
  if (!proceed(err.message, err.stack)) return;
 
  const errorchannel = await DataBase.guildsettings
   .findUnique({
-   where: { guildid: guild.id },
+   where: { guildid: guildId },
    select: { errorchannel: true },
   })
   .then((r) => r?.errorchannel);

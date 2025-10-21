@@ -9,7 +9,7 @@ type Message =
  | RMessage
  | (RMessageReference & {
     client: Discord.Client<true>;
-    guild: Discord.Guild;
+    guild: RGuild;
     channel: RMessage['channel'];
     author: undefined;
    })
@@ -22,7 +22,7 @@ type Message =
  */
 export default async <T extends Message>(
  msg: T,
- g?: T extends RMessage ? Discord.Guild : undefined,
+ g?: T extends RMessage ? RGuild : undefined,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
  const guild = (g || msg.guild)!;
@@ -38,7 +38,7 @@ export default async <T extends Message>(
 
  return (await getAPI(guild)).channels
   .deleteMessage(msg.channelId, 'messageId' in msg ? msg.messageId! : msg.id)
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    error(guild, e);
    return e;
   });

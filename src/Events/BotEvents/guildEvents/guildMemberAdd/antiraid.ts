@@ -40,7 +40,7 @@ const addMember = (member: RMember, settings: Prisma.antiraid) => {
  );
 };
 
-const check = async (guild: Discord.Guild, settings: Prisma.antiraid) => {
+const check = async (guild: RGuild, settings: Prisma.antiraid) => {
  const cache = guild.client.util.cache.antiraid.get(guild.id);
  if (!cache) return;
  if (cache.size < Number(settings.jointhreshold)) return;
@@ -114,7 +114,7 @@ const postMessage = async (
  last5mins: RMember[],
  caughtUsers: RMember[],
  settings: Prisma.antiraid,
- guild: Discord.Guild,
+ guild: RGuild,
  additionalEmbeds: Discord.APIEmbed[],
  invitesDisabled: boolean,
  endTime: number,
@@ -193,19 +193,19 @@ const postMessage = async (
    ],
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
+       type: ComponentType.Button,
        label: lan.buttons.printLast5mins,
-       style: Discord.ButtonStyle.Secondary,
+       style: ButtonStyle.Secondary,
        emoji: { name: '🖨️' },
        custom_id: 'antiraid/print_last5mins',
       },
       {
-       type: Discord.ComponentType.Button,
+       type: ComponentType.Button,
        label: lan.buttons.printCaughtUsers,
-       style: Discord.ButtonStyle.Secondary,
+       style: ButtonStyle.Secondary,
        emoji: { name: '🖨️' },
        custom_id: 'antiraid/print_caughtUsers',
       },
@@ -214,23 +214,23 @@ const postMessage = async (
     ...(settings.action !== 'ban' || !settings.actiontof
      ? ([
         {
-         type: Discord.ComponentType.ActionRow,
+         type: ComponentType.ActionRow,
          components: [
           ...(settings.action !== 'kick' || !settings.actiontof
            ? [
               {
-               type: Discord.ComponentType.Button,
+               type: ComponentType.Button,
                label: lan.buttons.kickCaughtUsers,
-               style: Discord.ButtonStyle.Secondary,
+               style: ButtonStyle.Secondary,
                emoji: guild.client.util.emotes.crossWithBackground,
                custom_id: 'antiraid/punish_kick',
               },
              ]
            : []),
           {
-           type: Discord.ComponentType.Button,
+           type: ComponentType.Button,
            label: lan.buttons.banCaughtUsers,
-           style: Discord.ButtonStyle.Secondary,
+           style: ButtonStyle.Secondary,
            emoji: guild.client.util.emotes.ban,
            custom_id: 'antiraid/punish_ban',
           },
@@ -243,7 +243,7 @@ const postMessage = async (
  );
 };
 
-export const enableInvites = (guild: Discord.Guild) => {
+export const enableInvites = (guild: RGuild) => {
  guild.client.util.request.guilds.edit(guild, {
   features: guild.features.filter(
    (f) => f !== Discord.GuildFeature.InvitesDisabled,

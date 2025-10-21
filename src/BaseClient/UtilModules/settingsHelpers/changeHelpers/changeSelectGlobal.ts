@@ -30,7 +30,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
   placeholder: getPlaceholder(type, language),
  };
 
- if (menu.type === Discord.ComponentType.ChannelSelect) {
+ if (menu.type === ComponentType.ChannelSelect) {
   switch (channelType) {
    case 'voice': {
     menu.channel_types = [ChannelType.GuildVoice, ChannelType.GuildStageVoice];

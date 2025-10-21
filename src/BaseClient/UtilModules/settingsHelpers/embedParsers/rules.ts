@@ -8,7 +8,7 @@ import * as CT from '../../../../Typings/Typings.js';
  * @param guild - The Discord guild object.
  * @returns A string representation of the rules.
  */
-export default (val: string[] | null, language: CT.Language, guild: Discord.Guild) =>
+export default (val: string[] | null, language: CT.Language, guild: RGuild) =>
  val && val.length
   ? val.map((v) => `\`${guild.autoModerationRules.cache.get(v)?.name ?? v}\``).join(', ')
   : language.t.None;

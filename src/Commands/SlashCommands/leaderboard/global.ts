@@ -59,13 +59,13 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       url: `https://ayakobot.com/guilds/1/leaderboard`,
       label: lan.fullLeaderboard,
-      style: Discord.ButtonStyle.Link,
+      style: ButtonStyle.Link,
      },
     ],
    },

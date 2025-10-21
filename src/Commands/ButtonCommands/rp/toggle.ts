@@ -75,7 +75,7 @@ const deleteAll = async (cmd: APIMessageComponentButtonInteraction) => {
  }
 };
 
-export const create = async (guild: Discord.Guild) => {
+export const create = async (guild: RGuild) => {
  const commands = await guild.client.util.request.commands.getGuildCommands(guild);
 
  if ('message' in commands) {

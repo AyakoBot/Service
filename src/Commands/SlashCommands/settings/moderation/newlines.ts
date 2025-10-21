@@ -100,13 +100,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, !!settings?.active, CT.GlobalDescType.Active, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings?.maxnewlines, 'maxnewlines', name, undefined),
    buttonParsers.specific(language, settings?.action, 'action', name, undefined),
@@ -127,7 +127,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(
     language,

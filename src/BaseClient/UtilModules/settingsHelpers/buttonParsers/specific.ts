@@ -36,7 +36,7 @@ export default <T extends keyof CT.Categories>(
  }
 
  return {
-  type: Discord.ComponentType.Button,
+  type: ComponentType.Button,
   label: (
    (
     language.slashCommands.settings.categories[settingName as CT.SettingNames]
@@ -45,8 +45,8 @@ export default <T extends keyof CT.Categories>(
   ).name,
   style:
    (typeof setting !== 'boolean' && setting && String(setting).length) || !!setting
-    ? Discord.ButtonStyle.Primary
-    : Discord.ButtonStyle.Danger,
+    ? ButtonStyle.Primary
+    : ButtonStyle.Danger,
   custom_id: getWithUTS(
    `settings/editors/${constantTypes[name as keyof typeof constantTypes]}_${String(
     name,

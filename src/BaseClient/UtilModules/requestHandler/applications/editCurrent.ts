@@ -1,22 +1,22 @@
-import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { api } from '../../../Client.js';
 import cache from '../../cache.js';
 import error from '../../error.js';
 
 /**
  * Edits the current Application.
- * @param guild The Guild to get the Application from or undefined.
+ * @param guildId The Guild Id to get the Application from or undefined.
  * @param body The data to send in the request.
  * @returns A Promise that resolves with a DiscordAPIError
  * if the application cannot be found or edited.
  */
 export default async (
- guild: Discord.Guild | undefined,
- body: Parameters<typeof API.applications.editCurrent>[0],
+ guildId: string | undefined,
+ body: Parameters<typeof api.applications.editCurrent>[0],
 ) =>
- (guild ? (cache.apis.get(guild.id) ?? API) : API).applications
+ (guildId ? (cache.apis.get(guildId) ?? api) : api).applications
   .editCurrent(body)
-  .catch((e: Discord.DiscordAPIError) => {
-   if (guild) error(guild, e);
+  .catch((e: DiscordAPIError) => {
+   if (guildId) error(guildId, e);
    return e;
   });

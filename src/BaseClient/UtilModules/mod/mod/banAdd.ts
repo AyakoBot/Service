@@ -4,7 +4,6 @@ import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import type * as ModTypes from '../../mod.js';
 import { request } from '../../requestHandler.js';
 
-import type { Message } from 'discord.js';
 import { canBanMember } from '../../requestHandler/guilds/banMember.js';
 import { canBanUser } from '../../requestHandler/guilds/banUser.js';
 import actionAlreadyApplied from '../actionAlreadyApplied.js';
@@ -25,9 +24,9 @@ export default async (
  const memberRes = await getMembers(cmd, options, language, message, type);
  if (memberRes && !memberRes.canExecute) return false;
 
- rmVotePunish(options, memberRes?.executorMember, cmd?.channelId);
+ rmVotePunish(options, memberRes?.executorMember, cmd?.channel_id);
 
- const me = await getBotMemberFromGuild(options.guild);
+ const me = await getBotMemberFromGuild(options.guild.id);
  if (
   !options.skipChecks &&
   ((memberRes && !canBanMember(me, memberRes.targetMember)) || !canBanUser(me))
@@ -61,7 +60,7 @@ export default async (
   err(cmd, res, language, message, options.guild);
   if (!options.dm) return false;
 
-  me.client.util.request.channels.deleteMessage(options.dm as Message<false>, options.guild);
+  request.channels.deleteMessage(options.dm, options.guild);
   return false;
  }
 

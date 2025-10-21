@@ -26,7 +26,7 @@ export default async (thread: RThread, userId: string) => {
 
  return (await getAPI(thread.guild)).threads
   .addMember(thread.id, userId)
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    if (e.message.includes('Missing Access')) {
     const e2 = requestHandlerError(
      `Cannot add User ${userId} to thread ${thread.name} / ${thread.id} because they are not a member`,

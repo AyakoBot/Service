@@ -141,7 +141,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings?.prefix, 'prefix', name, undefined),
    buttonParsers.boolean(
@@ -154,7 +154,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.interactionsmode, 'interactionsmode', name, undefined),
    buttonParsers.boolean(language, settings?.legacyrp, 'legacyrp', name, undefined),
@@ -165,7 +165,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,

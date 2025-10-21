@@ -15,9 +15,9 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
  uniquetimestamp: number | undefined,
 ): Discord.APIButtonComponent => ({
- type: Discord.ComponentType.Button,
+ type: ComponentType.Button,
  label: language.slashCommands.settings.delete,
- style: Discord.ButtonStyle.Danger,
+ style: ButtonStyle.Danger,
  custom_id: getWithUTS(`settings/delete_${String(name)}`, uniquetimestamp),
  emoji: emotes.minusBG,
 });

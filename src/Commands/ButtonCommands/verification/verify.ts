@@ -122,11 +122,11 @@ const verify = async (cmd: Discord.ButtonInteraction, language: CT.Language) => 
   files: [file],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Success,
+      type: ComponentType.Button,
+      style: ButtonStyle.Success,
       custom_id: `verification/enterCode_${captcha.text}`,
       label: language.verification.enterCode,
      },

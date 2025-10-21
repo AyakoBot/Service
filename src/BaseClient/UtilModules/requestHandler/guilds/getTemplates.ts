@@ -11,19 +11,19 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to retrieve templates for.
  * @returns A promise that resolves with an array of GuildTemplate objects.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!canGetTemplates(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get template`, [PermissionFlagsBits.KickMembers]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .getTemplates(guild.id)
   .then((templates) => templates.map((t) => new Classes.GuildTemplate(guild.client, t)))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

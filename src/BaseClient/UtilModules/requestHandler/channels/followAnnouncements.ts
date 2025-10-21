@@ -21,15 +21,15 @@ export default async (channel: RChannel, followedChannelId: string) => {
    PermissionFlagsBits.ManageWebhooks,
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .followAnnouncements(followedChannelId, channel.id)
   .then((c) => ({ sourceChannelId: c.channel_id, createdWebhookId: c.webhook_id }))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

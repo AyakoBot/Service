@@ -7,7 +7,7 @@ import getBotMemberFromGuild from './getBotMemberFromGuild.js';
  * @param guild - The guild to retrieve invites for.
  * @returns A promise that resolves to an array of invites for the guild.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  const { cache } = guild.invites;
 
  const me = await getBotMemberFromGuild(guild);

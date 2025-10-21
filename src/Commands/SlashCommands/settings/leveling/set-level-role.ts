@@ -19,10 +19,10 @@ export default async (
 
  client.util.replyCmd(cmd, {
   components: [
-   { type: Discord.ComponentType.ActionRow, components: components[0] },
-   { type: Discord.ComponentType.ActionRow, components: components[1] },
-   { type: Discord.ComponentType.ActionRow, components: components[2] },
-   { type: Discord.ComponentType.ActionRow, components: [excluded] },
+   { type: ComponentType.ActionRow, components: components[0] },
+   { type: ComponentType.ActionRow, components: components[1] },
+   { type: ComponentType.ActionRow, components: components[2] },
+   { type: ComponentType.ActionRow, components: [excluded] },
   ],
   embeds: [embed],
  });
@@ -32,7 +32,7 @@ export const getExcludedButton = (
  language: CT.Language,
  role: RRole,
 ): Discord.APISelectMenuComponent => ({
- type: Discord.ComponentType.RoleSelect,
+ type: ComponentType.RoleSelect,
  custom_id: `set-level/excluded_${role.id}`,
  placeholder: language.slashCommands.setLevel.excluded,
  min_values: 0,

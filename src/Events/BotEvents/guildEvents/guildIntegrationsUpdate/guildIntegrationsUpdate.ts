@@ -3,7 +3,7 @@ import guildIntegrationsCreates from './guildIntegrationsCreates/guildIntegratio
 import guildIntegrationsDeletes from './guildIntegrationsDeletes/guildIntegrationsDeletes.js';
 import guildIntegrationsUpdates from './guildIntegrationsUpdates/guildIntegrationsUpdates.js';
 
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  const cached = guild.client.util.cache.integrations.cache.get(guild.id);
  const fetched = await guild.client.util.request.guilds.getIntegrations(guild);
  if ('message' in fetched) return;

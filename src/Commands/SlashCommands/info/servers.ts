@@ -50,7 +50,7 @@ const getContent = (servers: { content: string; count: number }[]) =>
 const getPayload = async (
  content: string[],
  language: CT.Language,
- guild?: Discord.Guild | undefined | null,
+ guild?: RGuild | undefined | null,
  page = 1,
 ): Promise<CT.UsualMessagePayload> => ({
  embeds: [
@@ -61,19 +61,19 @@ const getPayload = async (
  ] as Discord.APIEmbed[],
  components: [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Primary,
+     type: ComponentType.Button,
+     style: ButtonStyle.Primary,
      label: language.slashCommands.settings.previous,
      custom_id: `info/servers_${page === 1 ? 1 : page - 1}`,
      emoji: client.util.emotes.back,
      disabled: page === 1,
     },
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Primary,
+     type: ComponentType.Button,
+     style: ButtonStyle.Primary,
      label: language.slashCommands.settings.next,
      custom_id: `info/servers_${page + 1}`,
      emoji: client.util.emotes.forth,

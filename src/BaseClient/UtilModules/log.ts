@@ -14,7 +14,7 @@ import send from './send.js';
  * @returns A Promise that resolves when the log has been sent.
  */
 export default async <T extends CT.ModTypes>(
- guild: Discord.Guild,
+ guild: RGuild,
  type: T,
  target: RUser,
  executor: RUser,

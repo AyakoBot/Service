@@ -1,7 +1,6 @@
+import type { DiscordAPIError } from '@discordjs/rest';
 import { StoredPunishmentTypes } from '@prisma/client';
-import * as Discord from 'discord.js';
 
-export type * from '../BaseClient/Cluster/Redis.js';
 export type * from './DataBase.js';
 export * from './Settings.js';
 export type * from './TopGG.js';
@@ -35,7 +34,7 @@ export type AcceptedMergingTypes = 'string' | 'boolean' | 'difference' | 'icon' 
 
 export interface AutoCompleteFile {
  default: (
-  cmd: Discord.AutocompleteInteraction | { guild: Discord.Guild },
+  cmd: Discord.AutocompleteInteraction | { guild: RGuild },
  ) => Promise<{ name: string; value: string }[] | undefined>;
 }
 
@@ -161,23 +160,14 @@ export const ModColors: Record<ModTypes, Colors> = {
 export type BaseOptions = {
  reason: string;
  dbOnly: boolean;
- guild: Discord.Guild;
+ guild: RGuild;
  target: RUser;
  executor: RUser;
  skipChecks: boolean;
- dm?: RMessage | Discord.DiscordAPIError | Error;
+ dm?: RMessage | DiscordAPIError | Error;
 };
 
-type Channel = {
- channel:
-  | Discord.NewsChannel
-  | RChannel
-  | Discord.TextChannel
-  | Discord.VoiceChannel
-  | Discord.ForumChannel
-  | Discord.MediaChannel;
-};
-
+type Channel = { channel: RChannel };
 type Roles = { roles: RRole[] };
 type Temp = { duration: number };
 type Empty = NonNullable<unknown>;

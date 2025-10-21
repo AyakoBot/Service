@@ -4,7 +4,7 @@ import * as CT from '../../../../Typings/Typings.js';
 
 export default async () => client.guilds.cache.forEach((g) => run(g));
 
-export const run = async (guild: Discord.Guild) => {
+export const run = async (guild: RGuild) => {
  const settings = await client.util.DataBase.nitrosettings.findUnique({
   where: { guildid: guild.id, active: true },
  });

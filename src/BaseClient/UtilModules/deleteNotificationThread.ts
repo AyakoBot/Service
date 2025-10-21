@@ -4,7 +4,7 @@ import cache from './cache.js';
 import * as getChannel from './getChannel.js';
 import { request } from './requestHandler.js';
 
-export default async (guild: Discord.Guild, threadId: string) => {
+export default async (guild: RGuild, threadId: string) => {
  cache.deleteThreads.delete(guild.id, threadId);
 
  if (!guild.rulesChannelId) return;

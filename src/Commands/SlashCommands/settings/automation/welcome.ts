@@ -92,13 +92,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, !!settings?.active, CT.GlobalDescType.Active, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -121,7 +121,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -142,11 +142,11 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
-    style: Discord.ButtonStyle.Success,
+    type: ComponentType.Button,
+    style: ButtonStyle.Success,
     custom_id: 'events/guildMemberAdd_welcome',
     label: language.events.guildMemberAdd.welcome.test,
    },

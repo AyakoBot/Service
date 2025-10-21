@@ -22,21 +22,21 @@ type Body =
  * @returns A Promise that resolves with a new Message object.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  webhookId: string,
  token: string,
  body: Body,
  client: Discord.Client<true>,
-): Promise<Classes.Message | Discord.DiscordAPIError>;
+): Promise<Classes.Message | DiscordAPIError>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  webhookId: string,
  token: string,
  body: Body,
  client?: undefined,
-): Promise<Classes.Message | Discord.DiscordAPIError>;
+): Promise<Classes.Message | DiscordAPIError>;
 async function fn(
- guild: Discord.Guild | undefined | null,
+ guild: RGuild | undefined | null,
  webhookId: string,
  token: string,
  body: Body,
@@ -52,8 +52,8 @@ async function fn(
    wait: true,
   })
   .then((m) => new Classes.Message(c, m))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 }

@@ -13,20 +13,20 @@ import { canPrune } from './beginPrune.js';
  * @returns A promise that resolves with the number of members that
  * would be removed in the prune operation.
  */
-export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIGuildPruneCountQuery) => {
+export default async (guild: RGuild, query?: Discord.RESTGetAPIGuildPruneCountQuery) => {
  if (!canPrune(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get prune count`, [
    PermissionFlagsBits.KickMembers,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .getPruneCount(guild.id, query)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -9,7 +9,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to fetch the emojis for.
  * @returns A promise that resolves with an array of GuildEmoji objects.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getEmojis(guild.id)
   .then((emojis) => {
@@ -20,7 +20,7 @@ export default async (guild: Discord.Guild) =>
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

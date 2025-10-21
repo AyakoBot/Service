@@ -18,7 +18,7 @@ export default async (
   | {
      id: string;
      name: string;
-     guild: Discord.Guild;
+     guild: RGuild;
      type: ChannelType;
      skip: true;
      client: Discord.Client<true>;
@@ -40,11 +40,11 @@ export default async (
     : []),
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .getPins(channel.id)
   .then((msgs) => {
    const parsed = msgs.map((msg) => new Classes.Message(channel.client, msg));
@@ -54,8 +54,8 @@ export default async (
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

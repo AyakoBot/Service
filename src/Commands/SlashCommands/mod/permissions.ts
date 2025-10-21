@@ -29,15 +29,15 @@ export default async (
   components: (
    cmd.client.util.getChunks(
     Object.entries(lan.buttons).map(([key, val], i) => ({
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: val,
      custom_id: `mod/permissions_${key}`,
-     style: customCommands[i] ? Discord.ButtonStyle.Primary : Discord.ButtonStyle.Secondary,
+     style: customCommands[i] ? ButtonStyle.Primary : ButtonStyle.Secondary,
     })),
     5,
    ) as Discord.APIButtonComponentWithCustomId[][]
   ).map((c) => ({
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: c,
   })) as Discord.APIActionRowComponent<Discord.APIButtonComponentWithCustomId>[],
  };

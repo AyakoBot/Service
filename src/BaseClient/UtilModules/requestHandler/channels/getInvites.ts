@@ -11,17 +11,17 @@ import { getAPI } from './addReaction.js';
  * @param channel - The guild-based channel to retrieve invites for.
  * @returns A promise that resolves with an array of parsed invite objects.
  */
-export default async (channel: Discord.GuildBasedChannel) => {
+export default async (channel: RChannel) => {
  if (!canGetInvites(channel.id, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot get invites in ${channel.name} / ${channel.id}`, [
    PermissionFlagsBits.ManageChannels,
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .getInvites(channel.id)
   .then((invites) => {
    const parsed = invites.map((i) => new Classes.Invite(channel.client, i));
@@ -31,8 +31,8 @@ export default async (channel: Discord.GuildBasedChannel) => {
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

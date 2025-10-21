@@ -37,7 +37,7 @@ export const runPunishment = async (
  language: CT.Language,
  idArray: string[],
  type: 'ban' | 'kick',
- guild: Discord.Guild,
+ guild: RGuild,
  cmd?: Discord.ButtonInteraction<'cached'>,
 ) => {
  const self = (await guild.client.util.getBotMemberFromGuild(guild)) ?? guild.members.me;
@@ -147,7 +147,7 @@ export const runPunishment = async (
        { delete_message_seconds: 604800 },
        language.autotypes.antivirus,
       ));
-   if (res && 'message' in (res as Discord.DiscordAPIError | NonNullable<unknown>)) {
+   if (res && 'message' in (res as DiscordAPIError | NonNullable<unknown>)) {
     failed.push(id);
     checkDone();
     return;

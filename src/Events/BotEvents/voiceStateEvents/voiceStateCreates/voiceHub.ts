@@ -32,7 +32,7 @@ export default async (state: Discord.VoiceState, member?: RMember) => {
 
 export const createVC = async (
  client: Discord.Client,
- guild: Discord.Guild,
+ guild: RGuild,
  hub: Discord.VoiceChannel | RChannel,
  member: RMember,
 ): Promise<{ code: number; channel?: Discord.VoiceChannel }> => {
@@ -90,7 +90,7 @@ export const createVC = async (
       ]
     : []),
   ],
- })) as Discord.VoiceChannel | Discord.DiscordAPIError;
+ })) as Discord.VoiceChannel | DiscordAPIError;
 
  if ('message' in channel) return { code: 6 };
 

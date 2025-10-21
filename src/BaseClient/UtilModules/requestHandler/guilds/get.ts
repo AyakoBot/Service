@@ -15,18 +15,18 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves to the retrieved guild object.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  guildId: string,
  query: Discord.RESTGetAPIGuildQuery,
 ) => {
  if (query.with_counts !== true && guild.client.guilds.cache.get(guildId)) {
-  return guild.client.guilds.cache.get(guildId) as Discord.Guild;
+  return guild.client.guilds.cache.get(guildId) as RGuild;
  }
 
  if (!canGet(await getBotMemberFromGuild(guild), guildId)) {
   const e = requestHandlerError(`Cannot get guild ${guild.name} / ${guild.id}`, []);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -47,8 +47,8 @@ export default async (
 
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import DataBase from '../DataBase.js';
 import cache from './cache.js';
 
@@ -10,30 +9,32 @@ import cache from './cache.js';
 export const token = (t: string) => Buffer.from(t.split('.')[0], 'base64').toString();
 
 /**
- * Returns the bot ID for a given guild.
- * @param g - The Discord guild object.
+ * Returns the bot ID for a given guild id.
+ * @param guildId - The guild Id.
  * @returns The bot ID for the guild.
  */
-export const guild = async (g: Discord.Guild) => {
- if (!g) {
-  const { default: client } = await import('../Client.js');
+export const guild = async (guildId: string) => {
+ if (!guildId) {
+  const { user } = await import('../Client.js');
 
-  return client.user!.id;
+  return user.id;
  }
 
- if (cache.customClients.get(g.id)) return cache.customClients.get(g.id)!;
+ if (cache.customClients.get(guildId)) return cache.customClients.get(guildId)!;
 
  const settings = await DataBase.customclients.findUnique({
-  where: { guildid: g.id, token: { not: null } },
+  where: { guildid: guildId, token: { not: null } },
   select: { token: true },
  });
  if (!settings || !settings.token) {
-  cache.customClients.set(g.id, g.client.user.id);
-  return g.client.user.id;
+  const { user } = await import('../Client.js');
+
+  cache.customClients.set(guildId, user.id);
+  return user.id;
  }
 
  const id = token(settings.token);
- cache.customClients.set(g.id, id);
+ cache.customClients.set(guildId, id);
 
  return id;
 };

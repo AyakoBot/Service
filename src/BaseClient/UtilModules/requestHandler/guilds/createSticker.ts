@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the created sticker, or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Omit<Discord.RESTPostAPIGuildStickerFormDataBody, 'file'> & {
   file: Discord.RawFile;
  },
@@ -27,15 +27,15 @@ export default async (
    PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .createSticker(guild.id, body, { reason })
   .then((s) => new Classes.Sticker(guild.client, s))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

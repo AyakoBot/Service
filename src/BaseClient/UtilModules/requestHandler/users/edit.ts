@@ -11,20 +11,20 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the updated user's profile.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  data: Discord.RESTPatchAPICurrentUserJSONBody,
  client: Discord.Client<true>,
-): Promise<RUser | Discord.DiscordAPIError | Error>;
+): Promise<RUser | DiscordAPIError | Error>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  data: Discord.RESTPatchAPICurrentUserJSONBody,
  client?: undefined,
-): Promise<RUser | Discord.DiscordAPIError | Error>;
+): Promise<RUser | DiscordAPIError | Error>;
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  data: Discord.RESTPatchAPICurrentUserJSONBody,
  client?: Discord.Client<true>,
-): Promise<RUser | Discord.DiscordAPIError | Error> {
+): Promise<RUser | DiscordAPIError | Error> {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  const c = (guild?.client ?? client)!;
@@ -35,8 +35,8 @@ async function fn(
    avatar: data.avatar ? await c.util.util.resolveImage(data.avatar) : data.avatar,
   })
   .then((u) => new Classes.User(c, u))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 }

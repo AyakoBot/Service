@@ -25,7 +25,7 @@ export default async (thread: RThread) => {
 
  return (await getAPI(thread.guild)).threads
   .leave(thread.id)
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    error(thread.guild, e);
    return e;
   });

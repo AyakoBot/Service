@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  body: Discord.RESTPatchAPIGuildVoiceStateUserJSONBody,
  reason?: string,
@@ -27,14 +27,14 @@ export default async (
    PermissionFlagsBits.MuteMembers,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .editUserVoiceState(guild.id, userId, body, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

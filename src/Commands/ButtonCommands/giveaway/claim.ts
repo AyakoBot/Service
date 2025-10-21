@@ -60,7 +60,7 @@ export default async (cmd: Discord.ButtonInteraction) => {
   await cmd.client.util.request.channels.editMsg(giveawayMessage, {
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       getButton(language, giveaway),
       giveaway.actualprize && giveaway.collecttime ? getClaimButton(language, giveaway) : undefined,

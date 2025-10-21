@@ -12,7 +12,7 @@ import { getAPI } from '../channels/addReaction.js';
  * and member objects for each user in the scheduled event.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  eventId: string,
  query?: Discord.RESTGetAPIGuildScheduledEventUsersQuery,
 ) =>
@@ -38,7 +38,7 @@ export default async (
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

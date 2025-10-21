@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the created guild template,
  * or rejects with a DiscordAPIError.
  */
-export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildTemplatesJSONBody) => {
+export default async (guild: RGuild, body: Discord.RESTPostAPIGuildTemplatesJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canCreateTemplate(await getBotMemberFromGuild(guild))) {
@@ -21,15 +21,15 @@ export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildTempla
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .createTemplate(guild.id, body)
   .then((t) => new Classes.GuildTemplate(guild.client, t))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

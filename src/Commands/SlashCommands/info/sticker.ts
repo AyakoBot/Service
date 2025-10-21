@@ -84,25 +84,25 @@ export const multiple = async (
 
  const components: Discord.APIActionRowComponent<Discord.APIButtonComponent>[] = [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Secondary,
+     type: ComponentType.Button,
+     style: ButtonStyle.Secondary,
      custom_id: `info/stickers_${page - 1}`,
      emoji: cmd.client.util.emotes.back,
      disabled: page === 1,
     },
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Secondary,
+     type: ComponentType.Button,
+     style: ButtonStyle.Secondary,
      disabled: true,
      custom_id: '-',
      label: `${page}/${Math.ceil(cmd.guild.stickers.cache.size / 10)}`,
     },
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Secondary,
+     type: ComponentType.Button,
+     style: ButtonStyle.Secondary,
      custom_id: `info/stickers_${page + 1}`,
      emoji: cmd.client.util.emotes.forth,
      disabled: page === Math.ceil(cmd.guild.stickers.cache.size / 10),

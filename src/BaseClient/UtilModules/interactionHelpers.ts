@@ -382,17 +382,17 @@ const getComponents = (
  replyUsers: string[],
 ): Discord.APIActionRowComponent<Discord.APIButtonComponent>[] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: (
    cmd.message.components[0] as Discord.ActionRow<RMessageActionRowComponent>
   ).components
-   .filter((c): c is Discord.ButtonComponent => c.type === Discord.ComponentType.Button)
+   .filter((c): c is Discord.ButtonComponent => c.type === ComponentType.Button)
    .map((c) => ({
     label: c.label as string,
     custom_id: `${c.customId?.split(/_+/g)[0]}_${replyUsers
      .map((u) => (u.match(/\D/g)?.length ? u : BigInt(u).toString(36)))
      .join('_')}`,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     type: c.type,
    })),
  },
@@ -434,16 +434,16 @@ const getPayload = <T extends keyof CT.Language['slashCommands']['interactions']
   : [
      con.buttons?.length && replyUsers.length && !isAtEmbedLimit
       ? ({
-         type: Discord.ComponentType.ActionRow,
+         type: ComponentType.ActionRow,
          components: con.buttons?.map(
           (b, i) =>
            ({
-            type: Discord.ComponentType.Button,
+            type: ComponentType.Button,
             label: 'buttons' in lan ? lan.buttons[i] : b,
             custom_id: `${b}_${replyUsers
              .map((u) => (u.match(/\D/g)?.length ? u : BigInt(u).toString(36)))
              .join('_')}`,
-            style: Discord.ButtonStyle.Secondary,
+            style: ButtonStyle.Secondary,
            }) as Discord.APIButtonComponent,
          ),
         } as Discord.APIActionRowComponent<Discord.APIButtonComponent>)

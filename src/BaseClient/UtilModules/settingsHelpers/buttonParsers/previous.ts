@@ -14,9 +14,9 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
  page: number = 0,
 ): Discord.APIButtonComponent => ({
- type: Discord.ComponentType.Button,
+ type: ComponentType.Button,
  label: language.slashCommands.settings.previous,
- style: Discord.ButtonStyle.Secondary,
+ style: ButtonStyle.Secondary,
  custom_id: `settings/previous_${String(name)}_${page - 1}`,
  emoji: emotes.back,
  disabled: page === 0,

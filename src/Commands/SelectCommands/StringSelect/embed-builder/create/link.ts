@@ -15,10 +15,10 @@ export default async (cmd: Discord.StringSelectMenuInteraction, args: string[]) 
   customId: `embed-builder/editor_${args[0]}`,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Short,
       customId: 'input',
       label: lan.modals.link.label,

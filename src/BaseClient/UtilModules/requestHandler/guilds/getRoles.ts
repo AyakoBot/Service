@@ -9,7 +9,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to retrieve the roles from.
  * @returns A Promise that resolves with an array of Role objects.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getRoles(guild.id)
   .then((roles) => {
@@ -20,7 +20,7 @@ export default async (guild: Discord.Guild) =>
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

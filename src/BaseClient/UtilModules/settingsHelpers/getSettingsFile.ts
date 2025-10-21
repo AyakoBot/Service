@@ -12,7 +12,7 @@ import constants from '../../Other/constants.js';
  */
 export default async <T extends keyof typeof CT.SettingsName2TableName>(
  settingName: T,
- guild: Discord.Guild,
+ guild: RGuild,
 ) => {
  const files = await glob(
   `${process.cwd()}${

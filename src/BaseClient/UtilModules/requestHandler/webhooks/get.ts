@@ -11,11 +11,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with a new instance of the `Webhook` class,
  * or rejects with a `DiscordAPIError`.
  */
-export default async (guild: Discord.Guild, webhookId: string, token?: string) =>
+export default async (guild: RGuild, webhookId: string, token?: string) =>
  (await getAPI(guild)).webhooks
   .get(webhookId, { token })
   .then((w) => new Classes.Webhook(guild.client, w))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

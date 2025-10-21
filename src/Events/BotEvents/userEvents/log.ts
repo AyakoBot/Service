@@ -1,7 +1,7 @@
 import type * as Discord from 'discord.js';
 import * as CT from '../../../Typings/Typings.js';
 
-export default async (oldUser: RUser, user: RUser, guild: Discord.Guild) => {
+export default async (oldUser: RUser, user: RUser, guild: RGuild) => {
  const channels = await guild.client.util.getLogChannels('userevents', guild);
  if (!channels) return;
 

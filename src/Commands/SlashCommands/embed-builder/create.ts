@@ -26,27 +26,27 @@ export const buildEmbed = async (
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
       label: lan.start.methods.startOver,
       custom_id: 'embed-builder/startOver',
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Primary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Primary,
      },
      {
       label: lan.start.methods.inheritCode,
       custom_id: 'embed-builder/inheritCode',
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Primary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Primary,
      },
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       custom_id: 'embed-builder/select',
       min_values: 1,
       max_values: 1,
@@ -68,20 +68,20 @@ export const buildEmbed = async (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
       label: lan.start.methods.inheritCustom,
       custom_id: 'embed-builder/inheritCustom',
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Primary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Primary,
       disabled: !selectedOption,
      },
      {
       label: lan.start.methods.deleteCustom,
       custom_id: 'embed-builder/deleteCustom',
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Danger,
+      type: ComponentType.Button,
+      style: ButtonStyle.Danger,
       disabled:
        !selectedOption ||
        !cmd.memberPermissions?.has(Discord.PermissionsBitField.Flags.ManageGuild),

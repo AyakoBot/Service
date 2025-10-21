@@ -76,10 +76,10 @@ export default async (
   ),
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       custom_id: `help/viewCommand_${type}`,
       placeholder: language.slashCommands.help.selectCommand,
       disabled: categories.length === 1,
@@ -108,10 +108,10 @@ export default async (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       custom_id: 'help/select',
       placeholder: language.slashCommands.help.selectPlaceholder,
       options: [...new Set([...new Set(Object.values(SlashCommands.categories))].flat())].map(

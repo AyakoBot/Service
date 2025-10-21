@@ -44,25 +44,25 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       emoji: cmd.client.util.emotes.back,
       custom_id: `antiraid/print_${type}_${page - 1}`,
       disabled: page === 0,
      },
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       label: `${page + 1}/${textChunks.length}`,
       custom_id: '-',
       disabled: true,
      },
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       emoji: cmd.client.util.emotes.forth,
       custom_id: `antiraid/print_${type}_${page + 1}`,
       disabled: page === textChunks.length - 1,

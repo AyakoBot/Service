@@ -26,11 +26,11 @@ export default async (
     : [],
   );
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .getArchivedThreads(channel.id, status, query)
   .then((res) => {
    const parsed = res.threads.map((t) => Classes.Channel<10>(channel.client, t, channel.guild));
@@ -43,8 +43,8 @@ export default async (
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

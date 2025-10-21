@@ -13,21 +13,21 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the synced guild template,
  * or rejects with a DiscordAPIError.
  */
-export default async (guild: Discord.Guild, templateCode: string) => {
+export default async (guild: RGuild, templateCode: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canSyncTemplate(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot sync template`, [PermissionFlagsBits.ManageGuild]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .syncTemplate(guild.id, templateCode)
   .then((t) => new Classes.GuildTemplate(guild.client, t))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

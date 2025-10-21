@@ -65,27 +65,27 @@ export default async (member: RMember) => {
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: 'Join Support Server',
       emoji: member.client.util.emotes.ayakoLove,
-      style: Discord.ButtonStyle.Link,
+      style: ButtonStyle.Link,
       url: 'https://discord.gg/euTdctganf',
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: 'Invite Ayako',
       emoji: member.client.util.emotes.plusBG,
-      style: Discord.ButtonStyle.Link,
+      style: ButtonStyle.Link,
       url: member.client.util.constants.standard.invite,
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: 'Vote for Ayako',
       emoji: member.client.util.emotes.ayakoLove2,
-      style: Discord.ButtonStyle.Link,
+      style: ButtonStyle.Link,
       url: `https://top.gg/bot/${member.client.user.id}/vote`,
      },
     ],

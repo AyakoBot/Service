@@ -22,10 +22,10 @@ export default async (cmd: Discord.ButtonInteraction, _args: [], accept = true) 
   custom_id: `suggestion/${accept ? 'accept' : 'reject'}_${cmd.message.id}`,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Paragraph,
       placeholder: `(${language.t.optional})`,
       custom_id: 'paragraph',
@@ -35,10 +35,10 @@ export default async (cmd: Discord.ButtonInteraction, _args: [], accept = true) 
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Short,
       placeholder: `(${language.t.optional})`,
       custom_id: 'short',

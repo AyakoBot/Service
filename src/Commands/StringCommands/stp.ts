@@ -36,25 +36,25 @@ export default async (msg: RMessage, args: string[]) => {
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       custom_id: String(Date.now()),
       label: lan.warn,
-      style: Discord.ButtonStyle.Danger,
+      style: ButtonStyle.Danger,
       disabled: true,
      },
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       url: 'https://discord.js.org/#/docs/discord.js/main/class/Message',
       label: lan.button,
-      style: Discord.ButtonStyle.Link,
+      style: ButtonStyle.Link,
      },
     ],
    },

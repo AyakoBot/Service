@@ -41,31 +41,31 @@ export default async (cmd: Discord.ChatInputCommandInteraction | Discord.ButtonI
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.t.Refresh,
       custom_id: `images/${commandName}`,
-      style: Discord.ButtonStyle.Primary,
+      style: ButtonStyle.Primary,
       emoji: objectEmotes.refresh,
      } as Discord.APIButtonComponent,
     ],
    } as Discord.APIActionRowComponent<Discord.APIButtonComponent>,
    img.source
     ? ({
-       type: Discord.ComponentType.ActionRow,
+       type: ComponentType.ActionRow,
        components: [
         {
-         type: Discord.ComponentType.Button,
+         type: ComponentType.Button,
          label: lan.viewArtist,
-         style: Discord.ButtonStyle.Link,
+         style: ButtonStyle.Link,
          url: img.artistUrl as string,
         } as Discord.APIButtonComponent,
         {
-         type: Discord.ComponentType.Button,
+         type: ComponentType.Button,
          label: lan.viewOriginal,
-         style: Discord.ButtonStyle.Link,
+         style: ButtonStyle.Link,
          url: img.source as string,
         } as Discord.APIButtonComponent,
        ],

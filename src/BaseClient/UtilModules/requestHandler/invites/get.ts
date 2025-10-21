@@ -11,7 +11,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param query - Optional query parameters to include in the request.
  * @returns A Promise that resolves with the retrieved invite, or rejects with an error.
  */
-export default async <T extends Discord.Guild | null>(
+export default async <T extends RGuild | null>(
  guild: T,
  code: string,
  query?: Discord.RESTGetAPIInviteQuery,
@@ -31,4 +31,4 @@ export default async <T extends Discord.Guild | null>(
    g?.invites.cache.set(parsed.code, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => e);
+  .catch((e: DiscordAPIError) => e);

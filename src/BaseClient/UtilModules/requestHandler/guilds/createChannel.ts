@@ -16,7 +16,7 @@ import del from '../channels/delete.js';
  * @returns A promise that resolves with the created channel or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPostAPIGuildChannelJSONBody,
  reason?: string,
 ) => {
@@ -75,7 +75,7 @@ export default async (
  return (await getAPI(guild)).guilds
   .createChannel(guild.id, needs2Steps ? { ...body, permission_overwrites: [] } : body, { reason })
   .then(async (c) => {
-   const channel = Classes.Channel(guild.client, c, guild) as Discord.GuildBasedChannel;
+   const channel = Classes.Channel(guild.client, c, guild) as RGuildBasedChannel;
    if (!needs2Steps) return channel;
 
    const editRes = await edit(channel, {
@@ -95,8 +95,8 @@ export default async (
    }
    return channel;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

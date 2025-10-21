@@ -99,13 +99,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, !!settings?.active, CT.GlobalDescType.Active, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.deletereply, 'deletereply', name, undefined),
    buttonParsers.specific(
@@ -121,7 +121,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings?.roles, 'roles', name, undefined, CT.EditorTypes.Role),
    buttonParsers.specific(language, settings?.users, 'users', name, undefined, CT.EditorTypes.User),

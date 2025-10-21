@@ -25,13 +25,13 @@ export default async (
     : []),
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
  return (
   channel.messages.cache.get(msgId) ??
-  (await getAPI(channel.guild)).channels
+  (await getAPI(channel.guild_id)).channels
    .getMessage(channel.id, msgId)
    .then((m) => {
     const parsed = new Classes.Message(channel.guild.client, m);
@@ -39,7 +39,7 @@ export default async (
     channel.messages.cache.set(parsed.id, parsed);
     return parsed;
    })
-   .catch((e: Discord.DiscordAPIError) => e as Discord.DiscordAPIError)
+   .catch((e: DiscordAPIError) => e as DiscordAPIError)
  );
 };
 
@@ -49,7 +49,7 @@ export default async (
  * @param me - The user's guild member object.
  * @returns A boolean indicating whether the user has the necessary permissions.
  */
-export const canGetMessage = (channel: Discord.GuildBasedChannel, me: RMember) =>
+export const canGetMessage = (channel: RChannel, me: RMember) =>
  me.permissionsIn(channel).has(PermissionFlagsBits.ViewChannel) &&
  me.permissionsIn(channel).has(PermissionFlagsBits.ReadMessageHistory) &&
  ([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)

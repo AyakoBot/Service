@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import error from '../../error.js';
@@ -12,7 +12,7 @@ import error from '../../error.js';
  * and removed from the cache,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild, commandId: string) => {
+export default async (guild: RGuild, commandId: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  return (cache.apis.get(guild.id) ?? API).applicationCommands
@@ -21,13 +21,13 @@ export default async (guild: Discord.Guild, commandId: string) => {
    cache.commands.delete(guild.id, commandId);
    guild.client.application.commands.cache.delete(commandId);
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    if (JSON.stringify(e).includes('Unknown application command')) {
     cache.commands.delete(guild.id, commandId);
     guild.client.application.commands.cache.delete(commandId);
     return true;
    }
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

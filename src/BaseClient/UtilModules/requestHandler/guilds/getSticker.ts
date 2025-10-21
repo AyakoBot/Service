@@ -9,7 +9,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param stickerId The ID of the sticker to retrieve.
  * @returns A Promise that resolves with the retrieved sticker, or rejects with an error.
  */
-export default async (guild: Discord.Guild, stickerId: string) =>
+export default async (guild: RGuild, stickerId: string) =>
  guild.stickers.cache.get(stickerId) ??
  (await getAPI(guild)).guilds
   .getSticker(guild.id, stickerId)
@@ -19,7 +19,7 @@ export default async (guild: Discord.Guild, stickerId: string) =>
    guild.stickers.cache.set(parsed.id, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

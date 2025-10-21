@@ -15,7 +15,7 @@ import { getAPI } from './addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- channel: Discord.GuildBasedChannel,
+ channel: RChannel,
  overwriteId: string,
  body: Discord.RESTPutAPIChannelPermissionJSONBody,
  reason?: string,
@@ -38,10 +38,10 @@ export default async (
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .editPermissionOverwrite(channel.id, overwriteId, body, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };

@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the DiscordAPIError if the request fails, otherwise void.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  body?: Discord.RESTPutAPIGuildBanJSONBody,
  reason?: string,
@@ -26,14 +26,14 @@ export default async (
    PermissionFlagsBits.BanMembers,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .banUser(guild.id, userId, body, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

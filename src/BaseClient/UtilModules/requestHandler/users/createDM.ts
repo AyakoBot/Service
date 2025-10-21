@@ -12,27 +12,27 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError if the DM creation fails.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  userId: string,
  client: Discord.Client<true>,
-): Promise<Discord.DMChannel | Discord.DiscordAPIError>;
+): Promise<Discord.DMChannel | DiscordAPIError>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  client?: undefined,
-): Promise<Discord.DMChannel | Discord.DiscordAPIError>;
+): Promise<Discord.DMChannel | DiscordAPIError>;
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  userId: string,
  client?: Discord.Client<true>,
-): Promise<Discord.DMChannel | Discord.DiscordAPIError> {
+): Promise<Discord.DMChannel | DiscordAPIError> {
  const c = (guild?.client ?? client)!;
 
  return (await getAPI(guild)).users
   .createDM(userId)
-  .then((dm) => Classes.Channel<typeof guild extends Discord.Guild ? 0 : 1>(c, dm, guild as never))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .then((dm) => Classes.Channel<typeof guild extends RGuild ? 0 : 1>(c, dm, guild as never))
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 }

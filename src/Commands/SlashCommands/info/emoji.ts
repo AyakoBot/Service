@@ -92,25 +92,25 @@ const getEmotesPayload = async (
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       custom_id: `info/emojis_${page - 1}`,
       emoji: client.util.emotes.back,
       disabled: page === 1,
      },
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       custom_id: '-',
       disabled: true,
       label: `${page}/${chunks.length}`,
      },
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       custom_id: `info/emojis_${page + 1}`,
       emoji: client.util.emotes.forth,
       disabled: page + 1 === chunks.length,
@@ -194,7 +194,7 @@ const getEmotePayloads = async (
        'guild' in emoji && emoji.guild
         ? {
            name: `\n${cl.util.util.makeBold(language.t.Server)}:\n`,
-           value: language.languageFunction.getGuild(emoji.guild as Discord.Guild),
+           value: language.languageFunction.getGuild(emoji.guild as RGuild),
           }
         : undefined,
        'author' in emoji && emoji.author

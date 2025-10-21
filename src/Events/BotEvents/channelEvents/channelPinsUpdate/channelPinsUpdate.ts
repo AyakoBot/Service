@@ -15,7 +15,7 @@ export default async (
 
  const newPins = await channel.client.util.request.channels.getPins(channel).then((pins) => {
   if ('message' in pins) {
-   channel.client.util.error(channel.guild, new Error(pins.message));
+   channel.client.util.error(channel.guild_id, new Error(pins.message));
    return undefined;
   }
   return pins;

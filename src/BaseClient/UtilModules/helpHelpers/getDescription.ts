@@ -1,6 +1,6 @@
-import * as CT from '../../../Typings/Typings.js';
-import SlashCommands from '../../../SlashCommands/index.js';
 import { ApplicationCommandType } from '@discordjs/core';
+import SlashCommands from '../../../SlashCommands/index.js';
+import * as CT from '../../../Typings/Typings.js';
 
 /**
  * Returns the description of a command or subcommand group in the specified language.

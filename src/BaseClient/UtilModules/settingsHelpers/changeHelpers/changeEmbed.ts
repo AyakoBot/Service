@@ -11,7 +11,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
  fieldName: string,
  values: string[] | string | undefined,
  type: CT.MentionTypes,
- guild: Discord.Guild,
+ guild: RGuild,
 ): Promise<Discord.APIEmbed> => ({
  author: {
   name: language.slashCommands.settings.authorType(

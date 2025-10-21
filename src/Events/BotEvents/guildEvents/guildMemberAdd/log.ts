@@ -69,7 +69,7 @@ export default async (member: RMember) => {
  member.client.util.send({ id: channels, guildId: member.guild.id }, { embeds: [embed] }, 10000);
 };
 
-const getUsedInvite = async (guild: Discord.Guild, user: RUser) => {
+const getUsedInvite = async (guild: RGuild, user: RUser) => {
  if (user.bot) return undefined;
 
  const oldInvites = Array.from(guild.client.util.cache.invites.cache.get(guild.id) ?? [], ([, i]) =>

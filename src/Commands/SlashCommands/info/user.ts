@@ -21,7 +21,7 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
 export const getPayload = async (
  user: RUser,
  language: CT.Language,
- guild?: Discord.Guild,
+ guild?: RGuild,
 ) => {
  const lan = language.slashCommands.info.user;
 
@@ -239,26 +239,26 @@ const getComponents = (
  member: RMember | undefined,
  user: RUser,
  language: CT.Language,
- guild: Discord.Guild | null,
+ guild: RGuild | null,
 ): Discord.APIActionRowComponent<Discord.APIButtonComponent | Discord.APISelectMenuComponent>[] => {
  const lan = language.slashCommands.info.user;
 
  const linkButtons: Discord.APIButtonComponent[] = [
   {
-   type: Discord.ComponentType.Button,
-   style: Discord.ButtonStyle.Link,
+   type: ComponentType.Button,
+   style: ButtonStyle.Link,
    label: lan.desktop,
    url: `discord://-/users/${user.id}`,
   },
   {
-   type: Discord.ComponentType.Button,
-   style: Discord.ButtonStyle.Link,
+   type: ComponentType.Button,
+   style: ButtonStyle.Link,
    label: lan.browser,
    url: `https://discord.com/users/${user.id}`,
   },
   {
-   type: Discord.ComponentType.Button,
-   style: Discord.ButtonStyle.Link,
+   type: ComponentType.Button,
+   style: ButtonStyle.Link,
    label: lan.mobile,
    url: `https://discord.com/users/${user.id}`,
   },
@@ -267,28 +267,28 @@ const getComponents = (
  if (member && guild) {
   return [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       disabled: member.roles.cache.size <= 1,
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       custom_id: `info/roles_member_${user.id}`,
       label: lan.viewRoles,
      },
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Secondary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Secondary,
       custom_id: `info/basicPerms_${user.id}`,
       label: lan.viewBasicPermissions,
      },
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.ChannelSelect,
+      type: ComponentType.ChannelSelect,
       custom_id: `info/perms_${user.id}_user`,
       placeholder: lan.viewChannelPermissions,
       max_values: 1,
@@ -297,7 +297,7 @@ const getComponents = (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: linkButtons,
    },
   ];
@@ -305,7 +305,7 @@ const getComponents = (
 
  return [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: linkButtons,
   },
  ];

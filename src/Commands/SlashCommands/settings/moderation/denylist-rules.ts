@@ -323,25 +323,25 @@ export const getComponents = (
 ): Discord.APIActionRowComponent<Discord.APIButtonComponent>[] =>
  [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
-     style: Discord.ButtonStyle.Danger,
+     type: ComponentType.Button,
+     style: ButtonStyle.Danger,
      custom_id: `settings/autoModRule/display`,
      emoji: client.util.emotes.back,
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.events.logs.automodRule.enabled,
      style: SH.getStyle(rule.enabled),
      custom_id: `settings/autoModRule/boolean_active_${rule.id}`,
      emoji: SH.getEmoji(rule.enabled, CT.GlobalDescType.Active),
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.slashCommands.settings.delete,
-     style: Discord.ButtonStyle.Danger,
+     style: ButtonStyle.Danger,
      custom_id: `settings/autoModRule/delete_${rule.id}`,
      emoji: client.util.emotes.minusBG,
     },
@@ -350,24 +350,24 @@ export const getComponents = (
   ...(rule.triggerType !== RAutomodTriggerType.Spam
    ? [
       {
-       type: Discord.ComponentType.ActionRow,
+       type: ComponentType.ActionRow,
        components: [
         ...([RAutomodTriggerType.Keyword, 6].includes(rule.triggerType)
          ? [
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label: language.events.logs.automodRule.keywordFilter,
              style: rule.triggerMetadata.keywordFilter
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/strings_keywordFilter_${rule.id}`,
             },
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label: language.events.logs.automodRule.regexPatterns,
              style: rule.triggerMetadata.keywordFilter
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/strings_regex_${rule.id}`,
             },
            ]
@@ -375,7 +375,7 @@ export const getComponents = (
         ...(rule.triggerType === RAutomodTriggerType.KeywordPreset
          ? [
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label:
               language.events.logs.automodRule.presets[
                RAutomodKeywordPresetType.Profanity
@@ -383,8 +383,8 @@ export const getComponents = (
              style: rule.triggerMetadata.presets.includes(
               RAutomodKeywordPresetType.Profanity,
              )
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/boolean_profanity_${rule.id}`,
              disabled:
               rule.triggerMetadata.presets.length === 1 &&
@@ -393,7 +393,7 @@ export const getComponents = (
               ),
             },
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label:
               language.events.logs.automodRule.presets[
                RAutomodKeywordPresetType.SexualContent
@@ -401,8 +401,8 @@ export const getComponents = (
              style: rule.triggerMetadata.presets.includes(
               RAutomodKeywordPresetType.SexualContent,
              )
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/boolean_sexualContent_${rule.id}`,
              disabled:
               rule.triggerMetadata.presets.length === 1 &&
@@ -411,7 +411,7 @@ export const getComponents = (
               ),
             },
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label:
               language.events.logs.automodRule.presets[
                RAutomodKeywordPresetType.Slurs
@@ -419,8 +419,8 @@ export const getComponents = (
              style: rule.triggerMetadata.presets.includes(
               RAutomodKeywordPresetType.Slurs,
              )
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/boolean_slurs_${rule.id}`,
              disabled:
               rule.triggerMetadata.presets.length === 1 &&
@@ -437,11 +437,11 @@ export const getComponents = (
         ].includes(rule.triggerType)
          ? [
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label: language.events.logs.automodRule.allowList,
              style: rule.triggerMetadata.allowList
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/strings_allowList_${rule.id}`,
             },
            ]
@@ -449,17 +449,17 @@ export const getComponents = (
         ...(rule.triggerType === RAutomodTriggerType.MentionSpam
          ? [
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label: language.events.logs.automodRule.mentionTotalLimit,
-             style: Discord.ButtonStyle.Secondary,
+             style: ButtonStyle.Secondary,
              custom_id: `settings/autoModRule/number_mentionTotalLimit_${rule.id}`,
             },
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label: language.events.logs.automodRule.mentionRaidProtectionEnabled,
              style: rule.triggerMetadata.mentionRaidProtectionEnabled
-              ? Discord.ButtonStyle.Secondary
-              : Discord.ButtonStyle.Primary,
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Primary,
              custom_id: `settings/autoModRule/boolean_mentionRaidProtectionEnabled_${rule.id}`,
             },
            ]
@@ -469,15 +469,15 @@ export const getComponents = (
      ]
    : []),
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label:
       rule.eventType === RAutomodEventType.MessageSend
        ? language.events.logs.automodRule.actionsType[Discord.AutoModerationActionType.BlockMessage]
        : language.events.logs.automodRule.actionsType[4],
-     style: Discord.ButtonStyle.Secondary,
+     style: ButtonStyle.Secondary,
      custom_id: `settings/autoModRule/boolean_${
       rule.eventType === RAutomodEventType.MessageSend
        ? 'blockMessage'
@@ -507,11 +507,11 @@ export const getComponents = (
     getActionMetadata(rule, 'BlockMessage')
      ? [
         {
-         type: Discord.ComponentType.Button,
+         type: ComponentType.Button,
          label: lan.fields.customMessage.name,
          style: getActionMetadata(rule, 'BlockMessage')?.customMessage
-          ? Discord.ButtonStyle.Secondary
-          : Discord.ButtonStyle.Primary,
+          ? ButtonStyle.Secondary
+          : ButtonStyle.Primary,
          custom_id: `settings/autoModRule/string_customMessage_${rule.id}`,
         },
        ]
@@ -519,12 +519,12 @@ export const getComponents = (
     ...(getActionMetadata(rule, 'SendAlertMessage')?.channelId
      ? [
         {
-         type: Discord.ComponentType.Button,
+         type: ComponentType.Button,
          label:
           language.events.logs.automodRule.actionsType[
            Discord.AutoModerationActionType.SendAlertMessage
           ],
-         style: Discord.ButtonStyle.Secondary,
+         style: ButtonStyle.Secondary,
          custom_id: `settings/autoModRule/boolean_sendAlertMessage_${rule.id}`,
          emoji: getActionMetadata(rule, 'SendAlertMessage')?.channelId
           ? client.util.emotes.enabled
@@ -535,13 +535,13 @@ export const getComponents = (
        ]
      : []),
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: getActionMetadata(rule, 'SendAlertMessage')?.channelId
       ? language.events.logs.automodRule.alertChannel
       : language.events.logs.automodRule.actionsType[
          Discord.AutoModerationActionType.SendAlertMessage
         ],
-     style: Discord.ButtonStyle.Secondary,
+     style: ButtonStyle.Secondary,
      custom_id: `settings/autoModRule/channel_${rule.id}`,
      emoji: getActionMetadata(rule, 'SendAlertMessage')?.channelId
       ? client.util.emotes.channelTypes[0]
@@ -555,17 +555,17 @@ export const getComponents = (
   ].includes(rule.triggerType)
    ? [
       {
-       type: Discord.ComponentType.ActionRow,
+       type: ComponentType.ActionRow,
        components: [
         ...(getActionMetadata(rule, 'Timeout')
          ? [
             {
-             type: Discord.ComponentType.Button,
+             type: ComponentType.Button,
              label:
               language.events.logs.automodRule.actionsType[
                Discord.AutoModerationActionType.Timeout
               ],
-             style: Discord.ButtonStyle.Secondary,
+             style: ButtonStyle.Secondary,
              custom_id: `settings/autoModRule/boolean_timeout_${rule.id}`,
              emoji: getActionMetadata(rule, 'Timeout')
               ? client.util.emotes.enabled
@@ -575,11 +575,11 @@ export const getComponents = (
            ]
          : []),
         {
-         type: Discord.ComponentType.Button,
+         type: ComponentType.Button,
          label: getActionMetadata(rule, 'Timeout')
           ? language.events.logs.automodRule.timeoutDuration
           : language.events.logs.automodRule.actionsType[Discord.AutoModerationActionType.Timeout],
-         style: Discord.ButtonStyle.Secondary,
+         style: ButtonStyle.Secondary,
          custom_id: `settings/autoModRule/timeoutDuration_${rule.id}`,
          emoji: getActionMetadata(rule, 'Timeout') ? undefined : client.util.emotes.disabled,
         },
@@ -588,23 +588,23 @@ export const getComponents = (
      ]
    : []),
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: language.events.logs.automodRule.exemptRoles,
-     style: rule.exemptRoles.size ? Discord.ButtonStyle.Secondary : Discord.ButtonStyle.Primary,
+     style: rule.exemptRoles.size ? ButtonStyle.Secondary : ButtonStyle.Primary,
      custom_id: `settings/${CT.AutoModEditorType.Roles}_${rule.id}`,
      emoji: client.util.emotes.Role,
     },
     ...(rule.eventType === RAutomodEventType.MessageSend
      ? [
         {
-         type: Discord.ComponentType.Button,
+         type: ComponentType.Button,
          label: language.events.logs.automodRule.exemptChannels,
          style: rule.exemptChannels.size
-          ? Discord.ButtonStyle.Secondary
-          : Discord.ButtonStyle.Primary,
+          ? ButtonStyle.Secondary
+          : ButtonStyle.Primary,
          custom_id: `settings/${CT.AutoModEditorType.Channels}_${rule.id}`,
          emoji: client.util.emotes.channelTypes[0],
         },
@@ -685,7 +685,7 @@ const getAllComponents = (
 
  return [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     createKeywordRule,
     createMentionSpamRule,

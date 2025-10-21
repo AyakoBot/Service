@@ -60,7 +60,7 @@ const getEmbed = async (serverId: string): Promise<Discord.APIEmbed[] | undefine
     {
      color: c.util.getColor(isInviteGuild ? undefined : await c.util.getBotMemberFromGuild(g)),
      description: Object.entries(language.features)
-      .map(([k, v]) => `${g.features.includes(k as Discord.GuildFeature) ? '☑️' : '❌'} ${v}`)
+      .map(([k, v]) => `${g.features.includes(k as RGuildFeature) ? '☑️' : '❌'} ${v}`)
       .join('\n'),
     },
    ];

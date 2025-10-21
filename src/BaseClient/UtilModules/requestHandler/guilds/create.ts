@@ -12,7 +12,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param body The JSON body of the request.
  * @returns A promise that resolves with the newly created guild or rejects with a DiscordAPIError.
  */
-export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildsJSONBody) => {
+export default async (guild: RGuild, body: Discord.RESTPostAPIGuildsJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canCreate(await getBotMemberFromGuild(guild))) {
@@ -20,15 +20,15 @@ export default async (guild: Discord.Guild, body: Discord.RESTPostAPIGuildsJSONB
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .create(body)
   .then((g) => new Classes.Guild(guild.client, g))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

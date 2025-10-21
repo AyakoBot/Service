@@ -12,21 +12,21 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to get integrations for.
  * @returns A promise that resolves with an array of integrations for the given guild.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!canGetIntegrations(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get integrations`, [
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .getIntegrations(guild.id)
   .then((integrations) => integrations.map((i) => new Classes.Integration(guild.client, i, guild)))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

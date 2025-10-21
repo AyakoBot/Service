@@ -128,21 +128,21 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.t.Members,
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       custom_id: `info/members_${role.id}`,
      },
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.ChannelSelect,
+      type: ComponentType.ChannelSelect,
       custom_id: `info/perms_${role.id}_role`,
       placeholder: lan.viewChannelPermissions,
       max_values: 1,

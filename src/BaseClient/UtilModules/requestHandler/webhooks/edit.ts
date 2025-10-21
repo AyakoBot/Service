@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the edited webhook.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  webhook: RWebhook,
  body: Discord.RESTPatchAPIWebhookJSONBody,
  data?: { token?: string; reason?: string },
@@ -27,7 +27,7 @@ export default async (
    PermissionFlagsBits.ManageWebhooks,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -41,8 +41,8 @@ export default async (
    { ...data, token: webhook.token ?? data?.token },
   )
   .then((w) => new Classes.Webhook(guild.client, w))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

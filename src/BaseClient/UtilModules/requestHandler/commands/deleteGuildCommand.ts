@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import cache from '../../cache.js';
 import error from '../../error.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
@@ -15,7 +15,7 @@ import { canGetCommands } from './getGlobalCommand.js';
  * @returns A promise that resolves when the command is successfully deleted,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild, commandId: string) => {
+export default async (guild: RGuild, commandId: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
  if (!canGetCommands(guild)) {
   const e = requestHandlerError(
@@ -23,7 +23,7 @@ export default async (guild: Discord.Guild, commandId: string) => {
    [],
   );
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -43,7 +43,7 @@ export default async (guild: Discord.Guild, commandId: string) => {
    cache.commands.delete(guild.id, commandId);
    guild.commands.cache.delete(commandId);
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    setHasMissingScopes(e.message, guild);
 
    if (JSON.stringify(e).includes('Unknown application command')) {
@@ -52,7 +52,7 @@ export default async (guild: Discord.Guild, commandId: string) => {
     return true;
    }
 
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
 
    return e;
   });

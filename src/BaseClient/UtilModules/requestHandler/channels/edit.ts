@@ -1,5 +1,3 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
 import error from '../../error.js';
 
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
@@ -13,27 +11,25 @@ import { getAPI } from './addReaction.js';
  * @returns A promise that resolves with the updated channel, or rejects with a DiscordAPIError.
  */
 export default async (
- channel: Discord.GuildBasedChannel | RThread,
+ channel: RChannel | RThread,
  body: Discord.RESTPatchAPIChannelJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canEdit(channel, body, await getBotMemberFromGuild(channel.guild))) {
   const e = requestHandlerError(`Cannot edit channel ${channel.name} / ${channel.id}`, [
-   channel.isThread()
-    ? PermissionFlagsBits.ManageThreads
-    : PermissionFlagsBits.ManageChannels,
+   channel.isThread() ? PermissionFlagsBits.ManageThreads : PermissionFlagsBits.ManageChannels,
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .edit(channel.id, body)
   .then((c) => Classes.Channel(channel.client, c, channel.guild))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };
@@ -46,7 +42,7 @@ export default async (
  * @returns A boolean indicating whether the user can edit the channel.
  */
 export const canEdit = (
- channel: Discord.GuildBasedChannel | RThread,
+ channel: RChannel | RThread,
  body: Discord.RESTPatchAPIChannelJSONBody,
  me: RMember,
 ) =>

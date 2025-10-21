@@ -76,7 +76,7 @@ export default async (cmd: Discord.ButtonInteraction) => {
   .filter((c) => !!cmd.client.util.constants.commands.interactions.find((c2) => c2.name === c.name))
   .map((c) =>
    cmd.client.util.request.commands.editGuildCommandPermissions(
-    cmd.guild as Discord.Guild,
+    cmd.guild as RGuild,
     tokens.accesstoken ?? '',
     c.id,
     { permissions: perms },

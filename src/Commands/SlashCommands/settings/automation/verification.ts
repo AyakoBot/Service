@@ -103,13 +103,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, !!settings?.active, CT.GlobalDescType.Active, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.selfstart, 'selfstart', name, undefined),
    buttonParsers.specific(
@@ -131,7 +131,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -180,7 +180,7 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
 
 export const getPayload = async (
  language: CT.Language,
- guild: Discord.Guild,
+ guild: RGuild,
 ): Promise<CT.UsualMessagePayload> => ({
  embeds: [
   {
@@ -194,13 +194,13 @@ export const getPayload = async (
  ],
  components: [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      custom_id: 'verification/verify',
      label: language.verification.verify,
-     style: Discord.ButtonStyle.Primary,
+     style: ButtonStyle.Primary,
     },
    ],
   },

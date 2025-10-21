@@ -15,7 +15,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the edited sticker, or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  stickerId: string,
  body: Discord.RESTPatchAPIGuildStickerJSONBody,
  reason?: string,
@@ -27,15 +27,15 @@ export default async (
    PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .editSticker(guild.id, stickerId, body, { reason })
   .then((s) => new Classes.Sticker(guild.client, s))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

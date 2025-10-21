@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import * as Classes from '../../../Other/classes.js';
@@ -16,7 +16,7 @@ import { makeRequestHandler } from '../../requestHandler.js';
  * @returns A promise that resolves with the created command.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPostAPIApplicationGuildCommandsJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
@@ -26,7 +26,7 @@ export default async (
    [],
   );
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -51,9 +51,9 @@ export default async (
    guild.commands.cache.set(cmd.id, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    setHasMissingScopes(e.message, guild);
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

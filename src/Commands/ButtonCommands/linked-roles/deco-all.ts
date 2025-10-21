@@ -41,7 +41,7 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      cmd.client.util.settingsHelpers.buttonParsers.back(
       CT.SettingNames.LinkedRolesDeco,
@@ -54,9 +54,9 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
 };
 
 export const updateChannels = async (
- guild: Discord.Guild,
+ guild: RGuild,
  roleId: string | null,
- channels?: Discord.GuildBasedChannel[],
+ channels?: RGuildBasedChannel[],
 ) => {
  if (!roleId) return;
 

@@ -56,7 +56,7 @@ export default async (
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      cmd.client.util.settingsHelpers.changeHelpers.changeSelectGlobal(
       language,
@@ -75,7 +75,7 @@ export default async (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      cmd.client.util.settingsHelpers.changeHelpers.back(settingName, Number(uniquetimestamp)),
      cmd.client.util.settingsHelpers.changeHelpers.done(

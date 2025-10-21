@@ -24,14 +24,14 @@ export default async (channel: Discord.BaseGuildVoiceChannel, status: string) =>
     : []),
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).rest
+ return (await getAPI(channel.guild_id)).rest
   .put(`/channels/${channel.id}/voice-status`, { body: { status } })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   })
   .then((e) => ('message' in (e as Error) ? (e as Error) : true));

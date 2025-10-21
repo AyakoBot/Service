@@ -33,11 +33,11 @@ export default async (
   withResponse: false,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Link,
+      type: ComponentType.Button,
+      style: ButtonStyle.Link,
       label: language.t.Invite,
       url: constants.standard.invite,
      },

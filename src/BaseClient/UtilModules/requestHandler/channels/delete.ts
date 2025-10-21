@@ -11,7 +11,7 @@ import { getAPI } from './addReaction.js';
  * @param channel - The channel to delete.
  * @returns A promise that resolves with the deleted channel, or rejects with a DiscordAPIError.
  */
-export default async (channel: Discord.GuildBasedChannel) => {
+export default async (channel: RChannel) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDelete(channel, await getBotMemberFromGuild(channel.guild))) {
@@ -25,15 +25,15 @@ export default async (channel: Discord.GuildBasedChannel) => {
     : PermissionFlagsBits.ManageChannels,
   ]);
 
-  error(channel.guild, e);
+  error(channel.guild_id, e);
   return e;
  }
 
- return (await getAPI(channel.guild)).channels
+ return (await getAPI(channel.guild_id)).channels
   .delete(channel.id)
   .then((c) => Classes.Channel(channel.guild.client, c, channel.guild))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(channel.guild, e);
+  .catch((e: DiscordAPIError) => {
+   error(channel.guild_id, e);
    return e;
   });
 };
@@ -43,7 +43,7 @@ export default async (channel: Discord.GuildBasedChannel) => {
  * @param me - The user's guild member object.
  * @returns A boolean indicating whether the channel is deleteable.
  */
-export const canDelete = (channel: Discord.GuildBasedChannel, me: RMember) =>
+export const canDelete = (channel: RChannel, me: RMember) =>
  [
   ChannelType.PrivateThread,
   ChannelType.PublicThread,

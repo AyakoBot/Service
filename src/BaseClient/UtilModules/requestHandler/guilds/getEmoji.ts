@@ -9,7 +9,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param emojiId - The ID of the emoji to retrieve.
  * @returns A Promise that resolves with the retrieved emoji, or rejects with an error.
  */
-export default async (guild: Discord.Guild, emojiId: string) =>
+export default async (guild: RGuild, emojiId: string) =>
  guild.emojis.cache.get(emojiId) ??
  (await getAPI(guild)).guilds
   .getEmoji(guild.id, emojiId)
@@ -19,7 +19,7 @@ export default async (guild: Discord.Guild, emojiId: string) =>
    guild.emojis.cache.set(parsed.id, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

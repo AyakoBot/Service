@@ -73,17 +73,17 @@ export const getComponents = (
  Discord.APIActionRowComponent<Discord.APIButtonComponent>,
 ] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     custom_id: '-1',
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     disabled: true,
     label: lan.selectedEmoji,
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     custom_id: `-2`,
     label: emoji.name ?? emoji.id,
     emoji: emoji.name
@@ -95,16 +95,16 @@ export const getComponents = (
      : {
         name: emoji.id,
        },
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     disabled: true,
    },
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.RoleSelect,
+    type: ComponentType.RoleSelect,
     custom_id: `roles/${type}_${client.util.constants.standard.getEmoteIdentifier(emoji)}`,
     placeholder: lan.chooseRoles,
     min_values: 1,
@@ -113,27 +113,27 @@ export const getComponents = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     custom_id: `roles/${type}/refresh`,
     emoji: client.util.emotes.back,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     custom_id: `roles/${type}/save_${client.util.constants.standard.getEmoteIdentifier(emoji)}`,
     emoji: client.util.emotes.tickWithBackground,
-    style: Discord.ButtonStyle.Success,
+    style: ButtonStyle.Success,
     label: lan.saveAndExit,
     disabled: !roles.length,
    },
    {
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     custom_id: `roles/${type}/delete_${client.util.constants.standard.getEmoteIdentifier(emoji)}`,
     emoji: client.util.emotes.trash,
-    style: Discord.ButtonStyle.Secondary,
+    style: ButtonStyle.Secondary,
     label: language.t.Delete,
    },
   ],

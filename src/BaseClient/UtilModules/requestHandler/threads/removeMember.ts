@@ -27,8 +27,8 @@ export default async (thread: RThread, userId: string) => {
 
  return (await getAPI(thread.guild)).threads
   .removeMember(thread.id, userId)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(thread.guild, e as Discord.DiscordAPIError);
+  .catch((e: DiscordAPIError) => {
+   error(thread.guild, e as DiscordAPIError);
    return e;
   });
 };

@@ -9,11 +9,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with a new Widget instance if successful,
  * or rejects with a DiscordAPIError if unsuccessful.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getWidget(guild.id)
   .then((w) => new Classes.Widget(guild.client, w))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

@@ -8,7 +8,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to retrieve scheduled events for.
  * @returns A promise that resolves with an array of parsed scheduled events.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getScheduledEvents(guild.id)
   .then((events) => {
@@ -19,7 +19,7 @@ export default async (guild: Discord.Guild) =>
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

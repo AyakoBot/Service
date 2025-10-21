@@ -11,23 +11,23 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves to the user object.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  userId: string,
  client: Discord.Client<true>,
  options?: { force: true },
-): Promise<Classes.User | Discord.DiscordAPIError>;
+): Promise<Classes.User | DiscordAPIError>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  client?: undefined,
  options?: { force: true },
-): Promise<Classes.User | Discord.DiscordAPIError>;
+): Promise<Classes.User | DiscordAPIError>;
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  userId: string,
  client?: Discord.Client<true>,
  options?: { force: true },
-): Promise<Classes.User | Discord.DiscordAPIError> {
+): Promise<Classes.User | DiscordAPIError> {
  const c = (guild?.client ?? client)!;
 
  return (
@@ -41,8 +41,8 @@ async function fn(
     c.users.cache.set(parsed.id, parsed);
     return parsed;
    })
-   .catch((e: Discord.DiscordAPIError) => {
-    error(guild, new Error((e as Discord.DiscordAPIError).message));
+   .catch((e: DiscordAPIError) => {
+    error(guild, new Error((e as DiscordAPIError).message));
     return e;
    })
  );

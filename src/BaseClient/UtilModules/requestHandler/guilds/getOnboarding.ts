@@ -8,11 +8,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to retrieve onboarding data for.
  * @returns A promise that resolves with a new instance of the GuildOnboarding class.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getOnboarding(guild.id)
   .then((o) => new Classes.GuildOnboarding(guild.client, o))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

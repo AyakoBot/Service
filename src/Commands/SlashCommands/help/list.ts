@@ -74,10 +74,10 @@ export const getPayload = (
  ],
  components: [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.StringSelect,
+     type: ComponentType.StringSelect,
      custom_id: 'help/list',
      placeholder: language.slashCommands.help.selectPlaceholder,
      options: Object.values(CT.CommandCategories).map((value) => ({

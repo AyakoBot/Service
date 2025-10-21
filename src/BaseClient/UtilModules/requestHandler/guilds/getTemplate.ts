@@ -10,11 +10,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild The guild to get the template for.
  * @returns A Promise that resolves with a new GuildTemplate instance for the given guild.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getTemplate(guild.id)
   .then((t) => new Classes.GuildTemplate(guild.client, t))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

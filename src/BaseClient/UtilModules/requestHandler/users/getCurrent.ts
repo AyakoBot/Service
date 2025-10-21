@@ -11,24 +11,24 @@ import { getAPI } from '../channels/addReaction.js';
  * representing the current user, or rejects with a DiscordAPIError if an error occurs.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  client: Discord.Client<true>,
-): Promise<Discord.ClientUser | Discord.DiscordAPIError>;
+): Promise<Discord.ClientUser | DiscordAPIError>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  client?: undefined,
-): Promise<Discord.ClientUser | Discord.DiscordAPIError>;
+): Promise<Discord.ClientUser | DiscordAPIError>;
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  client?: Discord.Client<true>,
-): Promise<Discord.ClientUser | Discord.DiscordAPIError> {
+): Promise<Discord.ClientUser | DiscordAPIError> {
  const c = (guild?.client ?? client)!;
 
  return (await getAPI(guild)).users
   .getCurrent()
   .then((u) => new Classes.ClientUser(c, u))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 }

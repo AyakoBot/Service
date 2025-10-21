@@ -76,7 +76,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ): Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(
     language,
@@ -95,21 +95,21 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, settings.blroleid, CT.GlobalDescType.BLRoleId, name, undefined),
    buttonParsers.global(language, settings.wlroleid, CT.GlobalDescType.WLRoleId, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, settings.bluserid, CT.GlobalDescType.BLUserId, name, undefined),
    buttonParsers.global(language, settings.wluserid, CT.GlobalDescType.WLUserId, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [buttonParsers.back(name, undefined)],
  },
 ];

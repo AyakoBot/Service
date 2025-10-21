@@ -1,6 +1,6 @@
 import type * as Discord from 'discord.js';
 
-export default (guild: Discord.Guild) => {
+export default (guild: RGuild) => {
  const giveawayClaimTimeouts = guild.client.util.cache.giveawayClaimTimeout.cache.get(guild.id);
  const mutes = guild.client.util.cache.mutes.cache.get(guild.id);
  const bans = guild.client.util.cache.bans.cache.get(guild.id);

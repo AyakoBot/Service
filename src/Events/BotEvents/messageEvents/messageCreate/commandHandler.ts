@@ -84,12 +84,12 @@ const guildCommand = async (msg: RMessage) => {
    embeds: [embed],
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
+       type: ComponentType.Button,
        emoji: msg.client.util.emotes.crossWithBackground,
-       style: Discord.ButtonStyle.Secondary,
+       style: ButtonStyle.Secondary,
        custom_id: 'dismiss',
       },
      ],
@@ -204,7 +204,7 @@ const getComand = async (commandName: string) => {
  return (await import(path)) as CT.Command<boolean>;
 };
 
-const getSlashCommand = (guild: Discord.Guild, commandName: string) =>
+const getSlashCommand = (guild: RGuild, commandName: string) =>
  guild.client.util.getCustomCommand(
   guild,
   commandName as Parameters<typeof guild.client.util.getCustomCommand>[1],
@@ -213,7 +213,7 @@ const getSlashCommand = (guild: Discord.Guild, commandName: string) =>
 export const checkCommandPermissions = async (
  message: {
   guildId: string;
-  guild: Discord.Guild;
+  guild: RGuild;
   author: RUser;
   channelId: string;
   member: RMember | null;

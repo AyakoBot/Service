@@ -7,7 +7,7 @@ import { request } from './requestHandler.js';
  * @returns A promise that resolves to an array of GuildBan objects
  * representing the bans for the guild.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  const fetchBans = (after?: string) => request.guilds.getMemberBans(guild, { limit: 1000, after });
 
  const bans: Discord.GuildBan[] = [];

@@ -89,7 +89,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ): Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings.msgXpRangeBottom, 'msgXpRangeBottom', name, undefined),
    buttonParsers.specific(language, settings.msgXpRangeTop, 'msgXpRangeTop', name, undefined),
@@ -99,14 +99,14 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings.cooldown, 'cooldown', name, undefined),
    buttonParsers.specific(language, settings.cooldownType, 'cooldownType', name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [buttonParsers.back(name, undefined)],
  },
 ];

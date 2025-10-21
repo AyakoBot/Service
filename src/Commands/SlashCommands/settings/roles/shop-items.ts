@@ -176,7 +176,7 @@ export const getEmbeds: CT.SettingsFile<typeof name>['getEmbeds'] = async (
 ];
 
 const getShopType = async (
- guild: Discord.Guild,
+ guild: RGuild,
  type: ShopType,
  lan: CT.Language['slashCommands']['settings']['categories'][typeof name],
 ) => {
@@ -196,7 +196,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.back(name, undefined),
    buttonParsers.global(
@@ -210,7 +210,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -238,7 +238,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  ...(settings?.shoptype === 'message'
   ? ([
      {
-      type: Discord.ComponentType.ActionRow,
+      type: ComponentType.ActionRow,
       components: [
        buttonParsers.specific(
         language,
@@ -295,18 +295,18 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
    const componentChunks: Discord.APIComponentInMessageActionRow[][] = client.util.getChunks(
     [
      ...message.components
-      .filter((c) => c.type === Discord.ComponentType.ActionRow)
+      .filter((c) => c.type === ComponentType.ActionRow)
       .map((c) =>
        c.components.map((c2) => structuredClone(c2.data) as Discord.APIButtonComponentWithCustomId),
       )
       .flat()
-      .filter((c) => c.type === Discord.ComponentType.Button),
+      .filter((c) => c.type === ComponentType.Button),
      {
       label: settings.buttontext,
       emoji: settings.buttonemote ? Discord.parseEmoji(settings.buttonemote) : undefined,
       custom_id: `shop/buy_${settings.uniquetimestamp}`,
-      style: Discord.ButtonStyle.Secondary,
-      type: Discord.ComponentType.Button,
+      style: ButtonStyle.Secondary,
+      type: ComponentType.Button,
      } as Discord.APIButtonComponentWithCustomId,
     ].filter((c) => c.label || c.emoji) as Discord.APIButtonComponentWithCustomId[],
     5,
@@ -317,14 +317,14 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
      if (message?.author.id === guild.client.user.id) {
       API.channels.editMessage(message.channelId, message.id, {
        components: componentChunks.map((c) => ({
-        type: Discord.ComponentType.ActionRow,
+        type: ComponentType.ActionRow,
         components: c,
        })),
       });
      } else {
       client.util.request.channels.editMessage(guild, message.channelId, message.id, {
        components: componentChunks.map((c) => ({
-        type: Discord.ComponentType.ActionRow,
+        type: ComponentType.ActionRow,
         components: c,
        })),
       });
@@ -343,7 +343,7 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
        ),
       )
       .map((c) => ({
-       type: Discord.ComponentType.ActionRow,
+       type: ComponentType.ActionRow,
        components: c,
       }))
       .filter(

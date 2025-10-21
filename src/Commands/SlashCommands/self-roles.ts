@@ -35,10 +35,10 @@ export default async <
  const payload: Discord.BaseMessageOptions = {
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       customId: `self-roles/category`,
       placeholder: settings.onlyone ? lan.selectOne : lan.selectMany,
       options: allSettings.map((s) => ({
@@ -52,10 +52,10 @@ export default async <
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       customId: `self-roles/role_${category}`,
       placeholder: settings.onlyone ? lan.selectOne : lan.selectMany,
       options: roles

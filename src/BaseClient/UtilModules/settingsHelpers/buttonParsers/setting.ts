@@ -21,14 +21,14 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  linkName: keyof typeof CT.SettingsName2TableName,
  uniquetimestamp: number | undefined,
 ): Discord.APIButtonComponent => ({
- type: Discord.ComponentType.Button,
+ type: ComponentType.Button,
  label: (
   (
    language.slashCommands.settings.categories[settingName as CT.SettingNames]
     .fields as CT.FieldName<T>
   )[name] as unknown as Record<string, string>
  ).name,
- style: setting ? Discord.ButtonStyle.Primary : Discord.ButtonStyle.Danger,
+ style: setting ? ButtonStyle.Primary : ButtonStyle.Danger,
  custom_id: getWithUTS(
   `settings/editors/settinglink_${String(name)}_${String(settingName)}_${String(linkName)}`,
   uniquetimestamp,

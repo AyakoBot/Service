@@ -13,7 +13,7 @@ type MemberCaches = {
  added: number;
 }[];
 
-const GuildCache: Map<string, { job: Jobs.Job; members: MemberCaches; guild: Discord.Guild }> =
+const GuildCache: Map<string, { job: Jobs.Job; members: MemberCaches; guild: RGuild }> =
  new Map();
 
 /**
@@ -93,7 +93,7 @@ export default roleManager;
  * Runs a job to manage roles for a guild.
  * @param guild - The guild to manage roles for.
  */
-const runJob = async (guild: Discord.Guild) => {
+const runJob = async (guild: RGuild) => {
  const memberCaches = GuildCache.get(guild.id);
  if (!memberCaches) return;
 
@@ -109,7 +109,7 @@ const runJob = async (guild: Discord.Guild) => {
  const dateFilter = prioFilter.sort((a, b) => b.added - a.added);
  const memberCache = dateFilter[0];
 
- const endJob = (mC: { job: Jobs.Job; members: MemberCaches; guild: Discord.Guild }) => {
+ const endJob = (mC: { job: Jobs.Job; members: MemberCaches; guild: RGuild }) => {
   const index = mC.members.findIndex((m) => m.member.id === memberCache.member.id);
   mC.members.splice(index, 1);
   if (!mC.members.length) {

@@ -34,10 +34,10 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  custom_id: getWithUTS(`settings/${type}_${String(settingName)}`, uniquetimestamp),
  components: [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.TextInput,
+     type: ComponentType.TextInput,
      style: short ? Discord.TextInputStyle.Short : Discord.TextInputStyle.Paragraph,
      min_length: required ? 1 : 0,
      max_length: 4000,
@@ -50,10 +50,10 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
    ],
   },
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.TextInput,
+     type: ComponentType.TextInput,
      style: Discord.TextInputStyle.Paragraph,
      label: language.slashCommands.settings.acceptedValue,
      custom_id: '-',

@@ -16,10 +16,10 @@ export default async (
   customId: `set-level/${type}_${id}_${roleOrUser}`,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.TextInput,
+      type: ComponentType.TextInput,
       style: Discord.TextInputStyle.Short,
       customId: 'new',
       label: language.slashCommands.setLevel[type === 'lvl' ? 'newLvl' : 'newXP'],

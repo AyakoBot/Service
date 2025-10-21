@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body?: Discord.RESTPostAPIGuildPruneJSONBody,
  reason?: string,
 ) => {
@@ -23,14 +23,14 @@ export default async (
  if (!canPrune(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot prune members`, [PermissionFlagsBits.KickMembers]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .beginPrune(guild.id, body, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

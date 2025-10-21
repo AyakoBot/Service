@@ -106,7 +106,7 @@ export default async (msg: RMessage) => {
  }
 };
 
-const checkForInvite = async (content: string, guild: Discord.Guild): Promise<boolean> => {
+const checkForInvite = async (content: string, guild: RGuild): Promise<boolean> => {
  try {
   content = decodeURIComponent(
    content
@@ -157,7 +157,7 @@ const checkForInvite = async (content: string, guild: Discord.Guild): Promise<bo
  );
 };
 
-const isExternalInviteSource = async (invite: string, guild: Discord.Guild) => {
+const isExternalInviteSource = async (invite: string, guild: RGuild) => {
  try {
   new URL(invite.startsWith('http') ? invite : `http://${invite}`);
  } catch (e) {

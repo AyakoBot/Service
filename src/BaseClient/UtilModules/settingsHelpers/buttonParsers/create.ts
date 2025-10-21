@@ -12,9 +12,9 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  language: CT.Language,
  name: T,
 ): Discord.APIButtonComponentWithCustomId => ({
- type: Discord.ComponentType.Button,
+ type: ComponentType.Button,
  label: language.slashCommands.settings.create,
- style: Discord.ButtonStyle.Success,
+ style: ButtonStyle.Success,
  custom_id: `settings/create_${String(name)}`,
  emoji: emotes.plusBG,
 });

@@ -23,7 +23,7 @@ export default async (thread: RThread) => {
   return e;
  }
 
- return (await getAPI(thread.guild)).threads.join(thread.id).catch((e: Discord.DiscordAPIError) => {
+ return (await getAPI(thread.guild)).threads.join(thread.id).catch((e: DiscordAPIError) => {
   error(thread.guild, e);
   return e;
  });

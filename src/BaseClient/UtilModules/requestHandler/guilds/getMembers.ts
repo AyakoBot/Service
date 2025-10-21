@@ -9,7 +9,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param query - The query parameters for the API request.
  * @returns A promise that resolves with an array of GuildMember objects.
  */
-export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIGuildMembersQuery) => {
+export default async (guild: RGuild, query?: Discord.RESTGetAPIGuildMembersQuery) => {
  if (guild.members.cache.size === guild.memberCount) return guild.members.cache.map((m) => m);
 
  const guilds = guild.client.util.cache.hasFetchedAllMembers;
@@ -30,9 +30,9 @@ export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIGuildMembe
    guilds.delete(guild.id);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    guilds.delete(guild.id);
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

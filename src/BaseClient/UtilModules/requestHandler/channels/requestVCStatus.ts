@@ -7,5 +7,5 @@ import * as Discord from 'discord.js';
  * @param guild - The guild request the voice channel statuses of.
  * @returns A promise that resolves to void
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  guild.client.ws.shards.get(guild.shardId)?.send({ op: 36, d: { guild_id: guild.id } });

@@ -19,7 +19,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
   min_values: options.min_values || 1,
   max_values: options.max_values || 1,
   custom_id: getWithUTS(`settings/${type}_${fieldName}_${String(settingName)}`, uniquetimestamp),
-  type: Discord.ComponentType.StringSelect,
+  type: ComponentType.StringSelect,
   options: (options.options.length ? options.options : [{ label: '-', value: '-' }]) ?? [
    { label: '-', value: '-' },
   ],

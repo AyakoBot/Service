@@ -22,7 +22,7 @@ export default (
  settingName: string,
  uniquetimestamp: number | undefined,
 ): Discord.APIButtonComponent => ({
- type: Discord.ComponentType.Button,
+ type: ComponentType.Button,
  label: getLable(language, type),
  style: getStyle(setting),
  custom_id: getWithUTS(

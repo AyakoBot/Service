@@ -16,7 +16,7 @@ import { getAPI } from './addReaction.js';
  * @returns A Promise that resolves to a new Message object if the message was sent successfully,
  * or rejects with a DiscordAPIError if an error occurred.
  */
-function fn<T extends Discord.Guild | undefined | null>(
+function fn<T extends RGuild | undefined | null>(
  guild: T,
  channelId: string,
  payload: Discord.RESTPostAPIChannelMessageJSONBody & {
@@ -24,24 +24,24 @@ function fn<T extends Discord.Guild | undefined | null>(
  },
  client: Discord.Client<true>,
 ): Promise<
- RMessage<T extends Discord.Guild ? true : false> | Error | Discord.DiscordAPIError
+ RMessage<T extends RGuild ? true : false> | Error | DiscordAPIError
 >;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  channelId: string,
  payload: Discord.RESTPostAPIChannelMessageJSONBody & {
   files?: (Discord.RawFile | Discord.AttachmentPayload)[];
  },
  client?: undefined,
-): Promise<RMessage | Error | Discord.DiscordAPIError>;
+): Promise<RMessage | Error | DiscordAPIError>;
 async function fn(
- guild: Discord.Guild | undefined | null,
+ guild: RGuild | undefined | null,
  channelId: string,
  payload: Discord.RESTPostAPIChannelMessageJSONBody & {
   files?: (Discord.RawFile | Discord.AttachmentPayload)[];
  },
  client?: Discord.Client<true>,
-): Promise<RMessage | Error | Discord.DiscordAPIError> {
+): Promise<RMessage | Error | DiscordAPIError> {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
  if (!payload || String(payload) === 'undefined') return new Error('No payload provided');
 
@@ -90,7 +90,7 @@ async function fn(
     : undefined,
   })
   .then((m) => new Classes.Message(c, m))
-  .catch(async (e: Discord.DiscordAPIError) => {
+  .catch(async (e: DiscordAPIError) => {
    if (!e.message.includes('to this user')) {
     sendDebugMessage({
      content: `${guild?.id} - ${channelId} - ${guild ? (await getBotMemberFromGuild(guild)).id : '-'}\n${e.message}\n${debugStack}`,
@@ -99,7 +99,7 @@ async function fn(
      ],
     });
 
-    error(guild, new Error((e as Discord.DiscordAPIError).message));
+    error(guild, new Error((e as DiscordAPIError).message));
    }
    return e;
   });
@@ -221,19 +221,19 @@ export const isValidPayload = (payload: UsualMessagePayload) => {
     const check1 = actionRow.components
      .map((c) => {
       switch (c.type) {
-       case Discord.ComponentType.Button: {
-        if (c.style === Discord.ButtonStyle.Premium) break;
+       case ComponentType.Button: {
+        if (c.style === ButtonStyle.Premium) break;
         if (Number(c.label?.length) > 80) return e('Button Label too long', c.label);
         if ('custom_id' in c && Number(c.custom_id?.length) > 100) {
          return e('Button Custom ID too long', c.custom_id);
         }
         break;
        }
-       case Discord.ComponentType.RoleSelect:
-       case Discord.ComponentType.UserSelect:
-       case Discord.ComponentType.MentionableSelect:
-       case Discord.ComponentType.StringSelect:
-       case Discord.ComponentType.ChannelSelect: {
+       case ComponentType.RoleSelect:
+       case ComponentType.UserSelect:
+       case ComponentType.MentionableSelect:
+       case ComponentType.StringSelect:
+       case ComponentType.ChannelSelect: {
         if (Number(c.custom_id?.length) > 100) {
          return e('Select Menu Custom ID too long', c.custom_id);
         }

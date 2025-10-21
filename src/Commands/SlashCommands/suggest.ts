@@ -70,57 +70,57 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
    files,
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Success,
+       type: ComponentType.Button,
+       style: ButtonStyle.Success,
        custom_id: 'suggestion/tick',
        emoji: cmd.client.util.emotes.tickWithBackground,
       },
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Secondary,
+       type: ComponentType.Button,
+       style: ButtonStyle.Secondary,
        label: lan.view,
        custom_id: 'suggestion/view',
       },
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Danger,
+       type: ComponentType.Button,
+       style: ButtonStyle.Danger,
        custom_id: 'suggestion/cross',
        emoji: cmd.client.util.emotes.crossWithBackground,
       },
      ],
     },
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Success,
+       type: ComponentType.Button,
+       style: ButtonStyle.Success,
        label: lan.accept,
        custom_id: 'suggestion/accept',
       },
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Secondary,
+       type: ComponentType.Button,
+       style: ButtonStyle.Secondary,
        emoji: cmd.client.util.emotes.ban,
        custom_id: 'suggestion/ban',
       },
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Danger,
+       type: ComponentType.Button,
+       style: ButtonStyle.Danger,
        label: lan.reject,
        custom_id: 'suggestion/reject',
       },
      ],
     },
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Secondary,
+       type: ComponentType.Button,
+       style: ButtonStyle.Secondary,
        custom_id: 'suggestion/delete',
        emoji: cmd.client.util.emotes.trash,
       },

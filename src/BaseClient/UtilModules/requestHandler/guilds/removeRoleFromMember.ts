@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the removed role or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  role: RRole,
  reason?: string,
@@ -26,14 +26,14 @@ export default async (
    PermissionFlagsBits.ManageRoles,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .removeRoleFromMember(guild.id, userId, role.id, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

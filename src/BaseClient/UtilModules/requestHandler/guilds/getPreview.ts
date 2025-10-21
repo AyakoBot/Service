@@ -8,11 +8,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild - The guild to get the preview for.
  * @returns A promise that resolves with the guild preview.
  */
-export default async (guild: Discord.Guild) =>
+export default async (guild: RGuild) =>
  (await getAPI(guild)).guilds
   .getPreview(guild.id)
   .then((p) => new Classes.GuildPreview(guild.client, p))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

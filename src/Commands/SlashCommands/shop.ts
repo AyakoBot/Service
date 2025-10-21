@@ -53,7 +53,7 @@ export default async (
 
  const selMenu: Discord.APISelectMenuComponent[] = [
   {
-   type: Discord.ComponentType.StringSelect,
+   type: ComponentType.StringSelect,
    custom_id: 'shop/buy',
    placeholder: lan.selRoleToBuy,
    min_values: 1,
@@ -76,7 +76,7 @@ export default async (
     : [{ label: '-', value: '-' }],
   },
   {
-   type: Discord.ComponentType.StringSelect,
+   type: ComponentType.StringSelect,
    custom_id: 'shop/equip',
    placeholder: lan.selRoleToEquip,
    min_values: 1,
@@ -128,24 +128,24 @@ export default async (
   ],
   components: [
    ...selMenu.map((s) => ({
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [s],
    })),
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       custom_id: `shop/prev_${page - 1}`,
       emoji: { id: undefined, name: '⬅️' },
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       disabled: page <= 1,
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       custom_id: `shop/next_${page + 1}`,
       emoji: { id: undefined, name: '➡️' },
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       disabled: Math.ceil(shopItems.length / 25) <= page,
      },
     ],

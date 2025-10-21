@@ -10,11 +10,11 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  query?: Discord.RESTGetAPICurrentUserGuildsQuery,
-): Promise<Discord.RESTGetAPICurrentUserGuildsResult | Discord.DiscordAPIError> {
- return (await getAPI(guild)).users.getGuilds(query).catch((e: Discord.DiscordAPIError) => {
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+): Promise<Discord.RESTGetAPICurrentUserGuildsResult | DiscordAPIError> {
+ return (await getAPI(guild)).users.getGuilds(query).catch((e: DiscordAPIError) => {
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  });
 }

@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the created auto-moderation rule.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPostAPIAutoModerationRuleJSONBody,
  reason?: string,
 ) => {
@@ -25,15 +25,15 @@ export default async (
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .createAutoModerationRule(guild.id, body, { reason })
   .then((r) => new Classes.AutoModerationRule(guild.client, r, guild))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

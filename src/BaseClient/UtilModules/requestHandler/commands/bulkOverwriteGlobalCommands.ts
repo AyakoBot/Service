@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import * as Classes from '../../../Other/classes.js';
@@ -12,7 +12,7 @@ import error from '../../error.js';
  * @returns A promise that resolves with an array of the newly created application commands.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPutAPIApplicationCommandsJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
@@ -30,8 +30,8 @@ export default async (
    parsed.forEach((p) => guild.client.application.commands.cache.set(p.id, p));
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

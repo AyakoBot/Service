@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import * as Classes from '../../../Other/classes.js';
 import cache from '../../cache.js';
 import error from '../../error.js';
@@ -15,7 +15,7 @@ import { canGetCommands } from './getGlobalCommand.js';
  * @returns A promise that resolves with an array of the newly created application commands.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPutAPIApplicationGuildCommandsJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
@@ -25,7 +25,7 @@ export default async (
    [],
   );
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -55,8 +55,8 @@ export default async (
 
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    setHasMissingScopes(e.message, guild);
    return e;
   });
@@ -68,7 +68,7 @@ export default async (
  * @returns A promise that resolves to the guild with missing scopes,
  * or undefined if no guild is found.
  */
-export const hasMissingScopes = (guild: Discord.Guild) =>
+export const hasMissingScopes = (guild: RGuild) =>
  guild.client.util.DataBase.noCommandsGuilds.findUnique({
   where: { guildId: guild.id },
  });
@@ -78,7 +78,7 @@ export const hasMissingScopes = (guild: Discord.Guild) =>
  * @param err - The error message.
  * @param guild - The Discord guild.
  */
-export const setHasMissingScopes = async (err: string, guild: Discord.Guild) => {
+export const setHasMissingScopes = async (err: string, guild: RGuild) => {
  if (!err.includes('Missing Access')) return;
 
  const botId = await guild.client.util.getBotIdFromGuild(guild);

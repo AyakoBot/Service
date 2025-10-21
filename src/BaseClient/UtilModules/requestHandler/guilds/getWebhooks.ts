@@ -11,13 +11,13 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild The guild to retrieve the webhooks for.
  * @returns A promise that resolves with an array of Webhook objects.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!canGetWebhooks(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get webhooks`, [
    PermissionFlagsBits.ManageWebhooks,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -34,8 +34,8 @@ export default async (guild: Discord.Guild) => {
 
    return webhooks;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

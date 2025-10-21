@@ -24,7 +24,7 @@ export default async (cmd: Discord.ChannelSelectMenuInteraction, args: string[])
   settings.roleId,
   cmd.channels
    .map((c) => c)
-   .filter((c): c is Discord.GuildBasedChannel => !c.isDMBased() && !c.isThread()),
+   .filter((c): c is RChannel => !c.isDMBased() && !c.isThread()),
  );
 
  const embed = await cmd.client.util.settingsHelpers.changeHelpers.changeEmbed(
@@ -46,7 +46,7 @@ export default async (cmd: Discord.ChannelSelectMenuInteraction, args: string[])
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      cmd.client.util.settingsHelpers.buttonParsers.back(
       CT.SettingNames.LinkedRolesDeco,

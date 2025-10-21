@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import * as Classes from '../../../Other/classes.js';
 import cache from '../../cache.js';
 import error from '../../error.js';
@@ -14,7 +14,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves with the parsed invite object,
  * or rejects with a DiscordAPIError if the vanity URL is missing or inaccessible.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!guild) return new Error('Guild not specified.');
  if (!guild.features.includes(Discord.GuildFeature.VanityURL)) {
   return new Error('Guild does not have a vanity URL.');
@@ -23,7 +23,7 @@ export default async (guild: Discord.Guild) => {
  if (!canGetVanityURL(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get vanity URL`, [PermissionFlagsBits.ManageGuild]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -74,9 +74,9 @@ export default async (guild: Discord.Guild) => {
    if (parsed) guild.invites.cache.set(parsed.code, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    if (e.message !== 'Missing Access') {
-    error(guild, new Error((e as Discord.DiscordAPIError).message));
+    error(guild, new Error((e as DiscordAPIError).message));
    }
    return e;
   });

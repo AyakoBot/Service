@@ -81,7 +81,7 @@ export default async (
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: getButtons(page, giveaways ?? []),
    },
   ],
@@ -96,16 +96,16 @@ const getClaimingDone = (g: Prisma.giveaways, language: CT.Language) => {
 
 const getButtons = (page: number, giveaways: Prisma.giveaways[]): Discord.APIButtonComponent[] => [
  {
-  type: Discord.ComponentType.Button,
+  type: ComponentType.Button,
   emoji: client.util.emotes.back,
-  style: Discord.ButtonStyle.Primary,
+  style: ButtonStyle.Primary,
   custom_id: `giveaway/list_${page - 1}`,
   disabled: page === 0,
  },
  {
-  type: Discord.ComponentType.Button,
+  type: ComponentType.Button,
   emoji: client.util.emotes.forth,
-  style: Discord.ButtonStyle.Primary,
+  style: ButtonStyle.Primary,
   custom_id: `giveaway/list_${page + 1}`,
   disabled: Math.ceil(giveaways.length / 25) - 1 === page,
  },

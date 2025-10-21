@@ -20,14 +20,14 @@ export default (type: ChangeSelectType) => {
  switch (type) {
   case CT.EditorTypes.Channel:
   case CT.EditorTypes.Channels:
-   return Discord.ComponentType.ChannelSelect;
+   return ComponentType.ChannelSelect;
   case CT.EditorTypes.User:
   case CT.EditorTypes.Users:
-   return Discord.ComponentType.UserSelect;
+   return ComponentType.UserSelect;
   case CT.EditorTypes.Role:
   case CT.EditorTypes.Roles:
-   return Discord.ComponentType.RoleSelect;
+   return ComponentType.RoleSelect;
   default:
-   return Discord.ComponentType.MentionableSelect;
+   return ComponentType.MentionableSelect;
  }
 };

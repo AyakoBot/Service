@@ -1,54 +1,32 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import { ChannelType } from '@discordjs/core';
 import error from '../../error.js';
 import { getAPI } from './addReaction.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { cache } from '../../../../BaseClient/Client.js';
 
-type Response = Promise<
- | Discord.DMChannel
- | Discord.BaseGuildVoiceChannel
- | RThread<boolean>
- | Discord.GuildBasedChannel
- | Discord.DiscordAPIError
->;
+type Response = Promise<RThread | RChannel | DiscordAPIError>;
 
 /**
  * Retrieves a channel from the cache or the Discord API.
- * @param guild The guild that the channel belongs to.
+ * @param guildID The guildId that the channel belongs to.
  * @param id The ID of the channel to retrieve.
  * @returns A Promise that resolves with the retrieved channel.
  */
-function fn(
- guild: Discord.Guild | null | undefined,
- id: string,
- client: Discord.Client<true>,
-): Response;
-function fn(guild: Discord.Guild, id: string, client?: undefined): Response;
-async function fn(
- guild: Discord.Guild | null | undefined,
- id: string,
- client?: Discord.Client<true>,
-): Response {
- const c = (guild?.client ?? client)!;
+export default async (guildId: string | null | undefined, id: string): Response =>
+ (await cache.channels.get(id).then((c) => (!guildId || c.guild_id === guildId ? c : undefined))) ??
+ (await getAPI(guildId)).channels
+  .get(id)
+  .then((channel) => {
+   const parsed = Classes.Channel(c, channel, guild);
 
- return (
-  guild?.channels.cache.get(id) ??
-  (await getAPI(guild)).channels
-   .get(id)
-   .then((channel) => {
-    const parsed = Classes.Channel(c, channel, guild);
+   if (guild?.channels.cache.get(parsed.id)) return parsed;
+   if (![ChannelType.DM, ChannelType.GroupDM].includes(parsed.type)) {
+    guild?.channels.cache.set(parsed.id, parsed as RChannel);
+   }
 
-    if (guild?.channels.cache.get(parsed.id)) return parsed;
-    if (![ChannelType.DM, ChannelType.GroupDM].includes(parsed.type)) {
-     guild?.channels.cache.set(parsed.id, parsed as Discord.GuildBasedChannel);
-    }
-
-    return parsed;
-   })
-   .catch((e: Discord.DiscordAPIError) => {
-    error(guild, new Error((e as Discord.DiscordAPIError).message));
-    return e;
-   })
- );
-}
-
-export default fn;
+   return parsed;
+  })
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
+   return e;
+  });

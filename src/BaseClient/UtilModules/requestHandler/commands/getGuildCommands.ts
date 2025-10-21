@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import * as Classes from '../../../Other/classes.js';
@@ -16,7 +16,7 @@ import { makeRequestHandler } from '../../requestHandler.js';
  * @returns A Promise that resolves with an array of parsed ApplicationCommand objects.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  query?: Discord.RESTGetAPIApplicationGuildCommandsQuery,
 ) => {
  if (!canGetCommands(guild)) {
@@ -25,7 +25,7 @@ export default async (
    [],
   );
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -56,10 +56,10 @@ export default async (
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    setHasMissingScopes(e.message, guild);
 
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

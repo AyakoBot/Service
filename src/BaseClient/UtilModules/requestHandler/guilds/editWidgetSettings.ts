@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves to an object containing the new widget settings.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPatchAPIGuildWidgetSettingsJSONBody,
  reason?: string,
 ) => {
@@ -24,15 +24,15 @@ export default async (
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .editWidgetSettings(guild.id, body, { reason })
   .then((w) => ({ enabled: w.enabled, channelId: w.channel_id }))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -13,20 +13,20 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the edited guild if successful,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild, level: Discord.GuildMFALevel, reason?: string) => {
+export default async (guild: RGuild, level: RGuildMFALevel, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canEditMFALevel(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot edit MFA level`, [PermissionFlagsBits.ManageGuild]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .editMFALevel(guild.id, level, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -87,20 +87,20 @@ export interface SettingsFile<K extends MatchingCategoryKeys> {
   settings: DB.DataBaseTables[(typeof SettingsName2TableName)[K]],
   language: Language,
   lan: Categories[K],
-  guild: Discord.Guild,
+  guild: RGuild,
  ) => Discord.BaseMessageOptions['components'] | Promise<Discord.BaseMessageOptions['components']>;
  getEmbeds: (
   embedParsers: (typeof util)['settingsHelpers']['embedParsers'],
   settings: DB.DataBaseTables[(typeof SettingsName2TableName)[K]],
   language: Language,
   lan: Categories[K],
-  guild: Discord.Guild,
+  guild: RGuild,
  ) => Discord.APIEmbed[] | Promise<Discord.APIEmbed[]>;
  getComponents: (
   buttonParsers: (typeof util)['settingsHelpers']['buttonParsers'],
   settings: DB.DataBaseTables[(typeof SettingsName2TableName)[K]],
   language: Language,
-  guild: Discord.Guild,
+  guild: RGuild,
  ) =>
   | Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[]
   | Promise<Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[]>;
@@ -120,7 +120,7 @@ export interface SettingsFile<K extends MatchingCategoryKeys> {
   oldSetting: DB.DataBaseTables[(typeof SettingsName2TableName)[K]] | undefined,
   newSetting: DB.DataBaseTables[(typeof SettingsName2TableName)[K]] | undefined,
   changedSetting: keyof DB.DataBaseTables[(typeof SettingsName2TableName)[K]],
-  guild: Discord.Guild,
+  guild: RGuild,
   uniquetimestamp?: number | string,
  ) => Promise<void>;
 }

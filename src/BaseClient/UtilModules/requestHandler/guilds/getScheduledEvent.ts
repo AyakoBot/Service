@@ -11,7 +11,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves with the retrieved scheduled event, or rejects with an error.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  eventId: string,
  query?: Discord.RESTGetAPIGuildScheduledEventQuery,
 ) =>
@@ -23,7 +23,7 @@ export default async (
    guild.scheduledEvents.cache.set(parsed.id, parsed);
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

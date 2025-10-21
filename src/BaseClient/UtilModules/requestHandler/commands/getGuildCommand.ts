@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import * as Classes from '../../../Other/classes.js';
@@ -15,14 +15,14 @@ import { makeRequestHandler } from '../../requestHandler.js';
  * @param commandId The ID of the command to retrieve.
  * @returns A Promise that resolves with the retrieved command, or rejects with an error.
  */
-export default async (guild: Discord.Guild, commandId: string) => {
+export default async (guild: RGuild, commandId: string) => {
  if (!canGetCommands(guild)) {
   const e = requestHandlerError(
    `Cannot get own Commands. Please make sure you don't have more than 50 Bots in your Server`,
    [],
   );
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -49,10 +49,10 @@ export default async (guild: Discord.Guild, commandId: string) => {
     guild.commands.cache.set(cmd.id, parsed);
     return parsed;
    })
-   .catch((e: Discord.DiscordAPIError) => {
+   .catch((e: DiscordAPIError) => {
     setHasMissingScopes(e.message, guild);
 
-    error(guild, new Error((e as Discord.DiscordAPIError).message));
+    error(guild, new Error((e as DiscordAPIError).message));
     return e;
    })
  );

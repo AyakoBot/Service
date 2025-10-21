@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves with a Message object or rejects with an error.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  webhookId: string,
  token: string,
  messageId: string,
@@ -22,7 +22,7 @@ export default async (
  (await getAPI(guild)).webhooks
   .getMessage(webhookId, token, messageId, query)
   .then((m) => new Classes.Message(guild.client, m))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

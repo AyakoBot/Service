@@ -13,7 +13,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the deleted integration if successful,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild, integrationId: string, reason?: string) => {
+export default async (guild: RGuild, integrationId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canDeleteIntegration(await getBotMemberFromGuild(guild))) {
@@ -21,14 +21,14 @@ export default async (guild: Discord.Guild, integrationId: string, reason?: stri
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .deleteIntegration(guild.id, integrationId, { reason })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

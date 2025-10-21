@@ -12,7 +12,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param body The data to edit the guild with.
  * @returns A promise that resolves with the edited guild.
  */
-export default async (guild: Discord.Guild, body: Discord.RESTPatchAPIGuildJSONBody) => {
+export default async (guild: RGuild, body: Discord.RESTPatchAPIGuildJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  if (!canEdit(await getBotMemberFromGuild(guild), guild, body)) {
@@ -20,7 +20,7 @@ export default async (guild: Discord.Guild, body: Discord.RESTPatchAPIGuildJSONB
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -35,8 +35,8 @@ export default async (guild: Discord.Guild, body: Discord.RESTPatchAPIGuildJSONB
     : body.discovery_splash,
   })
   .then((g) => new Classes.Guild(guild.client, g))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };
@@ -49,11 +49,11 @@ export default async (guild: Discord.Guild, body: Discord.RESTPatchAPIGuildJSONB
  */
 export const canEdit = (
  me: RMember,
- guild: Discord.Guild,
+ guild: RGuild,
  body: Discord.RESTPatchAPIGuildJSONBody,
 ) =>
  me.permissions.has(PermissionFlagsBits.ManageGuild) &&
- (!!guild.features.find((f) => f === Discord.GuildFeature.Community) !==
- !!body.features?.find((f) => f === Discord.GuildFeature.Community)
+ (!!guild.features.find((f) => f === RGuildFeature.Community) !==
+ !!body.features?.find((f) => f === RGuildFeature.Community)
   ? me.permissions.has(PermissionFlagsBits.Administrator)
   : true);

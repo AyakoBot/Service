@@ -11,16 +11,16 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with an error.
  */
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  applicationId: string,
  body: Discord.RESTPutAPICurrentUserApplicationRoleConnectionJSONBody,
-): Promise<Discord.APIApplicationRoleConnection | Discord.DiscordAPIError | Error> {
+): Promise<Discord.APIApplicationRoleConnection | DiscordAPIError | Error> {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  return (await getAPI(guild)).users
   .updateApplicationRoleConnection(applicationId, body)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 }

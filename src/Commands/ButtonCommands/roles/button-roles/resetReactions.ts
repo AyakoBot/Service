@@ -27,7 +27,7 @@ export default async (cmd: Discord.ButtonInteraction, _: string[], type: Type = 
 
  const settings = await getSpecificSettings(type, cmd.guildId, baseSettings?.uniquetimestamp);
 
- let action: RMessage | Discord.DiscordAPIError | void | undefined | Error;
+ let action: RMessage | DiscordAPIError | void | undefined | Error;
 
  if (type === 'reaction-roles') {
   const reactionsToRemove = message.reactions.cache

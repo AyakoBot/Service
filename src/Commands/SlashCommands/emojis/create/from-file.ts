@@ -52,7 +52,7 @@ export default async (
 
  if (type === 'emoji') {
   cmd.client.util.replyCmd(cmd, {
-   content: language.slashCommands.emojis.created(created as Discord.GuildEmoji),
+   content: language.slashCommands.emojis.created(created as RGuildEmoji),
   });
   return;
  }

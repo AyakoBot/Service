@@ -40,10 +40,10 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.ChannelSelect,
+      type: ComponentType.ChannelSelect,
       placeholder: language.t.Channels,
       custom_id: `linked-roles/deco_${settingsId}`,
       max_values: 25,
@@ -53,13 +53,13 @@ export default async (cmd: Discord.ButtonInteraction, args: string[]) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: lan.apply.all,
       custom_id: `linked-roles/deco-all_${settingsId}`,
-      style: Discord.ButtonStyle.Success,
+      style: ButtonStyle.Success,
      },
     ],
    },

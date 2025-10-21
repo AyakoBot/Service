@@ -170,7 +170,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.delete(language, name, Number(settings?.uniquetimestamp)),
    buttonParsers.specific(
@@ -200,7 +200,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(
     language,
@@ -227,13 +227,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
     label: language.slashCommands.settings.categories['linked-roles-deco'].apply.apply,
-    type: Discord.ComponentType.Button,
+    type: ComponentType.Button,
     custom_id: `linked-roles/deco_${settings?.uniquetimestamp}`,
-    style: Discord.ButtonStyle.Success,
+    style: ButtonStyle.Success,
     disabled: !settings?.roleId || !settings?.botId || !settings?.botSecret || !settings?.botToken,
    },
   ],
@@ -294,7 +294,7 @@ export const postChange: CT.SettingsFile<typeof name>['postChange'] = async (
 };
 
 export const revokeToken = async (
- guild: Discord.Guild,
+ guild: RGuild,
  userId: string,
  bot: { id: string; secret: string },
 ) => {
@@ -333,7 +333,7 @@ export const revokeToken = async (
 };
 
 const tokenCreate = async (
- guild: Discord.Guild,
+ guild: RGuild,
  newSettings: CT.MakeRequired<
   NonNullable<Parameters<NonNullable<CT.SettingsFile<typeof name>['postChange']>>[1]>,
   'botToken'
@@ -356,7 +356,7 @@ const getMe = async (token: string) => {
 };
 
 const meIsValid = (
- guild: Discord.Guild,
+ guild: RGuild,
  uniquetimestamp: number,
  me: Awaited<ReturnType<typeof getMe>>['current'],
 ): me is Discord.APIApplication => {
@@ -373,7 +373,7 @@ const meIsValid = (
  return true;
 };
 
-const deleteEntry = (guild: Discord.Guild, uniquetimestamp: number) => {
+const deleteEntry = (guild: RGuild, uniquetimestamp: number) => {
  guild.client.util.DataBase.linkedRolesDeco
   .update({
    where: { uniquetimestamp },

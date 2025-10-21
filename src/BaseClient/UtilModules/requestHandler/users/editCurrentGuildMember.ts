@@ -12,20 +12,20 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  data: Discord.RESTPatchAPIGuildMemberJSONBody,
- saveGuild: Discord.Guild,
-): Promise<RMember | Discord.DiscordAPIError | Error>;
+ saveGuild: RGuild,
+): Promise<RMember | DiscordAPIError | Error>;
 function fn(
- guild: Discord.Guild,
+ guild: RGuild,
  data: Discord.RESTPatchAPIGuildMemberJSONBody,
  saveGuild?: undefined,
-): Promise<RMember | Discord.DiscordAPIError | Error>;
+): Promise<RMember | DiscordAPIError | Error>;
 async function fn(
- guild: undefined | null | Discord.Guild,
+ guild: undefined | null | RGuild,
  data: Discord.RESTPatchAPIGuildMemberJSONBody,
- saveGuild?: Discord.Guild,
-): Promise<RMember | Discord.DiscordAPIError | Error> {
+ saveGuild?: RGuild,
+): Promise<RMember | DiscordAPIError | Error> {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
  const g = (guild ?? saveGuild)!;
@@ -33,8 +33,8 @@ async function fn(
  return (await getAPI(guild)).users
   .editCurrentGuildMember(g.id, data)
   .then((m) => new Classes.GuildMember(g.client, m, g))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(g, e as Discord.DiscordAPIError);
+  .catch((e: DiscordAPIError) => {
+   error(g, e as DiscordAPIError);
    return e;
   });
 }

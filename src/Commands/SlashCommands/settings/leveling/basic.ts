@@ -40,13 +40,13 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ): Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.global(language, !!settings.active, CT.GlobalDescType.Active, name, undefined),
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.specific(language, settings.curveModifier, 'curveModifier', name, undefined),
    buttonParsers.specific(language, settings.xpmultiplier, 'xpmultiplier', name, undefined),
@@ -54,11 +54,11 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    {
-    type: Discord.ComponentType.Button,
-    style: Discord.ButtonStyle.Secondary,
+    type: ComponentType.Button,
+    style: ButtonStyle.Secondary,
     custom_id: `-`,
     label: language.slashCommands.settings.categories.leveling.moreSettings,
     disabled: true,
@@ -66,11 +66,11 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: Object.entries(language.slashCommands.settings.categories.leveling.buttons).map(
    ([k, v]) => ({
-    type: Discord.ComponentType.Button,
-    style: Discord.ButtonStyle.Secondary,
+    type: ComponentType.Button,
+    style: ButtonStyle.Secondary,
     custom_id: `settings/leveling/${k}`,
     label: v,
     emoji: getEmote(k),

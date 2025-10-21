@@ -11,11 +11,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @param guild The guild to retrieve invites for.
  * @returns A promise that resolves with an array of parsed invite objects.
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!canGetInvites(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get invites`, [PermissionFlagsBits.ManageGuild]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -29,8 +29,8 @@ export default async (guild: Discord.Guild) => {
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

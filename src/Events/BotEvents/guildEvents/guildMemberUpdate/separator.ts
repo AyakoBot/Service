@@ -116,7 +116,7 @@ export default (oldMember: RMember, member: RMember) => {
 
 export const oneTimeRunner = async (
  cmd: Discord.ChatInputCommandInteraction<'cached'> | undefined,
- guild: Discord.Guild,
+ guild: RGuild,
  lastRun: boolean = false,
 ) => {
  const language = await client.util.getLanguage(guild.id);
@@ -203,7 +203,7 @@ export const oneTimeRunner = async (
 };
 
 const getMembers = async (
- guild: Discord.Guild,
+ guild: RGuild,
  rows: Prisma.roleseparator[],
 ): Promise<
  {
@@ -331,7 +331,7 @@ const getMembers = async (
 };
 
 const assinger = async (
- guild: Discord.Guild,
+ guild: RGuild,
  members: Awaited<ReturnType<typeof getMembers>>,
  lastRun: boolean = false,
 ) => {
@@ -418,7 +418,7 @@ const assinger = async (
 };
 
 const notification = async (
- guild: Discord.Guild,
+ guild: RGuild,
  embed: Discord.APIEmbed,
  language: Typings.Language,
  settings: Prisma.roleseparatorsettings,

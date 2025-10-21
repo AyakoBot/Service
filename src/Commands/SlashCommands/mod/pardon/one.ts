@@ -121,11 +121,11 @@ export const log = async (
    ],
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.Button,
-       style: Discord.ButtonStyle.Link,
+       type: ComponentType.Button,
+       style: ButtonStyle.Link,
        url: client.util.constants.standard.msgurl(
         cmd.guildId,
         punishment.channelid,

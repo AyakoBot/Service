@@ -53,7 +53,7 @@ export default async (msg: RMessage) => {
 };
 
 export const getSelectedProperty = (msg: RMessage) =>
- msg.components[0].type === Discord.ComponentType.ActionRow
+ msg.components[0].type === ComponentType.ActionRow
   ? ((msg.components[0].components[0] as Discord.StringSelectMenuComponent).data.options
      .find((o) => o.default)
      ?.value.split(/_+/g)[1] as EmbedFields | undefined)

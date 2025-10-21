@@ -52,18 +52,18 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   embeds,
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.t.featuresName,
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       custom_id: `info/features_${isInviteGuild ? invite?.code : serverId}_${isInviteGuild}`,
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.t.Roles,
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       disabled: isInviteGuild,
       custom_id: `info/roles_server_${isInviteGuild ? invite?.code : serverId}`,
      },

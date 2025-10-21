@@ -3,7 +3,7 @@ import * as CT from '../../../Typings/Typings.js';
 
 export default async (
  data: RCommandPermissionsUpdateData,
- guild: Discord.Guild,
+ guild: RGuild,
 ) => {
  const channels = await guild.client.util.getLogChannels('applicationevents', guild);
  if (!channels) return;

@@ -75,26 +75,26 @@ export default async (
 
  const components: Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[] = [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      emoji: cmd.client.util.emotes.back,
-     style: Discord.ButtonStyle.Secondary,
+     style: ButtonStyle.Secondary,
      disabled: page === 1,
      custom_id: `server/page_${page}_back`,
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      label: `${page}/${Math.ceil(flat.length / 60)}`,
-     style: Discord.ButtonStyle.Secondary,
+     style: ButtonStyle.Secondary,
      disabled: Number(flat.length) <= 60,
      custom_id: `server/select_${page}_${Math.ceil(flat.length / 60)}`,
     },
     {
-     type: Discord.ComponentType.Button,
+     type: ComponentType.Button,
      emoji: cmd.client.util.emotes.forth,
-     style: Discord.ButtonStyle.Secondary,
+     style: ButtonStyle.Secondary,
      disabled: Math.ceil(flat.length / 60) === page,
      custom_id: `server/page_${page}_forth`,
     },

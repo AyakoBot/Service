@@ -12,7 +12,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the deleted message or rejects with an error.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  webhookId: string,
  token: string,
  messageId: string,
@@ -22,8 +22,8 @@ export default async (
 
  return (await getAPI(guild)).webhooks
   .deleteMessage(webhookId, token, messageId, query)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

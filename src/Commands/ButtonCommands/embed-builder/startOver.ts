@@ -124,10 +124,10 @@ export default async (
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       placeholder:
        typeof selectedField === 'number'
         ? lan.start.selectFieldPlaceholder
@@ -177,10 +177,10 @@ export default async (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.StringSelect,
+      type: ComponentType.StringSelect,
       placeholder: lan.start.fieldPlaceholder,
       max_values: 1,
       min_values: 0,
@@ -190,23 +190,23 @@ export default async (
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: lan.start.createButtons.empty,
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       custom_id: 'embed-builder/empty',
      },
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: lan.start.createButtons.save,
-      style: Discord.ButtonStyle.Success,
+      style: ButtonStyle.Success,
       custom_id: 'embed-builder/save',
       disabled:
        !canFinish ||
@@ -215,9 +215,9 @@ export default async (
        ),
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: lan.start.createButtons.send,
-      style: Discord.ButtonStyle.Success,
+      style: ButtonStyle.Success,
       custom_id: 'embed-builder/send',
       disabled:
        !canFinish ||
@@ -226,9 +226,9 @@ export default async (
        ),
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: lan.start.createButtons.edit,
-      style: Discord.ButtonStyle.Success,
+      style: ButtonStyle.Success,
       custom_id: 'embed-builder/edit',
       disabled:
        !canFinish ||
@@ -237,9 +237,9 @@ export default async (
        ),
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.t.Delete,
-      style: Discord.ButtonStyle.Danger,
+      style: ButtonStyle.Danger,
       custom_id: `deleteThread_${author.id}`,
      },
     ],

@@ -13,11 +13,11 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves with the GuildBan object for the user,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-export default async (guild: Discord.Guild, userId: string) => {
+export default async (guild: RGuild, userId: string) => {
  if (!canGetMemberBan(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get member ban`, [PermissionFlagsBits.BanMembers]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -31,7 +31,7 @@ export default async (guild: Discord.Guild, userId: string) => {
     guild.bans.cache.set(parsed.user.id, parsed);
     return parsed;
    })
-   .catch((e: Discord.DiscordAPIError) => e as Discord.DiscordAPIError)
+   .catch((e: DiscordAPIError) => e as DiscordAPIError)
  );
 };
 

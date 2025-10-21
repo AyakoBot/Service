@@ -20,7 +20,7 @@ export default async (thread: RThread) =>
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    error(thread.guild, e);
    return e;
   });

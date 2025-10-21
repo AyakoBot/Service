@@ -12,19 +12,19 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   content: lan.confirmUser(user),
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
       emoji: client.util.emotes.tickWithBackground,
-      style: Discord.ButtonStyle.Danger,
+      style: ButtonStyle.Danger,
       custom_id: `reset-levels/confirm_user_${user.id}`,
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
      },
      {
       emoji: client.util.emotes.crossWithBackground,
-      style: Discord.ButtonStyle.Secondary,
+      style: ButtonStyle.Secondary,
       custom_id: 'reset-levels/reject',
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
      },
     ],
    },

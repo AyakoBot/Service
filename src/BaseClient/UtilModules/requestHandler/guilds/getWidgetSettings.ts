@@ -11,21 +11,21 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A promise that resolves to an object containing the widget
  * settings (enabled and channelId).
  */
-export default async (guild: Discord.Guild) => {
+export default async (guild: RGuild) => {
  if (!canGetWidgetSettings(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get widget settings`, [
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
  return (await getAPI(guild)).guilds
   .getWidgetSettings(guild.id)
   .then((w) => ({ enabled: w.enabled, channelId: w.channel_id }))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

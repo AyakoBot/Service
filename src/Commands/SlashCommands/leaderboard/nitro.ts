@@ -44,13 +44,13 @@ export default async (cmd: Discord.ChatInputCommandInteraction) => {
   embeds: [embed],
   // components: [
   //  {
-  //   type: Discord.ComponentType.ActionRow,
+  //   type: ComponentType.ActionRow,
   //   components: [
   //    {
-  //     type: Discord.ComponentType.Button,
+  //     type: ComponentType.Button,
   //     url: `https://ayakobot.com/guilds/${cmd.guildId}/leaderboard#nitro`,
   //     label: lan.fullLeaderboard,
-  //     style: Discord.ButtonStyle.Link,
+  //     style: ButtonStyle.Link,
   //    },
   //   ],
   //  },
@@ -128,7 +128,7 @@ const getEmbed = async (
  }: { days: number; longestDays: number; daysPerUser: { days: number; userId: string }[] },
  { displayNames, longestUsername }: { displayNames: string[]; longestUsername: number },
  user: RUser,
- guild: Discord.Guild,
+ guild: RGuild,
 ): Promise<Discord.APIEmbed> => ({
  author: {
   name: lan.nleaderboard,

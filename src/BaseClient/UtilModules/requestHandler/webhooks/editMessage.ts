@@ -14,7 +14,7 @@ import { resolveFiles } from './execute.js';
  * @returns A Promise that resolves with the edited message or rejects with an error.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  webhookId: string,
  token: string,
  messageId: string,
@@ -31,8 +31,8 @@ export default async (
    files: await resolveFiles(body.files),
   })
   .then((m) => new Classes.Message(guild.client, m))
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

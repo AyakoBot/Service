@@ -3,7 +3,7 @@ import * as CT from '../../../../Typings/Typings.js';
 
 export default async (
  cmd: Discord.ChatInputCommandInteraction | RRoleSelectMenuInteraction,
- e?: Discord.GuildEmoji,
+ e?: RGuildEmoji,
 ) => {
  if (!cmd.inCachedGuild()) return;
 
@@ -41,10 +41,10 @@ export default async (
  ];
  const components: Discord.APIActionRowComponent<Discord.APIRoleSelectComponent>[] = [
   {
-   type: Discord.ComponentType.ActionRow,
+   type: ComponentType.ActionRow,
    components: [
     {
-     type: Discord.ComponentType.RoleSelect,
+     type: ComponentType.RoleSelect,
      custom_id: `emojis/roles_${emoji.id}`,
      placeholder: lan.placeholder,
      max_values: 25,

@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import { API } from '../../../Client.js';
+import { api } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import cache from '../../cache.js';
 import error from '../../error.js';
@@ -18,7 +18,7 @@ import { makeRequestHandler } from '../../requestHandler.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: Discord.Guild,
+ guild: RGuild,
  userToken: string,
  commandId: string,
  body: Discord.RESTPutAPIApplicationCommandPermissionsJSONBody,
@@ -30,7 +30,7 @@ export default async (
    [],
   );
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -50,10 +50,10 @@ export default async (
    cache.commandPermissions.set(guild.id, commandId, res.permissions);
    return res.permissions;
   })
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    setHasMissingScopes(e.message, guild);
 
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

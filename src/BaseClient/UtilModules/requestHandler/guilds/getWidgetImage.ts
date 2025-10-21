@@ -8,10 +8,10 @@ import { getAPI } from '../channels/addReaction.js';
  * @param style - The style of the widget image.
  * @returns A Promise that resolves with the widget image, or rejects with a DiscordAPIError.
  */
-export default async (guild: Discord.Guild, style?: Discord.GuildWidgetStyle) =>
+export default async (guild: RGuild, style?: Discord.GuildWidgetStyle) =>
  (await getAPI(guild)).guilds
   .getWidgetImage(guild.id, style)
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

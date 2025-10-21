@@ -40,7 +40,7 @@ export default async (
  return (await getAPI(member.guild)).guilds
   .editMember(member.guild.id, member.id, body, { reason })
   .then((m) => new Classes.GuildMember(member.client, m, member.guild))
-  .catch(async (e: Discord.DiscordAPIError) => {
+  .catch(async (e: DiscordAPIError) => {
    sendDebugMessage({
     content: `${member.id} - ${member.guild.id} - ${(await getBotMemberFromGuild(member.guild)).permissions.bitfield}`,
     files: [member.client.util.txtFileWriter(JSON.stringify(body, null, 2))],

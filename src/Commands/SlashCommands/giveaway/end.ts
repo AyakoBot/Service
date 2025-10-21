@@ -74,7 +74,7 @@ export const getGiveawayEmbed = async (language: CT.Language, giveaway: Prisma.g
  };
 };
 
-export const giveawayCollectTime = async (guild: Discord.Guild, msgId: string) => {
+export const giveawayCollectTime = async (guild: RGuild, msgId: string) => {
  const giveaway = await client.util.DataBase.giveaways.findUnique({
   where: { msgid: msgId, claimingdone: false },
  });
@@ -144,7 +144,7 @@ export const giveawayCollectTime = async (guild: Discord.Guild, msgId: string) =
   embeds: [embed],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      getButton(language, giveaway),
      giveaway.actualprize && giveaway.collecttime ? getClaimButton(language, giveaway) : undefined,
@@ -195,11 +195,11 @@ export const giveawayCollectTime = async (guild: Discord.Guild, msgId: string) =
   ],
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Link,
+      type: ComponentType.Button,
+      style: ButtonStyle.Link,
       label: language.slashCommands.giveaway.end.button,
       url: client.util.constants.standard.msgurl(
        giveaway.guildid,
@@ -208,9 +208,9 @@ export const giveawayCollectTime = async (guild: Discord.Guild, msgId: string) =
       ),
      },
      {
-      type: Discord.ComponentType.Button,
+      type: ComponentType.Button,
       label: language.slashCommands.giveaway.end.reroll,
-      style: Discord.ButtonStyle.Danger,
+      style: ButtonStyle.Danger,
       emoji: client.util.emotes.refresh,
       custom_id: `giveaway/reroll_${giveaway.msgid}`,
      },
@@ -333,8 +333,8 @@ export const getButton = (
  language: CT.Language,
  giveaway: Prisma.giveaways,
 ): Discord.APIButtonComponentWithCustomId => ({
- type: Discord.ComponentType.Button,
- style: Discord.ButtonStyle.Primary,
+ type: ComponentType.Button,
+ style: ButtonStyle.Primary,
  custom_id: 'giveaway/participate',
  label: language.slashCommands.giveaway.create.participate,
  emoji: client.util.emotes.gift,
@@ -345,8 +345,8 @@ export const getClaimButton = (
  language: CT.Language,
  giveaway: Prisma.giveaways,
 ): Discord.APIButtonComponentWithCustomId => ({
- type: Discord.ComponentType.Button,
- style: giveaway.claimingdone ? Discord.ButtonStyle.Secondary : Discord.ButtonStyle.Primary,
+ type: ComponentType.Button,
+ style: giveaway.claimingdone ? ButtonStyle.Secondary : ButtonStyle.Primary,
  custom_id: 'giveaway/claim',
  label: giveaway.claimingdone
   ? language.slashCommands.giveaway.end.claimingdone
@@ -394,7 +394,7 @@ export const failReroll = async (giveaway: Prisma.giveaways) => {
  await client.util.request.channels.editMsg(msg, {
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [getButton(language, giveaway), claimButton].filter(
      (r): r is Discord.APIButtonComponentWithCustomId => !!r,
     ),

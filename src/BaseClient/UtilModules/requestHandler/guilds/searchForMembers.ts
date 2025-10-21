@@ -9,7 +9,7 @@ import { getAPI } from '../channels/addReaction.js';
  * @param query - The query to use for searching.
  * @returns A Promise that resolves to an array of GuildMember objects that match the search query.
  */
-export default async (guild: Discord.Guild, query: Discord.RESTGetAPIGuildMembersSearchQuery) =>
+export default async (guild: RGuild, query: Discord.RESTGetAPIGuildMembersSearchQuery) =>
  (await getAPI(guild)).guilds
   .searchForMembers(guild.id, query)
   .then((members) => {
@@ -20,7 +20,7 @@ export default async (guild: Discord.Guild, query: Discord.RESTGetAPIGuildMember
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });

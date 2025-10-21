@@ -7,10 +7,10 @@ export default async (cmd: Discord.ButtonInteraction) => {
  cmd.update({
   components: [
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.ChannelSelect,
+      type: ComponentType.ChannelSelect,
       customId: 'embed-builder/send',
       minValues: 1,
       maxValues: 25,
@@ -30,11 +30,11 @@ export default async (cmd: Discord.ButtonInteraction) => {
     ],
    },
    {
-    type: Discord.ComponentType.ActionRow,
+    type: ComponentType.ActionRow,
     components: [
      {
-      type: Discord.ComponentType.Button,
-      style: Discord.ButtonStyle.Primary,
+      type: ComponentType.Button,
+      style: ButtonStyle.Primary,
       customId: `embed-builder/back`,
       emoji: cmd.client.util.emotes.back,
      },

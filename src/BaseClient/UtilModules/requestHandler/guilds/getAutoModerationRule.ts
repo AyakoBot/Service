@@ -12,13 +12,13 @@ import { getAPI } from '../channels/addReaction.js';
  * @param ruleId - The ID of the rule to retrieve.
  * @returns A promise that resolves with the retrieved auto moderation rule.
  */
-export default async (guild: Discord.Guild, ruleId: string) => {
+export default async (guild: RGuild, ruleId: string) => {
  if (!canGetAutoModerationRule(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get auto moderation rule`, [
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -32,8 +32,8 @@ export default async (guild: Discord.Guild, ruleId: string) => {
     guild.autoModerationRules.cache.set(parsed.id, parsed);
     return parsed;
    })
-   .catch((e: Discord.DiscordAPIError) => {
-    error(guild, new Error((e as Discord.DiscordAPIError).message));
+   .catch((e: DiscordAPIError) => {
+    error(guild, new Error((e as DiscordAPIError).message));
     return e;
    })
  );

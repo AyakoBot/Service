@@ -42,7 +42,7 @@ export default async (msg: RMessage, userId: string, emoji: string) => {
     : (resolvedEmoji.name as string),
    userId,
   )
-  .catch((e: Discord.DiscordAPIError) => {
+  .catch((e: DiscordAPIError) => {
    error(msg.guild, e);
    return e;
   });

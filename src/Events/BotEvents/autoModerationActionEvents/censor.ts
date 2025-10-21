@@ -37,11 +37,11 @@ const reposter = async (msg: Discord.AutoModerationActionExecution, settings: Pr
 };
 
 export const getContent = async (
- guild: Discord.Guild,
+ guild: RGuild,
  rawContent: string,
  settings?: Prisma.censor,
  msg?: Discord.AutoModerationActionExecution,
- channel?: Discord.GuildBasedChannel,
+ channel?: RChannel,
  roles: RRole[] = [],
 ) => {
  const rules = (

@@ -13,11 +13,11 @@ import { canGetMemberBan } from './getMemberBan.js';
  * @param query - An optional query to filter the results.
  * @returns A promise that resolves with an array of GuildBan objects.
  */
-export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIGuildBansQuery) => {
+export default async (guild: RGuild, query?: Discord.RESTGetAPIGuildBansQuery) => {
  if (!canGetMemberBan(await getBotMemberFromGuild(guild))) {
   const e = requestHandlerError(`Cannot get member bans`, [PermissionFlagsBits.BanMembers]);
 
-  error(guild, new Error((e as Discord.DiscordAPIError).message));
+  error(guild, new Error((e as DiscordAPIError).message));
   return e;
  }
 
@@ -31,8 +31,8 @@ export default async (guild: Discord.Guild, query?: Discord.RESTGetAPIGuildBansQ
    });
    return parsed;
   })
-  .catch((e: Discord.DiscordAPIError) => {
-   error(guild, new Error((e as Discord.DiscordAPIError).message));
+  .catch((e: DiscordAPIError) => {
+   error(guild, new Error((e as DiscordAPIError).message));
    return e;
   });
 };

@@ -23,10 +23,10 @@ export default async (
    customId: `embed-builder/editor_${arg}`,
    components: [
     {
-     type: Discord.ComponentType.ActionRow,
+     type: ComponentType.ActionRow,
      components: [
       {
-       type: Discord.ComponentType.TextInput,
+       type: ComponentType.TextInput,
        style: maxLength > 1000 ? Discord.TextInputStyle.Paragraph : Discord.TextInputStyle.Short,
        customId: 'input',
        label: lan.modals.string.label,

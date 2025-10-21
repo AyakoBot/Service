@@ -126,7 +126,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
  language,
 ) => [
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.bans, 'bans', name, undefined),
    buttonParsers.specific(language, settings?.banstime, 'banstime', name, undefined),
@@ -135,7 +135,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.kicks, 'kicks', name, undefined),
    buttonParsers.specific(language, settings?.kickstime, 'kickstime', name, undefined),
@@ -144,7 +144,7 @@ export const getComponents: CT.SettingsFile<typeof name>['getComponents'] = (
   ],
  },
  {
-  type: Discord.ComponentType.ActionRow,
+  type: ComponentType.ActionRow,
   components: [
    buttonParsers.boolean(language, settings?.warns, 'warns', name, undefined),
    buttonParsers.specific(language, settings?.warnstime, 'warnstime', name, undefined),
