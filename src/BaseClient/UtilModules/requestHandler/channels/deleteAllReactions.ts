@@ -1,6 +1,8 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from './addReaction.js';
@@ -13,29 +15,40 @@ import { getAPI } from './addReaction.js';
 export default async (msg: RMessage) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canDeleteAllReactions(msg.channel.id, await getBotMemberFromGuild(msg.guild))) {
-  const e = requestHandlerError(
-   `Cannot delete all reactions of messages in ${msg.guild.name} / ${msg.guild.id}`,
-   [PermissionFlagsBits.ManageMessages],
-  );
+ if (
+  !canDeleteAllReactions(
+   msg.guild_id,
+   msg.channel_id,
+   (await getBotMemberFromGuild(msg.guild_id)).user_id,
+  )
+ ) {
+  const e = requestHandlerError(`Cannot delete all reactions of messages in ${msg.guild_id}`, [
+   PermissionFlagsBits.ManageMessages,
+  ]);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- return (await getAPI(msg.guild)).channels
-  .deleteAllMessageReactions(msg.channel.id, msg.id)
+ return (await getAPI(msg.guild_id)).channels
+  .deleteAllMessageReactions(msg.channel_id, msg.id)
   .catch((e: DiscordAPIError) => {
-   error(msg.guild, e);
+   error(msg.guild_id, e);
    return e;
   });
 };
 
 /**
- * Checks if the user has the permission to delete all reactions in a channel.
- * @param channelId - The ID of the guild-based channel to check.
- * @param me - The guild member representing the user.
- * @returns A boolean indicating whether the user has the permission to delete all reactions.
+ * Checks if a user has permission to delete all reactions from messages in a specific channel.
+ *
+ * @param guildId - The ID of the guild where the channel is located
+ * @param channelId - The ID of the channel to check permissions for
+ * @param userId - The ID of the user whose permissions are being checked
+ * @returns A boolean or promise indicating whether the user can delete all reactions
+ *
+ * @remarks
+ * This function requires the 'ManageMessages' permission to return true.
+ * The ability to delete all reactions is typically restricted to users with message management privileges.
  */
-export const canDeleteAllReactions = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);
+export const canDeleteAllReactions = (guildId: string, channelId: string, userId: string) =>
+ checkChannelPermissions(guildId, channelId, ['ManageMessages'], userId);

@@ -1,16 +1,16 @@
-import { PermissionFlagsBits } from '@discordjs/core';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import { api as API } from '../../../Client.js';
 import DataBase from '../../../DataBase.js';
 
 import cache from '../../cache.js';
 import error from '../../error.js';
 
+import type { DiscordAPIError } from '@discordjs/rest';
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandler from '../../requestHandler.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import resolvePartialEmoji from '../../resolvePartialEmoji.js';
-import type { DiscordAPIError } from '@discordjs/rest';
-import checkChannelPermissions from '../../checkChannelPermissions.js';
 
 /**
  * Adds a reaction to a message.

@@ -1,8 +1,11 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
+import resolvePartialEmoji from '../../resolvePartialEmoji.js';
 import { getAPI } from './addReaction.js';
 
 /**
@@ -15,44 +18,55 @@ import { getAPI } from './addReaction.js';
 export default async (msg: RMessage, emoji: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canDeleteAllreactionsOfEmoji(msg.channel.id, await getBotMemberFromGuild(msg.guild))) {
+ if (
+  !canDeleteAllReactionsOfEmoji(
+   msg.guild_id,
+   msg.channel_id,
+   (await getBotMemberFromGuild(msg.guild_id)).user_id,
+  )
+ ) {
   const e = requestHandlerError(
-   `Cannot delete all reactions of emoji ${emoji} in ${msg.guild.name} / ${msg.guild.id}`,
+   `Cannot delete all reactions of emoji ${emoji} in ${msg.guild_id}`,
    [PermissionFlagsBits.ManageMessages],
   );
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- const resolvedEmoji = Discord.resolvePartialEmoji(emoji) as Discord.PartialEmoji;
+ const resolvedEmoji = resolvePartialEmoji(emoji);
  if (!resolvedEmoji) {
   const e = requestHandlerError(`Invalid Emoji ${emoji}`, []);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- return (await getAPI(msg.guild)).channels
+ return (await getAPI(msg.guild_id)).channels
   .deleteAllMessageReactionsForEmoji(
-   msg.channel.id,
+   msg.channel_id,
    msg.id,
    resolvedEmoji.id
     ? `${resolvedEmoji.animated ? 'a:' : ''}${resolvedEmoji.name}:${resolvedEmoji.id}`
     : (resolvedEmoji.name as string),
   )
   .catch((e: DiscordAPIError) => {
-   error(msg.guild, e);
+   error(msg.guild_id, e);
    return e;
   });
 };
 
 /**
- * Checks if the user has the permission to delete all reactions of an emoji in a channel.
- * @param channelId - The ID of the channel.
- * @param me - The Discord GuildMember object representing the user.
- * @returns A boolean indicating whether the user
- * has the permission to delete all reactions of the emoji.
+ * Checks if the bot has permission to delete all reactions of a specific emoji from messages in a channel.
+ *
+ * @param guildId - The ID of the guild containing the channel
+ * @param channelId - The ID of the channel where reactions would be deleted
+ * @param userId - The ID of the user
+ * @returns A boolean indicating whether the bot has the required permissions to delete all reactions of an emoji
+ *
+ * @remarks
+ * This function requires the `ManageMessages` permission to delete all reactions of a specific emoji.
+ * The permission check is performed against the specified guild and channel context.
  */
-export const canDeleteAllreactionsOfEmoji = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);
+export const canDeleteAllReactionsOfEmoji = (guildId: string, channelId: string, userId: string) =>
+ checkChannelPermissions(guildId, channelId, ['ManageMessages'], userId);
