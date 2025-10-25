@@ -1,7 +1,9 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from './addReaction.js';
@@ -12,8 +14,14 @@ import { getAPI } from './addReaction.js';
  * @returns A promise that resolves with an array of parsed invite objects.
  */
 export default async (channel: RChannel) => {
- if (!canGetInvites(channel.id, await getBotMemberFromGuild(channel.guild))) {
-  const e = requestHandlerError(`Cannot get invites in ${channel.name} / ${channel.id}`, [
+ if (
+  !(await canGetInvites(
+   channel.guild_id,
+   channel.id,
+   (await getBotMemberFromGuild(channel.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot get invites in ${channel.id}`, [
    PermissionFlagsBits.ManageChannels,
   ]);
 
@@ -24,12 +32,8 @@ export default async (channel: RChannel) => {
  return (await getAPI(channel.guild_id)).channels
   .getInvites(channel.id)
   .then((invites) => {
-   const parsed = invites.map((i) => new Classes.Invite(channel.client, i));
-   parsed.forEach((p) => {
-    if (channel.guild.invites.cache.get(p.code)) return;
-    channel.guild.invites.cache.set(p.code, p);
-   });
-   return parsed;
+   invites.forEach((i) => cache.invites.set(i));
+   return invites.map((i) => cache.invites.apiToR(i));
   })
   .catch((e: DiscordAPIError) => {
    error(channel.guild_id, e);
@@ -39,9 +43,10 @@ export default async (channel: RChannel) => {
 
 /**
  * Checks if the user has permission to get invites in a guild-based channel.
+ * @param guildId - The ID of the guild.
  * @param channelId - The ID of the guild-based channel to check permissions in.
- * @param me - The guild member representing the user.
+ * @param userId - The user ID.
  * @returns A boolean indicating whether the user has permission to get invites.
  */
-export const canGetInvites = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);
+export const canGetInvites = (guildId: string, channelId: string, userId: string) =>
+ checkChannelPermissions(guildId, channelId, ['ManageChannels'], userId);

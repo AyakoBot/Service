@@ -1,5 +1,6 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { ChannelType, PermissionFlagsBits } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
@@ -12,32 +13,23 @@ import { canGetMessage } from './getMessage.js';
  * @param channel - The guild text-based channel to retrieve pinned messages from.
  * @returns A promise that resolves with an array of parsed messages.
  */
-export default async (
- channel:
-  | RChannel
-  | {
-     id: string;
-     name: string;
-     guild: RGuild;
-     type: ChannelType;
-     skip: true;
-     client: Discord.Client<true>;
-    },
-) => {
+export default async (channel: RChannel) => {
+ const isVoiceChannel = [ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(
+  channel.type,
+ );
+
  if (
-  'skip' in channel && channel.skip
-   ? false
-   : !canGetMessage(
-      channel as RChannel,
-      await getBotMemberFromGuild(channel.guild),
-     )
+  !(await canGetMessage(
+   channel.guild_id,
+   channel.id,
+   channel.type,
+   (await getBotMemberFromGuild(channel.guild_id)).user_id,
+  ))
  ) {
-  const e = requestHandlerError(`Cannot get pinned messages in ${channel.name} / ${channel.id}`, [
+  const e = requestHandlerError(`Cannot get pinned messages in ${channel.id}`, [
    PermissionFlagsBits.ViewChannel,
    PermissionFlagsBits.ReadMessageHistory,
-   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
-    ? [PermissionFlagsBits.Connect]
-    : []),
+   ...(isVoiceChannel ? [PermissionFlagsBits.Connect] : []),
   ]);
 
   error(channel.guild_id, e);
@@ -47,12 +39,9 @@ export default async (
  return (await getAPI(channel.guild_id)).channels
   .getPins(channel.id)
   .then((msgs) => {
-   const parsed = msgs.map((msg) => new Classes.Message(channel.client, msg));
-   parsed.forEach((p) => {
-    if ('skip' in channel ? true : channel.messages.cache.get(p.id)) return;
-    (channel as RChannel).messages.cache.set(p.id, p);
-   });
-   return parsed;
+   msgs.forEach((m) => cache.messages.set(m, channel.guild_id));
+   msgs.forEach((m) => cache.pins.set(m.id, channel.guild_id));
+   return msgs.map((m) => cache.messages.apiToR(m, channel.guild_id));
   })
   .catch((e: DiscordAPIError) => {
    error(channel.guild_id, e);

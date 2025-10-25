@@ -1,9 +1,15 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import {
+ ChannelType,
+ PermissionFlagsBits,
+ type RESTGetAPIChannelMessageReactionUsersQuery,
+} from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
+import resolvePartialEmoji from '../../resolvePartialEmoji.js';
 import { getAPI } from './addReaction.js';
 import { canGetMessage } from './getMessage.js';
 
@@ -17,37 +23,42 @@ import { canGetMessage } from './getMessage.js';
 export default async (
  msg: RMessage,
  emoji: string,
- query?: Discord.RESTGetAPIChannelMessageReactionUsersQuery,
+ query?: RESTGetAPIChannelMessageReactionUsersQuery,
 ) => {
- if (!canGetMessage(msg.channel, await getBotMemberFromGuild(msg.guild))) {
-  const e = requestHandlerError(
-   `Cannot get reactions of emoji ${emoji} in ${msg.guild.name} / ${msg.guild.id}`,
-   [
-    PermissionFlagsBits.ViewChannel,
-    PermissionFlagsBits.ReadMessageHistory,
-    ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(
-     msg.channel.type,
-    )
-     ? [PermissionFlagsBits.Connect]
-     : []),
-   ],
-  );
+ const channel = await cache.channels.get(msg.channel_id);
+ const isVoiceChannel =
+  channel && [ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type);
 
-  error(msg.guild, e);
+ if (
+  channel &&
+  !(await canGetMessage(
+   msg.guild_id,
+   msg.channel_id,
+   channel.type,
+   (await getBotMemberFromGuild(msg.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot get reactions of emoji ${emoji} in ${msg.channel_id}`, [
+   PermissionFlagsBits.ViewChannel,
+   PermissionFlagsBits.ReadMessageHistory,
+   ...(isVoiceChannel ? [PermissionFlagsBits.Connect] : []),
+  ]);
+
+  error(msg.guild_id, e);
   return e;
  }
 
- const resolvedEmoji = Discord.resolvePartialEmoji(emoji) as Discord.PartialEmoji;
+ const resolvedEmoji = resolvePartialEmoji(emoji);
  if (!resolvedEmoji) {
   const e = requestHandlerError(`Invalid Emoji ${emoji}`, []);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- return (await getAPI(msg.guild)).channels
+ return (await getAPI(msg.guild_id)).channels
   .getMessageReactions(
-   msg.channel.id,
+   msg.channel_id,
    msg.id,
    resolvedEmoji.id
     ? `${resolvedEmoji.animated ? 'a:' : ''}${resolvedEmoji.name}:${resolvedEmoji.id}`
@@ -55,47 +66,11 @@ export default async (
    query,
   )
   .then((users) => {
-   const parsed = users.map((u) => new Classes.User(msg.client, u));
-   parsed.forEach((p) => {
-    if (
-     msg.reactions.cache.get(resolvedEmoji.id ?? resolvedEmoji.name ?? '')?.users.cache.get(p.id)
-    ) {
-     return;
-    }
-
-    if (
-     (resolvedEmoji.id ?? resolvedEmoji.name) &&
-     !msg.reactions.cache.get(resolvedEmoji.id ?? resolvedEmoji.name ?? '')
-    ) {
-     msg.reactions.cache.set(
-      resolvedEmoji.id ?? resolvedEmoji.name ?? '',
-      new Classes.MessageReaction(
-       msg.client,
-       {
-        count: parsed.length,
-        emoji: {
-         id: resolvedEmoji.id ?? null,
-         name: resolvedEmoji.name ?? null,
-         animated: resolvedEmoji.animated,
-        },
-        me: false,
-        me_burst: false,
-        burst_colors: [],
-        count_details: {
-         burst: 0,
-         normal: parsed.length,
-        },
-       },
-       msg,
-      ),
-     );
-    }
-
-    msg.reactions.cache.get(resolvedEmoji.id ?? resolvedEmoji.name ?? '')?.users.cache.set(p.id, p);
-   });
+   users.forEach((u) => cache.users.set(u));
+   return users.map((u) => cache.users.apiToR(u));
   })
   .catch((e: DiscordAPIError) => {
-   error(msg.guild, e);
+   error(msg.guild_id, e);
    return e;
   });
 };

@@ -1,8 +1,11 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
+import resolvePartialEmoji from '../../resolvePartialEmoji.js';
 import { getAPI } from './addReaction.js';
 
 /**
@@ -15,27 +18,32 @@ import { getAPI } from './addReaction.js';
 export default async (msg: RMessage, userId: string, emoji: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canDeleteUserReaction(msg.channel.id, await getBotMemberFromGuild(msg.guild))) {
-  const e = requestHandlerError(
-   `Cannot delete user reaction in ${msg.guild.name} / ${msg.guild.id}`,
-   [PermissionFlagsBits.ManageMessages],
-  );
+ if (
+  !(await canDeleteUserReaction(
+   msg.guild_id,
+   msg.channel_id,
+   (await getBotMemberFromGuild(msg.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot delete user reaction in ${msg.channel_id}`, [
+   PermissionFlagsBits.ManageMessages,
+  ]);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- const resolvedEmoji = Discord.resolvePartialEmoji(emoji) as Discord.PartialEmoji;
+ const resolvedEmoji = resolvePartialEmoji(emoji);
  if (!resolvedEmoji) {
   const e = requestHandlerError(`Invalid Emoji ${emoji}`, []);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- return (await getAPI(msg.guild)).channels
+ return (await getAPI(msg.guild_id)).channels
   .deleteUserMessageReaction(
-   msg.channel.id,
+   msg.channel_id,
    msg.id,
    resolvedEmoji.id
     ? `${resolvedEmoji.animated ? 'a:' : ''}${resolvedEmoji.name}:${resolvedEmoji.id}`
@@ -43,16 +51,17 @@ export default async (msg: RMessage, userId: string, emoji: string) => {
    userId,
   )
   .catch((e: DiscordAPIError) => {
-   error(msg.guild, e);
+   error(msg.guild_id, e);
    return e;
   });
 };
 
 /**
  * Checks if the user has permission to delete a user's reaction in a channel.
+ * @param guildId - The ID of the guild.
  * @param channelId - The ID of the channel.
- * @param me - The Discord GuildMember object representing the user.
+ * @param userId - The user ID.
  * @returns True if the user has permission to manage messages in the channel, false otherwise.
  */
-export const canDeleteUserReaction = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageMessages);
+export const canDeleteUserReaction = (guildId: string, channelId: string, userId: string) =>
+ checkChannelPermissions(guildId, channelId, ['ManageMessages'], userId);

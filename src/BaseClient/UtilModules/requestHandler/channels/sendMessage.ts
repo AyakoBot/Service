@@ -1,72 +1,95 @@
-import * as Discord from 'discord.js';
-import { type UsualMessagePayload } from '../../../../Typings/Typings.js';
-import * as Classes from '../../../Other/classes.js';
-import error, { sendDebugMessage } from '../../error.js';
+import type { DiscordAPIError, RawFile } from '@discordjs/rest';
+import {
+ ButtonStyle,
+ ChannelType,
+ ComponentType,
+ PermissionFlagsBits,
+ type APIEmbed,
+ type RESTPostAPIChannelMessageJSONBody,
+} from 'discord-api-types/v10.js';
+import { cache } from 'src/BaseClient/Client.js';
 
+import { AllThreadGuildChannelTypes } from '../../../../Typings/Channel.js';
+import { type UsualMessagePayload } from '../../../../Typings/Typings.js';
+
+import checkChannelPermissions from '../../checkChannelPermissions.js';
+import error, { sendDebugMessage } from '../../error.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
+import txtFileWriter from '../../txtFileWriter.js';
+import { resolveFile } from '../../util.js';
+
 import { getAPI } from './addReaction.js';
 
 /**
- * Sends a message to a Discord channel.
- * @param guild The guild where the channel is located.
- * @param channelId The ID of the channel where the message will be sent.
- * @param payload The message content and options.
- * @param client The Discord client instance.
- * @returns A Promise that resolves to a new Message object if the message was sent successfully,
- * or rejects with a DiscordAPIError if an error occurred.
+ * Sends a message to a Discord channel with optional file attachments.
+ *
+ * @param guildId - The ID of the guild where the channel is located. Can be null/undefined for DM channels.
+ * @param channelId - The ID of the channel to send the message to.
+ * @param payload - The message payload containing content, embeds, components, and optional files.
+ * @param payload.files - Optional array of file attachments to include with the message.
+ *
+ * @returns A Promise that resolves to:
+ * - `RMessage` - The successfully sent message object
+ * - `Error` - A generic error (e.g., when silent mode is enabled or no payload provided)
+ * - `DiscordAPIError` - A Discord API specific error
+ *
+ * @remarks
+ * - Returns an error immediately if the application is running in silent mode (--silent flag)
+ * - Validates bot permissions before attempting to send the message
+ * - Processes file attachments by resolving file data and assigning unique names
+ * - Automatically sets `fail_if_not_exists` to false for message references
+ * - Logs debug information for failed requests (except for user-specific errors)
+ * - Caches successful message responses
  */
-function fn<T extends RGuild | undefined | null>(
- guild: T,
+function fn<T extends string | undefined | null>(
+ guildId: T,
  channelId: string,
- payload: Discord.RESTPostAPIChannelMessageJSONBody & {
-  files?: (Discord.RawFile | Discord.AttachmentPayload)[];
+ payload: RESTPostAPIChannelMessageJSONBody & {
+  files?: RawFile[];
  },
- client: Discord.Client<true>,
-): Promise<
- RMessage<T extends RGuild ? true : false> | Error | DiscordAPIError
->;
+): Promise<RMessage | Error | DiscordAPIError>;
 function fn(
- guild: RGuild,
+ guildId: string,
  channelId: string,
- payload: Discord.RESTPostAPIChannelMessageJSONBody & {
-  files?: (Discord.RawFile | Discord.AttachmentPayload)[];
+ payload: RESTPostAPIChannelMessageJSONBody & {
+  files?: RawFile[];
  },
- client?: undefined,
 ): Promise<RMessage | Error | DiscordAPIError>;
 async function fn(
- guild: RGuild | undefined | null,
+ guildId: string | undefined | null,
  channelId: string,
- payload: Discord.RESTPostAPIChannelMessageJSONBody & {
-  files?: (Discord.RawFile | Discord.AttachmentPayload)[];
+ payload: RESTPostAPIChannelMessageJSONBody & {
+  files?: RawFile[];
  },
- client?: Discord.Client<true>,
 ): Promise<RMessage | Error | DiscordAPIError> {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
  if (!payload || String(payload) === 'undefined') return new Error('No payload provided');
 
  const debugStack = new Error().stack;
- const c = (guild?.client ?? client)!;
 
  const files = payload.files
   ? ([
      ...(
       await Promise.all(
-       payload.files
-        .filter((f): f is Discord.AttachmentPayload => 'attachment' in f)
-        .map((f) => c.util.util.resolveFile(f.attachment)),
+       payload.files.filter((f): f is RawFile => 'attachment' in f).map((f) => resolveFile(f.data)),
       )
      ).map((f, i) => ({
       ...f,
       name: String(Date.now() + i),
      })),
-     ...payload.files.filter((f): f is Discord.RawFile => !('attachment' in f)),
-    ] as Discord.RawFile[])
+     ...payload.files.filter((f): f is RawFile => !('attachment' in f)),
+    ] as RawFile[])
   : undefined;
 
  if (
-  guild &&
-  !canSendMessage(channelId, { ...payload, files }, await getBotMemberFromGuild(guild))
+  guildId &&
+  !canSendMessage(
+   guildId,
+   channelId,
+   { ...payload, files },
+   (await getBotMemberFromGuild(guildId)).user_id,
+  )
  ) {
   const e = requestHandlerError(`Cannot send message`, [
    PermissionFlagsBits.ViewChannel,
@@ -76,11 +99,11 @@ async function fn(
    PermissionFlagsBits.AttachFiles,
   ]);
 
-  error(guild, e, false);
+  error(guildId, e, false);
   return e;
  }
 
- return (await getAPI(guild)).channels
+ return (await getAPI(guildId)).channels
   .createMessage(channelId, {
    ...payload,
    files,
@@ -89,17 +112,15 @@ async function fn(
     ? { ...payload.message_reference, fail_if_not_exists: false }
     : undefined,
   })
-  .then((m) => new Classes.Message(c, m))
+  .then((m) => cache.messages.apiToR(m, guildId || '@me'))
   .catch(async (e: DiscordAPIError) => {
    if (!e.message.includes('to this user')) {
     sendDebugMessage({
-     content: `${guild?.id} - ${channelId} - ${guild ? (await getBotMemberFromGuild(guild)).id : '-'}\n${e.message}\n${debugStack}`,
-     files: [
-      c.util.txtFileWriter(JSON.stringify({ ...payload, files: payload.files?.length }, null, 2)),
-     ],
+     content: `${guildId} - ${channelId} - ${guildId ? (await getBotMemberFromGuild(guildId)).user_id : '-'}\n${e.message}\n${debugStack}`,
+     files: [txtFileWriter(JSON.stringify({ ...payload, files: payload.files?.length }, null, 2))],
     });
 
-    error(guild, new Error((e as DiscordAPIError).message));
+    error(guildId, new Error((e as DiscordAPIError).message));
    }
    return e;
   });
@@ -108,53 +129,67 @@ async function fn(
 export default fn;
 
 /**
- * Determines whether the user can send a message in a channel.
- * @param channelId - The ID of the channel in which the message will be sent.
- * @param payload - The message payload, including optional files.
- * @param me - The guild member representing the user.
- * @returns A boolean indicating whether the user can send the message.
+ * Checks if a user has permission to send a message in a specific channel with the given payload.
+ *
+ * @param guildId - The ID of the guild where the channel is located
+ * @param channelId - The ID of the channel to send the message to
+ * @param payload - The message payload containing message data and optional files
+ * @param userId - The ID of the user attempting to send the message
+ *
+ * @returns A promise that resolves to `true` if the user can send the message, `false` otherwise.
+ *          May modify the payload by removing TTS or message reference if the user lacks specific permissions.
+ *
+ * @remarks
+ * This function performs multiple permission checks including:
+ * - Channel viewing permissions
+ * - Message sending permissions (regular channels vs threads)
+ * - TTS message permissions (removes TTS flag if lacking permission)
+ * - Message history reading for replies (removes message reference if lacking permission)
+ * - File attachment permissions
+ * - Embed link permissions
+ * - User timeout/communication disabled status
  */
-export const canSendMessage = (
+export const canSendMessage = async (
+ guildId: string,
  channelId: string,
- payload: Discord.RESTPostAPIChannelMessageJSONBody & {
-  files?: Discord.RawFile[];
+ payload: RESTPostAPIChannelMessageJSONBody & {
+  files?: RawFile[];
  },
- me: RMember,
+ userId: string,
 ) => {
  if (!channelId) return true;
- const channel = me.guild.channels.cache.get(channelId);
- if (!channel) return true;
 
  switch (true) {
   case payload.message_reference &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory, true):
+   !(await checkChannelPermissions(guildId, channelId, ['ReadMessageHistory'], userId)):
    return false;
-  case !me.permissionsIn(channelId).has(PermissionFlagsBits.ViewChannel, true):
+  case !(await checkChannelPermissions(guildId, channelId, ['ViewChannel'], userId)):
    return false;
-  case Number(me.communicationDisabledUntilTimestamp) > Date.now():
+  case Number((await cache.members.get(guildId, userId))?.communication_disabled_until) >
+   Date.now():
    return false;
-  case channel &&
-   !channel?.isThread() &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.SendMessages, true):
-  case channel &&
-   channel?.isThread() &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.SendMessagesInThreads, true):
+  case !AllThreadGuildChannelTypes.includes(
+   (await cache.channels.get(channelId))?.type || ChannelType.GuildText,
+  ) && !(await checkChannelPermissions(guildId, channelId, ['SendMessages'], userId)):
+  case AllThreadGuildChannelTypes.includes(
+   (await cache.channels.get(channelId))?.type || ChannelType.GuildText,
+  ) && !(await checkChannelPermissions(guildId, channelId, ['SendMessagesInThreads'], userId)):
    return false;
   case payload.tts &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.SendTTSMessages, true): {
+   !(await checkChannelPermissions(guildId, channelId, ['SendTTSMessages'], userId)): {
    payload.tts = false;
    return true;
   }
   case payload.message_reference &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory, true): {
+   !(await checkChannelPermissions(guildId, channelId, ['ReadMessageHistory'], userId)): {
    payload.message_reference = undefined;
    return true;
   }
   case payload.files?.length &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.AttachFiles, true):
+   !(await checkChannelPermissions(guildId, channelId, ['AttachFiles'], userId)):
    return false;
   case payload.embeds?.length &&
-   !me.permissionsIn(channelId).has(PermissionFlagsBits.EmbedLinks, true):
+   !(await checkChannelPermissions(guildId, channelId, ['EmbedLinks'], userId)):
    return false;
   default:
    return true;
@@ -286,7 +321,7 @@ export const isValidPayload = (payload: UsualMessagePayload) => {
  * @param embeds - An array of Discord API embeds.
  * @returns The total character length of all strings in the embeds.
  */
-export const getEmbedCharLens = (embeds: Discord.APIEmbed[]) => {
+export const getEmbedCharLens = (embeds: APIEmbed[]) => {
  let total = 0;
  embeds.forEach((embed) => {
   Object.values(embed).forEach((data) => {

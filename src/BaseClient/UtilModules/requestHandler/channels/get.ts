@@ -1,32 +1,41 @@
-import { ChannelType } from '@discordjs/core';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { ChannelType, type APIGuildChannel, type APIThreadChannel } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 import { getAPI } from './addReaction.js';
-import type { DiscordAPIError } from '@discordjs/rest';
-import { cache } from '../../../../BaseClient/Client.js';
-
-type Response = Promise<RThread | RChannel | DiscordAPIError>;
+import type { RChannelTypes } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/channel.js';
 
 /**
  * Retrieves a channel from the cache or the Discord API.
- * @param guildID The guildId that the channel belongs to.
+ * @param guildId The guildId that the channel belongs to.
  * @param id The ID of the channel to retrieve.
  * @returns A Promise that resolves with the retrieved channel.
  */
-export default async (guildId: string | null | undefined, id: string): Response =>
- (await cache.channels.get(id).then((c) => (!guildId || c.guild_id === guildId ? c : undefined))) ??
- (await getAPI(guildId)).channels
+export default async (guildId: string | null | undefined, id: string) => {
+ const cached = await cache.channels.get(id);
+ if (cached && (!guildId || cached.guild_id === guildId)) return cached;
+
+ const cachedThread = await cache.threads.get(id);
+ if (cachedThread && (!guildId || cachedThread.guild_id === guildId)) return cachedThread;
+
+ return (await getAPI(guildId)).channels
   .get(id)
   .then((channel) => {
-   const parsed = Classes.Channel(c, channel, guild);
+   const isThread = [
+    ChannelType.PrivateThread,
+    ChannelType.PublicThread,
+    ChannelType.AnnouncementThread,
+   ].includes(channel.type);
 
-   if (guild?.channels.cache.get(parsed.id)) return parsed;
-   if (![ChannelType.DM, ChannelType.GroupDM].includes(parsed.type)) {
-    guild?.channels.cache.set(parsed.id, parsed as RChannel);
-   }
+   if (isThread) cache.threads.set(channel as APIThreadChannel);
+   else cache.channels.set(channel as APIGuildChannel<RChannelTypes>);
 
-   return parsed;
+   return isThread
+    ? cache.threads.apiToR(channel as APIThreadChannel)
+    : cache.channels.apiToR(channel as APIGuildChannel<RChannelTypes>);
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   if (guildId) error(guildId, e);
    return e;
   });
+};

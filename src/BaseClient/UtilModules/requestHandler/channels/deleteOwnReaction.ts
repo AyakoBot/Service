@@ -1,6 +1,7 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import requestHandlerError from '../../requestHandlerError.js';
+import resolvePartialEmoji from '../../resolvePartialEmoji.js';
 import { getAPI } from './addReaction.js';
 
 /**
@@ -12,24 +13,24 @@ import { getAPI } from './addReaction.js';
 export default async (msg: RMessage, emoji: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- const resolvedEmoji = Discord.resolvePartialEmoji(emoji) as Discord.PartialEmoji;
+ const resolvedEmoji = resolvePartialEmoji(emoji);
  if (!resolvedEmoji) {
   const e = requestHandlerError(`Invalid Emoji ${emoji}`, []);
 
-  error(msg.guild, e);
+  error(msg.guild_id, e);
   return e;
  }
 
- return (await getAPI(msg.guild)).channels
+ return (await getAPI(msg.guild_id)).channels
   .deleteOwnMessageReaction(
-   msg.channel.id,
+   msg.channel_id,
    msg.id,
    resolvedEmoji.id
     ? `${resolvedEmoji.animated ? 'a:' : ''}${resolvedEmoji.name}:${resolvedEmoji.id}`
     : (resolvedEmoji.name as string),
   )
   .catch((e: DiscordAPIError) => {
-   error(msg.guild, e);
+   error(msg.guild_id, e);
    return e;
   });
 };

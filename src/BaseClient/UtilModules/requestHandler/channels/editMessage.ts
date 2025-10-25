@@ -1,30 +1,30 @@
-import * as DiscordCore from '@discordjs/core';
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPIChannelMessageJSONBody } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 import { getAPI } from './addReaction.js';
 
 /**
  * Edits a message in a channel.
- * @param guild The guild where the channel belongs.
+ * @param guildId The ID of the guild where the channel belongs.
  * @param channelId The ID of the channel where the message is located.
  * @param msgId The ID of the message to edit.
  * @param payload The new message content.
  * @returns A Promise that resolves with the edited message or rejects with a DiscordAPIError.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  channelId: string,
  msgId: string,
- payload: Parameters<DiscordCore.ChannelsAPI['editMessage']>[2],
+ payload: RESTPatchAPIChannelMessageJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return (await getAPI(guild)).channels
+ return (await getAPI(guildId)).channels
   .editMessage(channelId, msgId, payload)
-  .then((m) => new Classes.Message(guild.client, m))
+  .then((m) => cache.messages.apiToR(m, guildId))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };

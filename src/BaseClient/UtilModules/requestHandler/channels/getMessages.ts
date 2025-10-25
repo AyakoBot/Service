@@ -1,5 +1,10 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import {
+ ChannelType,
+ PermissionFlagsBits,
+ type RESTGetAPIChannelMessagesQuery,
+} from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
@@ -13,17 +18,23 @@ import { canGetMessage } from './getMessage.js';
  * @param query - The query parameters to include in the request.
  * @returns A promise that resolves with an array of parsed messages.
  */
-export default async (
- channel: RChannel,
- query?: Discord.RESTGetAPIChannelMessagesQuery,
-) => {
- if (!canGetMessage(channel, await getBotMemberFromGuild(channel.guild))) {
-  const e = requestHandlerError(`Cannot get messages in ${channel.name} / ${channel.id}`, [
+export default async (channel: RChannel, query?: RESTGetAPIChannelMessagesQuery) => {
+ const isVoiceChannel = [ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(
+  channel.type,
+ );
+
+ if (
+  !(await canGetMessage(
+   channel.guild_id,
+   channel.id,
+   channel.type,
+   (await getBotMemberFromGuild(channel.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot get messages in ${channel.id}`, [
    PermissionFlagsBits.ViewChannel,
    PermissionFlagsBits.ReadMessageHistory,
-   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
-    ? [PermissionFlagsBits.Connect]
-    : []),
+   ...(isVoiceChannel ? [PermissionFlagsBits.Connect] : []),
   ]);
 
   error(channel.guild_id, e);
@@ -33,12 +44,8 @@ export default async (
  return (await getAPI(channel.guild_id)).channels
   .getMessages(channel.id, query)
   .then((msgs) => {
-   const parsed = msgs.map((m) => new Classes.Message(channel.client, m));
-   parsed.forEach((p) => {
-    if (channel.messages.cache.get(p.id)) return;
-    channel.messages.cache.set(p.id, p);
-   });
-   return parsed;
+   msgs.forEach((m) => cache.messages.set(m, channel.guild_id));
+   return msgs.map((m) => cache.messages.apiToR(m, channel.guild_id));
   })
   .catch((e: DiscordAPIError) => {
    error(channel.guild_id, e);

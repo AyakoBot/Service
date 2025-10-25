@@ -1,7 +1,13 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import {
+ PermissionFlagsBits,
+ type APIThreadChannel,
+ type RESTGetAPIChannelThreadsArchivedQuery,
+} from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from './addReaction.js';
@@ -12,15 +18,17 @@ import { getAPI } from './addReaction.js';
  * @param query - The query parameters for the request.
  * @returns A promise that resolves with an array of parsed thread channels.
  */
-export default async (
- channel: RChannel | RChannel | Discord.ForumChannel,
- query: Discord.RESTGetAPIChannelThreadsArchivedQuery,
-) => {
- if (!canGetjoinedPrivateArchivedThreads(channel.id, await getBotMemberFromGuild(channel.guild))) {
-  const e = requestHandlerError(
-   `Cannot get joined private archived threads in ${channel.name} / ${channel.id}`,
-   [PermissionFlagsBits.ReadMessageHistory],
-  );
+export default async (channel: RChannel, query: RESTGetAPIChannelThreadsArchivedQuery) => {
+ if (
+  !(await canGetjoinedPrivateArchivedThreads(
+   channel.guild_id,
+   channel.id,
+   (await getBotMemberFromGuild(channel.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot get joined private archived threads in ${channel.id}`, [
+   PermissionFlagsBits.ReadMessageHistory,
+  ]);
 
   error(channel.guild_id, e);
   return e;
@@ -29,15 +37,9 @@ export default async (
  return (await getAPI(channel.guild_id)).channels
   .getJoinedPrivateArchivedThreads(channel.id, query)
   .then((res) => {
-   const parsed = res.threads.map((t) => Classes.Channel<10>(channel.client, t, channel.guild));
-   parsed.forEach((p) => {
-    if (channel.threads.cache.get(p.id)) return;
-    channel.threads.cache.set(
-     p.id,
-     p as Discord.PublicThreadChannel<false> & Discord.ForumThreadChannel,
-    );
-   });
-   return parsed;
+   res.threads.forEach((t) => cache.threads.set(t as APIThreadChannel));
+   res.members.forEach((m) => cache.threadMembers.set(m, channel.guild_id));
+   return res.threads.map((t) => cache.threads.apiToR(t as APIThreadChannel));
   })
   .catch((e: DiscordAPIError) => {
    error(channel.guild_id, e);
@@ -47,9 +49,13 @@ export default async (
 
 /**
  * Checks if the user has permission to get joined private archived threads.
+ * @param guildId - The ID of the guild.
  * @param channelId - The ID of the guild-based channel to check permissions in.
- * @param me - The guild member representing the user.
+ * @param userId - The user ID.
  * @returns A boolean indicating whether the user has the required permissions permissions.
  */
-export const canGetjoinedPrivateArchivedThreads = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ReadMessageHistory);
+export const canGetjoinedPrivateArchivedThreads = (
+ guildId: string,
+ channelId: string,
+ userId: string,
+) => checkChannelPermissions(guildId, channelId, ['ReadMessageHistory'], userId);

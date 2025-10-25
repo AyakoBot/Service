@@ -1,6 +1,8 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from './addReaction.js';
@@ -16,11 +18,16 @@ import { getAPI } from './addReaction.js';
 export default async (channel: RChannel, overwriteId: string, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canDeletePermissionOverwrite(channel.id, await getBotMemberFromGuild(channel.guild))) {
-  const e = requestHandlerError(
-   `Cannot delete permission overwrite in ${channel.name} / ${channel.id}`,
-   [PermissionFlagsBits.ManageRoles],
-  );
+ if (
+  !(await canDeletePermissionOverwrite(
+   channel.guild_id,
+   channel.id,
+   (await getBotMemberFromGuild(channel.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot delete permission overwrite in ${channel.id}`, [
+   PermissionFlagsBits.ManageRoles,
+  ]);
 
   error(channel.guild_id, e);
   return e;
@@ -35,10 +42,11 @@ export default async (channel: RChannel, overwriteId: string, reason?: string) =
 };
 /**
  * Checks if the user has the permission to delete a permission overwrite in a channel.
+ * @param guildId - The ID of the guild.
  * @param channelId - The ID of the guild-based channel to check.
- * @param me - The guild member representing the user.
+ * @param userId - The user ID.
  * @returns A boolean indicating whether the user has the permission to
  * delete the permission overwrite.
  */
-export const canDeletePermissionOverwrite = (channelId: string, me: RMember) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageRoles);
+export const canDeletePermissionOverwrite = (guildId: string, channelId: string, userId: string) =>
+ checkChannelPermissions(guildId, channelId, ['ManageRoles'], userId);

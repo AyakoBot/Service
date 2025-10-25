@@ -1,4 +1,5 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { ChannelType, PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
@@ -15,13 +16,22 @@ import { canGetMessage } from './getMessage.js';
 export default async (channel: RChannel) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canGetMessage(channel, await getBotMemberFromGuild(channel.guild))) {
-  const e = requestHandlerError(`Cannot show typing indicator in ${channel.name} / ${channel.id}`, [
+ const isVoiceChannel = [ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(
+  channel.type,
+ );
+
+ if (
+  !(await canGetMessage(
+   channel.guild_id,
+   channel.id,
+   channel.type,
+   (await getBotMemberFromGuild(channel.guild_id)).user_id,
+  ))
+ ) {
+  const e = requestHandlerError(`Cannot show typing indicator in ${channel.id}`, [
    PermissionFlagsBits.ViewChannel,
    PermissionFlagsBits.ReadMessageHistory,
-   ...([ChannelType.GuildVoice, ChannelType.GuildStageVoice].includes(channel.type)
-    ? [PermissionFlagsBits.Connect]
-    : []),
+   ...(isVoiceChannel ? [PermissionFlagsBits.Connect] : []),
   ]);
 
   error(channel.guild_id, e);
@@ -32,5 +42,6 @@ export default async (channel: RChannel) => {
   .showTyping(channel.id)
   .catch((e: DiscordAPIError) => {
    error(channel.guild_id, e);
+   return e;
   });
 };

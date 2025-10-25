@@ -1,5 +1,4 @@
 import * as DiscordCore from '@discordjs/core';
-import * as Discord from 'discord.js';
 
 import sendMessage from './sendMessage.js';
 
@@ -15,18 +14,13 @@ export default async (
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return sendMessage(
-  msg.guild,
-  msg.channelId,
-  {
-   ...payload,
-   message_reference: {
-    message_id: msg.id,
-    channel_id: msg.channelId,
-    guild_id: msg.guildId,
-    fail_if_not_exists: false,
-   },
+ return sendMessage(msg.guild_id, msg.channel_id, {
+  ...payload,
+  message_reference: {
+   message_id: msg.id,
+   channel_id: msg.channel_id,
+   guild_id: msg.guild_id,
+   fail_if_not_exists: false,
   },
-  msg.client,
- );
+ });
 };
