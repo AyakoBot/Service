@@ -1,37 +1,33 @@
-import * as Discord from 'discord.js';
-import { api } from '../../../Client.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPutAPIApplicationCommandsJSONBody } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
-import cache from '../../cache.js';
-import * as Classes from '../../../Other/classes.js';
 import error from '../../error.js';
+import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Overwrites all global application commands for a guild.
- * @param guild - The guild to overwrite the commands for.
+ * @param guildId - The guild ID to overwrite the commands for.
  * @param body - The JSON body containing the new commands.
  * @returns A promise that resolves with an array of the newly created application commands.
  */
-export default async (
- guild: RGuild,
- body: Discord.RESTPutAPIApplicationCommandsJSONBody,
-) => {
+export default async (guildId: string, body: RESTPutAPIApplicationCommandsJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return (cache.apis.get(guild.id) ?? API).applicationCommands
-  .bulkOverwriteGlobalCommands(await getBotIdFromGuild(guild), body)
+ const botId = await getBotIdFromGuild(guildId);
+
+ return (await getAPI(guildId)).applicationCommands
+  .bulkOverwriteGlobalCommands(botId, body)
   .then((cmds) => {
-   const parsed = cmds.map((cmd) => new Classes.ApplicationCommand(guild.client, cmd));
-   cache.commands.cache.set(guild.id, new Map());
+   cache.commands
+    .getAll(botId)
+    .then((cmds) => cache.commands.del(...cmds.map((c) => c.id)))
+    .then(() => cmds.map((c) => cache.commands.set(c)));
 
-   parsed.forEach((p) => {
-    cache.commands.cache.get(guild.id)?.set(p.id, p);
-   });
-
-   parsed.forEach((p) => guild.client.application.commands.cache.set(p.id, p));
-   return parsed;
+   return cmds.map((cmd) => cache.commands.apiToR(cmd));
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };

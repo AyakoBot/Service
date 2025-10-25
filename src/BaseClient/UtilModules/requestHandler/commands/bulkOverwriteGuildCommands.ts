@@ -1,90 +1,91 @@
-import * as Discord from 'discord.js';
-import { api } from '../../../Client.js';
-import * as Classes from '../../../Other/classes.js';
-import cache from '../../cache.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPutAPIApplicationGuildCommandsJSONBody } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
+import botCache from '../../cache.js';
+import DataBase from '../../../DataBase.js';
 import error from '../../error.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import { makeRequestHandler } from '../../requestHandler.js';
 import requestHandlerError from '../../requestHandlerError.js';
-import { canGetCommands } from './getGlobalCommand.js';
+import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Overwrites all existing global commands for this application in this guild.
- * @param guild - The guild to overwrite the commands for.
+ * @param guildId - The guild ID to overwrite the commands for.
  * @param body - The commands to overwrite.
+ * @param mainId - The main bot ID from environment.
  * @returns A promise that resolves with an array of the newly created application commands.
  */
 export default async (
- guild: RGuild,
- body: Discord.RESTPutAPIApplicationGuildCommandsJSONBody,
+ guildId: string,
+ body: RESTPutAPIApplicationGuildCommandsJSONBody,
+ mainId?: string,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
- if (!canGetCommands(guild)) {
+
+ const botId = await getBotIdFromGuild(guildId);
+ if (!botId) {
   const e = requestHandlerError(
    `Cannot get own Commands. Please make sure you don't have more than 50 Bots in your Server`,
    [],
   );
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
  if (
-  (await getBotIdFromGuild(guild)) !== guild.client.user.id &&
-  !cache.apis.get(guild.id) &&
-  !(await makeRequestHandler(guild))
+  mainId &&
+  botId !== mainId &&
+  !botCache.apis.get(guildId) &&
+  !(await makeRequestHandler(guildId))
  ) {
   return new Error('Failed to set up API');
  }
 
- return (cache.apis.get(guild.id) ?? API).applicationCommands
-  .bulkOverwriteGuildCommands(await getBotIdFromGuild(guild), guild.id, body)
+ return (await getAPI(guildId)).applicationCommands
+  .bulkOverwriteGuildCommands(botId, guildId, body)
   .then((cmds) => {
-   const parsed = cmds.map(
-    (cmd) => new Classes.ApplicationCommand(guild.client, cmd, guild, guild.id),
-   );
-   cache.commands.cache.set(guild.id, new Map());
-   guild.commands.cache.clear();
+   cache.guildCommands
+    .getAll(guildId, botId)
+    .then((cmds) => cache.guildCommands.del(...cmds.map((c) => c.id)))
+    .then(() => cmds.map((c) => cache.guildCommands.set({ ...c, guild_id: guildId })));
 
-   parsed.forEach((p) => {
-    cache.commands.cache.get(guild.id)?.set(p.id, p);
-
-    if (cache.apis.get(guild.id)) return;
-    guild.commands.cache.set(p.id, p);
-   });
-
-   return parsed;
+   return cmds.map((cmd) => cache.guildCommands.apiToR({ ...cmd, guild_id: guildId }));
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
-   setHasMissingScopes(e.message, guild);
+   error(guildId, e);
+   if (mainId) setHasMissingScopes(e.message, guildId, botId, mainId);
    return e;
   });
 };
 
 /**
  * Checks if a guild has missing scopes for commands.
- * @param guild - The Discord guild to check.
+ * @param guildId - The guild ID to check.
  * @returns A promise that resolves to the guild with missing scopes,
  * or undefined if no guild is found.
  */
-export const hasMissingScopes = (guild: RGuild) =>
- guild.client.util.DataBase.noCommandsGuilds.findUnique({
-  where: { guildId: guild.id },
+export const hasMissingScopes = (guildId: string) =>
+ DataBase.noCommandsGuilds.findUnique({
+  where: { guildId },
  });
 
 /**
  * Sets the "hasMissingScopes" flag for a guild if the error message includes "Missing Access".
  * @param err - The error message.
- * @param guild - The Discord guild.
+ * @param guildId - The guild ID.
+ * @param botId - The bot ID.
+ * @param mainId - The main bot ID.
  */
-export const setHasMissingScopes = async (err: string, guild: RGuild) => {
+export const setHasMissingScopes = async (
+ err: string,
+ guildId: string,
+ botId: string,
+ mainId: string,
+) => {
  if (!err.includes('Missing Access')) return;
+ if (botId !== mainId) return;
 
- const botId = await guild.client.util.getBotIdFromGuild(guild);
- if (botId !== process.env.mainId) return;
-
- guild.client.util.DataBase.noCommandsGuilds
-  .upsert({ where: { guildId: guild.id }, create: { guildId: guild.id }, update: {} })
-  .then();
+ DataBase.noCommandsGuilds.upsert({ where: { guildId }, create: { guildId }, update: {} }).then();
 };

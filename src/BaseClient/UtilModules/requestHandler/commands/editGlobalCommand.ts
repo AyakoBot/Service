@@ -1,37 +1,34 @@
-import * as Discord from 'discord.js';
-import { api } from '../../../Client.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPIApplicationCommandJSONBody } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
-import cache from '../../cache.js';
-import * as Classes from '../../../Other/classes.js';
 import error from '../../error.js';
+import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Edits a global command for the given guild.
- * @param guild - The guild where the command is located.
+ * @param guildId - The guild ID where the command is located.
  * @param commandId - The ID of the command to edit.
  * @param body - The new command data to update.
  * @returns A Promise that resolves with the updated command.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  commandId: string,
- body: Discord.RESTPatchAPIApplicationCommandJSONBody,
+ body: RESTPatchAPIApplicationCommandJSONBody,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return (cache.apis.get(guild.id) ?? API).applicationCommands
-  .editGlobalCommand(await getBotIdFromGuild(guild), commandId, body)
-  .then((cmd) => {
-   const parsed = new Classes.ApplicationCommand(guild.client, cmd);
-   if (!cache.commands.cache.get(guild.id)) cache.commands.cache.set(guild.id, new Map());
-   cache.commands.cache.get(guild.id)?.set(parsed.id, parsed);
+ const botId = await getBotIdFromGuild(guildId);
 
-   if (cache.apis.get(guild.id)) return parsed;
-   guild.client.application.commands.cache.set(parsed.id, parsed);
-   return parsed;
+ return (await getAPI(guildId)).applicationCommands
+  .editGlobalCommand(botId, commandId, body)
+  .then((cmd) => {
+   cache.commands.set(cmd);
+   return cache.commands.apiToR(cmd);
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };

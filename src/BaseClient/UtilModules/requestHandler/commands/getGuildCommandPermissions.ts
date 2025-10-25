@@ -1,49 +1,52 @@
-import * as Discord from 'discord.js';
-import { api } from '../../../Client.js';
-import cache from '../../cache.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
+import botCache from '../../cache.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { canGetCommands } from './getGlobalCommand.js';
 import { hasMissingScopes, setHasMissingScopes } from './bulkOverwriteGuildCommands.js';
 import { makeRequestHandler } from '../../requestHandler.js';
+import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Retrieves the permissions for a specific command in a guild.
- * @param guild - The guild where the command is located.
+ * @param guildId - The guild ID where the command is located.
  * @param commandId - The ID of the command to retrieve permissions for.
  * @returns A promise that resolves with the command permissions, or rejects with a DiscordAPIError.
  */
-export default async (guild: RGuild, commandId: string) => {
- if (!canGetCommands(guild)) {
+export default async (guildId: string, commandId: string) => {
+ if (!canGetCommands(guildId)) {
   const e = requestHandlerError(
    `Cannot get own Commands. Please make sure you don't have more than 50 Bots in your Server`,
    [],
   );
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- if (await hasMissingScopes(guild)) return [];
+ if (await hasMissingScopes(guildId)) return [];
+
+ const botId = await getBotIdFromGuild(guildId);
 
  if (
-  (await getBotIdFromGuild(guild)) !== guild.client.user.id &&
-  !cache.apis.get(guild.id) &&
-  !(await makeRequestHandler(guild))
+  botId !== process.env.mainId &&
+  !botCache.apis.get(guildId) &&
+  !(await makeRequestHandler(guildId))
  ) {
   return new Error('Failed to set up API');
  }
 
- return (cache.apis.get(guild.id) ?? API).applicationCommands
-  .getGuildCommandPermissions(await getBotIdFromGuild(guild), guild.id, commandId)
+ return (await getAPI(guildId)).applicationCommands
+  .getGuildCommandPermissions(botId, guildId, commandId)
   .then((res) => {
-   cache.commandPermissions.set(guild.id, commandId, res.permissions);
+   res.permissions.forEach((perm) => cache.commandPermissions.set(perm, guildId, commandId));
    return res.permissions;
   })
   .catch((e: DiscordAPIError) => {
-   setHasMissingScopes(e.message, guild);
-   error(guild, new Error((e as DiscordAPIError).message));
+   setHasMissingScopes(e.message, guildId, botId, process.env.mainId || '');
+   error(guildId, e);
    return e;
   });
 };

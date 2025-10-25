@@ -1,37 +1,24 @@
-import * as Discord from 'discord.js';
-import { api } from '../../../Client.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIApplicationCommandsQuery } from 'discord-api-types/v10.js';
 import { guild as getBotIdFromGuild } from '../../getBotIdFrom.js';
-import cache from '../../cache.js';
-import * as Classes from '../../../Other/classes.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
+import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Retrieves the global slash commands for a guild.
- * @param guild - The guild to retrieve the commands for.
+ * @param guildId - The guild ID to retrieve the commands for.
  * @param query - Optional query parameters to filter the commands.
  * @returns A Promise that resolves to an array of parsed ApplicationCommand objects.
  */
-export default async (
- guild: RGuild | undefined,
- client: Discord.Client<true>,
- query?: Discord.RESTGetAPIApplicationCommandsQuery,
-) =>
- (guild ? (cache.apis.get(guild.id) ?? api) : api).applicationCommands
-  .getGlobalCommands(guild ? await getBotIdFromGuild(guild) : client.user.id, query)
+export default async (guildId: string | undefined, query?: RESTGetAPIApplicationCommandsQuery) =>
+ (await getAPI(guildId)).applicationCommands
+  .getGlobalCommands(await getBotIdFromGuild(guildId), query)
   .then((cmds) => {
-   const parsed = cmds.map((cmd) => new Classes.ApplicationCommand(client, cmd));
-
-   if (guild && !cache.commands.cache.get(guild.id)) cache.commands.cache.set(guild.id, new Map());
-   parsed.forEach((p) => {
-    if (guild) cache.commands.cache.get(guild.id)?.set(p.id, p);
-
-    if (guild && cache.apis.get(guild.id)) return;
-
-    client.application.commands.cache.set(p.id, p);
-   });
-   return parsed;
+   cmds.forEach((cmd) => cache.commands.set(cmd));
+   return cmds.map((cmd) => cache.commands.apiToR(cmd));
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   if (guildId) error(guildId, e);
    return e;
   });
