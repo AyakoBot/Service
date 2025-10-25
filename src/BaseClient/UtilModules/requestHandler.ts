@@ -21,7 +21,6 @@ import users from './requestHandler/users.js';
 import voice from './requestHandler/voice.js';
 import webhooks from './requestHandler/webhooks.js';
 
-
 /**
  * Sets up a new API instance for the given guild ID and token.
  * @param guildId - The ID of the guild to set up the API for.
@@ -68,14 +67,14 @@ const getOwnGuild = async (guildId: string, api: DiscordCore.API) => {
 
 export default requestHandler;
 
-export const makeRequestHandler = async (guild: RGuild) => {
+export const makeRequestHandler = async (guildid: string) => {
  const ccSettings = await db.customclients.findUnique({
-  where: { guildid: guild.id, token: { not: null } },
+  where: { guildid, token: { not: null } },
  });
  if (!ccSettings) return false;
  if (!ccSettings.token) return false;
 
- const success = await requestHandler(guild.id, ccSettings.token!);
+ const success = await requestHandler(guildid, ccSettings.token!);
  if (!success) return false;
  return true;
 };

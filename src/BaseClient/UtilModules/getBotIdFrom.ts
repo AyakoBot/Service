@@ -13,7 +13,7 @@ export const token = (t: string) => Buffer.from(t.split('.')[0], 'base64').toStr
  * @param guildId - The guild Id.
  * @returns The bot ID for the guild.
  */
-export const guild = async (guildId: string) => {
+export const guild = async (guildId: string | undefined) => {
  if (!guildId) {
   const { user } = await import('../Client.js');
 

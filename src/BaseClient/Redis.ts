@@ -7,6 +7,7 @@ import { MessageType } from '../Typings/Typings.js';
 import type AutomodCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/automod.js';
 import type BanCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/ban.js';
 import type ChannelCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/channel.js';
+import type ChannelStatusCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/channelStatus.js';
 import type CommandCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/command.js';
 import type CommandPermissionCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/commandPermission.js';
 import type EmojiCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/emoji.js';
@@ -27,6 +28,7 @@ import type ThreadMemberCache from '@ayako/gateway/src/BaseClient/Bot/CacheClass
 import type UserCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/user.js';
 import type VoiceCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/voice.js';
 import type WebhookCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/webhook.js';
+import type PinCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/pin.js';
 
 const MessageTypes = [MessageType.Interaction, MessageType.Vote, MessageType.Appeal];
 
@@ -34,6 +36,7 @@ const cacheImports: {
  BanCache: new (...args: any[]) => BanCache;
  AutomodCache: new (...args: any[]) => AutomodCache;
  ChannelCache: new (...args: any[]) => ChannelCache;
+ ChannelStatusCache: new (...args: any[]) => any;
  CommandCache: new (...args: any[]) => CommandCache;
  CommandPermissionCache: new (...args: any[]) => CommandPermissionCache;
  EmojiCache: new (...args: any[]) => EmojiCache;
@@ -54,39 +57,44 @@ const cacheImports: {
  UserCache: new (...args: any[]) => UserCache;
  VoiceCache: new (...args: any[]) => VoiceCache;
  WebhookCache: new (...args: any[]) => WebhookCache;
+ PinCache: new (...args: any[]) => PinCache;
 } = {
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- BanCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/ban.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- AutomodCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/automod.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- ChannelCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/channel.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- CommandCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/command.js').then(
-  (r) => r.default as any,
- ),
+ BanCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/ban.js'
+ ).then((r) => r.default as any),
+ AutomodCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/automod.js'
+ ).then((r) => r.default as any),
+ ChannelCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/channel.js'
+ ).then((r) => r.default as any),
+ ChannelStatusCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/channelStatus.js'
+ ).then((r) => r.default as any),
+ CommandCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/command.js'
+ ).then((r) => r.default as any),
  CommandPermissionCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/commandPermission.js'
  ).then((r) => r.default as any),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- EmojiCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/emoji.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- EventCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/event.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- GuildCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/guild.js').then(
-  (r) => r.default as any,
- ),
+ EmojiCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/emoji.js'
+ ).then((r) => r.default as any),
+ EventCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/event.js'
+ ).then((r) => r.default as any),
+ GuildCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/guild.js'
+ ).then((r) => r.default as any),
  GuildCommandCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/guildCommand.js'
@@ -95,58 +103,62 @@ const cacheImports: {
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/integration.js'
  ).then((r) => r.default as any),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- InviteCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/invite.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- MemberCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/member.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- MessageCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/message.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- ReactionCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/reaction.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- RoleCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/role.js').then(
-  (r) => r.default as any,
- ),
+ InviteCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/invite.js'
+ ).then((r) => r.default as any),
+ MemberCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/member.js'
+ ).then((r) => r.default as any),
+ MessageCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/message.js'
+ ).then((r) => r.default as any),
+ ReactionCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/reaction.js'
+ ).then((r) => r.default as any),
+ RoleCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/role.js'
+ ).then((r) => r.default as any),
  SoundboardCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/soundboard.js'
  ).then((r) => r.default as any),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- StageCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/stage.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- StickerCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/sticker.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- ThreadCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/thread.js').then(
-  (r) => r.default as any,
- ),
+ StageCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/stage.js'
+ ).then((r) => r.default as any),
+ StickerCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/sticker.js'
+ ).then((r) => r.default as any),
+ ThreadCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/thread.js'
+ ).then((r) => r.default as any),
  ThreadMemberCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/threadMember.js'
  ).then((r) => r.default as any),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- UserCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/user.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- VoiceCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/voice.js').then(
-  (r) => r.default as any,
- ),
- // @ts-ignore - Module resolution for dynamic imports from gateway dist
- WebhookCache: await import('@ayako/gateway/dist/BaseClient/Bot/CacheClasses/webhook.js').then(
-  (r) => r.default as any,
- ),
+ UserCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/user.js'
+ ).then((r) => r.default as any),
+ VoiceCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/voice.js'
+ ).then((r) => r.default as any),
+ WebhookCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/webhook.js'
+ ).then((r) => r.default as any),
+ PinCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/pin.js'
+ ).then((r) => r.default as any),
 };
 
 export const prefix = 'cache';
@@ -174,6 +186,7 @@ export const cache: {
  automods: AutomodCache;
  bans: BanCache;
  channels: ChannelCache;
+ channelStatus: ChannelStatusCache;
  commands: CommandCache;
  commandPermissions: CommandPermissionCache;
  emojis: EmojiCache;
@@ -194,10 +207,12 @@ export const cache: {
  users: UserCache;
  voices: VoiceCache;
  webhooks: WebhookCache;
+ pins: PinCache;
 } = {
  automods: new cacheImports.AutomodCache(cacheDB),
  bans: new cacheImports.BanCache(cacheDB),
  channels: new cacheImports.ChannelCache(cacheDB),
+ channelStatus: new cacheImports.ChannelStatusCache(cacheDB),
  commands: new cacheImports.CommandCache(cacheDB),
  commandPermissions: new cacheImports.CommandPermissionCache(cacheDB),
  emojis: new cacheImports.EmojiCache(cacheDB),
@@ -218,6 +233,7 @@ export const cache: {
  users: new cacheImports.UserCache(cacheDB),
  voices: new cacheImports.VoiceCache(cacheDB),
  webhooks: new cacheImports.WebhookCache(cacheDB),
+ pins: new cacheImports.PinCache(cacheDB),
 };
 
 const callback = async (channel: string, key: string) => {

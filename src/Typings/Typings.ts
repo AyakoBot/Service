@@ -1,5 +1,12 @@
-import type { DiscordAPIError } from '@discordjs/rest';
+import type { DiscordAPIError, RawFile } from '@discordjs/rest';
 import { StoredPunishmentTypes } from '@prisma/client';
+import type {
+ APIActionRowComponent,
+ APIAllowedMentions,
+ APIButtonComponent,
+ APIEmbed,
+ APISelectMenuComponent,
+} from 'discord-api-types/v10.js';
 
 export type * from './DataBase.js';
 export * from './Settings.js';
@@ -77,20 +84,22 @@ export type NeverNull<T, K extends keyof T> = {
 };
 
 export type UsualMessagePayload = {
- embeds?: Discord.APIEmbed[];
+ embeds?: APIEmbed[];
  content?: string;
- components?: Discord.APIActionRowComponent<
-  Discord.APIButtonComponent | Discord.APISelectMenuComponent
- >[];
- files?: Discord.AttachmentPayload[];
+ components?: APIActionRowComponent<APIButtonComponent | APISelectMenuComponent>[];
+ files?: RawFile[];
  ephemeral?: boolean;
- allowed_mentions?: Discord.APIAllowedMentions;
+ allowed_mentions?: APIAllowedMentions;
 };
 
 export type HelpCommand =
  | { parentCommand: string; subCommandGroup: string; subCommand: string }
  | { parentCommand: string; subCommand: string; subCommandGroup?: undefined }
- | { parentCommand: string; subCommandGroup?: undefined; subCommand?: undefined };
+ | {
+    parentCommand: string;
+    subCommandGroup?: undefined;
+    subCommand?: undefined;
+   };
 
 export enum Colors {
  Danger = 0xff0000,
