@@ -1,56 +1,62 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPostAPIGuildEmojiJSONBody } from 'discord-api-types/v10.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
-
+import checkPermissions from '../../checkPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
+import { resolveImage } from '../../util.js';
 
 /**
  * Creates a new emoji for the specified guild.
- * @param guild The guild to create the emoji in.
+ * @param guildId The guild ID to create the emoji in.
  * @param body The emoji data to create.
  * @param reason The reason for creating the emoji.
  * @returns A promise that resolves with the created GuildEmoji object,
  *  or rejects with a DiscordAPIError.
  */
-export default async (
- guild: RGuild,
- body: Discord.RESTPostAPIGuildEmojiJSONBody,
- reason?: string,
-) => {
+export default async (guildId: string, body: RESTPostAPIGuildEmojiJSONBody, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canCreateEmoji(await getBotMemberFromGuild(guild))) {
+ if (!(await canCreateEmoji(guildId, (await getBotMemberFromGuild(guildId)).user_id))) {
   const e = requestHandlerError(`Cannot create emoji`, [
    PermissionFlagsBits.ManageGuildExpressions,
   ]);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
+ const resolvedImage = await resolveImage(body.image);
+
+ return (await getAPI(guildId)).guilds
   .createEmoji(
-   guild.id,
+   guildId,
    {
     ...body,
-    image: (await guild.client.util.util.resolveImage(body.image)) as string,
+    image: resolvedImage as string,
    },
    { reason },
   )
-  .then((e) => new Classes.GuildEmoji(guild.client, e, guild))
+  .then((e) => cache.emojis.apiToR(e, guildId))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
 
 /**
  * Checks if the given guild member has the permission to create an emoji.
- * @param me - The guild member to check.
+ * @param guildId - The guild ID.
+ * @param userId - The user ID performing the action.
  * @returns True if the guild member has the permission to create an emoji, false otherwise.
  */
-export const canCreateEmoji = (me: RMember) =>
- me.permissions.has(PermissionFlagsBits.CreateGuildExpressions) ||
- me.permissions.has(PermissionFlagsBits.ManageGuildExpressions);
+export const canCreateEmoji = async (guildId: string, userId: string) => {
+ const hasCreate = await checkPermissions(guildId, ['CreateGuildExpressions'], userId);
+ if (hasCreate) return true;
+
+ const hasManage = await checkPermissions(guildId, ['ManageGuildExpressions'], userId);
+ return hasManage;
+};

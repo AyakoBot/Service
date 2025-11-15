@@ -1,20 +1,18 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
- * Returns a Promise that resolves with a new GuildTemplate instance for the given guild.
- * If the guild has an API cache, it will use that cache, otherwise it will use the default API.
+ * Returns a Promise that resolves with the guild template data.
  * If an error occurs, it will log the error and return the DiscordAPIError.
- * @param guild The guild to get the template for.
- * @returns A Promise that resolves with a new GuildTemplate instance for the given guild.
+ * @param guildId The ID of the guild to get the template for.
+ * @returns A Promise that resolves with the guild template data.
  */
-export default async (guild: RGuild) =>
- (await getAPI(guild)).guilds
-  .getTemplate(guild.id)
-  .then((t) => new Classes.GuildTemplate(guild.client, t))
+export default async (guildId: string) =>
+ (await getAPI(guildId)).guilds
+  .getTemplate(guildId)
+  .then((t) => t)
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

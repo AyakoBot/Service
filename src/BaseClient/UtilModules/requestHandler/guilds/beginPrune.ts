@@ -1,43 +1,43 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPostAPIGuildPruneJSONBody } from 'discord-api-types/v10.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
-
+import checkPermissions from '../../checkPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Begins pruning of inactive members in a guild.
- * @param guild - The guild to prune members from.
+ * @param guildId - The guild ID to prune members from.
  * @param body - The JSON body to send with the prune request.
  * @param reason - The reason for beginning the prune.
  * @returns A promise that resolves with the result of the prune request,
  * or rejects with a DiscordAPIError.
  */
-export default async (
- guild: RGuild,
- body?: Discord.RESTPostAPIGuildPruneJSONBody,
- reason?: string,
-) => {
+export default async (guildId: string, body?: RESTPostAPIGuildPruneJSONBody, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canPrune(await getBotMemberFromGuild(guild))) {
+ if (!(await canPrune(guildId, (await getBotMemberFromGuild(guildId)).user_id))) {
   const e = requestHandlerError(`Cannot prune members`, [PermissionFlagsBits.KickMembers]);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
-  .beginPrune(guild.id, body, { reason })
+ return (await getAPI(guildId)).guilds
+  .beginPrune(guildId, body, { reason })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
+
 /**
  * Checks if the user has the necessary permissions to prune members from a guild.
- * @param me - The Discord guild member representing the user.
+ * @param guildId - The guild ID to check.
+ * @param userId - The user ID to check.
  * @returns A boolean indicating whether the user can prune members.
  */
-export const canPrune = (me: RMember) =>
- me.permissions.has(PermissionFlagsBits.KickMembers);
+export const canPrune = (guildId: string, userId: string) =>
+ checkPermissions(guildId, ['KickMembers', 'ManageGuild'], userId);

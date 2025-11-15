@@ -1,21 +1,21 @@
-import * as Discord from 'discord.js';
-import { api } from '../../../Client.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { api } from '../../../Client.js';
 
 /**
  * Leaves the specified guild.
- * @param guild - The guild to leave.
- * @param client - Whether to use the main client
+ * @param guildId - The ID of the guild to leave.
+ * @param useMainClient - Whether to use the main client API instead of guild-specific API.
  * @returns A promise that resolves with the DiscordAPIError if an error occurs, otherwise void.
  */
-export default async (guild: RGuild, client: boolean = false) => {
+export default async (guildId: string, useMainClient: boolean = false) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return ((!client ? await getAPI(guild) : API) ?? API).users
-  .leaveGuild(guild.id)
+ return (useMainClient ? api : await getAPI(guildId)).users
+  .leaveGuild(guildId)
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };

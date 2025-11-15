@@ -1,14 +1,14 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
- * Retrieves Nitro stickers for a given guild.
- * @param guild - The guild to retrieve Nitro stickers for.
- * @returns A promise that resolves with the Nitro stickers, or rejects with a DiscordAPIError.
+ * Retrieves Nitro sticker packs.
+ * @param guildId - The guild ID (may be undefined for global operation).
+ * @returns A promise that resolves with the Nitro sticker packs, or rejects with a DiscordAPIError.
  */
-export default async (guild: RGuild | null) =>
- (await getAPI(guild)).stickers.getStickers().catch((e: DiscordAPIError) => {
-  error(guild, new Error((e as DiscordAPIError).message));
+export default async (guildId: string | undefined) =>
+ (await getAPI(guildId)).stickers.getStickers().catch((e: DiscordAPIError) => {
+  error(guildId, e);
   return e;
  });

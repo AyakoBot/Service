@@ -1,71 +1,65 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIGuildQuery } from 'discord-api-types/v10.js';
 import error from '../../error.js';
-
-import { Guild } from '../../../Other/classes.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Retrieves a guild from the API using the provided guild ID and query parameters.
  *
- * @param guild - The Discord guild object.
  * @param guildId - The ID of the guild to retrieve.
  * @param query - The query parameters for the API request.
  * @returns A Promise that resolves to the retrieved guild object.
  */
-export default async (
- guild: RGuild,
- guildId: string,
- query: Discord.RESTGetAPIGuildQuery,
-) => {
- if (query.with_counts !== true && guild.client.guilds.cache.get(guildId)) {
-  return guild.client.guilds.cache.get(guildId) as RGuild;
+export default async (guildId: string, query: RESTGetAPIGuildQuery) => {
+ const cachedGuild = await cache.guilds.get(guildId);
+ if (query.with_counts !== true && cachedGuild) {
+  return cachedGuild;
  }
 
- if (!canGet(await getBotMemberFromGuild(guild), guildId)) {
-  const e = requestHandlerError(`Cannot get guild ${guild.name} / ${guild.id}`, []);
+ if (!(await canGet(guildId, (await getBotMemberFromGuild(guildId)).user_id))) {
+  const e = requestHandlerError(`Cannot get guild ${guildId}`, []);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
+ return (await getAPI(guildId)).guilds
   .get(guildId, query)
-  .then((g) => {
-   const parsed = new Guild(guild.client, g);
+  .then(async (g) => {
+   cache.guilds.set(g);
+   const parsed = cache.guilds.apiToR(g);
 
-   if (query.with_counts && guild.client.guilds.cache.get(parsed.id)) {
-    guild.client.guilds.cache.get(parsed.id)!.approximateMemberCount =
-     parsed.approximateMemberCount;
+   if (query.with_counts && cachedGuild) {
+    cachedGuild.approximate_member_count = parsed.approximate_member_count;
+    cachedGuild.approximate_presence_count = parsed.approximate_presence_count;
 
-    guild.client.guilds.cache.get(parsed.id)!.approximatePresenceCount =
-     parsed.approximatePresenceCount;
-
-    parsed.memberCount = guild.client.guilds.cache.get(parsed.id)!.memberCount;
+    return cachedGuild;
    }
 
    return parsed;
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
 
 /**
  * Checks if the given guild member has permission to get information about a guild.
- * @param me - The Discord guild member.
  * @param guildId - The ID of the guild.
+ * @param userId - The user ID performing the action.
  * @returns A boolean indicating whether the guild member has permission to get
  * information about the guild.
  */
-export const canGet = (me: RMember, guildId: string) => {
- if (me.id === me.client.user.id && me.client.guilds.cache.has(guildId)) return true;
-
- const guild = me.client.guilds.cache.get(guildId);
+export const canGet = async (guildId: string, userId: string) => {
+ const guild = await cache.guilds.get(guildId);
  if (!guild) return false;
 
- if (!guild.members.cache.get(me.id)) return false;
+ const member = await cache.members.get(guildId, userId);
+ if (!member) return false;
+
  return true;
 };

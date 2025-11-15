@@ -1,25 +1,22 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { APIApplicationRoleConnection } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
- * Returns the application role connection for the given application ID in the specified guild.
- * If the guild has an API cache, it will be used, otherwise the default API will be used.
- * @param guild - The guild to get the application role connection from.
+ * Returns the application role connection for the given application ID.
+ * @param guildId - The guild ID (may be undefined for global operations).
  * @param applicationId - The ID of the application to get the role connection for.
  * @returns A promise that resolves to the application role connection,
  * or rejects with a DiscordAPIError.
  */
-async function fn(
- guild: undefined | null | RGuild,
+export default async (
+ guildId: string | undefined,
  applicationId: string,
-): Promise<Discord.APIApplicationRoleConnection | DiscordAPIError> {
- return (await getAPI(guild)).users
+): Promise<APIApplicationRoleConnection | DiscordAPIError> =>
+ (await getAPI(guildId)).users
   .getApplicationRoleConnection(applicationId)
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
-}
-
-export default fn;

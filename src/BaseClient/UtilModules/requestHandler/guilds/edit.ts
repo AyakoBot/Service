@@ -1,59 +1,66 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPIGuildJSONBody, GuildFeature } from 'discord-api-types/v10.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
-
+import checkPermissions from '../../checkPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
+import { resolveImage } from '../../util.js';
 
 /**
  * Edits a guild.
- * @param guild The guild to edit.
+ * @param guildId The guild ID to edit.
  * @param body The data to edit the guild with.
  * @returns A promise that resolves with the edited guild.
  */
-export default async (guild: RGuild, body: Discord.RESTPatchAPIGuildJSONBody) => {
+export default async (guildId: string, body: RESTPatchAPIGuildJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canEdit(await getBotMemberFromGuild(guild), guild, body)) {
-  const e = requestHandlerError(`Cannot edit guild ${guild.name} / ${guild.id}`, [
-   PermissionFlagsBits.ManageGuild,
-  ]);
+ if (!(await canEdit(guildId, body, (await getBotMemberFromGuild(guildId)).user_id))) {
+  const e = requestHandlerError(`Cannot edit guild ${guildId}`, [PermissionFlagsBits.ManageGuild]);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
-  .edit(guild.id, {
+ return (await getAPI(guildId)).guilds
+  .edit(guildId, {
    ...body,
-   icon: body.icon ? await guild.client.util.util.resolveImage(body.icon) : body.icon,
-   splash: body.splash ? await guild.client.util.util.resolveImage(body.splash) : body.splash,
-   banner: body.banner ? await guild.client.util.util.resolveImage(body.banner) : body.banner,
+   icon: body.icon ? await resolveImage(body.icon) : body.icon,
+   splash: body.splash ? await resolveImage(body.splash) : body.splash,
+   banner: body.banner ? await resolveImage(body.banner) : body.banner,
    discovery_splash: body.discovery_splash
-    ? await guild.client.util.util.resolveImage(body.discovery_splash)
+    ? await resolveImage(body.discovery_splash)
     : body.discovery_splash,
   })
-  .then((g) => new Classes.Guild(guild.client, g))
+  .then((g) => cache.guilds.apiToR(g))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
+
 /**
  * Checks if the given guild member has permission to edit the guild.
- * @param me - The guild member performing the edit.
- * @param guild - The guild being edited.
+ * @param guildId - The guild ID being edited.
  * @param body - The JSON body containing the changes to be made.
+ * @param userId - The user ID performing the edit.
  * @returns A boolean indicating whether the guild member can edit the guild.
  */
-export const canEdit = (
- me: RMember,
- guild: RGuild,
- body: Discord.RESTPatchAPIGuildJSONBody,
-) =>
- me.permissions.has(PermissionFlagsBits.ManageGuild) &&
- (!!guild.features.find((f) => f === RGuildFeature.Community) !==
- !!body.features?.find((f) => f === RGuildFeature.Community)
-  ? me.permissions.has(PermissionFlagsBits.Administrator)
-  : true);
+export const canEdit = async (guildId: string, body: RESTPatchAPIGuildJSONBody, userId: string) => {
+ if (!(await checkPermissions(guildId, ['ManageGuild'], userId))) return false;
+
+ const guild = await cache.guilds.get(guildId);
+ if (!guild) return false;
+
+ const hasCommunity = guild.features.includes('COMMUNITY' as GuildFeature);
+ const willHaveCommunity = body.features?.includes('COMMUNITY' as GuildFeature);
+
+ if (hasCommunity !== willHaveCommunity) {
+  return checkPermissions(guildId, ['Administrator'], userId);
+ }
+
+ return true;
+};

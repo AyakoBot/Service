@@ -1,66 +1,49 @@
-import * as Discord from 'discord.js';
-import * as CT from '../../../../Typings/Typings.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type {
+ RESTPostAPIWebhookWithTokenJSONBody,
+ RESTPostAPIWebhookWithTokenQuery,
+} from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { resolveFile } from '../../util.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
-type Body =
- | (Omit<
-    Discord.RESTPostAPIWebhookWithTokenJSONBody & Discord.RESTPostAPIWebhookWithTokenQuery,
-    'files'
-   > & { files?: CT.UsualMessagePayload['files'] })
- | CT.UsualMessagePayload;
+type Body = Omit<
+ RESTPostAPIWebhookWithTokenJSONBody & RESTPostAPIWebhookWithTokenQuery,
+ 'files'
+> & { files?: { attachment: unknown; name?: string }[] };
 
 /**
  * Executes a webhook with the given parameters
  * and returns a Promise that resolves with a new Message object.
- * @param guild The guild where the webhook is executed.
- * @param webhookId The ID of the webhook to execute.
- * @param token The token of the webhook to execute.
- * @param body The body of the webhook to execute.
+ * @param guildId - The guild ID where the webhook is executed (may be undefined).
+ * @param webhookId - The ID of the webhook to execute.
+ * @param token - The token of the webhook to execute.
+ * @param body - The body of the webhook to execute.
  * @returns A Promise that resolves with a new Message object.
  */
-function fn(
- guild: undefined | null | RGuild,
+export default async (
+ guildId: string | undefined,
  webhookId: string,
  token: string,
  body: Body,
- client: Discord.Client<true>,
-): Promise<Classes.Message | DiscordAPIError>;
-function fn(
- guild: RGuild,
- webhookId: string,
- token: string,
- body: Body,
- client?: undefined,
-): Promise<Classes.Message | DiscordAPIError>;
-async function fn(
- guild: RGuild | undefined | null,
- webhookId: string,
- token: string,
- body: Body,
- client?: Discord.Client<true>,
-) {
+) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
- const c = (guild?.client ?? client)!;
 
- return (await getAPI(guild)).webhooks
+ return (await getAPI(guildId)).webhooks
   .execute(webhookId, token, {
    ...body,
    files: await resolveFiles(body.files),
    wait: true,
   })
-  .then((m) => new Classes.Message(c, m))
+  .then((m) => cache.messages.apiToR(m, guildId || '@me'))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
-}
+};
 
-export default fn;
-
-export const resolveFiles = async (files: Discord.AttachmentPayload[] | undefined) =>
+export const resolveFiles = async (files: { attachment: unknown; name?: string }[] | undefined) =>
  files
   ? (await Promise.all(files.map((f) => resolveFile(f.attachment)))).map((f, i) => ({
      ...f,

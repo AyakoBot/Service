@@ -1,40 +1,16 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Creates a direct message channel between the bot and the specified user.
- * @param guild The guild where the DM will be created.
- * @param userId The ID of the user to create the DM with.
- * @param client - The client to use if guild is not defined.
+ * @param guildId - The guild ID (may be undefined for global operations).
+ * @param userId - The ID of the user to create the DM with.
  * @returns A promise that resolves with the created DM channel,
  * or rejects with a DiscordAPIError if the DM creation fails.
  */
-function fn(
- guild: undefined | null | RGuild,
- userId: string,
- client: Discord.Client<true>,
-): Promise<Discord.DMChannel | DiscordAPIError>;
-function fn(
- guild: RGuild,
- userId: string,
- client?: undefined,
-): Promise<Discord.DMChannel | DiscordAPIError>;
-async function fn(
- guild: undefined | null | RGuild,
- userId: string,
- client?: Discord.Client<true>,
-): Promise<Discord.DMChannel | DiscordAPIError> {
- const c = (guild?.client ?? client)!;
-
- return (await getAPI(guild)).users
-  .createDM(userId)
-  .then((dm) => Classes.Channel<typeof guild extends RGuild ? 0 : 1>(c, dm, guild as never))
-  .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
-   return e;
-  });
-}
-
-export default fn;
+export default async (guildId: string | undefined, userId: string) =>
+ (await getAPI(guildId)).users.createDM(userId).catch((e: DiscordAPIError) => {
+  error(guildId, e);
+  return e;
+ });

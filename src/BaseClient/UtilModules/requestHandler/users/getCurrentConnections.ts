@@ -1,17 +1,17 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPICurrentUserConnectionsResult } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
- * Returns the current connections of the users in the specified guild.
- * If the connections cannot be retrieved, logs an error and returns the error object.
- * @param guild - The guild to retrieve the connections for.
+ * Returns the current connections of the user.
+ * @param guildId - The guild ID (may be undefined for global operations).
  * @returns A promise that resolves to an array of user connections or an error object.
  */
 export default async (
- guild: RGuild,
-): Promise<Discord.RESTGetAPICurrentUserConnectionsResult | DiscordAPIError> =>
- (await getAPI(guild)).users.getConnections().catch((e: DiscordAPIError) => {
-  error(guild, new Error((e as DiscordAPIError).message));
+ guildId: string | undefined,
+): Promise<RESTGetAPICurrentUserConnectionsResult | DiscordAPIError> =>
+ (await getAPI(guildId)).users.getConnections().catch((e: DiscordAPIError) => {
+  error(guildId, e);
   return e;
  });

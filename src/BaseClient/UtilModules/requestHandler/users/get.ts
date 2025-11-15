@@ -1,51 +1,24 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Retrieves a user from the cache or from the API if not found in cache.
- * @param guild - The guild where the user is located.
+ * @param guildId - The guild ID (may be undefined for global operations).
  * @param userId - The ID of the user to retrieve.
- * @param client - The client to use if guild is not defined.
+ * @param options - Optional force refresh flag.
  * @returns A Promise that resolves to the user object.
  */
-function fn(
- guild: undefined | null | RGuild,
- userId: string,
- client: Discord.Client<true>,
- options?: { force: true },
-): Promise<Classes.User | DiscordAPIError>;
-function fn(
- guild: RGuild,
- userId: string,
- client?: undefined,
- options?: { force: true },
-): Promise<Classes.User | DiscordAPIError>;
-async function fn(
- guild: undefined | null | RGuild,
- userId: string,
- client?: Discord.Client<true>,
- options?: { force: true },
-): Promise<Classes.User | DiscordAPIError> {
- const c = (guild?.client ?? client)!;
-
- return (
-  (!options?.force ? c!.users.cache.get(userId) : undefined) ??
-  (await getAPI(guild)).users
-   .get(userId)
-   .then((u) => {
-    const parsed = new Classes.User(c, u);
-    if (c.users.cache.get(parsed.id)) return parsed;
-
-    c.users.cache.set(parsed.id, parsed);
-    return parsed;
-   })
-   .catch((e: DiscordAPIError) => {
-    error(guild, new Error((e as DiscordAPIError).message));
-    return e;
-   })
- );
-}
-
-export default fn;
+export default async (guildId: string | undefined, userId: string, options?: { force: true }) =>
+ (!options?.force ? await cache.users.get(userId) : undefined) ??
+ (await getAPI(guildId)).users
+  .get(userId)
+  .then((u) => {
+   cache.users.set(u);
+   return cache.users.apiToR(u);
+  })
+  .catch((e: DiscordAPIError) => {
+   error(guildId, e);
+   return e;
+  });

@@ -1,39 +1,21 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
-
-import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
-import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
-import { canGetAutoModerationRule } from './getAutoModerationRule.js';
 
 /**
  * Retrieves the auto moderation rules for a given guild.
- * @param guild - The guild to retrieve the auto moderation rules for.
+ * @param guildId - The ID of the guild to retrieve the auto moderation rules for.
  * @returns A promise that resolves with an array of parsed auto moderation rules.
  */
-export default async (guild: RGuild) => {
- if (!canGetAutoModerationRule(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot get auto moderation rules`, [
-   PermissionFlagsBits.ManageGuild,
-  ]);
-
-  error(guild, new Error((e as DiscordAPIError).message));
-  return e;
- }
-
- return (await getAPI(guild)).guilds
-  .getAutoModerationRules(guild.id)
+export default async (guildId: string) =>
+ (await getAPI(guildId)).guilds
+  .getAutoModerationRules(guildId)
   .then((rules) => {
-   const parsed = rules.map((r) => new Classes.AutoModerationRule(guild.client, r, guild));
-   parsed.forEach((p) => {
-    if (guild.autoModerationRules.cache.get(p.id)) return;
-    guild.autoModerationRules.cache.set(p.id, p);
-   });
-   return parsed;
+   rules.forEach((r) => cache.automods.set(r));
+   return rules.map((r) => cache.automods.apiToR(r));
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
-};

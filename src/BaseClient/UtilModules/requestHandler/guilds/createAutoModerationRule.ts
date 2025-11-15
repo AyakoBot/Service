@@ -1,47 +1,52 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPostAPIAutoModerationRuleJSONBody } from 'discord-api-types/v10.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
-
+import checkPermissions from '../../checkPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Creates an auto-moderation rule for a guild.
- * @param guild The guild to create the rule for.
+ * @param guildId The guild ID to create the rule for.
  * @param body The JSON body of the auto-moderation rule.
  * @param reason The reason for creating the rule.
  * @returns A promise that resolves with the created auto-moderation rule.
  */
 export default async (
- guild: RGuild,
- body: Discord.RESTPostAPIAutoModerationRuleJSONBody,
+ guildId: string,
+ body: RESTPostAPIAutoModerationRuleJSONBody,
  reason?: string,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canCreateAutoModerationRule(await getBotMemberFromGuild(guild))) {
+ if (
+  !(await canCreateAutoModerationRule(guildId, (await getBotMemberFromGuild(guildId)).user_id))
+ ) {
   const e = requestHandlerError(`Cannot create auto-moderation rule`, [
    PermissionFlagsBits.ManageGuild,
   ]);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
-  .createAutoModerationRule(guild.id, body, { reason })
-  .then((r) => new Classes.AutoModerationRule(guild.client, r, guild))
+ return (await getAPI(guildId)).guilds
+  .createAutoModerationRule(guildId, body, { reason })
+  .then((r) => cache.automods.apiToR(r))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
 
 /**
  * Checks if the given guild member has the permission to create an auto-moderation rule.
- * @param me - The guild member.
+ * @param guildId - The guild ID.
+ * @param botId - The bot's user ID.
  * @returns A boolean indicating whether the member can create an auto-moderation rule.
  */
-export const canCreateAutoModerationRule = (me: RMember) =>
- me.permissions.has(PermissionFlagsBits.ManageGuild);
+export const canCreateAutoModerationRule = (guildId: string, userId: string) =>
+ checkPermissions(guildId, ['ManageGuild'], userId);

@@ -1,26 +1,23 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIGuildMembersSearchQuery } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Searches for members in a guild based on the provided query.
- * @param guild - The guild to search in.
+ * @param guildId - The guild ID to search in.
  * @param query - The query to use for searching.
  * @returns A Promise that resolves to an array of GuildMember objects that match the search query.
  */
-export default async (guild: RGuild, query: Discord.RESTGetAPIGuildMembersSearchQuery) =>
- (await getAPI(guild)).guilds
-  .searchForMembers(guild.id, query)
+export default async (guildId: string, query: RESTGetAPIGuildMembersSearchQuery) =>
+ (await getAPI(guildId)).guilds
+  .searchForMembers(guildId, query)
   .then((members) => {
-   const parsed = members.map((m) => new Classes.GuildMember(guild.client, m, guild));
-   parsed.forEach((p) => {
-    if (guild.members.cache.get(p.id)) return;
-    guild.members.cache.set(p.id, p);
-   });
-   return parsed;
+   members.forEach((m) => cache.members.set(m, guildId));
+   return members.map((m) => cache.members.apiToR(m, guildId));
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

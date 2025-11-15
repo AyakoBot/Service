@@ -61,7 +61,6 @@ import syncTemplate from './guilds/syncTemplate.js';
 import editUserVoiceState from './guilds/editUserVoiceState.js';
 import editMFALevel from './guilds/editMFALevel.js';
 import getPreview from './guilds/getPreview.js';
-import create from './guilds/create.js';
 import createChannel from './guilds/createChannel.js';
 import setChannelPositions from './guilds/setChannelPositions.js';
 import getActiveThreads from './guilds/getActiveThreads.js';
@@ -135,7 +134,6 @@ interface Guilds {
  editUserVoiceState: typeof editUserVoiceState;
  editMFALevel: typeof editMFALevel;
  getPreview: typeof getPreview;
- create: typeof create;
  createChannel: typeof createChannel;
  setChannelPositions: typeof setChannelPositions;
  getActiveThreads: typeof getActiveThreads;
@@ -357,7 +355,6 @@ const guilds: Guilds = {
  editUserVoiceState,
  editMFALevel,
  getPreview,
- create,
  createChannel,
  setChannelPositions,
  getActiveThreads,

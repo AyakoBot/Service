@@ -1,26 +1,22 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Retrieves the roles of a guild from the Discord API
  * and parses them into an array of Role objects.
- * @param guild - The guild to retrieve the roles from.
+ * @param guildId - The guild to retrieve the roles from.
  * @returns A Promise that resolves with an array of Role objects.
  */
-export default async (guild: RGuild) =>
- (await getAPI(guild)).guilds
-  .getRoles(guild.id)
+export default async (guildId: string) =>
+ (await getAPI(guildId)).guilds
+  .getRoles(guildId)
   .then((roles) => {
-   const parsed = roles.map((r) => new Classes.Role(guild.client, r, guild));
-   parsed.forEach((p) => {
-    if (guild.roles.cache.get(p.id)) return;
-    guild.roles.cache.set(p.id, p);
-   });
-   return parsed;
+   roles.map((r) => cache.roles.set(r, guildId));
+   return roles.map((r) => cache.roles.apiToR(r, guildId));
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

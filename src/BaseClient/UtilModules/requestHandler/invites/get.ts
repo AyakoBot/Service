@@ -1,34 +1,24 @@
-import * as Discord from 'discord.js';
-// eslint-disable-next-line import/extensions
-import type { RawInviteData } from 'discord.js/typings/rawDataTypes.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIInviteQuery } from 'discord-api-types/v10.js';
+import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
- * Retrieves an invite for a guild with the given code and optional query parameters.
- * @param guild - The guild to retrieve the invite for.
+ * Retrieves an invite with the given code and optional query parameters.
+ * @param guildId - The guild ID to retrieve the invite for (may be undefined for global invites).
  * @param code - The code of the invite to retrieve.
  * @param query - Optional query parameters to include in the request.
  * @returns A Promise that resolves with the retrieved invite, or rejects with an error.
  */
-export default async <T extends RGuild | null>(
- guild: T,
- code: string,
- query?: Discord.RESTGetAPIInviteQuery,
- client?: T extends null ? Discord.Client<true> : undefined,
-) =>
- guild?.invites.cache.get(code) ??
- (await getAPI(guild)).invites
+export default async (guildId: string | undefined, code: string, query?: RESTGetAPIInviteQuery) =>
+ (await getAPI(guildId)).invites
   .get(code, query)
   .then((i) => {
-   const parsed = new Classes.Invite((guild?.client ?? client)!, i as RawInviteData);
-
-   const g = parsed.guild
-    ? (guild?.client || client)?.guilds.cache.get(parsed.guild.id)
-    : undefined;
-
-   if (g?.invites.cache.get(parsed.code)) return parsed;
-   g?.invites.cache.set(parsed.code, parsed);
-   return parsed;
+   cache.invites.set(i);
+   return cache.invites.apiToR(i);
   })
-  .catch((e: DiscordAPIError) => e);
+  .catch((e: DiscordAPIError) => {
+   error(guildId, e);
+   return e;
+  });

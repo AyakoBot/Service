@@ -1,50 +1,48 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
+import type { RESTPostAPIStageInstanceJSONBody } from 'discord-api-types/v10.js';
 import error from '../../error.js';
-
+import checkChannelPermissions from '../../checkChannelPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Creates a new stage instance associated with a stage channel.
- * @param channel The stage channel to associate the stage instance with.
- * @param body The JSON body of the API request.
- * @param reason The reason for creating the stage instance.
+ * @param guildId - The guild ID where the stage channel is located.
+ * @param body - The JSON body of the API request.
+ * @param reason - The reason for creating the stage instance.
  * @returns A promise that resolves with the created stage instance
  * or rejects with a DiscordAPIError.
  */
-export default async (
- channel: RChannel,
- body: Discord.RESTPostAPIStageInstanceJSONBody,
- reason?: string,
-) => {
+export default async (guildId: string, body: RESTPostAPIStageInstanceJSONBody, reason?: string) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canCreate(await getBotMemberFromGuild(channel.guild), channel.id)) {
-  const e = requestHandlerError(
-   `Cannot create stage instance in ${channel.guild.name} / ${channel.guild.id}`,
-   [PermissionFlagsBits.ManageChannels],
-  );
+ if (!(await canCreate(guildId, body.channel_id, (await getBotMemberFromGuild(guildId)).user_id))) {
+  const e = requestHandlerError(`Cannot create stage instance`, [
+   PermissionFlagsBits.ManageChannels,
+  ]);
 
-  error(channel.guild_id, e);
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(channel.guild_id)).stageInstances
+ return (await getAPI(guildId)).stageInstances
   .create(body, { reason })
-  .then((s) => new Classes.StageInstance(channel.client, s, channel))
+  .then((s) => cache.stages.apiToR(s))
   .catch((e: DiscordAPIError) => {
-   error(channel.guild_id, e);
+   error(guildId, e);
    return e;
   });
 };
 
 /**
- * Checks if the given guild member has the permission to create a stage instance.
- * @param me - The Discord guild member.
+ * Checks if the user has the permission to create a stage instance.
+ * @param guildId - The guild ID where the stage instance will be created.
  * @param channelId - The ID of the stage channel to associate the stage instance with.
- * @returns A boolean indicating whether the guild member can create a stage instance.
+ * @param userId - The user ID performing the action.
+ * @returns A boolean indicating whether the user can create a stage instance.
  */
-export const canCreate = (me: RMember, channelId: string) =>
- me.permissionsIn(channelId).has(PermissionFlagsBits.ManageChannels);
+export const canCreate = async (guildId: string, channelId: string, userId: string) =>
+ checkChannelPermissions(guildId, channelId, ['ManageChannels'], userId);

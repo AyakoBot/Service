@@ -1,42 +1,24 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPIGuildMemberJSONBody } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Edits the current guild member with the given data.
- * @param guild The guild where the member is located.
- * @param data The data to update the member with.
- * @param saveGuild - The guild to use if guild is not defined.
+ * @param guildId - The guild ID where the member is located.
+ * @param data - The data to update the member with.
  * @returns A promise that resolves with the updated guild member
  * or rejects with a DiscordAPIError.
  */
-function fn(
- guild: undefined | null | RGuild,
- data: Discord.RESTPatchAPIGuildMemberJSONBody,
- saveGuild: RGuild,
-): Promise<RMember | DiscordAPIError | Error>;
-function fn(
- guild: RGuild,
- data: Discord.RESTPatchAPIGuildMemberJSONBody,
- saveGuild?: undefined,
-): Promise<RMember | DiscordAPIError | Error>;
-async function fn(
- guild: undefined | null | RGuild,
- data: Discord.RESTPatchAPIGuildMemberJSONBody,
- saveGuild?: RGuild,
-): Promise<RMember | DiscordAPIError | Error> {
+export default async (guildId: string, data: RESTPatchAPIGuildMemberJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- const g = (guild ?? saveGuild)!;
-
- return (await getAPI(guild)).users
-  .editCurrentGuildMember(g.id, data)
-  .then((m) => new Classes.GuildMember(g.client, m, g))
+ return (await getAPI(guildId)).users
+  .editCurrentGuildMember(guildId, data)
+  .then((m) => cache.members.apiToR(m, guildId))
   .catch((e: DiscordAPIError) => {
-   error(g, e as DiscordAPIError);
+   error(guildId, e);
    return e;
   });
-}
-
-export default fn;
+};

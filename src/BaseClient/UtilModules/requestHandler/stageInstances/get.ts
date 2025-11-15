@@ -1,24 +1,19 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Retrieves the stage instance associated with the given stage channel.
- * @param channel The stage channel to retrieve the stage instance for.
+ * @param guildId - The guild ID where the stage channel is located.
+ * @param channelId - The ID of the stage channel to retrieve the stage instance for.
  * @returns A promise that resolves with the stage instance, or rejects with an error.
  */
-export default async (channel: RChannel) =>
- channel.guild.stageInstances.cache.find((s) => s.channelId === channel.id) ??
- (await getAPI(channel.guild_id)).stageInstances
-  .get(channel.id)
-  .then((s) => {
-   const parsed = new Classes.StageInstance(channel.client, s, channel);
-   if (channel.guild.stageInstances.cache.get(parsed.id)) return parsed;
-   channel.guild.stageInstances.cache.set(parsed.id, parsed);
-   return parsed;
-  })
+export default async (guildId: string, channelId: string) =>
+ (await getAPI(guildId)).stageInstances
+  .get(channelId)
+  .then((s) => cache.stages.apiToR(s))
   .catch((e: DiscordAPIError) => {
-   error(channel.guild_id, e);
+   error(guildId, e);
    return e;
   });

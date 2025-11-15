@@ -1,11 +1,12 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIWebhookWithTokenMessageQuery } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
  * Retrieves a message from a webhook.
- * @param guild - The guild where the webhook is located.
+ * @param guildId - The guild ID where the webhook is located.
  * @param webhookId - The ID of the webhook.
  * @param token - The token of the webhook.
  * @param messageId - The ID of the message to retrieve.
@@ -13,16 +14,19 @@ import { getAPI } from '../channels/addReaction.js';
  * @returns A Promise that resolves with a Message object or rejects with an error.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  webhookId: string,
  token: string,
  messageId: string,
- query?: Discord.RESTGetAPIWebhookWithTokenMessageQuery,
+ query?: RESTGetAPIWebhookWithTokenMessageQuery,
 ) =>
- (await getAPI(guild)).webhooks
+ (await getAPI(guildId)).webhooks
   .getMessage(webhookId, token, messageId, query)
-  .then((m) => new Classes.Message(guild.client, m))
+  .then((m) => {
+   cache.messages.set(m, guildId);
+   return cache.messages.apiToR(m, guildId);
+  })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

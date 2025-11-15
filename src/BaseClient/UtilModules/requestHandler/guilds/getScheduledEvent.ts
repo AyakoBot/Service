@@ -1,29 +1,28 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIGuildScheduledEventQuery } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Retrieves a scheduled event from the specified guild.
- * @param guild - The guild to retrieve the scheduled event from.
+ * @param guildId - The ID of the guild to retrieve the scheduled event from.
  * @param eventId - The ID of the scheduled event to retrieve.
  * @param query - Optional query parameters to include in the request.
  * @returns A Promise that resolves with the retrieved scheduled event, or rejects with an error.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  eventId: string,
- query?: Discord.RESTGetAPIGuildScheduledEventQuery,
+ query?: RESTGetAPIGuildScheduledEventQuery,
 ) =>
- (await getAPI(guild)).guilds
-  .getScheduledEvent(guild.id, eventId, query)
+ (await getAPI(guildId)).guilds
+  .getScheduledEvent(guildId, eventId, query)
   .then((e) => {
-   const parsed = new Classes.GuildScheduledEvent(guild.client, e);
-   if (guild.scheduledEvents.cache.get(parsed.id)) return parsed;
-   guild.scheduledEvents.cache.set(parsed.id, parsed);
-   return parsed;
+   cache.events.set(e);
+   return cache.events.apiToR(e);
   })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

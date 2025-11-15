@@ -1,38 +1,23 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTGetAPIGuildMembersQuery } from 'discord-api-types/v10.js';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Retrieves members from a guild.
- * @param guild - The guild to retrieve members from.
+ * @param guildId - The ID of the guild to retrieve members from.
  * @param query - The query parameters for the API request.
  * @returns A promise that resolves with an array of GuildMember objects.
  */
-export default async (guild: RGuild, query?: Discord.RESTGetAPIGuildMembersQuery) => {
- if (guild.members.cache.size === guild.memberCount) return guild.members.cache.map((m) => m);
-
- const guilds = guild.client.util.cache.hasFetchedAllMembers;
- if (guilds.has(guild.id)) return [];
- guilds.add(guild.id);
-
- return (await getAPI(guild)).guilds
-  .getMembers(guild.id, query)
+export default async (guildId: string, query?: RESTGetAPIGuildMembersQuery) =>
+ (await getAPI(guildId)).guilds
+  .getMembers(guildId, query)
   .then((members) => {
-   const parsed = members.map(
-    (m) => new Classes.GuildMember(guild.client, m as Discord.APIGuildMember, guild),
-   );
-   parsed.forEach((p) => {
-    if (guild.members.cache.get(p.id)) return;
-    guild.members.cache.set(p.id, p);
-   });
-
-   guilds.delete(guild.id);
-   return parsed;
+   members.forEach((m) => cache.members.set(m, guildId));
+   return members.map((m) => cache.members.apiToR(m, guildId));
   })
   .catch((e: DiscordAPIError) => {
-   guilds.delete(guild.id);
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
-};

@@ -1,14 +1,17 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPIGuildScheduledEventJSONBody } from 'discord-api-types/v10.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
-
+import checkPermissions from '../../checkPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
+import { resolveImage } from '../../util.js';
 
 /**
  * Edits a scheduled event for a guild.
- * @param guild The guild where the scheduled event belongs.
+ * @param guildId The guild ID where the scheduled event belongs.
  * @param eventId The ID of the scheduled event to edit.
  * @param body The new data for the scheduled event.
  * @param reason The reason for editing the scheduled event.
@@ -16,43 +19,46 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  eventId: string,
- body: Discord.RESTPatchAPIGuildScheduledEventJSONBody,
+ body: RESTPatchAPIGuildScheduledEventJSONBody,
  reason?: string,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canEditScheduledEvent(await getBotMemberFromGuild(guild))) {
+ if (!(await canEditScheduledEvent(guildId, (await getBotMemberFromGuild(guildId)).user_id))) {
   const e = requestHandlerError(`Cannot edit scheduled event ${eventId}`, [
    PermissionFlagsBits.ManageEvents,
   ]);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
+ const resolvedImage = body.image ? await resolveImage(body.image) : body.image;
+
+ return (await getAPI(guildId)).guilds
   .editScheduledEvent(
-   guild.id,
+   guildId,
    eventId,
    {
     ...body,
-    image: body.image ? await guild.client.util.util.resolveImage(body.image) : body.image,
+    image: resolvedImage,
    },
    { reason },
   )
-  .then((e) => new Classes.GuildScheduledEvent(guild.client, e))
+  .then((e) => cache.events.apiToR(e))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
 
 /**
  * Checks if the given guild member has the necessary permissions to edit a scheduled event.
- * @param me - The Discord guild member.
+ * @param guildId - The guild ID.
+ * @param userId - The user ID performing the action.
  * @returns True if the guild member has the "Manage Events" permission, false otherwise.
  */
-export const canEditScheduledEvent = (me: RMember) =>
- me.permissions.has(PermissionFlagsBits.ManageEvents);
+export const canEditScheduledEvent = (guildId: string, userId: string) =>
+ checkPermissions(guildId, ['ManageEvents'], userId);

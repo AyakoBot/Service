@@ -1,49 +1,31 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { APIGuildMember } from 'discord-api-types/v10.js';
 import { getAPI } from '../channels/addReaction.js';
-import { api } from '../../../Client.js';
+import { api, cache } from '../../../Client.js';
 
 /**
  * Retrieves a member from a guild by their user ID.
- * @param guild The guild to retrieve the member from, undefined if no custom API should be used
+ * @param guildId The guild ID to retrieve the member from
  * @param userId The ID of the user to retrieve.
- * @param saveGuild - The guild to use if guild is not defined.
+ * @param forceMainAPI - Whether to force using the main API instead of custom API.
  * @returns A Promise that resolves with the GuildMember object,
  * or rejects with a DiscordAPIError if an error occurs.
  */
-function fn(
- guild: undefined | null | RGuild,
+export default async (
+ guildId: string,
  userId: string,
- saveGuild: RGuild,
- forceMainAPI?: boolean,
-): Promise<RMember | DiscordAPIError | Error>;
-function fn(
- guild: RGuild,
- userId: string,
- saveGuild?: undefined,
- forceMainAPI?: boolean,
-): Promise<RMember | DiscordAPIError | Error>;
-async function fn(
- guild: undefined | null | RGuild,
- userId: string,
- saveGuild?: RGuild,
  forceMainAPI: boolean = false,
-): Promise<RMember | DiscordAPIError | Error> {
- const g = (guild ?? saveGuild)!;
- if (!g) return new Error('guild is not defined');
+): Promise<any | DiscordAPIError | Error> => {
+ if (!guildId) return new Error('guildId is not defined');
 
- return (
-  g.members.cache.get(userId) ??
-  (forceMainAPI ? API : await getAPI(guild)).guilds
-   .getMember(g.id, userId)
-   .then((m) => {
-    const parsed = new Classes.GuildMember(g.client, m as Discord.APIGuildMember, (guild ?? g)!);
-    if (g.members.cache.get(parsed.id)) return parsed;
-    g.members.cache.set(parsed.id, parsed);
-    return parsed;
-   })
-   .catch((e: DiscordAPIError) => e as DiscordAPIError)
- );
-}
+ const cachedMember = await cache.members.get(guildId, userId);
+ if (cachedMember) return cachedMember;
 
-export default fn;
+ return (forceMainAPI ? api : await getAPI(guildId)).guilds
+  .getMember(guildId, userId)
+  .then((m) => {
+   cache.members.set(m as APIGuildMember, guildId);
+   return cache.members.apiToR(m as APIGuildMember, guildId);
+  })
+  .catch((e: DiscordAPIError) => e as DiscordAPIError);
+};

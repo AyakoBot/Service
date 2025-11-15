@@ -1,18 +1,16 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
- * Retrieves the available voice regions for a given guild.
- * @param guild - The guild to retrieve the voice regions for.
+ * Retrieves the available voice regions.
+ * @param guildId - The guild ID (may be undefined for global voice regions).
  * @returns A promise that resolves with an array of available voice regions.
  */
-export default async (guild?: RGuild) =>
- (await getAPI(guild)).voice
+export default async (guildId?: string) =>
+ (await getAPI(guildId)).voice
   .getVoiceRegions()
-  .then((regions) => regions.map((r) => new Classes.VoiceRegion(r)))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

@@ -1,44 +1,27 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPICurrentUserJSONBody } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
+import { resolveImage } from '../../util.js';
 
 /**
- * Edits the current user's profile in the specified guild.
- * @param guild The guild where the user's profile will be edited.
- * @param data The data to update the user's profile.
- * @param client - The client to use if guild is not defined.
+ * Edits the current user's profile.
+ * @param guildId - The guild ID (may be undefined for global operations).
+ * @param data - The data to update the user's profile.
  * @returns A promise that resolves with the updated user's profile.
  */
-function fn(
- guild: undefined | null | RGuild,
- data: Discord.RESTPatchAPICurrentUserJSONBody,
- client: Discord.Client<true>,
-): Promise<RUser | DiscordAPIError | Error>;
-function fn(
- guild: RGuild,
- data: Discord.RESTPatchAPICurrentUserJSONBody,
- client?: undefined,
-): Promise<RUser | DiscordAPIError | Error>;
-async function fn(
- guild: undefined | null | RGuild,
- data: Discord.RESTPatchAPICurrentUserJSONBody,
- client?: Discord.Client<true>,
-): Promise<RUser | DiscordAPIError | Error> {
+export default async (guildId: string | undefined, data: RESTPatchAPICurrentUserJSONBody) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- const c = (guild?.client ?? client)!;
-
- return (await getAPI(guild)).users
+ return (await getAPI(guildId)).users
   .edit({
    ...data,
-   avatar: data.avatar ? await c.util.util.resolveImage(data.avatar) : data.avatar,
+   avatar: data.avatar ? await resolveImage(data.avatar) : data.avatar,
   })
-  .then((u) => new Classes.User(c, u))
+  .then((u) => cache.users.apiToR(u))
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
-}
-
-export default fn;
+};

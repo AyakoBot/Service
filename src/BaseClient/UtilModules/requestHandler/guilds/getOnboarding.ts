@@ -1,18 +1,21 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Retrieves the onboarding data for a given guild.
- * @param guild - The guild to retrieve onboarding data for.
- * @returns A promise that resolves with a new instance of the GuildOnboarding class.
+ * @param guildId - The ID of the guild to retrieve onboarding data for.
+ * @returns A promise that resolves with the guild onboarding data.
  */
-export default async (guild: RGuild) =>
- (await getAPI(guild)).guilds
-  .getOnboarding(guild.id)
-  .then((o) => new Classes.GuildOnboarding(guild.client, o))
+export default async (guildId: string) =>
+ (await getAPI(guildId)).guilds
+  .getOnboarding(guildId)
+  .then((result) => {
+   cache.onboardings.set(result);
+   return cache.onboardings.apiToR(result);
+  })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });

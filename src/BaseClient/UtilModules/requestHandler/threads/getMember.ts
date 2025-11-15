@@ -1,25 +1,23 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
+import { cache } from '../../../Client.js';
 
 /**
- * Get the member object for a given thread and user ID.
- * @param thread - The thread channel object.
- * @param userId - The ID of the user to get the member object for.
+ * Get the thread member object for a given thread and user ID.
+ * @param guildId - The guild ID where the thread is located.
+ * @param threadId - The ID of the thread channel.
+ * @param userId - The ID of the user to get the thread member object for.
  * @returns A promise that resolves to the thread member object for the given user ID.
  */
-export default async (thread: RThread, userId: string) =>
- thread.members.cache.get(userId) ??
- (await getAPI(thread.guild)).threads
-  .getMember(thread.id, userId)
+export default async (guildId: string, threadId: string, userId: string) =>
+ (await getAPI(guildId)).threads
+  .getMember(threadId, userId)
   .then((m) => {
-   const parsed = new Classes.ThreadMember(thread, m);
-   if (thread.members.cache.get(parsed.id)) return parsed;
-   thread.members.cache.set(parsed.id, parsed);
-   return parsed;
+   cache.threadMembers.set(m, threadId);
+   return cache.threadMembers.apiToR(m, threadId);
   })
   .catch((e: DiscordAPIError) => {
-   error(thread.guild, e);
+   error(guildId, e);
    return e;
   });

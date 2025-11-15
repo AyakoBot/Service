@@ -1,48 +1,22 @@
-import * as Discord from 'discord.js';
-import * as Classes from '../../../Other/classes.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import { cache } from '../../../Client.js';
 import error from '../../error.js';
-
-import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
-import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
- * Retrieves an auto moderation rule from the cache or API.
- * @param guild - The guild to retrieve the rule from.
+ * Retrieves an auto moderation rule from the API.
+ * @param guildId - The ID of the guild to retrieve the rule from.
  * @param ruleId - The ID of the rule to retrieve.
  * @returns A promise that resolves with the retrieved auto moderation rule.
  */
-export default async (guild: RGuild, ruleId: string) => {
- if (!canGetAutoModerationRule(await getBotMemberFromGuild(guild))) {
-  const e = requestHandlerError(`Cannot get auto moderation rule`, [
-   PermissionFlagsBits.ManageGuild,
-  ]);
-
-  error(guild, new Error((e as DiscordAPIError).message));
-  return e;
- }
-
- return (
-  guild.autoModerationRules.cache.get(ruleId) ??
-  (await getAPI(guild)).guilds
-   .getAutoModerationRule(guild.id, ruleId)
-   .then((r) => {
-    const parsed = new Classes.AutoModerationRule(guild.client, r, guild);
-    if (guild.autoModerationRules.cache.get(parsed.id)) return parsed;
-    guild.autoModerationRules.cache.set(parsed.id, parsed);
-    return parsed;
-   })
-   .catch((e: DiscordAPIError) => {
-    error(guild, new Error((e as DiscordAPIError).message));
-    return e;
-   })
- );
-};
-
-/**
- * Checks if the given guild member has permission to view auto moderation rules.
- * @param me - The guild member to check.
- * @returns True if the guild member has permission to view auto moderation rules, false otherwise.
- */
-export const canGetAutoModerationRule = (me: RMember) =>
- me.permissions.has(PermissionFlagsBits.ManageGuild);
+export default async (guildId: string, ruleId: string) =>
+ (await getAPI(guildId)).guilds
+  .getAutoModerationRule(guildId, ruleId)
+  .then((r) => {
+   cache.automods.set(r);
+   return cache.automods.apiToR(r);
+  })
+  .catch((e: DiscordAPIError) => {
+   error(guildId, e);
+   return e;
+  });

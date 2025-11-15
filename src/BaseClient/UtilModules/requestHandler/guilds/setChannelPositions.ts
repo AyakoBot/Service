@@ -1,46 +1,49 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPatchAPIGuildChannelPositionsJSONBody } from 'discord-api-types/v10.js';
+import { PermissionFlagsBits } from 'discord-api-types/v10.js';
 import error from '../../error.js';
-
+import checkPermissions from '../../checkPermissions.js';
 import getBotMemberFromGuild from '../../getBotMemberFromGuild.js';
 import requestHandlerError from '../../requestHandlerError.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Sets the positions of a batch of channels for a guild.
- * @param guild - The guild to set the channel positions for.
+ * @param guildId - The guild ID to set the channel positions for.
  * @param body - The JSON body containing the new positions of the channels.
  * @param reason - The reason for setting the channel positions (optional).
  * @returns A promise that resolves with the updated guild channel positions,
  * or rejects with a DiscordAPIError.
  */
 export default async (
- guild: RGuild,
- body: Discord.RESTPatchAPIGuildChannelPositionsJSONBody,
+ guildId: string,
+ body: RESTPatchAPIGuildChannelPositionsJSONBody,
  reason?: string,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- if (!canSetChannelPositions(await getBotMemberFromGuild(guild))) {
+ if (!(await canSetChannelPositions(guildId, (await getBotMemberFromGuild(guildId)).user_id))) {
   const e = requestHandlerError(`Cannot set channel positions`, [
    PermissionFlagsBits.ManageChannels,
   ]);
 
-  error(guild, new Error((e as DiscordAPIError).message));
+  error(guildId, e);
   return e;
  }
 
- return (await getAPI(guild)).guilds
-  .setChannelPositions(guild.id, body, { reason })
+ return (await getAPI(guildId)).guilds
+  .setChannelPositions(guildId, body, { reason })
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
 
 /**
  * Checks if the user has the necessary permissions to set channel positions.
- * @param me - The Discord guild member representing the user.
+ * @param guildId - The guild ID.
+ * @param userId - The user ID performing the action.
  * @returns A boolean indicating whether the user can set channel positions.
  */
-export const canSetChannelPositions = (me: RMember) =>
- me.permissions.has(PermissionFlagsBits.ManageChannels);
+export const canSetChannelPositions = (guildId: string, userId: string) =>
+ checkPermissions(guildId, ['ManageChannels'], userId);

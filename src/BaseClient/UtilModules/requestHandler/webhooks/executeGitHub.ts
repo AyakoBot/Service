@@ -1,10 +1,11 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPostAPIWebhookWithTokenGitHubQuery } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Executes a GitHub webhook for a guild.
- * @param guild - The guild where the webhook is being executed.
+ * @param guildId - The guild ID where the webhook is being executed.
  * @param webhookId - The ID of the webhook being executed.
  * @param token - The token for the webhook being executed.
  * @param body - The body of the webhook being executed.
@@ -13,18 +14,18 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with an error.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  webhookId: string,
  token: string,
  body: unknown,
- query?: Discord.RESTPostAPIWebhookWithTokenGitHubQuery,
+ query?: RESTPostAPIWebhookWithTokenGitHubQuery,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return (await getAPI(guild)).webhooks
+ return (await getAPI(guildId)).webhooks
   .executeGitHub(webhookId, token, body, query)
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };

@@ -1,10 +1,11 @@
-import * as Discord from 'discord.js';
+import type { DiscordAPIError } from '@discordjs/rest';
+import type { RESTPostAPIWebhookWithTokenSlackQuery } from 'discord-api-types/v10.js';
 import error from '../../error.js';
 import { getAPI } from '../channels/addReaction.js';
 
 /**
  * Executes a Slack webhook with the given parameters.
- * @param guild - The Discord guild where the webhook is being executed.
+ * @param guildId - The guild ID where the webhook is being executed.
  * @param webhookId - The ID of the Slack webhook.
  * @param token - The token for the Slack webhook.
  * @param body - The body of the request being sent to the Slack webhook.
@@ -13,18 +14,18 @@ import { getAPI } from '../channels/addReaction.js';
  * or rejects with an error.
  */
 export default async (
- guild: RGuild,
+ guildId: string,
  webhookId: string,
  token: string,
  body: unknown,
- query?: Discord.RESTPostAPIWebhookWithTokenSlackQuery,
+ query?: RESTPostAPIWebhookWithTokenSlackQuery,
 ) => {
  if (process.argv.includes('--silent')) return new Error('Silent mode enabled.');
 
- return (await getAPI(guild)).webhooks
+ return (await getAPI(guildId)).webhooks
   .executeSlack(webhookId, token, body, query)
   .catch((e: DiscordAPIError) => {
-   error(guild, new Error((e as DiscordAPIError).message));
+   error(guildId, e);
    return e;
   });
 };
