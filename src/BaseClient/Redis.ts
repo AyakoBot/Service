@@ -29,6 +29,8 @@ import type UserCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/user.
 import type VoiceCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/voice.js';
 import type WebhookCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/webhook.js';
 import type PinCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/pin.js';
+import type WelcomeScreenCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/welcomeScreen.js';
+import type OnboardingCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/onboarding.js';
 
 const MessageTypes = [MessageType.Interaction, MessageType.Vote, MessageType.Appeal];
 
@@ -58,6 +60,8 @@ const cacheImports: {
  VoiceCache: new (...args: any[]) => VoiceCache;
  WebhookCache: new (...args: any[]) => WebhookCache;
  PinCache: new (...args: any[]) => PinCache;
+ WelcomeScreenCache: new (...args: any[]) => WelcomeScreenCache;
+ OnboardingCache: new (...args: any[]) => OnboardingCache;
 } = {
  BanCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
@@ -159,6 +163,14 @@ const cacheImports: {
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/pin.js'
  ).then((r) => r.default as any),
+ WelcomeScreenCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/welcomeScreen.js'
+ ).then((r) => r.default as any),
+ OnboardingCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/onboarding.js'
+ ).then((r) => r.default as any),
 };
 
 export const prefix = 'cache';
@@ -208,6 +220,8 @@ export const cache: {
  voices: VoiceCache;
  webhooks: WebhookCache;
  pins: PinCache;
+ welcomeScreens: WelcomeScreenCache;
+ onboardings: OnboardingCache;
 } = {
  automods: new cacheImports.AutomodCache(cacheDB),
  bans: new cacheImports.BanCache(cacheDB),
@@ -234,6 +248,8 @@ export const cache: {
  voices: new cacheImports.VoiceCache(cacheDB),
  webhooks: new cacheImports.WebhookCache(cacheDB),
  pins: new cacheImports.PinCache(cacheDB),
+ welcomeScreens: new cacheImports.WelcomeScreenCache(cacheDB),
+ onboardings: new cacheImports.OnboardingCache(cacheDB),
 };
 
 const callback = async (channel: string, key: string) => {
