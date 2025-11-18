@@ -8,6 +8,10 @@ export default async (
 ) => {
  if (!requiredPermissions.length) return true;
 
+ const guild = await cache.guilds.get(guildId);
+ if (!guild) return false;
+ if (guild.owner_id === userId) return true;
+
  const member = await cache.members.get(guildId, userId);
  if (!member) return false;
  if (!requiredPermissions.length) return true;
