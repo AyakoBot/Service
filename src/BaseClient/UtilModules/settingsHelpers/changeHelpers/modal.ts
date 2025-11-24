@@ -1,11 +1,11 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle, ComponentType, type APIButtonComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import emotes from '../../emotes.js';
 
 export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
  fieldName: string,
-): Discord.APIButtonComponent => ({
+): APIButtonComponent => ({
  type: ComponentType.Button,
  style: ButtonStyle.Danger,
  custom_id: `settings/modal_${String(name)}_${fieldName}`,

@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle } from 'discord-api-types/v10';
 
 /**
  * Returns the appropriate Discord button style based on the provided setting.

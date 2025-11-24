@@ -1,5 +1,5 @@
-import DataBase from '../../../DataBase.js';
 import * as CT from '../../../../Typings/Typings.js';
+import DataBase from '../../../DataBase.js';
 
 export default <T extends keyof typeof CT.SettingsName2TableName>(
  tableName: T,
@@ -13,7 +13,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
   : { where: { guildid }, data: { [fieldName]: newSetting } };
 
  return (
-  DataBase[CT.SettingsName2TableName[tableName]] as never as {
+  DataBase[CT.SettingsName2TableName[tableName] as keyof typeof DataBase] as never as {
    update: (x: typeof where) => CT.CRUDResult<T>;
   }
  ).update(where);

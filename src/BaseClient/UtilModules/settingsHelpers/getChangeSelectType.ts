@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ComponentType } from 'discord-api-types/v10.js';
 import * as CT from '../../../Typings/Typings.js';
 
 export type ChangeSelectType =

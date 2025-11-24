@@ -18,7 +18,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  const where = { where: { uniquetimestamp, guildid } };
 
  return (
-  DataBase[CT.SettingsName2TableName[tableName]] as never as {
+  DataBase[CT.SettingsName2TableName[tableName] as keyof typeof DataBase] as never as {
    delete: (x: typeof where) => CT.CRUDResult<T>;
   }
  ).delete(where);

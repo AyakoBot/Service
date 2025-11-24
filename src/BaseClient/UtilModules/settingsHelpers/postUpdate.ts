@@ -1,7 +1,7 @@
-import * as Discord from 'discord.js';
 import { glob } from 'glob';
 import * as CT from '../../../Typings/Typings.js';
 import constants from '../../Other/constants.js';
+import settingsHelpers from '../settingsHelpers.js';
 
 /**
  * Updates a setting and triggers a post-update action if necessary.
@@ -39,7 +39,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
 
  const settingsFile = (await import(file)) as CT.SettingsFile<typeof settingName>;
 
- const settings = await guild.client.util.settingsHelpers.changeHelpers.get(
+ const settings = await settingsHelpers.changeHelpers.get(
   settingName,
   guild.id,
   uniquetimestamp ? Number(uniquetimestamp) : undefined,

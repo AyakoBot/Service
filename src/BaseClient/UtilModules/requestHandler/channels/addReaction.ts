@@ -114,7 +114,7 @@ const saveBlocked = async (err: string, userId: string) => {
   .then();
 };
 
-const getTokenFromGuild = (guildId: string) =>
+export const getTokenFromGuild = (guildId: string) =>
  DataBase.customclients
   .findUnique({
    where: { guildid: guildId, token: { not: null } },

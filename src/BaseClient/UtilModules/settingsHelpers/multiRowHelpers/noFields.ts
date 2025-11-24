@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import type { APIEmbed } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 
 /**
@@ -6,7 +6,7 @@ import * as CT from '../../../../Typings/Typings.js';
  * @param embeds - The array of embeds to check.
  * @param language - The language object containing the message to display.
  */
-export default (embeds: Discord.APIEmbed[], language: CT.Language) => {
+export default (embeds: APIEmbed[], language: CT.Language) => {
  if (!embeds[0].fields?.length) {
   embeds[0].fields?.push({
    name: '\u200b',

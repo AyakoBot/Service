@@ -1,18 +1,17 @@
-import * as Discord from 'discord.js';
 import { glob } from 'glob';
 import * as CT from '../../../Typings/Typings.js';
-import error from '../error.js';
 import constants from '../../Other/constants.js';
+import error from '../error.js';
 
 /**
  * Retrieves the settings file for a given setting name and guild.
  * @param settingName - The name of the setting to retrieve.
- * @param guild - The guild to retrieve the setting for.
+ * @param guildId - The ID of the guild to retrieve the setting for.
  * @returns The settings file for the given setting name, or undefined if no file is found.
  */
 export default async <T extends keyof typeof CT.SettingsName2TableName>(
  settingName: T,
- guild: RGuild,
+ guildId: string,
 ) => {
  const files = await glob(
   `${process.cwd()}${
@@ -30,7 +29,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
   ),
  );
  if (!file) {
-  error(guild, new Error(`No file found for settings ${settingName}`));
+  error(guildId, new Error(`No file found for settings ${settingName}`));
   return undefined;
  }
 

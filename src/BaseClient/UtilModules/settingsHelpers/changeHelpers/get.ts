@@ -11,7 +11,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
   const where = uniquetimestamp ? { where: { uniquetimestamp } } : { where: { guildid } };
 
   return (
-   DataBase[CT.SettingsName2TableName[tableName]] as never as {
+   DataBase[CT.SettingsName2TableName[tableName] as keyof typeof DataBase] as never as {
     findUnique: (x: typeof where) => CT.CRUDResult<T>;
    }
   ).findUnique(where);

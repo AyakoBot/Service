@@ -1,28 +1,32 @@
 import {
  MessageFlags,
- type AnySelectMenuInteraction,
- type ButtonInteraction,
- type ModalMessageModalSubmitInteraction,
-} from 'discord.js';
+ type APIMessageComponentButtonInteraction,
+ type APIMessageComponentSelectMenuInteraction,
+ type APIModalSubmitGuildInteraction,
+} from 'discord-api-types/v10.js';
 import type { SettingNames, SettingsName2TableName } from 'src/Typings/Settings.js';
 import type { DataBaseTables, Language } from 'src/Typings/Typings.js';
+import { request } from '../requestHandler.js';
+import settingsHelpers from '../settingsHelpers.js';
 import buttonParsers from './buttonParsers.js';
 import componentParsers from './componentParsers.js';
 import embedParsers from './embedParsers.js';
 import getSettingsFile from './getSettingsFile.js';
 
 export default async <K extends SettingNames>(
- cmd: ButtonInteraction | AnySelectMenuInteraction | ModalMessageModalSubmitInteraction,
+ cmd:
+  | APIMessageComponentButtonInteraction
+  | APIMessageComponentSelectMenuInteraction
+  | APIModalSubmitGuildInteraction,
  settingName: K,
  updatedSetting: DataBaseTables[(typeof SettingsName2TableName)[K]],
  language: Language,
 ) => {
- if (!cmd.inCachedGuild()) return;
- const settingsFile = await getSettingsFile(settingName, cmd.guild);
+ const settingsFile = await getSettingsFile(settingName, cmd.guild_id!);
  if (!settingsFile) return;
 
  if (settingsFile.getComponentsV2) {
-  cmd.update({
+  request.interactions.updateMessage(cmd.id, cmd.token, {
    components: await settingsFile.getComponentsV2(
     embedParsers,
     buttonParsers,
@@ -30,7 +34,7 @@ export default async <K extends SettingNames>(
     updatedSetting,
     language,
     language.slashCommands.settings.categories[settingName],
-    cmd.guild,
+    cmd.guild_id!,
    ),
    files: settingsFile.getFiles ? await settingsFile.getFiles(updatedSetting, language) : undefined,
    flags: MessageFlags.IsComponentsV2,
@@ -39,19 +43,19 @@ export default async <K extends SettingNames>(
   return;
  }
 
- cmd.update({
+ request.interactions.updateMessage(cmd.id, cmd.token, {
   embeds: await settingsFile.getEmbeds(
    embedParsers,
    updatedSetting,
    language,
    language.slashCommands.settings.categories[settingName],
-   cmd.guild,
+   cmd.guild_id!,
   ),
   components: await settingsFile.getComponents(
-   cmd.client.util.settingsHelpers.buttonParsers,
+   settingsHelpers.buttonParsers,
    updatedSetting,
    language,
-   cmd.guild,
+   cmd.guild_id!,
   ),
   files: settingsFile.getFiles ? await settingsFile.getFiles(updatedSetting, language) : undefined,
  });

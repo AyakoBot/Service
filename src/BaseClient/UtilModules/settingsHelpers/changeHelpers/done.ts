@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle, ComponentType, type APIButtonComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import { getWithUTS } from '../buttonParsers/back.js';
 
@@ -8,7 +8,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  type: CT.EditorTypes | CT.AutoModEditorType,
  language: CT.Language,
  uniquetimestamp: number | undefined | string,
-): Discord.APIButtonComponent => ({
+): APIButtonComponent => ({
  type: ComponentType.Button,
  style: ButtonStyle.Success,
  custom_id: getWithUTS(`settings/done/${type}_${String(name)}_${fieldName}`, uniquetimestamp),

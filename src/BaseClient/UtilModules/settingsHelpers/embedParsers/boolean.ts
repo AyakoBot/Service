@@ -1,6 +1,6 @@
 import * as CT from '../../../../Typings/Typings.js';
-import emotes from '../../emotes.js';
 import constants from '../../../Other/constants.js';
+import emotes from '../../emotes.js';
 
 /**
  * Parser for boolean type settings.

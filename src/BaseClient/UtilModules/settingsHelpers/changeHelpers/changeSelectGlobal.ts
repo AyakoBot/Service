@@ -1,9 +1,16 @@
-import * as Discord from 'discord.js';
+import {
+ ChannelType,
+ ComponentType,
+ SelectMenuDefaultValueType,
+ type APIChannelSelectComponent,
+ type APIMentionableSelectComponent,
+ type APIRoleSelectComponent,
+ type APIUserSelectComponent,
+} from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
-
+import { getWithUTS } from '../buttonParsers/back.js';
 import getChangeSelectType from '../getChangeSelectType.js';
 import getPlaceholder from '../getPlaceholder.js';
-import { getWithUTS } from '../buttonParsers/back.js';
 
 export default <T extends keyof typeof CT.SettingsName2TableName>(
  language: CT.Language,
@@ -13,15 +20,15 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  uniquetimestamp: number | undefined | string,
  values: {
   id: string;
-  type: Discord.SelectMenuDefaultValueType;
+  type: SelectMenuDefaultValueType;
  }[],
  channelType?: 'text' | 'voice' | 'category',
 ) => {
  const menu:
-  | Discord.APIRoleSelectComponent
-  | Discord.APIChannelSelectComponent
-  | Discord.APIUserSelectComponent
-  | Discord.APIMentionableSelectComponent = {
+  | APIRoleSelectComponent
+  | APIChannelSelectComponent
+  | APIUserSelectComponent
+  | APIMentionableSelectComponent = {
   min_values: 0,
   max_values: type.endsWith('s') ? 25 : 1,
   custom_id: getWithUTS(`settings/${type}_${fieldName}_${String(settingName)}`, uniquetimestamp),

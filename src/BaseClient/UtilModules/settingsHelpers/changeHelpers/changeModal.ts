@@ -1,4 +1,8 @@
-import * as Discord from 'discord.js';
+import {
+ ComponentType,
+ TextInputStyle,
+ type APIModalInteractionResponseCallbackData,
+} from 'discord-api-types/v10.js';
 import ms from 'ms';
 import * as CT from '../../../../Typings/Typings.js';
 import { getWithUTS } from '../buttonParsers/back.js';
@@ -20,7 +24,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  short: boolean,
  uniquetimestamp: number | string | undefined,
  required?: boolean,
-): Discord.APIModalInteractionResponseCallbackData => ({
+): APIModalInteractionResponseCallbackData => ({
  title:
   language.slashCommands.settings.BLWL[
    fieldName as keyof typeof language.slashCommands.settings.BLWL
@@ -38,7 +42,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
    components: [
     {
      type: ComponentType.TextInput,
-     style: short ? Discord.TextInputStyle.Short : Discord.TextInputStyle.Paragraph,
+     style: short ? TextInputStyle.Short : TextInputStyle.Paragraph,
      min_length: required ? 1 : 0,
      max_length: 4000,
      label: language.slashCommands.settings.insertHere,
@@ -54,7 +58,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
    components: [
     {
      type: ComponentType.TextInput,
-     style: Discord.TextInputStyle.Paragraph,
+     style: TextInputStyle.Paragraph,
      label: language.slashCommands.settings.acceptedValue,
      custom_id: '-',
      value:

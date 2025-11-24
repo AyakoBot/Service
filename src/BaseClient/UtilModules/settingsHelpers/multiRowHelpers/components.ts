@@ -1,4 +1,8 @@
-import * as Discord from 'discord.js';
+import {
+ ComponentType,
+ type APIActionRowComponent,
+ type APIComponentInMessageActionRow,
+} from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import buttonParsers from '../buttonParsers.js';
 
@@ -12,7 +16,7 @@ import buttonParsers from '../buttonParsers.js';
  */
 export default <T extends keyof typeof CT.SettingsName2TableName>(
  options: unknown[],
- components: Discord.APIActionRowComponent<Discord.APIComponentInMessageActionRow>[],
+ components: APIActionRowComponent<APIComponentInMessageActionRow>[],
  language: CT.Language,
  name: T,
  page: number,

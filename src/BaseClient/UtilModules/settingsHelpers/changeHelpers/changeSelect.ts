@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ComponentType, type APIStringSelectComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import { getWithUTS } from '../buttonParsers/back.js';
 
@@ -7,7 +7,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  settingName: T,
  type: CT.EditorTypes,
  options: {
-  options: Discord.StringSelectMenuComponent['options'];
+  options: APIStringSelectComponent['options'];
   placeholder?: string;
   max_values?: number;
   min_values?: number;
@@ -15,7 +15,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  },
  uniquetimestamp: number | undefined,
 ) => {
- const menu: Discord.APIStringSelectComponent = {
+ const menu: APIStringSelectComponent = {
   min_values: options.min_values || 1,
   max_values: options.max_values || 1,
   custom_id: getWithUTS(`settings/${type}_${fieldName}_${String(settingName)}`, uniquetimestamp),

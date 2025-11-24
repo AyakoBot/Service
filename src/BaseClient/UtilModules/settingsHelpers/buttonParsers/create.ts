@@ -1,4 +1,8 @@
-import * as Discord from 'discord.js';
+import {
+ ButtonStyle,
+ ComponentType,
+ type APIButtonComponentWithCustomId,
+} from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import emotes from '../../emotes.js';
 
@@ -11,7 +15,7 @@ import emotes from '../../emotes.js';
 export default <T extends keyof typeof CT.SettingsName2TableName>(
  language: CT.Language,
  name: T,
-): Discord.APIButtonComponentWithCustomId => ({
+): APIButtonComponentWithCustomId => ({
  type: ComponentType.Button,
  label: language.slashCommands.settings.create,
  style: ButtonStyle.Success,

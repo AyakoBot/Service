@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import type { APIEmbed } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import embedParsers from '../embedParsers.js';
 
@@ -19,7 +19,7 @@ export default <T extends keyof CT.Categories>(
  language: CT.Language,
  lan: CT.Categories[T],
  page: number,
-): Discord.APIEmbed[] => [
+): APIEmbed[] => [
  {
   author: embedParsers.author(language, lan),
   fields: fields?.splice(page * 25, 25) || [],

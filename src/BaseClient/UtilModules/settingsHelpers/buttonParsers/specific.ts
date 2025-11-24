@@ -1,8 +1,12 @@
 import { Prisma } from '@prisma/client';
-import * as Discord from 'discord.js';
+import {
+ ButtonStyle,
+ ComponentType,
+ type APIButtonComponent,
+ type APIMessageComponentEmoji,
+} from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import constants from '../../../Other/constants.js';
-
 import getEmoji from '../getEmoji.js';
 import { getWithUTS } from './back.js';
 
@@ -24,8 +28,8 @@ export default <T extends keyof CT.Categories>(
  settingName: T,
  uniquetimestamp: number | undefined,
  type?: CT.EditorTypes.Channel | CT.EditorTypes.Role | CT.EditorTypes.User,
- emoji?: Discord.APIMessageComponentEmoji,
-): Discord.APIButtonComponent => {
+ emoji?: APIMessageComponentEmoji,
+): APIButtonComponent => {
  const constantTypes =
   constants.commands.settings.types[settingName as keyof typeof constants.commands.settings.types];
 

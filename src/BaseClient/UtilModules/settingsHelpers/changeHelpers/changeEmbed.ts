@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import type { APIEmbed } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import emotes from '../../emotes.js';
 
@@ -11,8 +11,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
  fieldName: string,
  values: string[] | string | undefined,
  type: CT.MentionTypes,
- guild: RGuild,
-): Promise<Discord.APIEmbed> => ({
+): Promise<APIEmbed> => ({
  author: {
   name: language.slashCommands.settings.authorType(
    language.slashCommands.settings.categories[settingName].name,
@@ -24,7 +23,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
   (
    await Promise.all(
     (Array.isArray(values) ? values : [values])
-     .map((v) => (v ? getMention(language, type, v, guild) : null))
+     .map((v) => (v ? getMention(language, type, v) : null))
      .filter((v): v is Promise<string> => !!v),
    )
   ).join(', ') || language.t.None

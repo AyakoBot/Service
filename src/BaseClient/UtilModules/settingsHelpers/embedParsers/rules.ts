@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../../Typings/Typings.js';
 
 /**
@@ -8,7 +7,11 @@ import * as CT from '../../../../Typings/Typings.js';
  * @param guild - The Discord guild object.
  * @returns A string representation of the rules.
  */
-export default (val: string[] | null, language: CT.Language, guild: RGuild) =>
- val && val.length
-  ? val.map((v) => `\`${guild.autoModerationRules.cache.get(v)?.name ?? v}\``).join(', ')
+export default async (val: string[] | null, language: CT.Language) => {
+ const { cache } = await import('../../../Client.js');
+ const automods = (await Promise.all(val?.map((v) => cache.automods.get(v)) || [])) ?? [];
+
+ return val && val.length
+  ? val.map((v) => `\`${automods.find((a) => a?.id === v)?.name ?? v}\``).join(', ')
   : language.t.None;
+};

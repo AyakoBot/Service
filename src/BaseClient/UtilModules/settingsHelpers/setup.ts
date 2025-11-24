@@ -17,7 +17,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  const where = uniquetimestamp ? { data: { uniquetimestamp, guildid } } : { data: { guildid } };
 
  return (
-  DataBase[CT.SettingsName2TableName[tableName]] as never as {
+  DataBase[CT.SettingsName2TableName[tableName] as keyof typeof DataBase] as never as {
    create: (x: typeof where) => CT.CRUDResult<T>;
   }
  ).create(where);

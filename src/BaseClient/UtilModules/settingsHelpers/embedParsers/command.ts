@@ -9,10 +9,10 @@ import * as CT from '../../../../Typings/Typings.js';
 export default async (val: string | null, language: CT.Language) => {
  if (!val) return language.t.None;
 
- const client = (await import('../../../Client.js')).default;
+ const { cache } = await import('../../../Client.js');
 
  const isId = val?.replace(/\D+/g, '').length === val?.length;
- const cmd = isId ? client.application?.commands.cache.get(val) : undefined;
+ const cmd = isId ? await cache.commands.get(val) : undefined;
  if (cmd) return `</${cmd.name}:${cmd.id}>`;
  return `\`${val}\``;
 };

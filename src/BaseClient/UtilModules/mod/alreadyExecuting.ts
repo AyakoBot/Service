@@ -43,7 +43,7 @@ export default async (
    return replyMessage;
   }
 
-  (cmd as Discord.ChatInputCommandInteraction).editReply({ ...payload, message: replyMessage.id });
+  (cmd as ChatInputCommandInteraction).editReply({ ...payload, message: replyMessage.id });
   return replyMessage;
  };
 

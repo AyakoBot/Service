@@ -1,4 +1,3 @@
-import * as Discord from 'discord.js';
 import * as CT from '../../../Typings/Typings.js';
 import { makeInlineCode } from '../util.js';
 
@@ -33,12 +32,7 @@ export type MentionTypes =
  * @param guild - The guild object to use for certain types of mentions.
  * @returns A mention string based on the given type and value.
  */
-export default async (
- language: CT.Language,
- type: MentionTypes,
- value: string,
- guild: RGuild,
-) => {
+export default async (language: CT.Language, type: MentionTypes, value: string) => {
  switch (type) {
   case CT.EditorTypes.Channel:
    return `<#${value}>`;
@@ -58,10 +52,14 @@ export default async (
    return language.rolemodes[value as keyof typeof language.rolemodes];
   case CT.EditorTypes.Emote:
    return value.includes(':') ? `<${value.includes('a:') ? '' : ':'}${value}>` : value;
-  case CT.EditorTypes.AutoModRules:
-   return makeInlineCode(guild!.autoModerationRules.cache.get(value)?.name ?? value);
+  case CT.EditorTypes.AutoModRules: {
+   const { cache } = await import('../../Client.js');
+
+   return makeInlineCode((await cache.automods.get(value))?.name ?? value);
+  }
   case CT.EditorTypes.Commands: {
-   const cmd = guild.client.application?.commands.cache.get(value);
+   const { cache } = await import('../../Client.js');
+   const cmd = await cache.commands.get(value);
 
    if (!cmd) return `\`${value}\``;
    return `</${cmd?.name}:${cmd?.id}>`;
@@ -77,7 +75,9 @@ export default async (
   case CT.EditorTypes.TicketingType:
    return language.ticketingtype[value as keyof typeof language.ticketingtype];
   case CT.EditorTypes.ThreadAutoArchiveDuration:
-   return language.threadAutoArchiveDurations[value as keyof typeof language.threadAutoArchiveDurations];
+   return language.threadAutoArchiveDurations[
+    value as keyof typeof language.threadAutoArchiveDurations
+   ];
   default:
    return value;
  }

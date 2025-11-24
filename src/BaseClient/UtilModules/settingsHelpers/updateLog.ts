@@ -1,10 +1,11 @@
-import * as Discord from 'discord.js';
+import constants from 'src/BaseClient/Other/constants.js';
 import * as CT from '../../../Typings/Typings.js';
 import getLogChannels from '../getLogChannels.js';
 import send from '../send.js';
 import { makeCodeBlock } from '../util.js';
 
 import postUpdate from './postUpdate.js';
+import type { APIEmbed, APIEmbedField } from 'discord-api-types/v10.js';
 
 /**
  * Updates the settings log with the old and new settings and sends an embed to the log channel.
@@ -56,11 +57,11 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
     ],
   } as { name: string });
 
- const { types } = guild.client.util.constants.commands.settings;
+ const { types } = constants.commands.settings;
  const setting = types[settingName as keyof typeof types];
  const key = setting[changedSetting as keyof typeof setting];
 
- const getFields = (): Discord.APIEmbedField[] => {
+ const getFields = (): APIEmbedField[] => {
   switch (true) {
    case !oldSetting:
     return [
@@ -104,7 +105,7 @@ export default async <T extends keyof typeof CT.SettingsName2TableName>(
   }
  };
 
- const embed: Discord.APIEmbed = {
+ const embed: APIEmbed = {
   color: getColor(),
   description: language.slashCommands.settings.log.desc(field.name ?? '-', lan.name),
   fields: getFields(),

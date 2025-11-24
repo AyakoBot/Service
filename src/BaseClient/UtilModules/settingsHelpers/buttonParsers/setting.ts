@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle, ComponentType, type APIButtonComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import emotes from '../../emotes.js';
 import { getWithUTS } from './back.js';
@@ -20,7 +20,7 @@ export default <T extends keyof typeof CT.SettingsName2TableName>(
  settingName: T,
  linkName: keyof typeof CT.SettingsName2TableName,
  uniquetimestamp: number | undefined,
-): Discord.APIButtonComponent => ({
+): APIButtonComponent => ({
  type: ComponentType.Button,
  label: (
   (

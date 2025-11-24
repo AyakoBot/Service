@@ -1,9 +1,10 @@
-import * as Discord from 'discord.js';
+import { ComponentType, type APIButtonComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 
 import getEmoji from '../getEmoji.js';
 import getLable from '../getLable.js';
 import getStyle from '../getStyle.js';
+
 import { getWithUTS } from './back.js';
 
 /**
@@ -21,7 +22,7 @@ export default (
  type: CT.GlobalDescType,
  settingName: string,
  uniquetimestamp: number | undefined,
-): Discord.APIButtonComponent => ({
+): APIButtonComponent => ({
  type: ComponentType.Button,
  label: getLable(language, type),
  style: getStyle(setting),

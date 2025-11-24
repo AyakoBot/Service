@@ -1,17 +1,16 @@
 import {
- type APIButtonComponentWithCustomId,
  ButtonStyle,
- Client,
  ComponentType,
-} from 'discord.js';
-import { type Language, SettingsName2TableName } from '../../../../Typings/Typings.js';
+ type APIButtonComponentWithCustomId,
+} from 'discord-api-types/v10.js';
+import { SettingsName2TableName, type Language } from '../../../../Typings/Typings.js';
+import emotes from '../../emotes.js';
 import { getWithUTS } from '../buttonParsers/back.js';
 
 export default <T extends keyof typeof SettingsName2TableName>(
  language: Language,
  settingName: T,
  fieldName: string,
- client: Client<true>,
  uniquetimestamp: number | string | undefined,
  many: boolean = true,
 ): APIButtonComponentWithCustomId => ({
@@ -22,5 +21,5 @@ export default <T extends keyof typeof SettingsName2TableName>(
   uniquetimestamp,
  ),
  label: language.slashCommands.settings.addById,
- emoji: client.util.emotes.MemberBright,
+ emoji: emotes.MemberBright,
 });

@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle, ComponentType, type APIButtonComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import emotes from '../../emotes.js';
 
@@ -13,7 +13,7 @@ type UTS = number | undefined | string;
 export default <T extends keyof typeof CT.SettingsName2TableName>(
  name: T,
  uniquetimestamp: UTS,
-): Discord.APIButtonComponent => ({
+): APIButtonComponent => ({
  type: ComponentType.Button,
  style: ButtonStyle.Danger,
  custom_id: getWithUTS(`settings/settingsDisplay_${String(name)}`, uniquetimestamp),

@@ -1,4 +1,4 @@
-import * as Discord from 'discord.js';
+import { ButtonStyle, ComponentType, type APIButtonComponent } from 'discord-api-types/v10.js';
 import * as CT from '../../../../Typings/Typings.js';
 import constants from '../../../Other/constants.js';
 import emotes from '../../emotes.js';
@@ -19,7 +19,7 @@ export default <T extends keyof CT.Categories>(
  name: keyof CT.FieldName<T>,
  settingName: T,
  uniquetimestamp: number | undefined,
-): Discord.APIButtonComponent => {
+): APIButtonComponent => {
  const constantTypes =
   constants.commands.settings.types[settingName as keyof typeof constants.commands.settings.types];
 
