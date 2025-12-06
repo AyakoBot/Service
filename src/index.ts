@@ -2,31 +2,66 @@
 import 'dotenv/config';
 import 'longjohn';
 import { scheduleJob } from 'node-schedule';
-import sms from 'source-map-support';
+import { install } from 'source-map-support';
 
-import './BaseClient/Events.js';
-import './BaseClient/UtilModules/console.js';
-import getPathFromError from './BaseClient/UtilModules/getPathFromError.js';
+console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
+console.log('+       Restart all Clusters with "restart"        +');
+console.log('+                  Arguments:                      +');
+console.log('+ --log-level=<silent|error|warn|info|debug|silly> +');
+console.log('+            --silent --dev --register             +');
+console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++');
 
-console.clear();
-console.log('+++++++++++++++ Welcome to Ayako ++++++++++++++++');
-console.log('+      Restart all Clusters with "restart"      +');
-console.log('+                  Arguments:                   +');
-console.log('+   --debug --debug-db --warn --debug-queries   +');
-console.log('+                --silent --dev                 +');
-console.log('+++++++++++++++++++++++++++++++++++++++++++++++++');
+import Client from './classes/Client.js';
+import logger from './classes/Logger.js';
+import getPathFromError from './util/getPathFromError.js';
 
-sms.install({
- handleUncaughtExceptions: process.argv.includes('--debug'),
+logger.log('[Startup] Service starting...');
+logger.debug('[Startup] Process arguments:', process.argv.join(' '));
+logger.silly('[Startup] Environment loaded via dotenv');
+
+logger.debug('[Startup] Installing source-map-support...');
+install({
+ handleUncaughtExceptions: process.argv.includes('--log-level=debug'),
  environment: 'node',
- emptyCacheBetweenOperations: process.argv.includes('--debug'),
+ emptyCacheBetweenOperations: process.argv.includes('--log-level=debug'),
+});
+logger.silly(
+ '[Startup] Source-map-support installed with uncaughtExceptions:',
+ process.argv.includes('--log-level=debug'),
+);
+
+logger.debug('[Startup] Registering scheduled jobs...');
+scheduleJob(getPathFromError(new Error()), '*/10 * * * *', async () => {
+ logger.log(`=> Current Date: ${new Date().toLocaleString()}`);
+});
+logger.silly('[Startup] Scheduled job registered: heartbeat every 10 minutes');
+
+logger.log('[Startup] Creating Client instance...');
+new Client();
+
+logger.debug('[Startup] Setting startup timeout (10s)...');
+setTimeout(() => {
+ logger.warn('[Startup] Reached maximum startup time (10s) - exiting');
+ process.exit();
+}, 10000);
+
+process.on('SIGINT', () => {
+ logger.log('[Shutdown] Received SIGINT signal');
+ logger.debug('[Shutdown] Gracefully shutting down...');
+ process.exit(0);
 });
 
-if (process.argv.includes('--debug')) console.log('[DEBUG] Debug mode enabled');
-if (process.argv.includes('--debug-db')) console.log('[DEBUG] Debug mode for database enabled');
-if (process.argv.includes('--warn')) console.log('[DEBUG] Warn mode enabled');
-if (process.argv.includes('--silent')) console.log('[DEBUG] Silent mode enabled');
+process.on('SIGTERM', () => {
+ logger.log('[Shutdown] Received SIGTERM signal');
+ logger.debug('[Shutdown] Gracefully shutting down...');
+ process.exit(0);
+});
 
-scheduleJob(getPathFromError(new Error()), '*/10 * * * *', async () => {
- console.log(`=> Current Date: ${new Date().toLocaleString()}`);
+process.on('uncaughtException', (error) => {
+ logger.error('[Process] Uncaught exception:', error.message);
+ logger.silly('[Process] Stack:', error.stack);
+});
+
+process.on('unhandledRejection', (reason) => {
+ logger.error('[Process] Unhandled rejection:', reason);
 });

@@ -1,34 +1,37 @@
-
-import { fileURLToPath } from 'node:url';
-
-import { includeIgnoreFile } from '@eslint/compat';
+/* eslint-disable @typescript-eslint/naming-convention */
 import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
-import ts from 'typescript-eslint';
+import tseslint from 'typescript-eslint';
 
-import sqlRules from './eslint-plugins/sqlRules.js';
-
-const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
-
-export default ts.config(
- includeIgnoreFile(gitignorePath),
+export default defineConfig(
+ {
+  ignores: ['dist/**', 'node_modules/**', '**/*.js', '!eslint.config.js'],
+ },
  js.configs.recommended,
- ...ts.configs.recommended,
+ tseslint.configs.recommended,
  prettier,
  {
   languageOptions: {
-   parser: ts.parser,
+   parser: tseslint.parser,
    parserOptions: {
     sourceType: 'module',
     ecmaVersion: 2020,
+    tsconfigRootDir: __dirname,
    },
    globals: { ...globals.node },
   },
   plugins: {
    import: importPlugin,
-   'sql-rules': sqlRules,
+  },
+  settings: {
+   'import/resolver': {
+    node: {
+     extensions: ['.js', '.mjs', '.cjs'],
+    },
+   },
   },
   rules: {
    // typescript-eslint strongly recommend that you do not use the no-undef lint rule on
@@ -109,7 +112,7 @@ export default ts.config(
    'id-length': [
     'error',
     {
-     min: 2,
+     min: 1,
      exceptions: ['i', 'j', 'x', 'y', 'z', '_'],
     },
    ],
@@ -129,6 +132,17 @@ export default ts.config(
      selector: 'WithStatement',
      message:
       '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
+    },
+   ],
+   'no-constructor-return': 'error',
+   'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+   'prefer-exponentiation-operator': 'error',
+   'no-restricted-properties': [
+    'error',
+    {
+     object: 'Math',
+     property: 'pow',
+     message: 'Use the exponentiation operator (**) instead.',
     },
    ],
 
@@ -154,12 +168,12 @@ export default ts.config(
     {
      ts: 'never',
      tsx: 'never',
-     js: 'always',
-     jsx: 'never',
+     ignorePackages: true,
     },
    ],
 
    // TypeScript specific overrides
+   '@typescript-eslint/no-this-alias': 'off',
    '@typescript-eslint/explicit-function-return-type': 'off',
    '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: false }],
    '@typescript-eslint/no-unused-vars': [
@@ -169,6 +183,7 @@ export default ts.config(
      varsIgnorePattern: '^_',
     },
    ],
+   'no-unused-vars': 'off',
    '@typescript-eslint/naming-convention': [
     'warn',
     {
@@ -219,16 +234,13 @@ export default ts.config(
      },
     },
    ],
+   '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
 
+   // Other overrides
    curly: ['error', 'multi-line', 'consistent'],
    'no-else-return': 'error',
-   'prefer-null-coalescing': 'off',
-   'no-undefined': 'off',
-   '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
    'no-console': 'warn',
    'no-debugger': 'error',
-   'sql-rules/usePoolExecuteOnly': 'error',
-   'sql-rules/sqlMultilineUppercase': 'error',
   },
  },
 );
