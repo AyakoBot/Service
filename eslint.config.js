@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+
+const dir = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(
  {
@@ -19,7 +24,7 @@ export default defineConfig(
    parserOptions: {
     sourceType: 'module',
     ecmaVersion: 2020,
-    tsconfigRootDir: __dirname,
+    tsconfigRootDir: dir,
    },
    globals: { ...globals.node },
   },
@@ -74,7 +79,7 @@ export default defineConfig(
    ],
    'comma-style': ['error', 'last'],
    'comma-dangle': ['error', 'always-multiline'],
-   indent: ['error', 1, { SwitchCase: 1 }],
+   indent: 'off', // Handled by Prettier
    'space-before-blocks': 'error',
    'keyword-spacing': 'error',
    'space-infix-ops': 'error',
@@ -150,6 +155,17 @@ export default defineConfig(
    'import/first': 'error',
    'import/no-mutable-exports': 'error',
    'import/prefer-default-export': 'off',
+   'no-restricted-imports': [
+    'error',
+    {
+     patterns: [
+      {
+       group: ['src/*', 'src/**'],
+       message: 'Use relative imports instead of src/ paths.',
+      },
+     ],
+    },
+   ],
    'import/order': [
     'error',
     {
@@ -164,11 +180,12 @@ export default defineConfig(
    'import/newline-after-import': 'error',
    'import/extensions': [
     'error',
-    'always',
+    'ignorePackages',
     {
-     ts: 'never',
-     tsx: 'never',
-     ignorePackages: true,
+     js: 'always',
+     mjs: 'always',
+     ts: 'always',
+     tsx: 'always',
     },
    ],
 
@@ -204,6 +221,10 @@ export default defineConfig(
      format: ['PascalCase'],
     },
     {
+     selector: 'enumMember',
+     format: ['PascalCase'],
+    },
+    {
      selector: 'import',
      format: ['camelCase', 'PascalCase'],
     },
@@ -218,6 +239,22 @@ export default defineConfig(
      format: null,
      filter: {
       regex: '^[A-Z].*-.*',
+      match: true,
+     },
+    },
+    {
+     selector: 'objectLiteralProperty',
+     format: null,
+     filter: {
+      regex: '^\\d+$',
+      match: true,
+     },
+    },
+    {
+     selector: 'objectLiteralProperty',
+     format: null,
+     filter: {
+      regex: '^\\w+_\\w+$',
       match: true,
      },
     },
