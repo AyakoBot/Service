@@ -1,7 +1,7 @@
 import type Prisma from '@ayako/database/src/index.js';
 
 export interface DataBaseTables {
- afk: Prisma.afk;
+ afkState: Prisma.afkState;
  antispam: Prisma.antispam;
  antivirus: Prisma.antivirus;
  appealquestions: Prisma.appealquestions;
@@ -26,7 +26,7 @@ export interface DataBaseTables {
  giveawaycollections: Prisma.giveawaycollection;
  giveaways: Prisma.giveaways;
  guilds: Prisma.guilds;
- guildsettings: Prisma.guildsettings;
+ guildSetting: Prisma.guildSetting;
  level: Prisma.level;
  leveling: Prisma.leveling;
  levelingmultichannels: Prisma.levelingmultichannels;
