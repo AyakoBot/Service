@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { EventEmitter } from 'node:events';
 
-import logger from './Logger.js';
 import type AuditLogCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/auditLog.js';
 import type AutomodCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/automod.js';
 import type BanCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/ban.js';
@@ -36,6 +35,8 @@ import { GatewayDispatchEvents } from '@discordjs/core';
 import Redis from 'ioredis';
 
 import { MessageType } from '../types/redis.js';
+
+import logger from './Logger.js';
 
 const messageTypes = [MessageType.interaction, MessageType.vote, MessageType.appeal];
 
