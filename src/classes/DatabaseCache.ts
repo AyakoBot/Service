@@ -190,7 +190,7 @@ export class DatabaseCache {
   if (typeof keyVal !== 'object') return null;
   if ('in' in keyVal && keyVal.in) {
    if (!Array.isArray(keyVal.in)) return null;
-   return keyVal.in;
+   return keyVal.in.map(String);
   }
 
   return null;
