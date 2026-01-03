@@ -4,20 +4,26 @@ import type { DataBaseTables } from '../../types/prisma.js';
 import type Database from '../Database.js';
 import Logger from '../Logger.js';
 
-type ModelName = keyof Prisma.TypeMap['model'] & keyof DataBaseTables;
-type Operations<T extends ModelName> = Prisma.TypeMap['model'][T]['operations'];
-type Args<T extends ModelName, K extends keyof Operations<T>> = Operations<T>[K];
+type PrismaModelName = keyof Prisma.TypeMap['model'];
+type TableName = keyof DataBaseTables;
 
-type WhereUnique<T extends ModelName> = Args<T, 'findUnique'>['args']['where'];
-type UpdateData<T extends ModelName> = Args<T, 'update'>['args']['data'];
+type Capitalize<S extends string> = S extends `${infer F}${infer R}` ? `${Uppercase<F>}${R}` : S;
+type ToPrismaModel<T extends TableName> =
+ Capitalize<T> extends PrismaModelName ? Capitalize<T> : T extends PrismaModelName ? T : never;
 
-interface ModelDelegate<T extends ModelName> {
+type Operations<T extends PrismaModelName> = Prisma.TypeMap['model'][T]['operations'];
+type Args<T extends PrismaModelName, K extends keyof Operations<T>> = Operations<T>[K];
+
+type WhereUnique<T extends TableName> = Args<ToPrismaModel<T>, 'findUnique'>['args']['where'];
+type UpdateData<T extends TableName> = Args<ToPrismaModel<T>, 'update'>['args']['data'];
+
+interface ModelDelegate<T extends TableName> {
  findUnique(args: { where: WhereUnique<T> }): Promise<DataBaseTables[T] | null>;
  delete(args: { where: WhereUnique<T> }): Promise<DataBaseTables[T]>;
  update(args: { where: WhereUnique<T>; data: UpdateData<T> }): Promise<DataBaseTables[T]>;
 }
 
-export default abstract class DBEntry<const T extends ModelName> {
+export default abstract class DBEntry<const T extends TableName> {
  protected tableName: T;
  protected identity: WhereUnique<T>;
  protected db: Database;
@@ -40,11 +46,15 @@ export default abstract class DBEntry<const T extends ModelName> {
 
  delete(): Promise<DataBaseTables[T]> {
   Logger.debug('[DBEntry] Deleting', this.tableName, 'entry');
-  return this.delegate().delete({ where: this.identity });
+  return this.delegate()
+   .delete({ where: this.identity })
+   .then((r) => r);
  }
 
  update(data: UpdateData<T>): Promise<DataBaseTables[T]> {
   Logger.debug('[DBEntry] Updating', this.tableName, 'entry');
-  return this.delegate().update({ where: this.identity, data });
+  return this.delegate()
+   .update({ where: this.identity, data })
+   .then((r) => r);
  }
 }
