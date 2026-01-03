@@ -302,6 +302,10 @@ class Cache extends EventEmitter {
    if (typeof data === 'string') data = JSON.parse(data);
 
    logger.silly('[Cache] Emitting event:', eventName);
+   if (!key.includes('669893888856817665')) return; // TODO disable dev filter
+
+   logger.log('[Cache] Emitting event:', eventName, 'with data:', data);
+
    this.emit(eventName, data);
   }
 
