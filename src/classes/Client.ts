@@ -7,7 +7,6 @@ import type Plugin from './abstracts/Plugin.js';
 import Cache from './Cache.js';
 import Database from './Database.js';
 import JobCache from './JobCache.js';
-import { Language } from './Language.js';
 import Logger from './Logger.js';
 import Metrics from './Metrics.js';
 import SendMessageCache from './SendMessageCache.js';
@@ -17,18 +16,19 @@ const token = (
 ).replace('Bot ', '');
 
 export default class Client {
- readonly rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken(token);
- readonly api = new API(this.rest);
- readonly cache = Cache;
- readonly metrics = Metrics;
- readonly logger = Logger;
- readonly db: Database;
+ rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken(token);
+ api = new API(this.rest);
+ cache = Cache;
+ metrics = Metrics;
+ logger = Logger;
+ db: Database;
 
- readonly sendMessageCache: SendMessageCache;
- readonly jobCache: typeof JobCache.prototype;
- readonly languageCache: { [key in keyof typeof Language.languages]?: Language } = {};
+ sendMessageCache: SendMessageCache;
+ jobCache: typeof JobCache.prototype;
+ languageCache: Map<string, string> = new Map();
 
- readonly plugins: Plugin[] = [];
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ plugins: Plugin<any>[] = [];
 
  constructor() {
   Logger.log('[Client] Initializing Client...');
@@ -54,29 +54,27 @@ export default class Client {
   Logger.log('[Client] Client initialization complete');
  }
 
- registerPlugin = (plugin: Plugin) => {
+ registerPlugin = <E extends GatewayDispatchEvents>(
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  PluginClass: new (client: Client) => Plugin<E>,
+ ) => {
+  const plugin = new PluginClass(this);
+
+  const exists = this.plugins.find((p) => p.name === plugin.name);
+  if (exists) return;
+
   this.plugins.push(plugin);
   Logger.debug('[Client] Registered plugin:', plugin.name);
  };
 
- private getLanguageForLocale = (lang: keyof typeof Language.languages = 'en-GB') => {
-  if (this.languageCache[lang]) return this.languageCache[lang];
+ getLocale = async (guildIdOrLocale: bigint | undefined | null | string) => {
+  if (!guildIdOrLocale) return 'en-GB';
 
-  return new Language(lang, this.cache);
- };
-
- getLanguage = async (guildIdOrLocale: bigint | undefined | null | string) => {
-  if (!guildIdOrLocale) return this.getLanguageForLocale('en-GB');
-
-  if (typeof guildIdOrLocale === 'string' && guildIdOrLocale.includes('-')) {
-   return this.getLanguageForLocale(guildIdOrLocale as keyof typeof Language.languages);
-  }
+  if (typeof guildIdOrLocale === 'string' && guildIdOrLocale.includes('-')) return guildIdOrLocale;
 
   const base = new GuildSetting(this.db, String(guildIdOrLocale));
   const setting = await base.get();
 
-  return this.getLanguageForLocale(
-   (setting?.language || 'en-GB') as keyof typeof Language.languages,
-  );
+  return setting?.language || 'en-GB';
  };
 }
