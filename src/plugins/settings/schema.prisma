@@ -1,0 +1,43 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model GuildSetting {
+ guildId           String   @db.VarChar
+ prefix            String?
+ interactionsMode  Boolean  @default(true)
+ language          String   @default("en-GB")
+ errorChannel      String?  @db.VarChar
+ rpEnabled         Boolean  @default(false)
+ rpEnableRuns      Decimal  @default(0) @db.Decimal
+ lastRpSyncRun     Decimal? @db.Decimal
+ ptReminderEnabled Boolean  @default(true)
+ legacyRp          Boolean  @default(false)
+ editRpCommands    Boolean  @default(true)
+ enableInvitesAt   Decimal? @db.Decimal
+ statusChannel     String?  @db.VarChar
+ updatesChannel    String?
+ notifyChannel     String?
+
+ @@id([guildId])
+ @@index([guildId])
+}
+
+model CustomClient {
+ guildId   String  @db.VarChar
+ appId     String? @db.VarChar
+ token     String? @db.VarChar
+ publicKey String? @db.VarChar
+ secret    String? @db.VarChar
+
+ @@id([guildId])
+ @@index([appId])
+}
