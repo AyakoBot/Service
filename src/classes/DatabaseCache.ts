@@ -1,23 +1,17 @@
 import type { Prisma } from '@ayako/database';
-import type {
- DefaultArgs,
- DynamicQueryExtensionCb,
- InternalArgs,
- RequiredKeys,
-} from '@prisma/client/runtime/library';
 
-import type { DataBaseTables } from '../types/prisma.js';
+import type { DataBaseTables, TableName } from '../types/prisma.js';
 
 import type Cache from './Cache.js';
 import logger from './Logger.js';
 
-type RequiredOnly<T> = Pick<T, RequiredKeys<T>>;
-type Operations<T extends keyof Prisma.TypeMap['model']> = Prisma.TypeMap['model'][T]['operations'];
 export type MaybeArray<T = unknown> = T | T[];
-type Args<
- T extends keyof Prisma.TypeMap['model'],
- K extends keyof Operations<T>,
-> = Operations<T>[K];
+
+export interface CacheOperationData {
+ args: { where?: Record<string, unknown> };
+ operation: string;
+ query: (args: unknown) => Promise<unknown>;
+}
 
 export class DatabaseCache {
  readonly cache: typeof Cache;
@@ -27,32 +21,10 @@ export class DatabaseCache {
   logger.debug('[DatabaseCache] DatabaseCache initialized');
  }
 
- handleOperation = <T extends keyof Prisma.TypeMap['model'] & keyof DataBaseTables>(
+ handleOperation = <T extends TableName>(
   name: T,
-  index: keyof RequiredOnly<Args<T, 'findUnique'>['args']['where']> & keyof DataBaseTables[T],
-  data: Parameters<
-   DynamicQueryExtensionCb<
-    Prisma.TypeMap<InternalArgs & DefaultArgs, Prisma.PrismaClientOptions>,
-    'model',
-    T,
-    | 'findUnique'
-    | 'findUniqueOrThrow'
-    | 'findFirst'
-    | 'findFirstOrThrow'
-    | 'findMany'
-    | 'create'
-    | 'createMany'
-    | 'createManyAndReturn'
-    | 'delete'
-    | 'update'
-    | 'deleteMany'
-    | 'updateMany'
-    | 'upsert'
-    | 'aggregate'
-    | 'groupBy'
-    | 'count'
-   >
-  >[0],
+  index: keyof DataBaseTables[T] & string,
+  data: CacheOperationData,
  ) => {
   if (!('where' in data.args) || !data.args.where) {
    logger.silly('[DatabaseCache] No where clause, bypassing cache for', name, data.operation);
@@ -91,30 +63,8 @@ export class DatabaseCache {
   }
  };
 
- private handleFind = async <T extends keyof DataBaseTables>(
-  data: Parameters<
-   DynamicQueryExtensionCb<
-    Prisma.TypeMap<InternalArgs & DefaultArgs, Prisma.PrismaClientOptions>,
-    'model',
-    T,
-    | 'findUnique'
-    | 'findUniqueOrThrow'
-    | 'findFirst'
-    | 'findFirstOrThrow'
-    | 'findMany'
-    | 'create'
-    | 'createMany'
-    | 'createManyAndReturn'
-    | 'delete'
-    | 'update'
-    | 'deleteMany'
-    | 'updateMany'
-    | 'upsert'
-    | 'aggregate'
-    | 'groupBy'
-    | 'count'
-   >
-  >[0],
+ private handleFind = async <T extends TableName>(
+  data: CacheOperationData,
   keys: string[],
   tableName: T,
   keyName: keyof DataBaseTables[T],
@@ -152,7 +102,7 @@ export class DatabaseCache {
   }
  };
 
- private cacheNewEntry = <T extends keyof DataBaseTables>(
+ private cacheNewEntry = <T extends TableName>(
   res: MaybeArray<DataBaseTables[T]>,
   tableName: T,
   keyName: keyof DataBaseTables[T],
@@ -176,9 +126,9 @@ export class DatabaseCache {
   return res;
  };
 
- private getKey = <T extends keyof Prisma.TypeMap['model']>(
-  where: Args<T, 'findMany'>['args']['where'] | Prisma.StringFilter | undefined,
-  keyName: keyof RequiredOnly<Args<T, 'findUnique'>['args']['where']>,
+ private getKey = <T extends TableName>(
+  where: Record<string, unknown> | Prisma.StringFilter | undefined,
+  keyName: keyof DataBaseTables[T] & string,
  ): string[] | null => {
   if (!where) return null;
   if (!(keyName in where)) return null;
