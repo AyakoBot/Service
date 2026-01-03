@@ -4,7 +4,6 @@ import { MessagePayload } from '../../../../classes/abstracts/MessagePayload.js'
 import constants from '../../../../classes/Constants.js';
 import { Colors } from '../../../../types/index.js';
 import getPathFromError from '../../../../util/getPathFromError.js';
-import isDeleteable from '../../../../util/isDeleteable.js';
 import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
 
@@ -37,7 +36,6 @@ export default async function (
   new Date(Date.now() + 10000),
   async () => {
    if (!m) return;
-   if (!(await isDeleteable(m))) return;
 
    this.client.api.channels.deleteMessage(m.channel_id, m.id, { reason: t.t.removeReason() });
   },
