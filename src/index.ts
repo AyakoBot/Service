@@ -4,16 +4,17 @@ import 'longjohn';
 import { scheduleJob } from 'node-schedule';
 import { install } from 'source-map-support';
 
+import Client from './classes/Client.js';
+import logger from './classes/Logger.js';
+import AFKPlugin from './plugins/afk/Plugin.js';
+import getPathFromError from './util/getPathFromError.js';
+
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');
 console.log('+                  Arguments:                      +');
 console.log('+ --log-level=<silent|error|warn|info|debug|silly> +');
 console.log('+            --silent --dev --register             +');
 console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++');
-
-import Client from './classes/Client.js';
-import logger from './classes/Logger.js';
-import getPathFromError from './util/getPathFromError.js';
 
 logger.log('[Startup] Service starting...');
 logger.debug('[Startup] Process arguments:', process.argv.join(' '));
@@ -37,7 +38,10 @@ scheduleJob(getPathFromError(new Error()), '*/10 * * * *', async () => {
 logger.silly('[Startup] Scheduled job registered: heartbeat every 10 minutes');
 
 logger.log('[Startup] Creating Client instance...');
-new Client();
+const client = new Client();
+
+logger.log('[Startup] Registering plugins...');
+client.registerPlugin(AFKPlugin);
 
 logger.debug('[Startup] Setting startup timeout (10s)...');
 setTimeout(() => {
