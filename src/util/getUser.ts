@@ -1,0 +1,9 @@
+import type Client from '../classes/Client.js';
+
+export default async function (this: Client, userId: string) {
+ const cached = await this.cache.users.get(userId);
+ if (cached) return cached;
+
+ const fetched = await this.api.users.get(userId).catch(() => null);
+ return fetched;
+}
