@@ -1,0 +1,28 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model AfkState {
+ userId  String  @db.VarChar
+ reason  String?
+ since   Decimal @db.Decimal
+ guildId String  @db.VarChar
+
+ @@id([userId, guildId])
+ @@index([userId, guildId])
+}
+
+model AfkSetting {
+ guildId    String @db.VarChar
+ maxLetters Int    @default(250)
+
+ @@id(guildId)
+}
