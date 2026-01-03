@@ -1,3 +1,4 @@
+import { EmbedBuilder } from '@discordjs/builders';
 import type {
  AllowedMentionsTypes,
  APIAllowedMentions,
@@ -41,102 +42,126 @@ export class MessagePayload {
   Logger.silly('[MessagePayload] Created new payload');
  }
 
- set setWebhook({ webhookId, webhookToken }: { webhookId: string; webhookToken?: string }) {
+ setWebhook({ webhookId, webhookToken }: { webhookId: string; webhookToken?: string }) {
   this.webhookId = webhookId;
   this.webhookToken = webhookToken;
+  return this;
  }
 
- set setMergeTimeout(timeout: number) {
+ setMergeTimeout(timeout: number) {
   this.mergeTimeout = timeout;
+  return this;
  }
 
- set setNick(nick: string | null) {
+ setNick(nick: string | null) {
   this.nick = nick;
+  return this;
  }
 
- set setAvatarURL(avatarURL: string | null) {
+ setAvatarURL(avatarURL: string | null) {
   this.avatarURL = avatarURL;
+  return this;
  }
 
- set setChannels(channels: Channel[]) {
+ setChannels(channels: Channel[]) {
   this.channels = channels;
+  return this;
  }
 
  addChannels(...channels: Channel[]) {
   this.channels.push(...channels);
+  return this;
  }
 
- set setComponents(components: APIMessageTopLevelComponent[] | null) {
+ setComponents(components: APIMessageTopLevelComponent[] | null) {
   this.components = components;
+  return this;
  }
 
  addComponents(...components: APIMessageTopLevelComponent[]) {
   if (this.components === null) this.components = [];
   this.components.push(...components);
+  return this;
  }
 
- set setFiles(files: RawFile[]) {
+ setFiles(files: RawFile[]) {
   this.files = files;
+  return this;
  }
 
  addFiles(...files: RawFile[]) {
   this.files.push(...files);
+  return this;
  }
 
- set setContent(content: string | null) {
+ setContent(content: string | null) {
   this.content = content;
+  return this;
  }
 
- set setEmbeds(embeds: APIEmbed[]) {
-  this.embeds = embeds;
+ setEmbeds(embeds: (APIEmbed | EmbedBuilder)[]) {
+  this.embeds = embeds.map((e) => (e instanceof EmbedBuilder ? e.toJSON() : e));
+
+  return this;
  }
 
- addEmbeds(...embeds: APIEmbed[]) {
-  this.embeds.push(...embeds);
+ addEmbeds(...embeds: (APIEmbed | EmbedBuilder)[]) {
+  embeds.forEach((e) => {
+   if (e instanceof EmbedBuilder) this.embeds.push(e.toJSON());
+   else this.embeds.push(e);
+  });
+
+  return this;
  }
 
- set setFlags(flags: MessageFlags | 0) {
+ setFlags(flags: MessageFlags | 0) {
   this.flags = flags;
+  return this;
  }
 
- set addFlags(flags: MessageFlags) {
+ addFlags(flags: MessageFlags) {
   this.flags |= flags;
+  return this;
  }
 
- set setAllowedMentionsParse(parse: AllowedMentionsTypes[] | null) {
+ setAllowedMentionsParse(parse: AllowedMentionsTypes[] | null) {
   if (parse === null) {
    this.allowedMentions = null;
-   return;
+   return this;
   }
 
   this.allowedMentions = { ...this.allowedMentions, parse };
+  return this;
  }
 
- set setAllowedMentionsUsers(users: string[] | null) {
+ setAllowedMentionsUsers(users: string[] | null) {
   if (users === null) {
    this.allowedMentions = null;
-   return;
+   return this;
   }
 
   this.allowedMentions = { ...this.allowedMentions, users };
+  return this;
  }
 
- set setAllowedMentionsRoles(roles: string[] | null) {
+ setAllowedMentionsRoles(roles: string[] | null) {
   if (roles === null) {
    this.allowedMentions = null;
-   return;
+   return this;
   }
 
   this.allowedMentions = { ...this.allowedMentions, roles };
+  return this;
  }
 
- set setAllowedMentionsRepliedUser(repliedUser: boolean | null) {
+ setAllowedMentionsRepliedUser(repliedUser: boolean | null) {
   if (repliedUser === null) {
    this.allowedMentions = null;
-   return;
+   return this;
   }
 
   this.allowedMentions = { ...this.allowedMentions, replied_user: repliedUser };
+  return this;
  }
 
  validate() {
