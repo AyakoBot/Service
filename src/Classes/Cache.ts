@@ -38,7 +38,7 @@ import { MessageType } from '../Types/redis.js';
 
 import logger from './Logger.js';
 
-const messageTypes = [MessageType.interaction, MessageType.vote, MessageType.appeal];
+const messageTypes = [MessageType.Interaction, MessageType.Vote, MessageType.Appeal];
 
 const cacheImports: {
  AuditLogCache: new (...args: any[]) => AuditLogCache;

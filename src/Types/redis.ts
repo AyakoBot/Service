@@ -1,5 +1,5 @@
 export enum MessageType {
- appeal = 'appeal',
- vote = 'vote',
- interaction = 'interaction',
+ Appeal = 'appeal',
+ Vote = 'vote',
+ Interaction = 'interaction',
 }
