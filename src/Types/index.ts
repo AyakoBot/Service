@@ -1,4 +1,4 @@
-import './gateway.d.ts';
+import './gateway.js';
 
 import type { RAuditLog as _RAuditLog } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/auditlog';
 import type { RAutomod as _RAutomod } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/automod.js';
@@ -17,13 +17,13 @@ import type { RMember as _RMember } from '@ayako/gateway/src/BaseClient/Bot/Cach
 import type { RMessage as _RMessage } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/message.js';
 import type { RReaction as _RReaction } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/reaction.js';
 import type { RRole as _RRole } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/role.js';
-import type { RSoundboard as _RSoundboard } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/soundboard.js';
-import type { RStage as _RStage } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/stage.js';
+import type { RSoundboardSound as _RSoundboard } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/soundboard.js';
+import type { RStageInstance as _RStage } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/stage.js';
 import type { RSticker as _RSticker } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/sticker.js';
 import type { RThread as _RThread } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/thread.js';
 import type { RThreadMember as _RThreadMember } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/threadMember.js';
 import type { RUser as _RUser } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/user.js';
-import type { RVoice as _RVoice } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/voice.js';
+import type { RVoiceState as _RVoice } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/voice.js';
 import type { RWebhook as _RWebhook } from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/webhook.js';
 
 declare global {
