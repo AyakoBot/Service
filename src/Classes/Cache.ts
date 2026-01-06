@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { EventEmitter } from 'node:events';
 
-import type AuditLogCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/auditLog.js';
+import type AuditLogCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/auditlog.js';
 import type AutomodCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/automod.js';
 import type BanCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/ban.js';
 import type ChannelCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/channel.js';
@@ -34,7 +34,7 @@ import type WelcomeScreenCache from '@ayako/gateway/src/BaseClient/Bot/CacheClas
 import { GatewayDispatchEvents } from '@discordjs/core';
 import Redis from 'ioredis';
 
-import { MessageType } from '../types/redis.js';
+import { MessageType } from '../Types/redis.js';
 
 import logger from './Logger.js';
 
