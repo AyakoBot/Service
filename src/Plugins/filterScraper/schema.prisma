@@ -1,0 +1,24 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model FilteredWord {
+ keyword    String
+ filterType FilterType
+
+ @@id([keyword, filterType])
+}
+
+enum FilterType {
+ Profanity
+ SexualContent
+ Slurs
+}
