@@ -1,7 +1,7 @@
 import type { GatewayDispatchEvents } from '@discordjs/core';
 
-import type { ExtractPayload } from '../../../../types/gateway.js';
-import getPrefix from '../../../../util/getPrefix.js';
+import type { ExtractPayload } from '../../../../Types/gateway.js';
+import getPrefix from '../../../../Util/getPrefix.js';
 import type AFKPlugin from '../../Plugin.js';
 
 import afk from './afk.js';

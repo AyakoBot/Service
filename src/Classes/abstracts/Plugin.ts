@@ -5,8 +5,8 @@ import type {
 import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
 
-import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../types/gateway.js';
-import createTranslator, { type TranslatorType } from '../../util/translator.js';
+import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
+import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
 import Logger from '../Logger.js';
 

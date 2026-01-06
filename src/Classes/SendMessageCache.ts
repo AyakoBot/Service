@@ -1,6 +1,6 @@
 import { scheduleJob, type Job } from 'node-schedule';
 
-import getPathFromError from '../util/getPathFromError.js';
+import getPathFromError from '../Util/getPathFromError.js';
 
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';

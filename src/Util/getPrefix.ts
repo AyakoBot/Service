@@ -1,6 +1,6 @@
-import type Client from '../classes/Client.js';
-import Constants from '../classes/Constants.js';
-import GuildSetting from '../plugins/settings/GuildSetting.js';
+import type Client from '../Classes/Client.js';
+import Constants from '../Classes/Constants.js';
+import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 export default async function (this: Client, msg: RMessage) {
  if (!msg.guild_id) return Constants.standard.prefix;

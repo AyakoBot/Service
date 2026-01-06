@@ -1,4 +1,4 @@
-import type { DataBaseTables, TableName, UpdateData, WhereUnique } from '../../types/prisma.js';
+import type { DataBaseTables, TableName, UpdateData, WhereUnique } from '../../Types/prisma.js';
 import type Database from '../Database.js';
 import Logger from '../Logger.js';
 

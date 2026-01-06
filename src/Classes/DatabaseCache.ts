@@ -1,6 +1,6 @@
 import type { Prisma } from '@ayako/database';
 
-import type { DataBaseTables, TableName } from '../types/prisma.js';
+import type { DataBaseTables, TableName } from '../Types/prisma.js';
 
 import type Cache from './Cache.js';
 import logger from './Logger.js';

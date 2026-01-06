@@ -1,5 +1,6 @@
-import { StoredPunishmentTypes } from '@ayako/database';
+// import { StoredPunishmentTypes } from '@ayako/database';
 import type { DiscordAPIError } from '@discordjs/rest';
+
 import { Colors } from './index.js';
 
 export enum ModTypes {
@@ -122,75 +123,74 @@ export enum PunishmentType {
  VCTempDeaf = 'vctempdeaf',
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const ModType2StoredPunishmentTypes: Record<ModTypes, StoredPunishmentTypes> = {
- [ModTypes.VcDeafenAdd]: StoredPunishmentTypes.vcdeaf,
- [ModTypes.VcTempDeafenAdd]: StoredPunishmentTypes.vctempdeaf,
- [ModTypes.VcDeafenRemove]: StoredPunishmentTypes.vcdeaf,
- [ModTypes.TempMuteAdd]: StoredPunishmentTypes.tempmute,
- [ModTypes.MuteRemove]: StoredPunishmentTypes.tempmute,
- [ModTypes.BanAdd]: StoredPunishmentTypes.ban,
- [ModTypes.BanRemove]: StoredPunishmentTypes.ban,
- [ModTypes.SoftBanAdd]: StoredPunishmentTypes.softban,
- [ModTypes.TempBanAdd]: StoredPunishmentTypes.tempban,
- [ModTypes.ChannelBanRemove]: StoredPunishmentTypes.channelban,
- [ModTypes.ChannelBanAdd]: StoredPunishmentTypes.channelban,
- [ModTypes.TempChannelBanAdd]: StoredPunishmentTypes.tempchannelban,
- [ModTypes.KickAdd]: StoredPunishmentTypes.kick,
- [ModTypes.WarnAdd]: StoredPunishmentTypes.warn,
- [ModTypes.VcMuteAdd]: StoredPunishmentTypes.vcmute,
- [ModTypes.VcTempMuteAdd]: StoredPunishmentTypes.vctempmute,
- [ModTypes.VcMuteRemove]: StoredPunishmentTypes.vcmute,
- [ModTypes.StrikeAdd]: StoredPunishmentTypes.warn,
- [ModTypes.UnAfk]: StoredPunishmentTypes.warn,
- [ModTypes.SoftWarnAdd]: StoredPunishmentTypes.warn,
- [ModTypes.RoleAdd]: StoredPunishmentTypes.warn,
- [ModTypes.RoleRemove]: StoredPunishmentTypes.warn,
-};
+// export const ModType2StoredPunishmentTypes: Record<ModTypes, StoredPunishmentTypes> = {
+//  [ModTypes.VcDeafenAdd]: StoredPunishmentTypes.vcdeaf,
+//  [ModTypes.VcTempDeafenAdd]: StoredPunishmentTypes.vctempdeaf,
+//  [ModTypes.VcDeafenRemove]: StoredPunishmentTypes.vcdeaf,
+//  [ModTypes.TempMuteAdd]: StoredPunishmentTypes.tempmute,
+//  [ModTypes.MuteRemove]: StoredPunishmentTypes.tempmute,
+//  [ModTypes.BanAdd]: StoredPunishmentTypes.ban,
+//  [ModTypes.BanRemove]: StoredPunishmentTypes.ban,
+//  [ModTypes.SoftBanAdd]: StoredPunishmentTypes.softban,
+//  [ModTypes.TempBanAdd]: StoredPunishmentTypes.tempban,
+//  [ModTypes.ChannelBanRemove]: StoredPunishmentTypes.channelban,
+//  [ModTypes.ChannelBanAdd]: StoredPunishmentTypes.channelban,
+//  [ModTypes.TempChannelBanAdd]: StoredPunishmentTypes.tempchannelban,
+//  [ModTypes.KickAdd]: StoredPunishmentTypes.kick,
+//  [ModTypes.WarnAdd]: StoredPunishmentTypes.warn,
+//  [ModTypes.VcMuteAdd]: StoredPunishmentTypes.vcmute,
+//  [ModTypes.VcTempMuteAdd]: StoredPunishmentTypes.vctempmute,
+//  [ModTypes.VcMuteRemove]: StoredPunishmentTypes.vcmute,
+//  [ModTypes.StrikeAdd]: StoredPunishmentTypes.warn,
+//  [ModTypes.UnAfk]: StoredPunishmentTypes.warn,
+//  [ModTypes.SoftWarnAdd]: StoredPunishmentTypes.warn,
+//  [ModTypes.RoleAdd]: StoredPunishmentTypes.warn,
+//  [ModTypes.RoleRemove]: StoredPunishmentTypes.warn,
+// };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const PunishmentType2StoredPunishmentTypes: Record<PunishmentType, StoredPunishmentTypes> = {
- [PunishmentType.Kick]: StoredPunishmentTypes.kick,
- [PunishmentType.Warn]: StoredPunishmentTypes.warn,
- [PunishmentType.Mute]: StoredPunishmentTypes.mute,
- [PunishmentType.Tempmute]: StoredPunishmentTypes.tempmute,
- [PunishmentType.Ban]: StoredPunishmentTypes.ban,
- [PunishmentType.Tempban]: StoredPunishmentTypes.tempban,
- [PunishmentType.Channelban]: StoredPunishmentTypes.channelban,
- [PunishmentType.Tempchannelban]: StoredPunishmentTypes.tempchannelban,
- [PunishmentType.Softban]: StoredPunishmentTypes.softban,
- [PunishmentType.VCMute]: StoredPunishmentTypes.vcmute,
- [PunishmentType.VCDeaf]: StoredPunishmentTypes.vcdeaf,
- [PunishmentType.VCTempMute]: StoredPunishmentTypes.vcmute,
- [PunishmentType.VCTempDeaf]: StoredPunishmentTypes.vcdeaf,
-};
+// export const PunishmentType2StoredPunishmentTypes:
+// Record<PunishmentType, StoredPunishmentTypes> = {
+//  [PunishmentType.Kick]: StoredPunishmentTypes.kick,
+//  [PunishmentType.Warn]: StoredPunishmentTypes.warn,
+//  [PunishmentType.Mute]: StoredPunishmentTypes.mute,
+//  [PunishmentType.Tempmute]: StoredPunishmentTypes.tempmute,
+//  [PunishmentType.Ban]: StoredPunishmentTypes.ban,
+//  [PunishmentType.Tempban]: StoredPunishmentTypes.tempban,
+//  [PunishmentType.Channelban]: StoredPunishmentTypes.channelban,
+//  [PunishmentType.Tempchannelban]: StoredPunishmentTypes.tempchannelban,
+//  [PunishmentType.Softban]: StoredPunishmentTypes.softban,
+//  [PunishmentType.VCMute]: StoredPunishmentTypes.vcmute,
+//  [PunishmentType.VCDeaf]: StoredPunishmentTypes.vcdeaf,
+//  [PunishmentType.VCTempMute]: StoredPunishmentTypes.vcmute,
+//  [PunishmentType.VCTempDeaf]: StoredPunishmentTypes.vcdeaf,
+// };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const StoredTempTypes = [
- StoredPunishmentTypes.tempban,
- StoredPunishmentTypes.tempchannelban,
- StoredPunishmentTypes.tempmute,
- StoredPunishmentTypes.vctempdeaf,
- StoredPunishmentTypes.vctempmute,
-];
+// export const StoredTempTypes = [
+//  StoredPunishmentTypes.tempban,
+//  StoredPunishmentTypes.tempchannelban,
+//  StoredPunishmentTypes.tempmute,
+//  StoredPunishmentTypes.vctempdeaf,
+//  StoredPunishmentTypes.vctempmute,
+// ];
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const StoredBaseAndTempType = {
- [StoredPunishmentTypes.ban]: [StoredPunishmentTypes.ban, StoredPunishmentTypes.tempban],
- [StoredPunishmentTypes.channelban]: [
-  StoredPunishmentTypes.channelban,
-  StoredPunishmentTypes.tempchannelban,
- ],
- [StoredPunishmentTypes.mute]: [StoredPunishmentTypes.mute, StoredPunishmentTypes.tempmute],
- [StoredPunishmentTypes.vcdeaf]: [StoredPunishmentTypes.vcdeaf, StoredPunishmentTypes.vctempdeaf],
- [StoredPunishmentTypes.vcmute]: [StoredPunishmentTypes.vcmute, StoredPunishmentTypes.vctempmute],
-
- [StoredPunishmentTypes.kick]: [StoredPunishmentTypes.kick],
- [StoredPunishmentTypes.warn]: [StoredPunishmentTypes.warn],
- [StoredPunishmentTypes.tempmute]: [StoredPunishmentTypes.tempmute],
- [StoredPunishmentTypes.tempban]: [StoredPunishmentTypes.tempban],
- [StoredPunishmentTypes.tempchannelban]: [StoredPunishmentTypes.tempchannelban],
- [StoredPunishmentTypes.softban]: [StoredPunishmentTypes.softban],
- [StoredPunishmentTypes.vctempdeaf]: [StoredPunishmentTypes.vctempdeaf],
- [StoredPunishmentTypes.vctempmute]: [StoredPunishmentTypes.vctempmute],
+ // [StoredPunishmentTypes.ban]: [StoredPunishmentTypes.ban, StoredPunishmentTypes.tempban],
+ // [StoredPunishmentTypes.channelban]: [
+ //  StoredPunishmentTypes.channelban,
+ //  StoredPunishmentTypes.tempchannelban,
+ // ],
+ // [StoredPunishmentTypes.mute]: [StoredPunishmentTypes.mute, StoredPunishmentTypes.tempmute],
+ // [StoredPunishmentTypes.vcdeaf]:
+ // [StoredPunishmentTypes.vcdeaf, StoredPunishmentTypes.vctempdeaf],
+ // [StoredPunishmentTypes.vcmute]:
+ // [StoredPunishmentTypes.vcmute, StoredPunishmentTypes.vctempmute],
+ // [StoredPunishmentTypes.kick]: [StoredPunishmentTypes.kick],
+ // [StoredPunishmentTypes.warn]: [StoredPunishmentTypes.warn],
+ // [StoredPunishmentTypes.tempmute]: [StoredPunishmentTypes.tempmute],
+ // [StoredPunishmentTypes.tempban]: [StoredPunishmentTypes.tempban],
+ // [StoredPunishmentTypes.tempchannelban]: [StoredPunishmentTypes.tempchannelban],
+ // [StoredPunishmentTypes.softban]: [StoredPunishmentTypes.softban],
+ // [StoredPunishmentTypes.vctempdeaf]: [StoredPunishmentTypes.vctempdeaf],
+ // [StoredPunishmentTypes.vctempmute]: [StoredPunishmentTypes.vctempmute],
 };

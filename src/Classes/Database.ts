@@ -70,18 +70,18 @@ export default class Database {
      $allOperations: async (data) =>
       this.cache.handleOperation('guildSetting', 'guildId', data as CacheOperationData),
     },
-    logchannels: {
-     $allOperations: async (data) =>
-      this.cache.handleOperation('logchannels', 'guildid', data as CacheOperationData),
-    },
+    // logchannels: {
+    //  $allOperations: async (data) =>
+    //   this.cache.handleOperation('logchannels', 'guildid', data as CacheOperationData),
+    // },
     customClient: {
      $allOperations: async (data) =>
       this.cache.handleOperation('customClient', 'guildId', data as CacheOperationData),
     },
-    welcome: {
-     $allOperations: async (data) =>
-      this.cache.handleOperation('welcome', 'guildid', data as CacheOperationData),
-    },
+    // welcome: {
+    //  $allOperations: async (data) =>
+    //   this.cache.handleOperation('welcome', 'guildid', data as CacheOperationData),
+    // },
    },
   });
 }

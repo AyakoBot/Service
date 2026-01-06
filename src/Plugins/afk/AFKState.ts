@@ -1,5 +1,5 @@
-import DBEntry from '../../classes/abstracts/DBEntry.js';
-import type Database from '../../classes/Database.js';
+import DBEntry from '../../Classes/abstracts/DBEntry.js';
+import type Database from '../../Classes/Database.js';
 
 export default class AFKState extends DBEntry<'afkState'> {
  constructor(db: Database, userId: string, guildId: string) {

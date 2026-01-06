@@ -1,11 +1,11 @@
-import type { AfkState } from '@ayako/database';
+import { FilterType, type AfkState } from '@ayako/database';
 import { AutoModerationActionType, AutoModerationRuleEventType } from '@discordjs/core';
 
 import { filtered_content as filterContent } from '../../../../../rust/rust.js';
-import getUser from '../../../../util/getUser.js';
+import getUser from '../../../../Util/getUser.js';
 import type AFKPlugin from '../../Plugin.js';
 
-export async function getCensoredContent(
+export const getCensoredContent = async function (
  this: AFKPlugin,
  guildId: string,
  rawContent: string,
@@ -64,7 +64,17 @@ export async function getCensoredContent(
 
  const presetKeywords = presetRule
   ? await this.client.db.client.filteredWord.findMany({
-     where: { filterType: { in: [...(presetRule.trigger_metadata.presets || [])] } },
+     where: {
+      filterType: {
+       in: [
+        ...(presetRule.trigger_metadata.presets
+         ? (presetRule.trigger_metadata.presets.map(
+            (key) => Object.keys(FilterType)[key],
+           ) as FilterType[])
+         : []),
+       ],
+      },
+     },
     })
   : [];
 
@@ -110,7 +120,7 @@ export async function getCensoredContent(
  });
 
  return content;
-}
+};
 
 export const setNick = async function (this: AFKPlugin, userId: string, guildId: string) {
  const member = await this.client.cache.members.get(guildId, userId);
@@ -126,7 +136,7 @@ export const setNick = async function (this: AFKPlugin, userId: string, guildId:
  });
 };
 
-export async function getContent(
+export const getContent = async function (
  this: AFKPlugin,
  guildId: string,
  afk: AfkState | null,
@@ -136,4 +146,4 @@ export async function getContent(
 
  if (!afk) return t.t.set({ user: await this.client.cache.users.get(userId) });
  return t.t.updated({ user: await this.client.cache.users.get(userId) });
-}
+};

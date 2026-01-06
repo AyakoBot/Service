@@ -4,10 +4,10 @@ import 'longjohn';
 import { scheduleJob } from 'node-schedule';
 import { install } from 'source-map-support';
 
-import Client from './classes/Client.js';
-import logger from './classes/Logger.js';
-import AFKPlugin from './plugins/afk/Plugin.js';
-import getPathFromError from './util/getPathFromError.js';
+import Client from './Classes/Client.js';
+import logger from './Classes/Logger.js';
+import AFKPlugin from './Plugins/afk/Plugin.js';
+import getPathFromError from './Util/getPathFromError.js';
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');

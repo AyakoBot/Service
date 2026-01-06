@@ -1,7 +1,7 @@
 import { API, GatewayDispatchEvents } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 
-import GuildSetting from '../plugins/settings/GuildSetting.js';
+import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 import type Plugin from './abstracts/Plugin.js';
 import Cache from './Cache.js';

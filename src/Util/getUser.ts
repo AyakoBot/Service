@@ -1,4 +1,4 @@
-import type Client from '../classes/Client.js';
+import type Client from '../Classes/Client.js';
 
 export default async function (this: Client, userId: string) {
  const cached = await this.cache.users.get(userId);

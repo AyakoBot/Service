@@ -6,8 +6,8 @@ import {
  type APIInteraction,
 } from '@discordjs/core';
 
-import { MessagePayload } from '../../../../classes/abstracts/MessagePayload.js';
-import { Colors } from '../../../../types/index.js';
+import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { Colors } from '../../../../Types/index.js';
 import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
 

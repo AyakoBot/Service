@@ -9,9 +9,9 @@ import {
  InteractionContextType,
 } from '@discordjs/core';
 
-import Plugin from '../../classes/abstracts/Plugin.js';
-import type Client from '../../classes/Client.js';
-import type { ExtractPayload } from '../../types/gateway.js';
+import Plugin from '../../Classes/abstracts/Plugin.js';
+import type Client from '../../Classes/Client.js';
+import type { ExtractPayload } from '../../Types/gateway.js';
 
 import InteractionCreate from './Events/InteractionCreate/index.js';
 import MessageCreate from './Events/MessageCreate/index.js';
