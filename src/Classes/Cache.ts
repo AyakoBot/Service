@@ -72,7 +72,7 @@ const cacheImports: {
 } = {
  AuditLogCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
-  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/auditLog.js'
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/auditlog.js'
  ).then((r) => r.default as any),
  BanCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
@@ -292,7 +292,7 @@ class Cache extends EventEmitter {
    messageTypes.includes(channel as MessageType) ||
    Object.values(GatewayDispatchEvents).includes(channel as GatewayDispatchEvents)
   ) {
-   const eventName = Object.entries(GatewayDispatchEvents).find(([, val]) => val === channel)?.[0];
+   const eventName = Object.entries(GatewayDispatchEvents).find(([, val]) => val === channel)?.[1];
    if (!eventName) {
     logger.debug('[Cache] No event name found for channel:', channel);
     return;
@@ -301,11 +301,10 @@ class Cache extends EventEmitter {
    let data = key ? JSON.parse(key) : null;
    if (typeof data === 'string') data = JSON.parse(data);
 
-   logger.silly('[Cache] Emitting event:', eventName);
    if (!key.includes('669893888856817665')) return; // TODO disable dev filter
 
-   logger.log('[Cache] Emitting event:', eventName, 'with data:', data);
-
+   logger.silly('[Cache] Emitting event:', eventName);
+   logger.silly('[Cache] Event data:', data);
    this.emit(eventName, data);
   }
 
