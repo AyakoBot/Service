@@ -23,5 +23,5 @@ export default async function (
 
  self.call(this, msg, commandName, t);
  mention.call(this, msg, commandName, t);
- afk.call(this, msg, commandName);
+ afk.call(this, msg, commandName, prefix);
 }

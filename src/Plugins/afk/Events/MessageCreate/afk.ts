@@ -2,18 +2,40 @@ import { EmbedBuilder } from '@discordjs/builders';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
+import canUserExecuteCommand from '../../../../Util/canUserExecuteCommand.js';
 import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
 import { getCensoredContent, getContent } from '../InteractionCreate/util.js';
 
-export default async function (this: AFKPlugin, msg: RMessage, commandName: string | null) {
+export default async function (
+ this: AFKPlugin,
+ msg: RMessage,
+ commandName: string | null,
+ prefix: string | undefined,
+) {
  if (commandName !== 'afk') return;
  if (!msg.guild_id) return;
+
+ const canRunCommand = await canUserExecuteCommand.call(
+  this.client,
+  'afk',
+  msg.guild_id,
+  msg.author_id,
+  msg.channel_id,
+ );
+ this.client.logger.debug(
+  `[AFKPlugin] canUserExecuteCommand response: ${canRunCommand.response}, debug: ${canRunCommand.debug}`,
+ );
+
+ if (!canRunCommand.response) {
+  this.client.api.channels.addMessageReaction(msg.channel_id, msg.id, '❌').catch(() => null);
+  return;
+ }
 
  const member = await this.client.cache.members.get(msg.guild_id, msg.author_id);
  if (!member) return;
 
- const reason = msg.content.slice(commandName.length).trim() || null;
+ const reason = msg.content.slice(commandName.length + (prefix || '').length).trim() || null;
 
  const embed = new EmbedBuilder()
   .setColor(Colors.Loading)
