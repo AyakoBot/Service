@@ -8,7 +8,7 @@ import merge from 'lodash.merge';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
-import Logger from '../Logger.js';
+import { default as Logger, default as logger } from '../Logger.js';
 
 /**
  * Base language structure that all plugins must follow.
@@ -38,12 +38,23 @@ export default abstract class Plugin<
  constructor(client: Client) {
   this.client = client;
 
-  queueMicrotask(() => this.registerEvents());
+  const pluginName = new Error().stack?.split(/at/g)[2]?.trim().split(/\s/g)[1];
+
+  queueMicrotask(() => {
+   logger.debug(`[${pluginName}] Registering event handlers...`);
+
+   this.registerEvents();
+  });
  }
 
  private registerEvents() {
   const events = Object.keys(this.eventHandlers) as E[];
+
+  logger.debug(`[Plugin:${this.name}] Registering ${events.length} event handlers...`);
+
   events.forEach((event) => {
+   logger.debug(`[Plugin:${this.name}] Registering handler for event:`, event);
+
    this.client.cache.on(event, (data: GatewayEventPayloadMap[E]) => {
     this.eventHandlers[event](data);
    });
