@@ -1,4 +1,4 @@
-import { MessageType } from '@discordjs/core';
+import { MessageType, PermissionFlagsBits } from '@discordjs/core';
 
 export type UndeletableMessageType =
  | MessageType.Call
@@ -17,3 +17,34 @@ export const UndeletableMessageTypes: UndeletableMessageType[] = [
  MessageType.RecipientRemove,
  MessageType.ThreadStarterMessage,
 ];
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const TimeoutDeniedPermissions: ReadonlyArray<bigint> = [
+ PermissionFlagsBits.AddReactions,
+ PermissionFlagsBits.SendMessages,
+ PermissionFlagsBits.ChangeNickname,
+ PermissionFlagsBits.Connect,
+ PermissionFlagsBits.CreateEvents,
+ PermissionFlagsBits.CreateGuildExpressions,
+ PermissionFlagsBits.CreatePrivateThreads,
+ PermissionFlagsBits.CreatePublicThreads,
+ PermissionFlagsBits.DeafenMembers,
+ PermissionFlagsBits.KickMembers,
+ PermissionFlagsBits.ManageChannels,
+ PermissionFlagsBits.ManageEmojisAndStickers,
+ PermissionFlagsBits.ManageEvents,
+ PermissionFlagsBits.ManageGuild,
+ PermissionFlagsBits.ManageGuildExpressions,
+ PermissionFlagsBits.ManageMessages,
+ PermissionFlagsBits.ManageNicknames,
+ PermissionFlagsBits.ManageRoles,
+ PermissionFlagsBits.ManageThreads,
+ PermissionFlagsBits.ManageWebhooks,
+ PermissionFlagsBits.ModerateMembers,
+ PermissionFlagsBits.MoveMembers,
+ PermissionFlagsBits.MuteMembers,
+ PermissionFlagsBits.PinMessages,
+ PermissionFlagsBits.SendMessagesInThreads,
+ PermissionFlagsBits.UseApplicationCommands,
+ PermissionFlagsBits.ViewAuditLog,
+] as const;
