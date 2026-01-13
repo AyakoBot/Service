@@ -1,12 +1,13 @@
 {
  "compilerOptions": {
+  "composite": true,
   "moduleDetection": "force",
   "types": ["node"],
   "target": "ESNext",
   "module": "ESNext",
   "lib": ["ESNext", "WebWorker", "ES6"],
   "allowJs": false,
-  "declaration": false,
+  "declaration": true,
   "declarationMap": false,
   "sourceMap": true,
   "outDir": "dist",
