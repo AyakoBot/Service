@@ -1,25 +1,29 @@
 import { OverwriteType, PermissionFlagsBits } from '@discordjs/core';
 
-import type Client from '../Classes/Client.js';
+import type Cache from '../Classes/Cache.js';
+import { TimeoutDeniedPermissions } from '../Types/discord.js';
 
 import getGuildPerms from './getGuildPerms.js';
 
 export default async function (
- this: Client,
+ this: typeof Cache,
  guildId: string,
  userId: string,
  channelId: string,
-): Promise<{ allow: bigint; deny: bigint; debug: number }> {
- const channel = await this.cache.channels.get(channelId);
- if (!channel) return { allow: 0n, deny: 0n, debug: 4 };
+): Promise<{ allow: bigint; deny: bigint; neutral: bigint; debug: number }> {
+ const channel = await this.channels.get(channelId);
+ if (!channel) return { allow: 0n, deny: 0n, neutral: 0n, debug: 4 };
 
- const member = await this.cache.members.get(guildId, userId);
- if (!member) return { allow: 0n, deny: 0n, debug: 5 };
+ const member = await this.members.get(guildId, userId);
+ if (!member) return { allow: 0n, deny: 0n, neutral: 0n, debug: 5 };
 
  const guildPerms = await getGuildPerms.call(this, guildId, userId);
 
- if (guildPerms.response & PermissionFlagsBits.Administrator) {
-  return { allow: guildPerms.response, deny: 0n, debug: 9 };
+ if (
+  (guildPerms.response & PermissionFlagsBits.Administrator) ===
+  PermissionFlagsBits.Administrator
+ ) {
+  return { allow: guildPerms.response, deny: 0n, neutral: 0n, debug: 9 };
  }
 
  let permissions = guildPerms.response;
@@ -54,5 +58,10 @@ export default async function (
   permissions |= BigInt(memberOverwrite.allow);
  }
 
- return { allow: permissions, deny: 0n, debug: 0 };
+ if (new Date(member.communication_disabled_until || 0).getTime() > Date.now()) {
+  const mask = TimeoutDeniedPermissions.reduce((acc, perm) => acc | perm, 0n);
+  permissions = permissions & ~mask;
+ }
+
+ return { allow: permissions, deny: 0n, neutral: 0n, debug: 0 };
 }
