@@ -34,7 +34,7 @@ class Logger {
   this.log(`[Logger] Log level set to: ${this.level}`);
  }
 
- private writeLog = (level: LogLevel, ...data: unknown[]) => {
+ writeLog = (level: LogLevel, ...data: unknown[]) => {
   if (this.level === LogLevel.silent) return;
 
   const levels = Object.values(LogLevel);
@@ -56,7 +56,7 @@ class Logger {
 
  silly = (...data: unknown[]) => this.writeLog(LogLevel.silly, ...data);
 
- private static stringify = (data: unknown) => {
+ static stringify = (data: unknown) => {
   if (typeof data === 'string') return data;
 
   try {

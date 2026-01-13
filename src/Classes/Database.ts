@@ -1,4 +1,5 @@
 import { Prisma, PrismaClient } from '@ayako/database';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 import type Cache from './Cache.js';
 import type { CacheOperationData } from './DatabaseCache.js';
@@ -17,7 +18,14 @@ export default class Database {
   this.cache = new DatabaseCache(cache);
 
   logger.silly('[Database] Creating PrismaClient with extensions...');
-  this.client = new PrismaClient()
+  this.client = new PrismaClient({
+   adapter: new PrismaPg({
+    connectionString: `${process.env.MAIN_DATABASE_URL?.replace(
+     'postgres:5432',
+     'localhost:5432',
+    )}/Ayako-v3`,
+   }),
+  })
    .$extends(this.getLoggingExtension(loggerInstance))
    .$extends(this.getMetricsExtension(metrics))
    .$extends(this.getCacheExtension()) as unknown as PrismaClient;

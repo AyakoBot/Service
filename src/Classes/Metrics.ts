@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { InteractionType } from '@discordjs/core';
 import { Registry, Counter, Gauge } from 'prom-client';
 
@@ -11,8 +12,7 @@ enum MetricsKey {
 
 type InteractionTypeExtended = InteractionType | ExtendedTypes;
 
-enum ExtendedTypes {
- // eslint-disable-next-line @typescript-eslint/naming-convention
+export enum ExtendedTypes {
  StringCommand = 0,
 }
 
@@ -24,7 +24,7 @@ enum MetricsLabel {
  context = 'context',
 }
 
-enum ContextType {
+export enum ContextType {
  user = 'User',
  guild = 'Guild',
 }
@@ -38,7 +38,7 @@ class Metrics {
   logger.log('[Metrics] Metrics initialization complete');
  }
 
- private install = () => {
+ install = () => {
   logger.silly('[Metrics] Registering metrics...');
   this.installDbQuery();
   this.installCmdExecuted();
@@ -46,7 +46,7 @@ class Metrics {
   logger.silly('[Metrics] All metrics registered');
  };
 
- private installDbLatency = () => {
+ installDbLatency = () => {
   logger.silly('[Metrics] Registering metric:', MetricsKey.dbLatency);
   this.registry.registerMetric(
    new Gauge({
@@ -57,7 +57,7 @@ class Metrics {
   );
  };
 
- private installCmdExecuted = () => {
+ installCmdExecuted = () => {
   logger.silly('[Metrics] Registering metric:', MetricsKey.cmdExecuted);
   this.registry.registerMetric(
    new Counter({
@@ -68,7 +68,7 @@ class Metrics {
   );
  };
 
- private installDbQuery = () => {
+ installDbQuery = () => {
   logger.silly('[Metrics] Registering metric:', MetricsKey.dbQuery);
   this.registry.registerMetric(
    new Counter({
@@ -98,7 +98,7 @@ class Metrics {
    .labels(modelName, action)
    .set(latency);
 
- private getInteractionType = (type: InteractionTypeExtended) => {
+ getInteractionType = (type: InteractionTypeExtended) => {
   switch (type) {
    case ExtendedTypes.StringCommand:
     return 'String-Command';

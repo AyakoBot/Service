@@ -12,6 +12,7 @@ import type CommandCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/co
 import type CommandPermissionCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/commandPermission.js';
 import type EmojiCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/emoji.js';
 import type EventCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/event.js';
+import type EventUserCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/eventUser.js';
 import type GuildCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/guild.js';
 import type GuildCommandCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/guildCommand.js';
 import type IntegrationCache from '@ayako/gateway/src/BaseClient/Bot/CacheClasses/integration.js';
@@ -37,6 +38,7 @@ import Redis from 'ioredis';
 import { MessageType } from '../Types/redis.js';
 
 import logger from './Logger.js';
+import { PipelineBatcher } from './PipelineBatcher.js';
 
 const messageTypes = [MessageType.Interaction, MessageType.Vote, MessageType.Appeal];
 
@@ -69,6 +71,7 @@ const cacheImports: {
  PinCache: new (...args: any[]) => PinCache;
  WelcomeScreenCache: new (...args: any[]) => WelcomeScreenCache;
  OnboardingCache: new (...args: any[]) => OnboardingCache;
+ EventUserCache: new (...args: any[]) => EventUserCache;
 } = {
  AuditLogCache: await import(
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
@@ -182,76 +185,84 @@ const cacheImports: {
   // @ts-ignore - Module resolution for dynamic imports from gateway dist
   '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/onboarding.js'
  ).then((r) => r.default as any),
+ EventUserCache: await import(
+  // @ts-ignore - Module resolution for dynamic imports from gateway dist
+  '@ayako/gateway/dist/BaseClient/Bot/CacheClasses/eventUser.js'
+ ).then((r) => r.default as any),
 };
 
-class Cache extends EventEmitter {
+export class Cache extends EventEmitter {
  readonly prefix = 'cache';
  readonly cacheDbNum: number;
  readonly schedDbNum: number;
+ readonly batcher: PipelineBatcher;
 
  readonly cacheDb: Redis;
  readonly cacheSub: Redis;
- readonly scheduleDb: Redis;
- readonly scheduleSub: Redis;
+ readonly scheduleDb: Redis | null;
+ readonly scheduleSub: Redis | null;
 
- constructor(cacheDbNum: number, schedDbNum: number) {
+ constructor(cacheDbNum: number, schedDbNum?: number, sub: boolean = true) {
+  if (sub && !schedDbNum) throw new Error('[Cache] schedDbNum must be provided if sub is true');
+
   super();
 
   logger.debug('[Cache] Initializing cache with cacheDb:', cacheDbNum, 'schedDb:', schedDbNum);
 
+  this.batcher = new PipelineBatcher(this);
   this.cacheDbNum = cacheDbNum;
-  this.schedDbNum = schedDbNum;
+  this.schedDbNum = schedDbNum || -1;
 
   logger.silly('[Cache] Creating Redis connections...');
-  this.cacheDb = new Redis({ host: '127.0.0.1', db: cacheDbNum });
-  this.cacheSub = new Redis({ host: '127.0.0.1', db: cacheDbNum });
-  this.scheduleDb = new Redis({ host: '127.0.0.1', db: schedDbNum });
-  this.scheduleSub = new Redis({ host: '127.0.0.1', db: schedDbNum });
+  const host = process.argv.includes('--local') ? '127.0.0.1' : 'redis';
+  logger.log('[Cache] Using Redis host:', host);
 
-  logger.silly('[Cache] Configuring Redis keyspace notifications');
-  this.cacheDb.config('SET', 'notify-keyspace-events', 'Ex');
-  this.scheduleDb.config('SET', 'notify-keyspace-events', 'Ex');
+  this.cacheDb = new Redis({ host, db: cacheDbNum });
+  this.cacheSub = new Redis({ host, db: cacheDbNum });
 
-  logger.debug('[Cache] Subscribing to Redis channels');
-  this.cacheSub.subscribe(
-   `__keyevent@${schedDbNum}__:expired`,
-   ...Object.values(GatewayDispatchEvents),
-   ...messageTypes,
-  );
-  this.scheduleSub.subscribe(`__keyevent@${schedDbNum}__:expired`);
+  if (!schedDbNum) {
+   this.scheduleDb = new Redis({ host, db: schedDbNum });
+   this.scheduleSub = new Redis({ host, db: schedDbNum });
+  } else {
+   this.scheduleDb = null;
+   this.scheduleSub = null;
+  }
+
+  if (sub) this._sub();
 
   logger.silly('[Cache] Initializing cache classes...');
-  this.audits = new cacheImports.AuditLogCache(this.cacheDb);
-  this.automods = new cacheImports.AutomodCache(this.cacheDb);
-  this.bans = new cacheImports.BanCache(this.cacheDb);
-  this.channels = new cacheImports.ChannelCache(this.cacheDb);
+  this.audits = new cacheImports.AuditLogCache(this.cacheDb, this.batcher);
+  this.automods = new cacheImports.AutomodCache(this.cacheDb, this.batcher);
+  this.bans = new cacheImports.BanCache(this.cacheDb, this.batcher);
+  this.channels = new cacheImports.ChannelCache(this.cacheDb, this.batcher);
   this.channelStatus = new cacheImports.ChannelStatusCache(this.cacheDb);
-  this.commands = new cacheImports.CommandCache(this.cacheDb);
-  this.commandPermissions = new cacheImports.CommandPermissionCache(this.cacheDb);
-  this.emojis = new cacheImports.EmojiCache(this.cacheDb);
-  this.events = new cacheImports.EventCache(this.cacheDb);
-  this.guilds = new cacheImports.GuildCache(this.cacheDb);
-  this.guildCommands = new cacheImports.GuildCommandCache(this.cacheDb);
-  this.integrations = new cacheImports.IntegrationCache(this.cacheDb);
-  this.invites = new cacheImports.InviteCache(this.cacheDb);
-  this.members = new cacheImports.MemberCache(this.cacheDb);
-  this.messages = new cacheImports.MessageCache(this.cacheDb);
-  this.reactions = new cacheImports.ReactionCache(this.cacheDb);
-  this.roles = new cacheImports.RoleCache(this.cacheDb);
-  this.soundboards = new cacheImports.SoundboardCache(this.cacheDb);
-  this.stages = new cacheImports.StageCache(this.cacheDb);
-  this.stickers = new cacheImports.StickerCache(this.cacheDb);
-  this.threads = new cacheImports.ThreadCache(this.cacheDb);
-  this.threadMembers = new cacheImports.ThreadMemberCache(this.cacheDb);
-  this.users = new cacheImports.UserCache(this.cacheDb);
-  this.voices = new cacheImports.VoiceCache(this.cacheDb);
-  this.webhooks = new cacheImports.WebhookCache(this.cacheDb);
+  this.commands = new cacheImports.CommandCache(this.cacheDb, this.batcher);
+  this.commandPermissions = new cacheImports.CommandPermissionCache(this.cacheDb, this.batcher);
+  this.emojis = new cacheImports.EmojiCache(this.cacheDb, this.batcher);
+  this.events = new cacheImports.EventCache(this.cacheDb, this.batcher);
+  this.guilds = new cacheImports.GuildCache(this.cacheDb, this.batcher);
+  this.guildCommands = new cacheImports.GuildCommandCache(this.cacheDb, this.batcher);
+  this.integrations = new cacheImports.IntegrationCache(this.cacheDb, this.batcher);
+  this.invites = new cacheImports.InviteCache(this.cacheDb, this.batcher);
+  this.members = new cacheImports.MemberCache(this.cacheDb, this.batcher);
+  this.messages = new cacheImports.MessageCache(this.cacheDb, this.batcher);
+  this.reactions = new cacheImports.ReactionCache(this.cacheDb, this.batcher);
+  this.roles = new cacheImports.RoleCache(this.cacheDb, this.batcher);
+  this.soundboards = new cacheImports.SoundboardCache(this.cacheDb, this.batcher);
+  this.stages = new cacheImports.StageCache(this.cacheDb, this.batcher);
+  this.stickers = new cacheImports.StickerCache(this.cacheDb, this.batcher);
+  this.threads = new cacheImports.ThreadCache(this.cacheDb, this.batcher);
+  this.threadMembers = new cacheImports.ThreadMemberCache(this.cacheDb, this.batcher);
+  this.users = new cacheImports.UserCache(this.cacheDb, this.batcher);
+  this.voices = new cacheImports.VoiceCache(this.cacheDb, this.batcher);
+  this.webhooks = new cacheImports.WebhookCache(this.cacheDb, this.batcher);
   this.pins = new cacheImports.PinCache(this.cacheDb);
-  this.welcomeScreens = new cacheImports.WelcomeScreenCache(this.cacheDb);
-  this.onboardings = new cacheImports.OnboardingCache(this.cacheDb);
+  this.welcomeScreens = new cacheImports.WelcomeScreenCache(this.cacheDb, this.batcher);
+  this.onboardings = new cacheImports.OnboardingCache(this.cacheDb, this.batcher);
+  this.eventUsers = new cacheImports.EventUserCache(this.cacheDb, this.batcher);
 
   this.cacheSub.on('message', this.callback);
-  this.scheduleSub.on('message', this.callback);
+  this.scheduleSub?.on('message', this.callback);
 
   logger.log('[Cache] Cache initialization complete');
  }
@@ -284,6 +295,21 @@ class Cache extends EventEmitter {
  readonly pins: PinCache;
  readonly welcomeScreens: WelcomeScreenCache;
  readonly onboardings: OnboardingCache;
+ readonly eventUsers: EventUserCache;
+
+ private _sub = () => {
+  logger.silly('[Cache] Configuring Redis keyspace notifications');
+  this.cacheDb.config('SET', 'notify-keyspace-events', 'Ex');
+  this.scheduleDb!.config('SET', 'notify-keyspace-events', 'Ex');
+
+  logger.debug('[Cache] Subscribing to Redis channels');
+  this.cacheSub.subscribe(
+   `__keyevent@${schedDbNum}__:expired`,
+   ...Object.values(GatewayDispatchEvents),
+   ...messageTypes,
+  );
+  this.scheduleSub!.subscribe(`__keyevent@${schedDbNum}__:expired`);
+ };
 
  private callback = async (channel: string, key: string) => {
   logger.silly('[Cache] Received message on channel:', channel);
@@ -309,7 +335,7 @@ class Cache extends EventEmitter {
   }
 
   if (
-   channel !== `__keyevent@${this.scheduleDb.options.db}__:expired` &&
+   channel !== `__keyevent@${this.scheduleDb!.options.db}__:expired` &&
    channel !== `__keyevent@${this.cacheDb.options.db}__:expired`
   ) {
    return;
@@ -324,7 +350,7 @@ class Cache extends EventEmitter {
 
   const dataKey = key.replace('scheduled:', 'scheduled-data:');
   const [dbNum] = channel.split('@')[1].split(':');
-  const db = dbNum === String(this.cacheDbNum) ? this.cacheDb : this.scheduleDb;
+  const db = dbNum === String(this.cacheDbNum) ? this.cacheDb : this.scheduleDb!;
 
   const value = await db.get(dataKey);
   db.expire(dataKey, 10);

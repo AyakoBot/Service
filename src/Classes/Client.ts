@@ -1,4 +1,4 @@
-import { API, GatewayDispatchEvents } from '@discordjs/core';
+import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
@@ -11,17 +11,20 @@ import Logger from './Logger.js';
 import Metrics from './Metrics.js';
 import SendMessageCache from './SendMessageCache.js';
 
-const token = (
- (process.argv.includes('--dev') ? process.env.DevToken : process.env.Token) ?? ''
-).replace('Bot ', '');
-
 export default class Client {
- rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken(token);
+ rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken(
+  ((process.argv.includes('--dev') ? process.env.DevToken : process.env.Token) ?? '').replace(
+   'Bot ',
+   '',
+  ),
+ );
+
  api = new API(this.rest);
  cache = Cache;
  metrics = Metrics;
  logger = Logger;
  db: Database;
+ user: APIApplication | null = null;
 
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;
@@ -37,6 +40,12 @@ export default class Client {
    process.argv.includes('--dev') ? 'development' : 'production',
    'mode',
   );
+  Logger.debug(
+   '[Client] Token start:',
+   ((process.argv.includes('--dev') ? process.env.DevToken : process.env.Token) ?? '').split(
+    '.',
+   )[0],
+  );
   Logger.silly(`[Client] REST API endpoint: ${this.rest.options.api}`);
 
   Logger.debug('[Client] Initializing Database...');
@@ -49,6 +58,10 @@ export default class Client {
   Logger.silly('[Client] Registering', events.length, 'gateway events');
   events.forEach((e) => {
    this.cache.on(e, (...args: unknown[]) => this.logger.silly('[Event]', e, args));
+  });
+
+  this.api.applications.getCurrent().then((app) => {
+   this.user = app;
   });
 
   Logger.log('[Client] Client initialization complete');
