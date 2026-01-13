@@ -41,7 +41,7 @@ export default async function (
  const member = await this.cache.members.get(guildId, userId);
  if (!member) return { response: false, debug: 4 };
 
- const permissions = await getGuildPerms.call(this, guildId, userId);
+ const permissions = await getGuildPerms.call(this.cache, guildId, userId);
 
  if (
   (permissions.response & PermissionFlagsBits.Administrator) ===
