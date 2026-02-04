@@ -1,18 +1,16 @@
 import { Prisma, PrismaClient } from '@ayako/database';
+import type { Cache, logger as Logger } from '@ayako/utility';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import type Cache from './Cache.js';
 import type { CacheOperationData } from './DatabaseCache.js';
 import { DatabaseCache } from './DatabaseCache.js';
-import type Logger from './Logger.js';
-import logger from './Logger.js';
 import type Metrics from './Metrics.js';
 
 export default class Database {
  readonly client: PrismaClient;
  readonly cache: DatabaseCache;
 
- constructor(loggerInstance: typeof Logger, metrics: typeof Metrics, cache: typeof Cache) {
+ constructor(logger: typeof Logger, metrics: typeof Metrics, cache: Cache) {
   logger.debug('[Database] Initializing Database...');
 
   this.cache = new DatabaseCache(cache);
@@ -26,7 +24,7 @@ export default class Database {
     )}/Ayako-v3`,
    }),
   })
-   .$extends(this.getLoggingExtension(loggerInstance))
+   .$extends(this.getLoggingExtension(logger))
    .$extends(this.getMetricsExtension(metrics))
    .$extends(this.getCacheExtension()) as unknown as PrismaClient;
 

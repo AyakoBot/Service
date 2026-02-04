@@ -1,3 +1,4 @@
+import { logger } from '@ayako/utility';
 import {
  SlashCommandBuilder,
  SlashCommandStringOption,
@@ -11,7 +12,6 @@ import {
 
 import Plugin from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
-import logger from '../../Classes/Logger.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 
 import InteractionCreate from './Events/InteractionCreate/index.js';

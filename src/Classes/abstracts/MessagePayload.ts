@@ -1,3 +1,4 @@
+import { logger, type RChannel, type RMessage, type RThread, type RUser } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
 import type {
  AllowedMentionsTypes,
@@ -10,7 +11,6 @@ import type {
 import type { RawFile } from '@discordjs/rest';
 
 import type Client from '../Client.js';
-import Logger from '../Logger.js';
 
 type Channel =
  | RUser
@@ -39,7 +39,7 @@ export class MessagePayload {
 
  constructor(client: typeof Client.prototype) {
   this.client = client;
-  Logger.silly('[MessagePayload] Created new payload');
+  logger.silly('[MessagePayload] Created new payload');
  }
 
  setWebhook({ webhookId, webhookToken }: { webhookId: string; webhookToken?: string }) {
@@ -240,7 +240,7 @@ export class MessagePayload {
  }
 
  send = async (): Promise<(RMessage | undefined)[]> => {
-  Logger.debug('[MessagePayload] Sending to', this.channels.length, 'channel(s)');
+  logger.debug('[MessagePayload] Sending to', this.channels.length, 'channel(s)');
 
   const channels: { channelId: string | Promise<string | undefined>; guildId: string | '@me' }[] =
    [];
@@ -277,9 +277,9 @@ export class MessagePayload {
  };
 
  private async getDM(userId: string) {
-  Logger.silly('[MessagePayload] Opening DM channel for user:', userId);
+  logger.silly('[MessagePayload] Opening DM channel for user:', userId);
   const dm = await this.client.api.users.createDM(userId).catch(() => null);
-  if (!dm) Logger.debug('[MessagePayload] Failed to open DM for user:', userId);
+  if (!dm) logger.debug('[MessagePayload] Failed to open DM for user:', userId);
   return dm?.id;
  }
 }

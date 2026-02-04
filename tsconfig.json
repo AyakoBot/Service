@@ -28,7 +28,7 @@
   "noUnusedParameters": true,
   "noImplicitReturns": true,
   "noFallthroughCasesInSwitch": true,
-  "moduleResolution": "node",
+  "moduleResolution": "bundler",
   "baseUrl": ".",
   "typeRoots": ["./node_modules/@types", "./types"],
   "esModuleInterop": true,
@@ -40,6 +40,6 @@
   "isolatedModules": true,
   "verbatimModuleSyntax": true
  },
- "include": ["src/**/*", "types/**/*"],
+ "include": ["src/**/*", "src/**/*.json", "types/**/*"],
  "exclude": ["node_modules/**/**", "dist/**/**", "patches/**/**", "rust/**/**"]
 }

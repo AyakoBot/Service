@@ -1,3 +1,5 @@
+import type { REmoji, RUser } from '@ayako/utility';
+
 class Constants {
  standard = {
   prefix: 't!',

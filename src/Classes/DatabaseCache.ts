@@ -1,9 +1,7 @@
 import type { Prisma } from '@ayako/database';
+import { logger, type Cache as DBCache } from '@ayako/utility';
 
 import type { DataBaseTables, TableName } from '../Types/prisma.js';
-
-import type Cache from './Cache.js';
-import logger from './Logger.js';
 
 export type MaybeArray<T = unknown> = T | T[];
 
@@ -14,9 +12,9 @@ export interface CacheOperationData {
 }
 
 export class DatabaseCache {
- readonly cache: typeof Cache;
+ readonly cache: DBCache;
 
- constructor(cache: typeof Cache) {
+ constructor(cache: DBCache) {
   this.cache = cache;
   logger.debug('[DatabaseCache] DatabaseCache initialized');
  }

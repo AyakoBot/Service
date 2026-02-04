@@ -1,5 +1,5 @@
 import type { Prisma } from '@ayako/database';
-import type PrismaTables from '@ayako/database/src/index.js';
+import type PrismaTables from '@ayako/database';
 
 export interface DataBaseTables {
  afkState: PrismaTables.AfkState;

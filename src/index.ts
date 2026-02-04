@@ -1,14 +1,13 @@
 /* eslint-disable no-console */
-import 'dotenv/config';
+import { getPathFromError, logger } from '@ayako/utility';
 import { config } from 'dotenv';
+import 'dotenv/config';
 import 'longjohn';
 import { scheduleJob } from 'node-schedule';
 import { install } from 'source-map-support';
 
 import Client from './Classes/Client.js';
-import logger from './Classes/Logger.js';
 import AFKPlugin from './Plugins/afk/Plugin.js';
-import getPathFromError from './Util/getPathFromError.js';
 
 config({
  path: '../../.env',

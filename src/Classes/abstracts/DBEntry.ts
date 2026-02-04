@@ -1,6 +1,7 @@
+import { logger } from '@ayako/utility';
+
 import type { DataBaseTables, TableName, UpdateData, WhereUnique } from '../../Types/prisma.js';
 import type Database from '../Database.js';
-import Logger from '../Logger.js';
 
 interface ModelDelegate<T extends TableName> {
  findUnique(args: { where: WhereUnique<T> }): Promise<DataBaseTables[T] | null>;
@@ -22,7 +23,7 @@ export default abstract class DBEntry<const T extends TableName> {
   this.db = db;
   this.tableName = tableName;
   this.identity = identity;
-  Logger.silly('[DBEntry] Created entry for table:', tableName);
+  logger.silly('[DBEntry] Created entry for table:', tableName);
  }
 
  private delegate(): ModelDelegate<T> {
@@ -30,19 +31,19 @@ export default abstract class DBEntry<const T extends TableName> {
  }
 
  get(): Promise<DataBaseTables[T] | null> {
-  Logger.silly('[DBEntry] Getting', this.tableName, 'entry');
+  logger.silly('[DBEntry] Getting', this.tableName, 'entry');
   return this.delegate().findUnique({ where: this.identity });
  }
 
  delete(): Promise<DataBaseTables[T]> {
-  Logger.debug('[DBEntry] Deleting', this.tableName, 'entry');
+  logger.debug('[DBEntry] Deleting', this.tableName, 'entry');
   return this.delegate()
    .delete({ where: this.identity })
    .then((r) => r);
  }
 
  update(data: UpdateData<T>): Promise<DataBaseTables[T]> {
-  Logger.debug('[DBEntry] Updating', this.tableName, 'entry');
+  logger.debug('[DBEntry] Updating', this.tableName, 'entry');
   return this.delegate()
    .update({ where: this.identity, data })
    .then((r) => r);
@@ -52,7 +53,7 @@ export default abstract class DBEntry<const T extends TableName> {
   createData: Omit<DataBaseTables[T], keyof WhereUnique<T>>,
   updateData: UpdateData<T>,
  ): Promise<DataBaseTables[T]> {
-  Logger.debug('[DBEntry] Upserting', this.tableName, 'entry');
+  logger.debug('[DBEntry] Upserting', this.tableName, 'entry');
   return this.delegate()
    .upsert({ where: this.identity, create: createData, update: updateData })
    .then((r) => r);

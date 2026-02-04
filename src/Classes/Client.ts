@@ -1,28 +1,26 @@
+import { logger as Logger, Cache } from '@ayako/utility';
 import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 import type Plugin from './abstracts/Plugin.js';
-import Cache from './Cache.js';
 import Database from './Database.js';
 import JobCache from './JobCache.js';
-import Logger from './Logger.js';
 import Metrics from './Metrics.js';
 import SendMessageCache from './SendMessageCache.js';
 
+const isDev = process.argv.includes('--dev');
+
 export default class Client {
  rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken(
-  ((process.argv.includes('--dev') ? process.env.DevToken : process.env.Token) ?? '').replace(
-   'Bot ',
-   '',
-  ),
+  ((isDev ? process.env.DevToken : process.env.Token) ?? '').replace('Bot ', ''),
  );
 
  api = new API(this.rest);
- cache = Cache;
+ cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  metrics = Metrics;
- logger = Logger;
+ logger: typeof Logger = Logger;
  db: Database;
  user: APIApplication | null = null;
 
@@ -34,28 +32,28 @@ export default class Client {
  plugins: Plugin<any>[] = [];
 
  constructor() {
-  Logger.log('[Client] Initializing Client...');
-  Logger.debug(
+  this.logger.log('[Client] Initializing Client...');
+  this.logger.debug(
    '[Client] Running in',
    process.argv.includes('--dev') ? 'development' : 'production',
    'mode',
   );
-  Logger.debug(
+  this.logger.debug(
    '[Client] Token start:',
    ((process.argv.includes('--dev') ? process.env.DevToken : process.env.Token) ?? '').split(
     '.',
    )[0],
   );
-  Logger.silly(`[Client] REST API endpoint: ${this.rest.options.api}`);
+  this.logger.silly(`[Client] REST API endpoint: ${this.rest.options.api}`);
 
-  Logger.debug('[Client] Initializing Database...');
+  this.logger.debug('[Client] Initializing Database...');
   this.db = new Database(this.logger, this.metrics, this.cache);
   this.sendMessageCache = new SendMessageCache(this);
   this.jobCache = new JobCache();
 
-  Logger.debug('[Client] Registering gateway event handlers...');
+  this.logger.debug('[Client] Registering gateway event handlers...');
   const events = Object.keys(GatewayDispatchEvents);
-  Logger.silly('[Client] Registering', events.length, 'gateway events');
+  this.logger.silly('[Client] Registering', events.length, 'gateway events');
   events.forEach((e) => {
    this.cache.on(e, (...args: unknown[]) => this.logger.silly('[Event]', e, args));
   });
@@ -64,7 +62,7 @@ export default class Client {
    this.user = app;
   });
 
-  Logger.log('[Client] Client initialization complete');
+  this.logger.log('[Client] Client initialization complete');
  }
 
  registerPlugin = <E extends GatewayDispatchEvents>(
@@ -77,7 +75,7 @@ export default class Client {
   if (exists) return;
 
   this.plugins.push(plugin);
-  Logger.debug('[Client] Registered plugin:', plugin.name);
+  this.logger.debug('[Client] Registered plugin:', plugin.name);
  };
 
  getLocale = async (guildIdOrLocale: bigint | undefined | null | string) => {

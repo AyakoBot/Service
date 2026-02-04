@@ -1,10 +1,10 @@
+import { logger, type RMessage } from '@ayako/utility';
 import { scheduleJob, type Job } from 'node-schedule';
 
 import getPathFromError from '../Util/getPathFromError.js';
 
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
-import Logger from './Logger.js';
 
 type Deferred<T> = {
  promise: Promise<T>;
@@ -26,7 +26,7 @@ export default class SendMessageCache {
 
  constructor(client: typeof Client.prototype) {
   this.client = client;
-  Logger.debug('[SendMessageCache] Initialized');
+  logger.debug('[SendMessageCache] Initialized');
  }
 
  private createDeferred = <T>(): Deferred<T> => {
@@ -47,21 +47,21 @@ export default class SendMessageCache {
  ): Promise<RMessage | undefined> => {
   const channelId = await rawChannelId;
   if (!channelId) {
-   Logger.silly('[SendMessageCache] No channelId resolved, skipping message');
+   logger.silly('[SendMessageCache] No channelId resolved, skipping message');
    return undefined;
   }
 
-  Logger.silly('[SendMessageCache] Queueing message for channel:', channelId);
+  logger.silly('[SendMessageCache] Queueing message for channel:', channelId);
 
   const existing = this.cache.get(channelId);
   if (existing) {
    const deferred = this.createDeferred<RMessage | undefined>();
    existing.payloads.push(payload);
    existing.deferreds.push(deferred);
-   Logger.silly('[SendMessageCache] Added to existing queue, count:', existing.payloads.length);
+   logger.silly('[SendMessageCache] Added to existing queue, count:', existing.payloads.length);
 
    if (existing.payloads.length >= 10) {
-    Logger.debug('[SendMessageCache] Queue full (10), sending immediately');
+    logger.debug('[SendMessageCache] Queue full (10), sending immediately');
     await this.send(existing);
    }
 
@@ -78,13 +78,13 @@ export default class SendMessageCache {
   };
 
   if (payload.content || timeout <= 0) {
-   Logger.silly('[SendMessageCache] Immediate send (content or no timeout)');
+   logger.silly('[SendMessageCache] Immediate send (content or no timeout)');
    await this.send(entry);
    return deferred.promise;
   }
 
   this.cache.set(channelId, entry);
-  Logger.silly('[SendMessageCache] Scheduled send in', timeout, 'ms');
+  logger.silly('[SendMessageCache] Scheduled send in', timeout, 'ms');
 
   entry.job = scheduleJob(getPathFromError(new Error()), new Date(Date.now() + timeout), () =>
    this.send(entry),
@@ -97,7 +97,7 @@ export default class SendMessageCache {
   this.cache.delete(entry.channelId);
   entry.job.cancel();
 
-  Logger.debug('[SendMessageCache] Sending', entry.payloads.length, 'payloads to', entry.channelId);
+  logger.debug('[SendMessageCache] Sending', entry.payloads.length, 'payloads to', entry.channelId);
 
   const payloads = entry.payloads.map((p) => p.getAPIPayload());
 
@@ -113,11 +113,11 @@ export default class SendMessageCache {
     allowed_mentions: { parse: [], replied_user: false, roles: [], users: [] },
    });
 
-   Logger.silly('[SendMessageCache] Message sent successfully:', apiMessage.id);
+   logger.silly('[SendMessageCache] Message sent successfully:', apiMessage.id);
    const rMessage = this.client.cache.messages.apiToR(apiMessage, entry.guildId);
    entry.deferreds.forEach((d) => d.resolve(rMessage));
   } catch (error) {
-   Logger.error('[SendMessageCache] Failed to send message to', entry.channelId, error);
+   logger.error('[SendMessageCache] Failed to send message to', entry.channelId, error);
    entry.deferreds.forEach((d) => d.reject(error));
   }
  };

@@ -1,9 +1,9 @@
+import { getPathFromError, type RMessage } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
-import getPathFromError from '../../../../Util/getPathFromError.js';
 import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
 

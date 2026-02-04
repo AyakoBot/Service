@@ -1,3 +1,4 @@
+import type { RMessage } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';

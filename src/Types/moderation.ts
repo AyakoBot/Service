@@ -1,4 +1,5 @@
 // import { StoredPunishmentTypes } from '@ayako/database';
+import type { RChannel, RGuild, RMessage, RRole, RUser } from '@ayako/utility';
 import type { DiscordAPIError } from '@discordjs/rest';
 
 import { Colors } from './index.js';

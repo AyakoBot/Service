@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { logger } from '@ayako/utility';
 import { InteractionType } from '@discordjs/core';
 import { Registry, Counter, Gauge } from 'prom-client';
-
-import logger from './Logger.js';
 
 enum MetricsKey {
  dbQuery = 'ayako_db_query_execute',

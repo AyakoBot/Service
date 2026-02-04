@@ -1,3 +1,5 @@
+import type { RMessage } from '@ayako/utility';
+
 import type Client from '../Classes/Client.js';
 import Constants from '../Classes/Constants.js';
 import GuildSetting from '../Plugins/settings/GuildSetting.js';

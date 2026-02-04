@@ -1,3 +1,4 @@
+import { logger } from '@ayako/utility';
 import type {
  SlashCommandOptionsOnlyBuilder,
  SlashCommandSubcommandBuilder,
@@ -8,7 +9,6 @@ import merge from 'lodash.merge';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
-import { default as Logger, default as logger } from '../Logger.js';
 
 /**
  * Base language structure that all plugins must follow.
@@ -55,9 +55,9 @@ export default abstract class Plugin<
   events.forEach((event) => {
    logger.debug(`[Plugin:${this.name}] Registering handler for event:`, event);
 
-   this.client.cache.on(event, (data: GatewayEventPayloadMap[E]) => {
-    this.eventHandlers[event](data);
-   });
+   this.client.cache.on(event, (data: GatewayEventPayloadMap[E]) =>
+    this.eventHandlers[event](data),
+   );
   });
  }
 
@@ -76,7 +76,7 @@ export default abstract class Plugin<
   guildIdOrLocale: string | bigint | null | undefined,
  ): Promise<L> => {
   const locale = await this.client.getLocale(guildIdOrLocale);
-  Logger.silly(`[Plugin:${this.name}] Getting language for locale:`, locale);
+  logger.silly(`[Plugin:${this.name}] Getting language for locale:`, locale);
 
   return merge(
    {},
