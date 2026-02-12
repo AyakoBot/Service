@@ -69,7 +69,7 @@ export const getCensoredContent = async function (
        in: [
         ...(presetRule.trigger_metadata.presets
          ? (presetRule.trigger_metadata.presets.map(
-            (key) => Object.keys(FilterType)[key],
+            (key) => ['Unknown', ...Object.keys(FilterType)][key],
            ) as FilterType[])
          : []),
        ],
