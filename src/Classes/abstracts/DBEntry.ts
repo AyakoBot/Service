@@ -1,6 +1,7 @@
 import { logger } from '@ayako/utility';
 
 import type { DataBaseTables, TableName, UpdateData, WhereUnique } from '../../Types/prisma.js';
+import type Client from '../Client.js';
 import type Database from '../Database.js';
 
 interface ModelDelegate<T extends TableName> {
@@ -18,9 +19,11 @@ export default abstract class DBEntry<const T extends TableName> {
  protected tableName: T;
  protected identity: WhereUnique<T>;
  protected db: Database;
+ protected client: Client;
 
- constructor(db: Database, tableName: T, identity: WhereUnique<T>) {
-  this.db = db;
+ constructor(client: Client, tableName: T, identity: WhereUnique<T>) {
+  this.db = client.db;
+  this.client = client;
   this.tableName = tableName;
   this.identity = identity;
   logger.silly('[DBEntry] Created entry for table:', tableName);

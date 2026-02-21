@@ -1,8 +1,8 @@
 import DBEntry from '../../Classes/abstracts/DBEntry.js';
-import type Database from '../../Classes/Database.js';
+import type Client from '../../Classes/Client.js';
 
 export default class GuildSetting extends DBEntry<'guildSetting'> {
- constructor(db: Database, guildId: string) {
-  super(db, 'guildSetting', { guildId });
+ constructor(client: Client, guildId: string) {
+  super(client, 'guildSetting', { guildId });
  }
 }
