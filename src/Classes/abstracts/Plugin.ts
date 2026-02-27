@@ -37,17 +37,10 @@ export default abstract class Plugin<
 
  constructor(client: Client) {
   this.client = client;
-
-  const pluginName = new Error().stack?.split(/at/g)[2]?.trim().split(/\s/g)[1];
-
-  queueMicrotask(() => {
-   logger.debug(`[${pluginName}] Registering event handlers...`);
-
-   this.registerEvents();
-  });
  }
 
- private registerEvents() {
+ registerEvents() {
+  logger.debug(`[${this.name}] Registering event handlers...`);
   const events = Object.keys(this.eventHandlers) as E[];
 
   logger.debug(`[Plugin:${this.name}] Registering ${events.length} event handlers...`);
