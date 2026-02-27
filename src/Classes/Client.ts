@@ -1,7 +1,6 @@
 import { API } from '@ayako/api';
 import { Cache, logger as Logger } from '@ayako/utility';
 import { GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
-import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
@@ -16,8 +15,6 @@ const isDev = process.argv.includes('--dev');
 const token = (isDev ? process.env.DevToken : process.env.Token) || '';
 
 export default class Client {
- rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken((token ?? '').replace('Bot ', ''));
-
  cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  logger: typeof Logger = Logger;
  private api = new API(token, this.logger, this.cache);
@@ -46,7 +43,6 @@ export default class Client {
     '.',
    )[0],
   );
-  this.logger.silly(`[Client] REST API endpoint: ${this.rest.options.api}`);
 
   this.logger.debug('[Client] Initializing Database...');
   this.db = new Database(this.logger, this.metrics, this.cache);
