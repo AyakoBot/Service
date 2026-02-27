@@ -9,7 +9,7 @@ export const deleteNick = async function (
  const member = await this.client.cache.members.get(guildId, memberId);
  if (!member?.nick || !member.nick.endsWith(' [AFK]')) return;
 
- this.client.api.guilds.editMember(
+ (await this.client.getAPI(guildId)).guilds.editMember(
   member.guild_id,
   member.user_id,
   { nick: member.nick.slice(0, member.nick.length - 6) },

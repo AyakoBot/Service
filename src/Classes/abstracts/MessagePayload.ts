@@ -12,12 +12,10 @@ import type { RawFile } from '@discordjs/rest';
 
 import type Client from '../Client.js';
 
-type Channel =
- | RUser
- | RChannel
- | RThread
- | (RUser | RChannel | RThread)[]
- | { id: string | string[]; guildId: string };
+type SendTo = {
+ channel: RUser | RChannel | RThread | RUser[] | RChannel[] | RThread[] | string | string[];
+ guildId: string;
+};
 
 export class MessagePayload {
  private client: typeof Client.prototype;
@@ -35,7 +33,7 @@ export class MessagePayload {
  webhookToken: string | undefined = undefined;
 
  mergeTimeout: number = 0;
- channels: Channel[] = [];
+ sendTo: SendTo[] = [];
 
  constructor(client: typeof Client.prototype) {
   this.client = client;
@@ -63,13 +61,13 @@ export class MessagePayload {
   return this;
  }
 
- setChannels(channels: Channel[]) {
-  this.channels = channels;
+ setSendTo(sendTo: SendTo[]) {
+  this.sendTo = sendTo;
   return this;
  }
 
- addChannels(...channels: Channel[]) {
-  this.channels.push(...channels);
+ addSendTo(...sendTo: SendTo[]) {
+  this.sendTo.push(...sendTo);
   return this;
  }
 
@@ -240,32 +238,31 @@ export class MessagePayload {
  }
 
  send = async (): Promise<(RMessage | undefined)[]> => {
-  logger.debug('[MessagePayload] Sending to', this.channels.length, 'channel(s)');
+  logger.debug('[MessagePayload] Sending to', this.sendTo.length, 'channel(s)');
 
   const channels: { channelId: string | Promise<string | undefined>; guildId: string | '@me' }[] =
    [];
 
-  this.channels.forEach((channel) => {
-   if (Array.isArray(channel)) {
-    channel.forEach((c) =>
+  this.sendTo.forEach((sendTo) => {
+   if (Array.isArray(sendTo.channel)) {
+    sendTo.channel.forEach((c) =>
      channels.push({
-      channelId: 'username' in c ? this.getDM(c.id) : c.id,
-      guildId: 'guild_id' in c ? c.guild_id : '@me',
+      channelId:
+       typeof c === 'string' ? c : 'username' in c ? this.getDM(c.id, sendTo.guildId) : c.id,
+      guildId: sendTo.guildId,
      }),
     );
     return;
    }
 
-   if (Array.isArray(channel.id)) {
-    channel.id.forEach((id) =>
-     channels.push({ channelId: id, guildId: 'guild_id' in channel ? channel.guild_id : '@me' }),
-    );
-    return;
-   }
-
    channels.push({
-    channelId: 'username' in channel ? this.getDM(channel.id) : channel.id,
-    guildId: 'guild_id' in channel ? channel.guild_id : '@me',
+    channelId:
+     typeof sendTo.channel === 'string'
+      ? sendTo.channel
+      : 'username' in sendTo.channel
+        ? this.getDM(sendTo.channel.id, sendTo.guildId)
+        : sendTo.channel.id,
+    guildId: sendTo.guildId,
    });
   });
 
@@ -276,9 +273,9 @@ export class MessagePayload {
   );
  };
 
- private async getDM(userId: string) {
+ private async getDM(userId: string, guildId: string | undefined = undefined) {
   logger.silly('[MessagePayload] Opening DM channel for user:', userId);
-  const dm = await this.client.api.users.createDM(userId).catch(() => null);
+  const dm = await (await this.client.getAPI(guildId)).users.createDM(userId).catch(() => null);
   if (!dm) logger.debug('[MessagePayload] Failed to open DM for user:', userId);
   return dm?.id;
  }

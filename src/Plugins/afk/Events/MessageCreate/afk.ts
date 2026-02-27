@@ -29,7 +29,9 @@ export default async function (
  );
 
  if (!canRunCommand.response) {
-  this.client.api.channels.addMessageReaction(msg.channel_id, msg.id, '❌').catch(() => null);
+  (await this.client.getAPI(msg.guild_id)).channels
+   .addMessageReaction(msg.channel_id, msg.id, '❌')
+   .catch(() => null);
   return;
  }
 
@@ -50,12 +52,12 @@ export default async function (
    ),
   );
 
- const afkBase = new AFKState(this.client.db, msg.author_id, msg.guild_id);
+ const afkBase = new AFKState(this.client, msg.author_id, msg.guild_id);
  const afk = await afkBase.get();
 
  new MessagePayload(this.client)
   .setContent(await getContent.call(this, msg.guild_id, afk, msg.author_id))
-  .setChannels([{ id: msg.channel_id, guildId: msg.guild_id }])
+  .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .addEmbeds(embed)
   .send();
 
@@ -69,5 +71,5 @@ export default async function (
   { since: Date.now(), reason },
  );
 
- this.client.api.channels.deleteMessage(msg.channel_id, msg.id);
+ (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(msg.channel_id, msg.id);
 }

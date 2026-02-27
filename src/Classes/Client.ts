@@ -1,26 +1,27 @@
-import { logger as Logger, Cache } from '@ayako/utility';
-import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
+import { API } from '@ayako/api';
+import { Cache, logger as Logger } from '@ayako/utility';
+import { GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 import type Plugin from './abstracts/Plugin.js';
+import type { BaseLanguage } from './abstracts/Plugin.js';
 import Database from './Database.js';
 import JobCache from './JobCache.js';
 import Metrics from './Metrics.js';
 import SendMessageCache from './SendMessageCache.js';
 
 const isDev = process.argv.includes('--dev');
+const token = (isDev ? process.env.DevToken : process.env.Token) || '';
 
 export default class Client {
- rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken(
-  ((isDev ? process.env.DevToken : process.env.Token) ?? '').replace('Bot ', ''),
- );
+ rest = new REST({ api: 'http://127.0.0.1:8080/api' }).setToken((token ?? '').replace('Bot ', ''));
 
- api = new API(this.rest);
  cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
- metrics = Metrics;
  logger: typeof Logger = Logger;
+ private api = new API(token, this.logger, this.cache);
+ metrics = Metrics;
  db: Database;
  user: APIApplication | null = null;
 
@@ -28,8 +29,7 @@ export default class Client {
  jobCache: typeof JobCache.prototype;
  languageCache: Map<string, string> = new Map();
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- plugins: Plugin<any>[] = [];
+ plugins: Plugin<GatewayDispatchEvents, BaseLanguage>[] = [];
 
  constructor() {
   this.logger.log('[Client] Initializing Client...');
@@ -67,14 +67,14 @@ export default class Client {
 
  registerPlugin = <E extends GatewayDispatchEvents>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  PluginClass: new (client: Client) => Plugin<E>,
+  PluginClass: new (client: Client) => Plugin<E, BaseLanguage>,
  ) => {
   const plugin = new PluginClass(this);
 
   const exists = this.plugins.find((p) => p.name === plugin.name);
   if (exists) return;
 
-  this.plugins.push(plugin);
+  this.plugins.push(plugin as Plugin<GatewayDispatchEvents, BaseLanguage>);
   this.logger.debug('[Client] Registered plugin:', plugin.name);
  };
 
@@ -83,9 +83,12 @@ export default class Client {
 
   if (typeof guildIdOrLocale === 'string' && guildIdOrLocale.includes('-')) return guildIdOrLocale;
 
-  const base = new GuildSetting(this.db, String(guildIdOrLocale));
+  const base = new GuildSetting(this, String(guildIdOrLocale));
   const setting = await base.get();
 
   return setting?.language || 'en-GB';
  };
+
+ getAPI = async (_guildId?: string) => this.api;
+ getBaseAPI = (): API => this.api;
 }

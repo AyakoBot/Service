@@ -22,7 +22,7 @@ export default async function (
 
  const afkStates = await Promise.all(
   mentionedIds.map(async (userId) => {
-   const base = new AFKState(this.client.db, userId, msg.guild_id);
+   const base = new AFKState(this.client, userId, msg.guild_id);
    return base.get();
   }),
  );
@@ -41,7 +41,7 @@ export default async function (
  );
 
  await new MessagePayload(this.client)
-  .setChannels([{ id: msg.channel_id, guildId: msg.guild_id }])
+  .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setEmbeds(embeds)
   .send();
 }

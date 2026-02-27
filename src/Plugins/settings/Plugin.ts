@@ -1,18 +1,17 @@
-import type { API } from '@ayako/api';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
+import CustomClient from './CustomClient.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 
 type Events = GatewayDispatchEvents.MessageCreate | GatewayDispatchEvents.InteractionCreate;
 type APILanguage = typeof en;
 
-export default class AFKPlugin extends Plugin<Events, APILanguage> {
- name = 'AFK';
- apiCache: Map<string, typeof API> = new Map();
+export default class SettingsPlugin extends Plugin<Events, APILanguage> {
+ name = 'Settings';
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -24,8 +23,14 @@ export default class AFKPlugin extends Plugin<Events, APILanguage> {
 
  constructor(client: Client) {
   super(client);
-  // Init cc apis
+  client.getAPI = this.getApiFromGuildId;
  }
+
+ getApiFromGuildId = async (guildId?: string) => {
+  if (!guildId) return this.client.getBaseAPI();
+  const ccBase = new CustomClient(this.client, guildId);
+  return ccBase.getAPIforGuildId(guildId);
+ };
 
  getCommands = () => ({
   commands: [],

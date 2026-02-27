@@ -17,7 +17,7 @@ export default async function (
 ) {
  if (commandName === 'afk') return;
 
- const afkBase = new AFKState(this.client.db, msg.author_id, msg.guild_id);
+ const afkBase = new AFKState(this.client, msg.author_id, msg.guild_id);
  const afk = await afkBase.get();
  if (!afk) return;
  if (Number(afk.since) > Date.now() - 60000) return;
@@ -27,7 +27,7 @@ export default async function (
   .setDescription(t.t.removed({ time: constants.formatters.getTime(Number(afk.since)) }));
 
  const [m] = await new MessagePayload(this.client)
-  .setChannels([{ id: msg.channel_id, guildId: msg.guild_id }])
+  .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setEmbeds([embed])
   .send();
 
@@ -37,7 +37,9 @@ export default async function (
   async () => {
    if (!m) return;
 
-   this.client.api.channels.deleteMessage(m.channel_id, m.id, { reason: t.t.removeReason() });
+   (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(m.channel_id, m.id, {
+    reason: t.t.removeReason(),
+   });
   },
  );
 

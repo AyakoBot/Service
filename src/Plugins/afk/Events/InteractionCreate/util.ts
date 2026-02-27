@@ -131,7 +131,7 @@ export const setNick = async function (this: AFKPlugin, userId: string, guildId:
   : await getUser.call(this.client, userId);
  if (!user) return undefined;
 
- this.client.api.guilds.editMember(guildId, userId, {
+ (await this.client.getAPI(guildId)).guilds.editMember(guildId, userId, {
   nick: member.nick ? `${member.nick} [AFK]` : `${user.global_name || user.username} [AFK]`,
  });
 };

@@ -22,7 +22,7 @@ export default async function (
  if (!data.matched_keyword) return;
 
  new FilteredWord(
-  this.client.db,
+  this.client,
   data.matched_keyword,
   Object.keys(FilterType)[rule.trigger_metadata.presets[0]] as FilterType,
  ).upsert(

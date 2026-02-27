@@ -28,7 +28,7 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
   ?.filter((o) => o.type === ApplicationCommandOptionType.String)
   .find((o) => o.name === 'reason')?.value as string | undefined;
 
- const afkBase = new AFKState(this.client.db, user.id, cmd.guild_id);
+ const afkBase = new AFKState(this.client, user.id, cmd.guild_id);
  const afk = await afkBase.get();
 
  const embed = new EmbedBuilder()
@@ -45,7 +45,7 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
 
  new MessagePayload(this.client)
   .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
-  .setChannels([{ id: cmd.channel.id, guildId: cmd.guild_id }])
+  .setSendTo([{ channel: cmd.channel.id, guildId: cmd.guild_id }])
   .addEmbeds(embed)
   .send();
 
