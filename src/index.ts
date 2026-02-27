@@ -8,6 +8,8 @@ import { install } from 'source-map-support';
 
 import Client from './Classes/Client.js';
 import AFKPlugin from './Plugins/afk/Plugin.js';
+import FilterScraperPlugin from './Plugins/filterScraper/Plugin.js';
+import SettingsPlugin from './Plugins/settings/Plugin.js';
 
 config({
  path: '../../.env',
@@ -47,6 +49,11 @@ const client = new Client();
 
 logger.log('[Startup] Registering plugins');
 client.registerPlugin(AFKPlugin);
+client.registerPlugin(FilterScraperPlugin);
+client.registerPlugin(SettingsPlugin);
+
+// TODO: remove
+client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
 
 process.on('SIGINT', () => {
  logger.log('[Shutdown] Received SIGINT signal');

@@ -1,4 +1,3 @@
-import { logger } from '@ayako/utility';
 import {
  SlashCommandBuilder,
  SlashCommandStringOption,
@@ -34,18 +33,22 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   [GatewayDispatchEvents.MessageCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
   ) => {
-   logger.debug('[AFKPlugin] MessageCreate event received');
+   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+
+   this.client.logger.debug('[AFKPlugin] MessageCreate event received');
    if (!this.enabled) return;
-   logger.debug('[AFKPlugin] Processing MessageCreate event');
+   this.client.logger.debug('[AFKPlugin] Processing MessageCreate event');
    MessageCreate.call(this, data);
   },
 
   [GatewayDispatchEvents.InteractionCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.InteractionCreate>,
   ) => {
-   logger.debug('[AFKPlugin] InteractionCreate event received');
+   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+
+   this.client.logger.debug('[AFKPlugin] InteractionCreate event received');
    if (!this.enabled) return;
-   logger.debug('[AFKPlugin] Processing InteractionCreate event');
+   this.client.logger.debug('[AFKPlugin] Processing InteractionCreate event');
    InteractionCreate.call(this, data);
   },
  };

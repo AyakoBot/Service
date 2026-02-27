@@ -25,6 +25,8 @@ export default class Client {
  db: Database;
  user: APIApplication | null = null;
 
+ debugGuilds = ['298954459172700181', '669893888856817665'];
+
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;
  languageCache: Map<string, string> = new Map();
@@ -71,11 +73,12 @@ export default class Client {
  ) => {
   const plugin = new PluginClass(this);
 
-  const exists = this.plugins.find((p) => p.name === plugin.name);
+  const exists = this.plugins.find((p) => p.name === PluginClass.name);
   if (exists) return;
 
   this.plugins.push(plugin as Plugin<GatewayDispatchEvents, BaseLanguage>);
   this.logger.debug('[Client] Registered plugin:', plugin.name);
+  plugin.registerEvents();
  };
 
  getLocale = async (guildIdOrLocale: bigint | undefined | null | string) => {
