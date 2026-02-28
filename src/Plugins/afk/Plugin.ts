@@ -33,7 +33,6 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   [GatewayDispatchEvents.MessageCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
   ) => {
-   this.client.logger.debug(`[Plugin:${this.name}] test`, data.guild_id, this.client.debugGuilds);
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
    this.client.logger.debug(`[Plugin:${this.name}] MessageCreate event received`);

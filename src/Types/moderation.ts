@@ -1,6 +1,5 @@
 // import { StoredPunishmentTypes } from '@ayako/database';
-import type { RChannel, RGuild, RMessage, RRole, RUser } from '@ayako/utility';
-import type { DiscordAPIError } from '@discordjs/rest';
+// import type { RChannel, RGuild, RMessage, RRole, RUser } from '@ayako/utility';
 
 import { Colors } from './index.js';
 
@@ -63,50 +62,50 @@ export const ModColors: Record<ModTypes, Colors> = {
  [ModTypes.VcDeafenRemove]: Colors.Success,
 };
 
-export type BaseOptions = {
- reason: string;
- dbOnly: boolean;
- guild: RGuild;
- target: RUser;
- executor: RUser;
- skipChecks: boolean;
- dm?: RMessage | DiscordAPIError | Error;
-};
+// export type BaseOptions = {
+//  reason: string;
+//  dbOnly: boolean;
+//  guild: RGuild;
+//  target: RUser;
+//  executor: RUser;
+//  skipChecks: boolean;
+//  dm?: RMessage | DiscordAPIError | Error;
+// };
 
-type Channel = { channel: RChannel };
-type Roles = { roles: RRole[] };
-type Temp = { duration: number };
-type Empty = NonNullable<unknown>;
-type DeleteMessageSeconds = { deleteMessageSeconds: number };
+// type Channel = { channel: RChannel };
+// type Roles = { roles: RRole[] };
+// type Temp = { duration: number };
+// type Empty = NonNullable<unknown>;
+// type DeleteMessageSeconds = { deleteMessageSeconds: number };
 
-type SpecificOpts = {
- [ModTypes.RoleAdd]: Roles;
- [ModTypes.RoleRemove]: Roles;
- [ModTypes.TempMuteAdd]: Temp;
- [ModTypes.MuteRemove]: Empty;
- [ModTypes.BanAdd]: DeleteMessageSeconds;
- [ModTypes.SoftBanAdd]: DeleteMessageSeconds;
- [ModTypes.TempBanAdd]: Temp & DeleteMessageSeconds;
- [ModTypes.ChannelBanAdd]: Channel;
- [ModTypes.TempChannelBanAdd]: Channel & Temp;
- [ModTypes.ChannelBanRemove]: Channel;
- [ModTypes.BanRemove]: Empty;
- [ModTypes.KickAdd]: Empty;
- [ModTypes.WarnAdd]: Empty;
- [ModTypes.SoftWarnAdd]: Empty;
- [ModTypes.StrikeAdd]: Empty;
- [ModTypes.UnAfk]: Empty;
- [ModTypes.VcMuteAdd]: Empty;
- [ModTypes.VcTempMuteAdd]: Temp;
- [ModTypes.VcMuteRemove]: Empty;
- [ModTypes.VcDeafenAdd]: Empty;
- [ModTypes.VcTempDeafenAdd]: Temp;
- [ModTypes.VcDeafenRemove]: Empty;
-};
+// type SpecificOpts = {
+//  [ModTypes.RoleAdd]: Roles;
+//  [ModTypes.RoleRemove]: Roles;
+//  [ModTypes.TempMuteAdd]: Temp;
+//  [ModTypes.MuteRemove]: Empty;
+//  [ModTypes.BanAdd]: DeleteMessageSeconds;
+//  [ModTypes.SoftBanAdd]: DeleteMessageSeconds;
+//  [ModTypes.TempBanAdd]: Temp & DeleteMessageSeconds;
+//  [ModTypes.ChannelBanAdd]: Channel;
+//  [ModTypes.TempChannelBanAdd]: Channel & Temp;
+//  [ModTypes.ChannelBanRemove]: Channel;
+//  [ModTypes.BanRemove]: Empty;
+//  [ModTypes.KickAdd]: Empty;
+//  [ModTypes.WarnAdd]: Empty;
+//  [ModTypes.SoftWarnAdd]: Empty;
+//  [ModTypes.StrikeAdd]: Empty;
+//  [ModTypes.UnAfk]: Empty;
+//  [ModTypes.VcMuteAdd]: Empty;
+//  [ModTypes.VcTempMuteAdd]: Temp;
+//  [ModTypes.VcMuteRemove]: Empty;
+//  [ModTypes.VcDeafenAdd]: Empty;
+//  [ModTypes.VcTempDeafenAdd]: Temp;
+//  [ModTypes.VcDeafenRemove]: Empty;
+// };
 
-type SpecificOptions = { [K in ModTypes]: SpecificOpts[K] };
+// type SpecificOptions = { [K in ModTypes]: SpecificOpts[K] };
 
-export type ModOptions<T extends ModTypes> = BaseOptions & SpecificOptions[T];
+// export type ModOptions<T extends ModTypes> = BaseOptions & SpecificOptions[T];
 
 export enum PunishmentType {
  Warn = 'warn',
