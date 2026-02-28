@@ -6,9 +6,9 @@ import type {
  APIEmbed,
  APIMessageTopLevelComponent,
  CreateMessageOptions,
+ DescriptiveRawFile,
  MessageFlags,
 } from '@discordjs/core';
-import type { RawFile } from '@discordjs/rest';
 
 import type Client from '../Client.js';
 
@@ -20,7 +20,7 @@ type SendTo = {
 export class MessagePayload {
  private client: typeof Client.prototype;
 
- files: RawFile[] = [];
+ files: DescriptiveRawFile[] = [];
  content?: string | null = null;
  embeds: APIEmbed[] = [];
  flags: MessageFlags | 0 = 0;
@@ -82,12 +82,12 @@ export class MessagePayload {
   return this;
  }
 
- setFiles(files: RawFile[]) {
+ setFiles(files: DescriptiveRawFile[]) {
   this.files = files;
   return this;
  }
 
- addFiles(...files: RawFile[]) {
+ addFiles(...files: DescriptiveRawFile[]) {
   this.files.push(...files);
   return this;
  }
