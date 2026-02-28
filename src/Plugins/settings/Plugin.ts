@@ -24,12 +24,18 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
   client.getAPI = this.getApiFromGuildId;
+  client.getBotIdForGuildId = this.getBotIdForGuildId;
  }
 
  getApiFromGuildId = async (guildId?: string) => {
   if (!guildId) return this.client.getBaseAPI();
   const ccBase = new CustomClient(this.client, guildId);
   return ccBase.getAPIforGuildId(guildId);
+ };
+
+ getBotIdForGuildId = async (guildId: string) => {
+  const ccBase = new CustomClient(this.client, guildId);
+  return ccBase.getBotIdForGuildId(guildId);
  };
 
  getCommands = () => ({

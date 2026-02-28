@@ -10,8 +10,8 @@ export default async function (
  userId: string,
  channelId: string,
 ): Promise<{ response: boolean; debug: number }> {
- // TODO: add custom clients here
- const commands = await this.cache.commands.getAll(this.user?.id || '0');
+ const botId = await this.getBotIdForGuildId(guildId);
+ const commands = await this.cache.commands.getAll(botId || '0');
  const command = commands.find((c) => c.name === commandName);
  if (!command) return { response: true, debug: 1 };
 
@@ -23,14 +23,11 @@ export default async function (
   .then((r) => r.filter(commandFilter));
 
  if (!commandPermissions.length) {
-  // TODO: add custom clients here
-  const newPerms = await this.api.applicationCommands
-   .getGuildCommandsPermissions(this.user?.id || '0', guildId)
+  const newPerms = await (await this.getAPI(guildId)).applicationCommands
+   .getGuildCommandsPermissions(botId || '0', guildId)
    .catch(() => null);
 
-  commandPermissions = (
-   newPerms?.filter((p) => p.id === command.id || p.id === this.user?.id) || []
-  )
+  commandPermissions = (newPerms?.filter((p) => p.id === command.id || p.id === botId) || [])
    .map((p) =>
     p.permissions.map((perm) => this.cache.commandPermissions.apiToR(perm, guildId, command.id)),
    )

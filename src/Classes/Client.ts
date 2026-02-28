@@ -15,7 +15,8 @@ const isDev = process.argv.includes('--dev');
 const token = (isDev ? process.env.DevToken : process.env.Token) || '';
 
 export default class Client {
- cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
+ cache = new Cache(0, 1, true);
+ // cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  logger: typeof Logger = Logger;
  private api = new API(token, this.logger, this.cache);
  metrics = Metrics;
@@ -50,9 +51,15 @@ export default class Client {
   this.jobCache = new JobCache();
 
   this.logger.debug('[Client] Registering gateway event handlers...');
-  const events = Object.keys(GatewayDispatchEvents);
+  const events = Object.values(GatewayDispatchEvents);
+
   this.logger.silly('[Client] Registering', events.length, 'gateway events');
+  this.cache.cacheSub.subscribe(...events).then((subs) => {
+   this.logger.debug('[Client] Subscribed to gateway events:', subs);
+  });
+
   events.forEach((e) => {
+   this.logger.silly('[Client] Registering', e, 'gateway event');
    this.cache.on(e, (...args: unknown[]) => this.logger.silly('[Event]', e, args));
   });
 
@@ -90,4 +97,5 @@ export default class Client {
 
  getAPI = async (_guildId?: string) => this.api;
  getBaseAPI = (): API => this.api;
+ getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
 }

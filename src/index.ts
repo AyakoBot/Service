@@ -1,20 +1,20 @@
 /* eslint-disable no-console */
 import { getPathFromError, logger } from '@ayako/utility';
 import { config } from 'dotenv';
-import 'dotenv/config';
 import 'longjohn';
 import { scheduleJob } from 'node-schedule';
 import { install } from 'source-map-support';
-
-import Client from './Classes/Client.js';
-import AFKPlugin from './Plugins/afk/Plugin.js';
-import FilterScraperPlugin from './Plugins/filterScraper/Plugin.js';
-import SettingsPlugin from './Plugins/settings/Plugin.js';
 
 config({
  path: '../../.env',
  quiet: true,
 });
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { default: Client } = await import('./Classes/Client.js');
+const { default: pluginAFK } = await import('./Plugins/afk/Plugin.js');
+const { default: pluginFilterScraper } = await import('./Plugins/filterScraper/Plugin.js');
+const { default: pluginSettings } = await import('./Plugins/settings/Plugin.js');
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');
@@ -48,9 +48,9 @@ logger.log('[Startup] Creating Client instance');
 const client = new Client();
 
 logger.log('[Startup] Registering plugins');
-client.registerPlugin(AFKPlugin);
-client.registerPlugin(FilterScraperPlugin);
-client.registerPlugin(SettingsPlugin);
+client.registerPlugin(pluginAFK);
+client.registerPlugin(pluginFilterScraper);
+client.registerPlugin(pluginSettings);
 
 // TODO: remove
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();

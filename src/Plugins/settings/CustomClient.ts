@@ -12,6 +12,19 @@ export default class CustomClient extends DBEntry<'customClient'> {
   this.baseApi = this.client.getBaseAPI();
  }
 
+ getBotIdForGuildId = async (guildId: string) => {
+  const base = new CustomClient(this.client, guildId);
+  const data = await base.get();
+  if (!data) return this.client.user?.id || '';
+
+  return (
+   data.appId ||
+   Buffer.from(data.token?.split('.')[0] || '', 'base64').toString() ||
+   this.client.user?.id ||
+   ''
+  );
+ };
+
  getAPIforGuildId = async (guildId: string) => {
   const base = new CustomClient(this.client, guildId);
   const cached = this.apiCache.get(guildId);

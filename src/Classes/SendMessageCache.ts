@@ -1,7 +1,5 @@
-import { logger, type RMessage } from '@ayako/utility';
+import { getPathFromError, logger, type RMessage } from '@ayako/utility';
 import { scheduleJob, type Job } from 'node-schedule';
-
-import getPathFromError from '../Util/getPathFromError.js';
 
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
@@ -102,7 +100,9 @@ export default class SendMessageCache {
   const payloads = entry.payloads.map((p) => p.getAPIPayload());
 
   try {
-   const apiMessage = await this.client.api.channels.createMessage(entry.channelId, {
+   const apiMessage = await (
+    await this.client.getAPI(entry.guildId)
+   ).channels.createMessage(entry.channelId, {
     embeds: payloads.flatMap((p) => p.embeds ?? []),
     content: payloads
      .map((p) => p.content)
