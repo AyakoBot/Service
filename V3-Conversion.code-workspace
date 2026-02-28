@@ -1,20 +1,10 @@
 {
  "folders": [
-  {
-   "path": ".",
-  },
-  {
-   "path": "../Utility",
-  },
-  {
-   "path": "../Database",
-  },
-  {
-   "path": "../Gateway",
-  },
-  {
-   "path": "../API",
-  },
+  { "path": "." },
+  { "path": "../Utility" },
+  { "path": "../Database" },
+  { "path": "../Gateway" },
+  { "path": "../API" },
  ],
  "settings": {},
 }
