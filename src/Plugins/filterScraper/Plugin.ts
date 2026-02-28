@@ -22,7 +22,7 @@ export default class FilterScraperPlugin extends Plugin<Events, never> {
    data: ExtractPayload<GatewayDispatchEvents.AutoModerationActionExecution>,
   ) => {
    this.client.logger.debug('[FilterScraperPlugin] AutoModerationActionExecution event received');
-   if (!this.enabled) return;
+   if (!this.isEnabled()) return;
    this.client.logger.debug('[FilterScraperPlugin] Processing AutoModerationActionExecution event');
 
    AutoModerationActionExecution.call(this, data);

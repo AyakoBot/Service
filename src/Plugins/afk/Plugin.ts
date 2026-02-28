@@ -33,11 +33,12 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   [GatewayDispatchEvents.MessageCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
   ) => {
+   this.client.logger.debug(`[Plugin:${this.name}] test`, data.guild_id, this.client.debugGuilds);
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
-   this.client.logger.debug('[AFKPlugin] MessageCreate event received');
-   if (!this.enabled) return;
-   this.client.logger.debug('[AFKPlugin] Processing MessageCreate event');
+   this.client.logger.debug(`[Plugin:${this.name}] MessageCreate event received`);
+   if (!this.isEnabled()) return;
+   this.client.logger.debug(`[Plugin:${this.name}] Processing MessageCreate event`);
    MessageCreate.call(this, data);
   },
 
@@ -46,9 +47,9 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   ) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
-   this.client.logger.debug('[AFKPlugin] InteractionCreate event received');
-   if (!this.enabled) return;
-   this.client.logger.debug('[AFKPlugin] Processing InteractionCreate event');
+   this.client.logger.debug(`[Plugin:${this.name}] InteractionCreate event received`);
+   if (!this.isEnabled()) return;
+   this.client.logger.debug(`[Plugin:${this.name}] Processing InteractionCreate event`);
    InteractionCreate.call(this, data);
   },
  };

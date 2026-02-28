@@ -25,7 +25,7 @@ export default async function (
   msg.channel_id,
  );
  this.client.logger.debug(
-  `[AFKPlugin] canUserExecuteCommand response: ${canRunCommand.response}, debug: ${canRunCommand.debug}`,
+  `[Plugin:${this.name}] canUserExecuteCommand response: ${canRunCommand.response}, debug: ${canRunCommand.debug}`,
  );
 
  if (!canRunCommand.response) {

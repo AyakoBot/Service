@@ -31,7 +31,7 @@ export default abstract class Plugin<
 > {
  client: Client;
  abstract name: string;
- enabled: boolean = true;
+ private enabled: boolean = true;
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
 
@@ -48,9 +48,10 @@ export default abstract class Plugin<
   events.forEach((event) => {
    logger.debug(`[Plugin:${this.name}] Registering handler for event:`, event);
 
-   this.client.cache.on(event, (data: GatewayEventPayloadMap[E]) =>
-    this.eventHandlers[event](data),
-   );
+   this.client.cache.on(event, (data: GatewayEventPayloadMap[E]) => {
+    logger.silly(`[Plugin:${this.name}] Event received:`, event);
+    this.eventHandlers[event](data);
+   });
   });
  }
 
