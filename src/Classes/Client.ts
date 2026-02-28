@@ -54,9 +54,6 @@ export default class Client {
   const events = Object.values(GatewayDispatchEvents);
 
   this.logger.silly('[Client] Registering', events.length, 'gateway events');
-  this.cache.cacheSub.subscribe(...events).then((subs) => {
-   this.logger.debug('[Client] Subscribed to gateway events:', subs);
-  });
 
   events.forEach((e) => {
    this.logger.silly('[Client] Registering', e, 'gateway event');
