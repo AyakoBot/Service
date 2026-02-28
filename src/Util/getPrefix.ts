@@ -7,7 +7,7 @@ import GuildSetting from '../Plugins/settings/GuildSetting.js';
 export default async function (this: Client, msg: RMessage) {
  if (!msg.guild_id) return Constants.standard.prefix;
 
- const base = new GuildSetting(this.db, msg.guild_id);
+ const base = new GuildSetting(this, msg.guild_id);
  const setting = await base.get();
 
  if (setting?.prefix && msg.content.toLowerCase().startsWith(setting.prefix.toLowerCase())) {
