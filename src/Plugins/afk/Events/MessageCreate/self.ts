@@ -1,5 +1,5 @@
 import { getPathFromError, type RMessage } from '@ayako/utility';
-import { EmbedBuilder } from '@discordjs/builders';
+import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
@@ -22,13 +22,18 @@ export default async function (
  if (!afk) return;
  if (Number(afk.since) > Date.now() - 60000) return;
 
- const embed = new EmbedBuilder()
-  .setColor(Colors.Loading)
-  .setDescription(t.t.removed({ time: constants.formatters.getTime(Number(afk.since)) }));
-
  const [m] = await new MessagePayload(this.client)
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
-  .setEmbeds([embed])
+  .setComponents([
+   new ContainerBuilder()
+    .setAccentColor(Colors.Loading)
+    .addTextDisplayComponents(
+     new TextDisplayBuilder().setContent(
+      t.t.removed({ time: constants.formatters.getTime(Number(afk.since)) }),
+     ),
+    )
+    .toJSON(),
+  ])
   .send();
 
  this.client.jobCache.createJob(

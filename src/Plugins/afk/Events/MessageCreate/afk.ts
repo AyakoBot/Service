@@ -1,6 +1,7 @@
 import type { RMessage } from '@ayako/utility';
-import { EmbedBuilder } from '@discordjs/builders';
+import { ContainerBuilder, SectionBuilder, TextDisplayBuilder } from '@discordjs/builders';
 
+import { MessageFlags } from 'discord-api-types/v10';
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
 import canUserExecuteCommand from '../../../../Util/canUserExecuteCommand.js';
@@ -40,25 +41,35 @@ export default async function (
 
  const reason = msg.content.slice(commandName.length + (prefix || '').length).trim() || null;
 
- const embed = new EmbedBuilder()
-  .setColor(Colors.Loading)
-  .setDescription(
-   await getCensoredContent.call(
-    this,
-    msg.guild_id,
-    reason ?? '',
-    msg.channel_id,
-    member?.roles ?? [],
-   ),
-  );
-
  const afkBase = new AFKState(this.client, msg.author_id, msg.guild_id);
  const afk = await afkBase.get();
 
  new MessagePayload(this.client)
-  .setContent(await getContent.call(this, msg.guild_id, afk, msg.author_id))
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
-  .addEmbeds(embed)
+  .setComponents([
+   new SectionBuilder()
+    .addTextDisplayComponents(
+     new TextDisplayBuilder().setContent(
+      await getContent.call(this, msg.guild_id, afk, msg.author_id),
+     ),
+    )
+    .toJSON(),
+   new ContainerBuilder()
+    .setAccentColor(Colors.Loading)
+    .addTextDisplayComponents(
+     new TextDisplayBuilder().setContent(
+      await getCensoredContent.call(
+       this,
+       msg.guild_id,
+       reason ?? '',
+       msg.channel_id,
+       member?.roles ?? [],
+      ),
+     ),
+    )
+    .toJSON(),
+  ])
+  .setFlags(MessageFlags.IsComponentsV2)
   .send();
 
  await afkBase.upsert(

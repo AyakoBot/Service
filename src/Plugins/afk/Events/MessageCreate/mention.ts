@@ -1,5 +1,5 @@
 import type { RMessage } from '@ayako/utility';
-import { EmbedBuilder } from '@discordjs/builders';
+import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
@@ -30,18 +30,23 @@ export default async function (
  const activeAfks = afkStates.filter((a): a is NonNullable<typeof a> => !!a);
  if (!activeAfks.length) return;
 
- const embeds: EmbedBuilder[] = activeAfks.map((afk) =>
-  new EmbedBuilder().setColor(Colors.Loading).setDescription(
-   t.t.isAFK({
-    user: afk.userId,
-    since: constants.formatters.getTime(Number(afk.since)),
-    text: afk.reason ? `\n${afk.reason}` : '',
-   }),
-  ),
- );
-
  await new MessagePayload(this.client)
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
-  .setEmbeds(embeds)
+  .setComponents(
+   activeAfks.map((afk) =>
+    new ContainerBuilder()
+     .setAccentColor(Colors.Loading)
+     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+       t.t.isAFK({
+        user: afk.userId,
+        since: constants.formatters.getTime(Number(afk.since)),
+        text: afk.reason ? `\n${afk.reason}` : '',
+       }),
+      ),
+     )
+     .toJSON(),
+   ),
+  )
   .send();
 }
