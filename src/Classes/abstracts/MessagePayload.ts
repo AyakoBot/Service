@@ -211,10 +211,21 @@ export class MessagePayload {
    content: this.content ?? undefined,
    embeds: this.embeds.length ? this.embeds : undefined,
    flags: this.flags || undefined,
-   allowed_mentions: this.allowedMentions || undefined,
    components: this.components || undefined,
    files: this.files.length ? this.files : undefined,
+   allowed_mentions: this.getAllowedMentions(),
   };
+ }
+
+ private getAllowedMentions(): APIAllowedMentions {
+  return this.allowedMentions
+   ? {
+      parse: this.allowedMentions.parse ?? [],
+      replied_user: this.allowedMentions.replied_user ?? true,
+      roles: this.allowedMentions.roles ?? [],
+      users: this.allowedMentions.users ?? [],
+     }
+   : { parse: [], replied_user: true, roles: [], users: [] };
  }
 
  private embedCharLense() {
