@@ -3,6 +3,7 @@ import { scheduleJob, type Job } from 'node-schedule';
 
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
+import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
 
 type Deferred<T> = {
  promise: Promise<T>;
@@ -110,7 +111,7 @@ export default class SendMessageCache {
      .join('\n'),
     files: payloads.flatMap((p) => p.files ?? []),
     components: payloads.flatMap((p) => p.components ?? []),
-    allowed_mentions: { parse: [], replied_user: false, roles: [], users: [] },
+    allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
    });
 
    logger.silly('[SendMessageCache] Message sent successfully:', apiMessage.id);
@@ -121,4 +122,20 @@ export default class SendMessageCache {
    entry.deferreds.forEach((d) => d.reject(error));
   }
  };
+
+ private mergeAllowedMentions(
+  mentionsArray: (CreateMessageOptions['allowed_mentions'] | undefined)[],
+ ): APIAllowedMentions {
+  const merged: APIAllowedMentions = { parse: [], users: [], roles: [], replied_user: true };
+
+  for (const mentions of mentionsArray) {
+   if (!mentions) continue;
+   if (mentions.parse) merged.parse!.push(...mentions.parse);
+   if (mentions.users) merged.users!.push(...mentions.users);
+   if (mentions.roles) merged.roles!.push(...mentions.roles);
+   if (mentions.replied_user === false) merged.replied_user = false;
+  }
+
+  return merged;
+ }
 }
