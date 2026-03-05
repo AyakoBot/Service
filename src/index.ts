@@ -73,6 +73,5 @@ process.on('uncaughtException', (error) => {
 });
 
 process.on('unhandledRejection', (reason) => {
- logger.error('[Process] Unhandled rejection');
- console.log(reason);
+ logger.error('[Process] Unhandled rejection', JSON.stringify(reason));
 });
