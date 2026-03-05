@@ -1,4 +1,4 @@
-import { API } from '@ayako/api';
+import { API, RequestHandlerError } from '@ayako/api';
 import { Cache, logger as Logger } from '@ayako/utility';
 import { GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
 
@@ -16,14 +16,22 @@ const token = (isDev ? process.env.DevToken : process.env.Token) || '';
 
 export default class Client {
  cache = new Cache(0, 1, true);
+ // TODO: reenable this
  // cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  logger: typeof Logger = Logger;
- private api = new API(token, this.logger, this.cache);
+ private api = new API(
+  token.replace('Bot ', ''),
+  this.logger,
+  this.cache,
+  Buffer.from(token.split('.')[0].replace('Bot ', ''), 'base64').toString(),
+ );
+
  metrics = Metrics;
  db: Database;
  user: APIApplication | null = null;
 
- debugGuilds = ['298954459172700181', '669893888856817665'];
+ // debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405'];
+ debugGuilds = ['669893888856817665'];
 
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;
@@ -32,6 +40,10 @@ export default class Client {
  plugins: Plugin<GatewayDispatchEvents, BaseLanguage>[] = [];
 
  constructor() {
+  this.api.on('error', (err) => {
+   this.logger.error('[BASE API] API Error:', err);
+  });
+
   this.logger.log('[Client] Initializing Client...');
   this.logger.debug(
    '[Client] Running in',
@@ -60,9 +72,18 @@ export default class Client {
    this.cache.on(e, (...args: unknown[]) => this.logger.silly('[Event]', e, args));
   });
 
-  this.api.applications.getCurrent().then((app) => {
-   this.user = app;
-  });
+  this.api.applications
+   .getCurrent({
+    origin: 'Client Initialization',
+    reason: 'Fetch bot application info on startup',
+   })
+   .then((app) => {
+    if (app instanceof RequestHandlerError) {
+     throw new Error(`Failed to fetch application info during client initialization: ${app.debug}`);
+    }
+
+    this.user = app;
+   });
 
   this.logger.log('[Client] Client initialization complete');
  }

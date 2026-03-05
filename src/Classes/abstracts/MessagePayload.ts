@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import { logger, type RChannel, type RMessage, type RThread, type RUser } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
 import type {
@@ -35,8 +36,16 @@ export class MessagePayload {
  mergeTimeout: number = 0;
  sendTo: SendTo[] = [];
 
- constructor(client: typeof Client.prototype) {
+ origin: string;
+ reason: string;
+
+ constructor(
+  client: typeof Client.prototype,
+  { origin, reason }: { origin: string; reason: string },
+ ) {
   this.client = client;
+  this.origin = origin;
+  this.reason = reason;
   logger.silly('[MessagePayload] Created new payload');
  }
 
@@ -286,7 +295,15 @@ export class MessagePayload {
 
  private async getDM(userId: string, guildId: string | undefined = undefined) {
   logger.silly('[MessagePayload] Opening DM channel for user:', userId);
-  const dm = await (await this.client.getAPI(guildId)).users.createDM(userId).catch(() => null);
+  const dm = await (
+   await this.client.getAPI(guildId)
+  ).users
+   .createDM(userId, {
+    origin: this.origin,
+    reason: this.reason,
+   })
+   .then((res) => (res instanceof RequestHandlerError ? null : res));
+
   if (!dm) logger.debug('[MessagePayload] Failed to open DM for user:', userId);
   return dm?.id;
  }

@@ -2,6 +2,7 @@ import { getGuildPerms } from '@ayako/utility';
 import { ApplicationCommandPermissionType, PermissionFlagsBits } from '@discordjs/core';
 
 import type Client from '../Classes/Client.js';
+import { RequestHandlerError } from '@ayako/api';
 
 export default async function (
  this: Client,
@@ -23,9 +24,14 @@ export default async function (
   .then((r) => r.filter(commandFilter));
 
  if (!commandPermissions.length) {
-  const newPerms = await (await this.getAPI(guildId)).applicationCommands
-   .getGuildCommandsPermissions(botId || '0', guildId)
-   .catch(() => null);
+  const newPerms = await (
+   await this.getAPI(guildId)
+  ).applicationCommands
+   .getGuildCommandsPermissions(guildId, {
+    origin: 'Permission Check',
+    reason: 'Fetching command permissions for a command execution check',
+   })
+   .then((res) => (res instanceof RequestHandlerError ? null : res));
 
   commandPermissions = (newPerms?.filter((p) => p.id === command.id || p.id === botId) || [])
    .map((p) =>

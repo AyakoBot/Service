@@ -33,7 +33,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
   const entry = await base.get();
   if (!entry || !entry.token) return this.baseApi;
 
-  const api = new API(entry.token, this.client.logger, this.client.cache);
+  const api = new API(entry.token, this.client.logger, this.client.cache, guildId);
   const isValid = await this.validateAPI(guildId, api);
   if (!isValid) return this.client.getBaseAPI();
 
@@ -43,7 +43,9 @@ export default class CustomClient extends DBEntry<'customClient'> {
 
  validateAPI = async (guildId: string, api?: API) => {
   const apiToValidate = api || (await this.getAPIforGuildId(guildId));
-  const self = await apiToValidate.applications.getCurrent().catch(() => null);
+  const self = await apiToValidate.applications
+   .getCurrent({ origin: 'API Initialization', reason: 'Validating API token' })
+   .catch(() => null);
   if (self) return true;
 
   this.invalidateAPI(guildId);

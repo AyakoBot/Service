@@ -1,5 +1,5 @@
 import type { RMessage } from '@ayako/utility';
-import { ContainerBuilder, SectionBuilder, TextDisplayBuilder } from '@discordjs/builders';
+import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 
 import { MessageFlags } from 'discord-api-types/v10';
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
@@ -31,7 +31,10 @@ export default async function (
 
  if (!canRunCommand.response) {
   (await this.client.getAPI(msg.guild_id)).channels
-   .addMessageReaction(msg.channel_id, msg.id, '❌')
+   .addMessageReaction(msg.guild_id, msg.channel_id, msg.id, '❌', {
+    origin: this.name,
+    reason: 'User does not have permission to execute the AFK command',
+   })
    .catch(() => null);
   return;
  }
@@ -44,15 +47,11 @@ export default async function (
  const afkBase = new AFKState(this.client, msg.author_id, msg.guild_id);
  const afk = await afkBase.get();
 
- new MessagePayload(this.client)
+ new MessagePayload(this.client, { origin: this.name, reason: 'Set AFK status' })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setComponents([
-   new SectionBuilder()
-    .addTextDisplayComponents(
-     new TextDisplayBuilder().setContent(
-      await getContent.call(this, msg.guild_id, afk, msg.author_id),
-     ),
-    )
+   new TextDisplayBuilder()
+    .setContent(await getContent.call(this, msg.guild_id, afk, msg.author_id))
     .toJSON(),
    new ContainerBuilder()
     .setAccentColor(Colors.Loading)
@@ -61,7 +60,7 @@ export default async function (
       await getCensoredContent.call(
        this,
        msg.guild_id,
-       reason ?? '',
+       reason ?? '-',
        msg.channel_id,
        member?.roles ?? [],
       ),
@@ -82,5 +81,8 @@ export default async function (
   { since: Date.now(), reason },
  );
 
- (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(msg.channel_id, msg.id);
+ (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(msg.channel_id, msg.id, {
+  origin: this.name,
+  reason: 'Clean up the command message after setting AFK status',
+ });
 }

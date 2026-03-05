@@ -13,6 +13,6 @@ export const deleteNick = async function (
   member.guild_id,
   member.user_id,
   { nick: member.nick.slice(0, member.nick.length - 6) },
-  { reason: t.t.removeReason() },
+  { reason: t.t.removeReason(), origin: this.name },
  );
 };

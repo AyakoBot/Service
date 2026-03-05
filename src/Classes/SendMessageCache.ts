@@ -4,6 +4,7 @@ import { scheduleJob, type Job } from 'node-schedule';
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
 import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
+import { RequestHandlerError } from '@ayako/api';
 
 type Deferred<T> = {
  promise: Promise<T>;
@@ -17,6 +18,7 @@ type Entry = {
  guildId: string | '@me';
  payloads: MessagePayload[];
  deferreds: Deferred<RMessage | undefined>[];
+ debugInfo: { origin: string; reason: string }[];
 };
 
 export default class SendMessageCache {
@@ -57,6 +59,7 @@ export default class SendMessageCache {
    const deferred = this.createDeferred<RMessage | undefined>();
    existing.payloads.push(payload);
    existing.deferreds.push(deferred);
+   existing.debugInfo.push({ origin: payload.origin, reason: payload.reason });
    logger.silly('[SendMessageCache] Added to existing queue, count:', existing.payloads.length);
 
    if (existing.payloads.length >= 10) {
@@ -74,6 +77,7 @@ export default class SendMessageCache {
    payloads: [payload],
    job: { cancel: () => undefined } as unknown as Job,
    deferreds: [deferred],
+   debugInfo: [{ origin: payload.origin, reason: payload.reason }],
   };
 
   if (payload.content || timeout <= 0) {
@@ -103,22 +107,36 @@ export default class SendMessageCache {
   try {
    const apiMessage = await (
     await this.client.getAPI(entry.guildId)
-   ).channels.createMessage(entry.channelId, {
-    embeds: payloads.flatMap((p) => p.embeds ?? []),
-    content: payloads
-     .map((p) => p.content)
-     .filter(Boolean)
-     .join('\n'),
-    files: payloads.flatMap((p) => p.files ?? []),
-    components: payloads.flatMap((p) => p.components ?? []),
-    allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
-   });
+   ).channels.createMessage(
+    entry.channelId,
+    {
+     embeds: payloads.flatMap((p) => p.embeds ?? []),
+     content: payloads
+      .map((p) => p.content)
+      .filter(Boolean)
+      .join('\n'),
+     files: payloads.flatMap((p) => p.files ?? []),
+     components: payloads.flatMap((p) => p.components ?? []),
+     allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
+    },
+    {
+     origin: entry.debugInfo.map((d) => d.origin).join(', '),
+     reason: entry.debugInfo.map((d) => d.reason).join(', '),
+    },
+   );
+
+   if (apiMessage instanceof RequestHandlerError) {
+    logger.debug('[SendMessageCache] Failed to send message to', entry.channelId);
+    logger.silly(apiMessage);
+    return;
+   }
 
    logger.silly('[SendMessageCache] Message sent successfully:', apiMessage.id);
    const rMessage = this.client.cache.messages.apiToR(apiMessage, entry.guildId);
    entry.deferreds.forEach((d) => d.resolve(rMessage));
   } catch (error) {
    logger.error('[SendMessageCache] Failed to send message to', entry.channelId, error);
+   (await this.client.getAPI(entry.guildId)).emit('error', error);
    entry.deferreds.forEach((d) => d.reject(error));
   }
  };

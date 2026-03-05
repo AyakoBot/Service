@@ -1,4 +1,4 @@
-import { ContainerBuilder, SectionBuilder, TextDisplayBuilder } from '@discordjs/builders';
+import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import {
  ApplicationCommandOptionType,
  ApplicationCommandType,
@@ -32,13 +32,11 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
  const afkBase = new AFKState(this.client, user.id, cmd.guild_id);
  const afk = await afkBase.get();
 
- new MessagePayload(this.client)
+ new MessagePayload(this.client, { origin: this.name, reason: 'Set AFK status' })
   .setSendTo([{ channel: cmd.channel.id, guildId: cmd.guild_id }])
   .setComponents([
-   new SectionBuilder()
-    .addTextDisplayComponents(
-     new TextDisplayBuilder().setContent(await getContent.call(this, cmd.guild_id, afk, user.id)),
-    )
+   new TextDisplayBuilder()
+    .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
     .toJSON(),
    new ContainerBuilder()
     .setAccentColor(Colors.Loading)
@@ -47,7 +45,7 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
       await getCensoredContent.call(
        this,
        cmd.guild_id,
-       reason ?? '',
+       reason ?? '-',
        cmd.channel.id,
        member?.roles ?? [],
       ),

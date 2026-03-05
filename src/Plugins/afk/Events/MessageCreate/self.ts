@@ -22,7 +22,10 @@ export default async function (
  if (!afk) return;
  if (Number(afk.since) > Date.now() - 60000) return;
 
- const [m] = await new MessagePayload(this.client)
+ const [m] = await new MessagePayload(this.client, {
+  origin: this.name,
+  reason: 'AFK user returned',
+ })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setComponents([
    new ContainerBuilder()
@@ -44,6 +47,7 @@ export default async function (
 
    (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(m.channel_id, m.id, {
     reason: t.t.removeReason(),
+    origin: this.name,
    });
   },
  );

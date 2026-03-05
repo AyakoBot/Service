@@ -4,6 +4,7 @@ import { AutoModerationActionType, AutoModerationRuleEventType } from '@discordj
 import { filtered_content as filterContent } from '../../../../../rust/rust.js';
 import getUser from '../../../../Util/getUser.js';
 import type AFKPlugin from '../../Plugin.js';
+import { RequestHandlerError } from '@ayako/api';
 
 export const getCensoredContent = async function (
  this: AFKPlugin,
@@ -129,11 +130,16 @@ export const setNick = async function (this: AFKPlugin, userId: string, guildId:
  const user = member.nick
   ? { username: '', global_name: '' }
   : await getUser.call(this.client, userId);
- if (!user) return undefined;
+ if (user instanceof RequestHandlerError || !user) return undefined;
 
- (await this.client.getAPI(guildId)).guilds.editMember(guildId, userId, {
-  nick: member.nick ? `${member.nick} [AFK]` : `${user.global_name || user.username} [AFK]`,
- });
+ (await this.client.getAPI(guildId)).guilds.editMember(
+  guildId,
+  userId,
+  {
+   nick: member.nick ? `${member.nick} [AFK]` : `${user.global_name || user.username} [AFK]`,
+  },
+  { origin: this.name, reason: 'Reflect AFK status in nickname' },
+ );
 };
 
 export const getContent = async function (

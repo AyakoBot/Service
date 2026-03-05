@@ -30,7 +30,7 @@ export default async function (
  const activeAfks = afkStates.filter((a): a is NonNullable<typeof a> => !!a);
  if (!activeAfks.length) return;
 
- await new MessagePayload(this.client)
+ await new MessagePayload(this.client, { origin: this.name, reason: 'A mentioned user is AFK' })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setComponents(
    activeAfks.map((afk) =>
