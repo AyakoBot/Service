@@ -6,6 +6,7 @@ import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
 import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
+import { MessageFlags } from 'discord-api-types/v10';
 
 export default async function (
  this: AFKPlugin,
@@ -32,18 +33,19 @@ export default async function (
 
  await new MessagePayload(this.client, { origin: this.name, reason: 'A mentioned user is AFK' })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
+  .setFlags(MessageFlags.IsComponentsV2)
   .setComponents(
    activeAfks.map((afk) =>
     new ContainerBuilder()
      .setAccentColor(Colors.Loading)
      .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-       t.t.isAFK({
-        user: afk.userId,
-        since: constants.formatters.getTime(Number(afk.since)),
-        text: afk.reason ? `\n${afk.reason}` : '',
-       }),
-      ),
+       new TextDisplayBuilder().setContent(
+        t.t.isAFK({
+         user: afk.userId,
+         since: constants.formatters.getTime(Number(afk.since)),
+         text: afk.reason ? `\n> -# ${afk.reason}` : '',
+        }),
+       ),
      )
      .toJSON(),
    ),

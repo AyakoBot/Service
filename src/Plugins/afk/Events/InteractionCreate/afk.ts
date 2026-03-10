@@ -42,19 +42,17 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
     .setAccentColor(Colors.Loading)
     .addTextDisplayComponents(
      new TextDisplayBuilder().setContent(
-      await getCensoredContent.call(
-       this,
-       cmd.guild_id,
-       reason ?? '-',
-       cmd.channel.id,
-       member?.roles ?? [],
-      ),
+      reason
+       ? await getCensoredContent
+          .call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? [])
+          .then((r) => `-# ${r}`)
+       : '-',
      ),
     )
     .toJSON(),
   ])
   .setFlags(MessageFlags.IsComponentsV2)
-  .send();
+  .reply(cmd, { origin: this.name, reason: 'Set AFK status' });
 
  await afkBase.upsert(
   {

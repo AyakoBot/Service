@@ -57,13 +57,11 @@ export default async function (
     .setAccentColor(Colors.Loading)
     .addTextDisplayComponents(
      new TextDisplayBuilder().setContent(
-      await getCensoredContent.call(
-       this,
-       msg.guild_id,
-       reason ?? '-',
-       msg.channel_id,
-       member?.roles ?? [],
-      ),
+      reason
+       ? await getCensoredContent
+          .call(this, msg.guild_id, reason, msg.channel_id, member?.roles ?? [])
+          .then((r) => `-# ${r}`)
+       : '-',
      ),
     )
     .toJSON(),

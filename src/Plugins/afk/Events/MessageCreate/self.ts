@@ -8,6 +8,7 @@ import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
 
 import { deleteNick } from './util.js';
+import { MessageFlags } from 'discord-api-types/v10';
 
 export default async function (
  this: AFKPlugin,
@@ -27,6 +28,7 @@ export default async function (
   reason: 'AFK user returned',
  })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
+  .setFlags(MessageFlags.IsComponentsV2)
   .setComponents([
    new ContainerBuilder()
     .setAccentColor(Colors.Loading)

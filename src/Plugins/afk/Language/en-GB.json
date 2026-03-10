@@ -1,12 +1,12 @@
 {
  "t": {
-  "updated": "`{{user.username}}` updated their AFK",
+  "updated": "-# `{{user.username}}` updated their AFK",
   "setReason": "User went AFK",
   "removeReason": "User returned from AFK",
-  "set": "`{{user.username}}` went AFK",
-  "removed": "Welcome Back!\nYou've been AFK since {{time}}",
+  "set": "-# `{{user.username}}` went AFK",
+  "removed": "Welcome Back!\n-# You've been AFK since {{time}}",
   "isAFK": "<@{{user}}> is AFK since {{since}}{{text}}",
-  "disabled": "Setting AFK is disabled on this Server.\nAsk an Administrator to re-enable it using </settings afk:{{cmdId}}>"
+  "disabled": "-# Setting AFK is disabled on this Server.\nAsk an Administrator to re-enable it using </settings afk:{{cmdId}}>"
  },
  "settings": {
   "name": "AFK",
