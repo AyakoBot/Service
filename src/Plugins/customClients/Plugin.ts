@@ -1,5 +1,5 @@
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { type GatewayDispatchEvents } from '@discordjs/core';
+import { GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
@@ -27,8 +27,8 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   client.getBotIdForGuildId = this.getBotIdForGuildId;
 
   this.client.cache.on('interaction', (message) => {
-   this.client.logger.debug('[CustomClientsPlugin] Received interaction event:', message);
-   this.client.cache.emit('INTERACTION_CREATE', message);
+   this.client.logger.silly('[CustomClientsPlugin] Received interaction event:', message);
+   this.client.cache.emit(GatewayDispatchEvents.InteractionCreate, message);
   });
  }
 
