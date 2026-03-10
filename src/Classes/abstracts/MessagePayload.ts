@@ -4,6 +4,7 @@ import { EmbedBuilder } from '@discordjs/builders';
 import type {
  AllowedMentionsTypes,
  APIAllowedMentions,
+ APIApplicationCommandInteraction,
  APIEmbed,
  APIMessageTopLevelComponent,
  CreateMessageOptions,
@@ -306,5 +307,11 @@ export class MessagePayload {
 
   if (!dm) logger.debug('[MessagePayload] Failed to open DM for user:', userId);
   return dm?.id;
+ }
+
+ reply(cmd: APIApplicationCommandInteraction, debugInfo: { origin: string; reason: string }) {
+  return this.client
+   .getAPI(cmd.guild_id)
+   .then((api) => api.interactions.reply(cmd.id, cmd.token, this.getAPIPayload(), debugInfo));
  }
 }
