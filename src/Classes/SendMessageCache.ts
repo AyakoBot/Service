@@ -1,10 +1,10 @@
 import { getPathFromError, logger, type RMessage } from '@ayako/utility';
 import { scheduleJob, type Job } from 'node-schedule';
 
+import { RequestHandlerError } from '@ayako/api';
+import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
-import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
-import { RequestHandlerError } from '@ayako/api';
 
 type Deferred<T> = {
  promise: Promise<T>;
@@ -103,6 +103,7 @@ export default class SendMessageCache {
   logger.debug('[SendMessageCache] Sending', entry.payloads.length, 'payloads to', entry.channelId);
 
   const payloads = entry.payloads.map((p) => p.getAPIPayload());
+  const flags = payloads.reduce((acc, p) => acc | (p.flags ?? 0), 0) || undefined;
 
   try {
    const apiMessage = await (
@@ -118,6 +119,7 @@ export default class SendMessageCache {
      files: payloads.flatMap((p) => p.files ?? []),
      components: payloads.flatMap((p) => p.components ?? []),
      allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
+     flags,
     },
     {
      origin: entry.debugInfo.map((d) => d.origin).join(', '),
