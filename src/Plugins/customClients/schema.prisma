@@ -1,0 +1,22 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model CustomClient {
+ guildId   String  @db.VarChar
+ appId     String? @db.VarChar
+ token     String? @db.VarChar
+ publicKey String? @db.VarChar
+ secret    String? @db.VarChar
+
+ @@id([guildId])
+ @@index([appId])
+}

@@ -30,14 +30,3 @@ model GuildSetting {
  @@id([guildId])
  @@index([guildId])
 }
-
-model CustomClient {
- guildId   String  @db.VarChar
- appId     String? @db.VarChar
- token     String? @db.VarChar
- publicKey String? @db.VarChar
- secret    String? @db.VarChar
-
- @@id([guildId])
- @@index([appId])
-}
