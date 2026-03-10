@@ -49,23 +49,25 @@ export default async function (
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Set AFK status' })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
-  .setComponents([
-   new TextDisplayBuilder()
-    .setContent(await getContent.call(this, msg.guild_id, afk, msg.author_id))
-    .toJSON(),
-   new ContainerBuilder()
-    .setAccentColor(Colors.Loading)
-    .addTextDisplayComponents(
-     new TextDisplayBuilder().setContent(
-      reason
-       ? await getCensoredContent
-          .call(this, msg.guild_id, reason, msg.channel_id, member?.roles ?? [])
-          .then((r) => `-# ${r}`)
-       : '-',
-     ),
-    )
-    .toJSON(),
-  ])
+  .setComponents(
+   [
+    new TextDisplayBuilder()
+     .setContent(await getContent.call(this, msg.guild_id, afk, msg.author_id))
+     .toJSON(),
+    reason
+     ? new ContainerBuilder()
+        .setAccentColor(Colors.Loading)
+        .addTextDisplayComponents(
+         new TextDisplayBuilder().setContent(
+          await getCensoredContent
+           .call(this, msg.guild_id, reason, msg.channel_id, member?.roles ?? [])
+           .then((r) => `-# ${r}`),
+         ),
+        )
+        .toJSON()
+     : null,
+   ].filter((c) => !!c),
+  )
   .setFlags(MessageFlags.IsComponentsV2)
   .send();
 

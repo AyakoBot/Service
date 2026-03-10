@@ -4,7 +4,7 @@ import {
  ApplicationCommandType,
  InteractionType,
  MessageFlags,
- type APIInteraction,
+ type APIChatInputApplicationCommandInteraction,
 } from '@discordjs/core';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
@@ -14,7 +14,8 @@ import type AFKPlugin from '../../Plugin.js';
 
 import { getCensoredContent, getContent } from './util.js';
 
-export default async function (this: AFKPlugin, cmd: APIInteraction) {
+export default async function (this: AFKPlugin, cmd: APIChatInputApplicationCommandInteraction) {
+ if (cmd.data.name !== 'afk') return;
  if (cmd.type !== InteractionType.ApplicationCommand) return;
  if (!cmd.guild_id) return;
  if (!cmd.channel?.id) return;
@@ -34,23 +35,25 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Set AFK status' })
   .setSendTo([{ channel: cmd.channel.id, guildId: cmd.guild_id }])
-  .setComponents([
-   new TextDisplayBuilder()
-    .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
-    .toJSON(),
-   new ContainerBuilder()
-    .setAccentColor(Colors.Loading)
-    .addTextDisplayComponents(
-     new TextDisplayBuilder().setContent(
-      reason
-       ? await getCensoredContent
-          .call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? [])
-          .then((r) => `-# ${r}`)
-       : '-',
-     ),
-    )
-    .toJSON(),
-  ])
+  .setComponents(
+   [
+    new TextDisplayBuilder()
+     .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
+     .toJSON(),
+    reason
+     ? new ContainerBuilder()
+        .setAccentColor(Colors.Loading)
+        .addTextDisplayComponents(
+         new TextDisplayBuilder().setContent(
+          await getCensoredContent
+           .call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? [])
+           .then((r) => `-# ${r}`),
+         ),
+        )
+        .toJSON()
+     : null,
+   ].filter((c) => !!c),
+  )
   .setFlags(MessageFlags.IsComponentsV2)
   .reply(cmd, { origin: this.name, reason: 'Set AFK status' });
 
