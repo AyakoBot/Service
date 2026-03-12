@@ -1,9 +1,8 @@
-import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
+import { EmbedBuilder } from '@discordjs/builders';
 import {
  ApplicationCommandOptionType,
  ApplicationCommandType,
  InteractionType,
- MessageFlags,
  type APIInteraction,
 } from '@discordjs/core';
 
@@ -35,26 +34,20 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Set AFK status' })
   .setSendTo([{ channel: cmd.channel.id, guildId: cmd.guild_id }])
-  .setComponents(
-   [
-    new TextDisplayBuilder()
-     .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
-     .toJSON(),
-    reason
-     ? new ContainerBuilder()
-        .setAccentColor(Colors.Loading)
-        .addTextDisplayComponents(
-         new TextDisplayBuilder().setContent(
-          await getCensoredContent
-           .call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? [])
-           .then((r) => `-# ${r}`),
-         ),
-        )
-        .toJSON()
-     : null,
-   ].filter((c) => !!c),
+  .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
+  .setEmbeds(
+   reason
+    ? [
+       new EmbedBuilder()
+        .setColor(Colors.Loading)
+        .setDescription(
+         await getCensoredContent
+          .call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? [])
+          .then((r) => `-# ${r}`),
+        ),
+      ]
+    : [],
   )
-  .setFlags(MessageFlags.IsComponentsV2)
   .reply(cmd, { origin: this.name, reason: 'Set AFK status' });
 
  await afkBase.upsert(
