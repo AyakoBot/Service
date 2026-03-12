@@ -49,6 +49,7 @@ export default async function (
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Set AFK status' })
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
+  .setReply(msg.id)
   .setComponents(
    [
     new TextDisplayBuilder()

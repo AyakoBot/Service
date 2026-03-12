@@ -27,6 +27,7 @@ export default async function (
   origin: this.name,
   reason: 'AFK user returned',
  })
+  .setReply(msg.id)
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setFlags(MessageFlags.IsComponentsV2)
   .setComponents([

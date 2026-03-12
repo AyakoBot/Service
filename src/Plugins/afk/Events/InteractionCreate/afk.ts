@@ -4,7 +4,7 @@ import {
  ApplicationCommandType,
  InteractionType,
  MessageFlags,
- type APIChatInputApplicationCommandInteraction,
+ type APIInteraction,
 } from '@discordjs/core';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
@@ -14,9 +14,9 @@ import type AFKPlugin from '../../Plugin.js';
 
 import { getCensoredContent, getContent } from './util.js';
 
-export default async function (this: AFKPlugin, cmd: APIChatInputApplicationCommandInteraction) {
- if (cmd.data.name !== 'afk') return;
+export default async function (this: AFKPlugin, cmd: APIInteraction) {
  if (cmd.type !== InteractionType.ApplicationCommand) return;
+ if (cmd.data.name !== 'afk') return;
  if (!cmd.guild_id) return;
  if (!cmd.channel?.id) return;
 
