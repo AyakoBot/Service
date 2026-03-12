@@ -119,6 +119,7 @@ export default class SendMessageCache {
      files: payloads.flatMap((p) => p.files ?? []),
      components: payloads.flatMap((p) => p.components ?? []),
      allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
+     message_reference: payloads.find((p) => p.message_reference)?.message_reference,
      flags,
     },
     {

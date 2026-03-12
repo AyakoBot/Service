@@ -1,15 +1,17 @@
 import { RequestHandlerError } from '@ayako/api';
 import { logger, type RChannel, type RMessage, type RThread, type RUser } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
-import type {
- AllowedMentionsTypes,
- APIAllowedMentions,
- APIApplicationCommandInteraction,
- APIEmbed,
- APIMessageTopLevelComponent,
- CreateMessageOptions,
- DescriptiveRawFile,
- MessageFlags,
+import {
+ MessageReferenceType,
+ type AllowedMentionsTypes,
+ type APIAllowedMentions,
+ type APIApplicationCommandInteraction,
+ type APIEmbed,
+ type APIMessageTopLevelComponent,
+ type CreateMessageOptions,
+ type DescriptiveRawFile,
+ type MessageFlags,
+ type RESTAPIMessageReference,
 } from '@discordjs/core';
 
 import type Client from '../Client.js';
@@ -23,11 +25,12 @@ export class MessagePayload {
  private client: typeof Client.prototype;
 
  files: DescriptiveRawFile[] = [];
- content?: string | null = null;
+ content?: string | null = undefined;
  embeds: APIEmbed[] = [];
  flags: MessageFlags | 0 = 0;
  allowedMentions: APIAllowedMentions | null = null;
  components: APIMessageTopLevelComponent[] | null = null;
+ messageReference: RESTAPIMessageReference | undefined = undefined;
 
  nick: string | null = null;
  avatarURL: string | null = null;
@@ -172,6 +175,21 @@ export class MessagePayload {
   return this;
  }
 
+ setReply(msgId: string) {
+  this.messageReference = {
+   message_id: msgId,
+   type: MessageReferenceType.Default,
+   fail_if_not_exists: false,
+  };
+  this.allowedMentions = { ...this.allowedMentions, replied_user: false };
+  return this;
+ }
+
+ setMessageReference(opts: RESTAPIMessageReference) {
+  this.messageReference = opts;
+  return this;
+ }
+
  validate() {
   const e = (text: string, log: unknown) => {
    this.client.logger.error(`> ${text}\n${JSON.stringify(log)}`);
@@ -224,6 +242,7 @@ export class MessagePayload {
    components: this.components || undefined,
    files: this.files.length ? this.files : undefined,
    allowed_mentions: this.getAllowedMentions(),
+   message_reference: this.messageReference,
   };
  }
 
@@ -296,13 +315,8 @@ export class MessagePayload {
 
  private async getDM(userId: string, guildId: string | undefined = undefined) {
   logger.silly('[MessagePayload] Opening DM channel for user:', userId);
-  const dm = await (
-   await this.client.getAPI(guildId)
-  ).users
-   .createDM(userId, {
-    origin: this.origin,
-    reason: this.reason,
-   })
+  const dm = await (await this.client.getAPI(guildId)).users
+   .createDM(userId, { origin: this.origin, reason: this.reason })
    .then((res) => (res instanceof RequestHandlerError ? null : res));
 
   if (!dm) logger.debug('[MessagePayload] Failed to open DM for user:', userId);
