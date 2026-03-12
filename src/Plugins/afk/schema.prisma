@@ -11,17 +11,17 @@ datasource db {
 //#endregion
 
 model AfkState {
- userId  String  @db.VarChar
+ userId  String  @db.VarChar // TODO: rename col once sync fns are obsolete
  reason  String?
  since   Decimal @db.Decimal
- guildId String  @db.VarChar
+ guildId String  @db.VarChar // TODO: rename col once sync fns are obsolete
 
  @@id([userId, guildId])
  @@index([userId, guildId])
 }
 
 model AfkSetting {
- guildId    String @db.VarChar
+ guildId    String @db.VarChar // TODO: rename col once sync fns are obsolete
  maxLetters Int    @default(250)
 
  @@id(guildId)

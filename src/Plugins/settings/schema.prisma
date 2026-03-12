@@ -11,7 +11,7 @@ datasource db {
 //#endregion
 
 model GuildSetting {
- guildId           String   @db.VarChar
+ guildId           String   @db.VarChar // TODO: rename col once sync fns are obsolete
  prefix            String?
  interactionsMode  Boolean  @default(true)
  language          String   @default("en-GB")

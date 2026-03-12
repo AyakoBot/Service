@@ -11,8 +11,8 @@ datasource db {
 //#endregion
 
 model CustomClient {
- guildId   String  @db.VarChar
- appId     String? @db.VarChar
+ guildId   String  @db.VarChar // TODO: rename col once sync fns are obsolete
+ appId     String? @db.VarChar // TODO: rename col once sync fns are obsolete
  token     String? @db.VarChar
  publicKey String? @db.VarChar
  secret    String? @db.VarChar
