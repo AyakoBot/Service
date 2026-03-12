@@ -10,6 +10,8 @@ type Events = GatewayDispatchEvents.AutoModerationActionExecution;
 
 export default class FilterScraperPlugin extends Plugin<Events, never> {
  name = 'Filter Scraper';
+ settingName = '';
+ tableName = '';
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {

@@ -11,7 +11,9 @@ type Events = GatewayDispatchEvents.MessageCreate | GatewayDispatchEvents.Intera
 type APILanguage = typeof en;
 
 export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
- name = 'CustomClients';
+ name = 'Custom Clients';
+ settingName = 'custom-clients';
+ tableName = 'CustomClient';
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {

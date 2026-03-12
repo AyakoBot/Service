@@ -1,7 +1,8 @@
 import { logger } from '@ayako/utility';
-import type {
- SlashCommandOptionsOnlyBuilder,
- SlashCommandSubcommandBuilder,
+import {
+ SlashCommandStringOption,
+ type SlashCommandOptionsOnlyBuilder,
+ type SlashCommandSubcommandBuilder,
 } from '@discordjs/builders';
 import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
@@ -9,6 +10,25 @@ import merge from 'lodash.merge';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
+
+/**
+ * Categories for settings commands.
+ * Plugins can assign their settings commands to one of these categories
+ * for better organization in the UI.
+ */
+export enum SettingsCategory {
+ Utility = 'utility',
+ Info = 'info',
+ Roles = 'roles',
+ Automation = 'automation',
+ Moderation = 'moderation',
+ Leveling = 'leveling',
+ Nitro = 'nitro',
+ Fun = 'fun',
+ Channels = 'channels',
+ Shop = 'shop',
+ Vote = 'vote',
+}
 
 /**
  * Base language structure that all plugins must follow.
@@ -25,12 +45,20 @@ export type LanguageFiles<L extends BaseLanguage> = {
  'en-GB': L;
 } & Partial<Record<string, L>>;
 
+export const idSelector = new SlashCommandStringOption()
+ .setAutocomplete(true)
+ .setDescription('The ID of the Setting (Remove if you want to create a Setting)')
+ .setRequired(false)
+ .setName('id');
+
 export default abstract class Plugin<
  E extends GatewayDispatchEvents = GatewayDispatchEvents,
  L extends BaseLanguage = BaseLanguage,
 > {
  client: Client;
  abstract name: string;
+ abstract settingName: string;
+ abstract tableName: string;
  private enabled: boolean = true;
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
@@ -97,6 +125,6 @@ export default abstract class Plugin<
 
  abstract getCommands(): {
   commands: SlashCommandOptionsOnlyBuilder[];
-  settings: { category: string | null; commands: SlashCommandSubcommandBuilder[] }[];
+  settings: { category: SettingsCategory | null; commands: SlashCommandSubcommandBuilder[] }[];
  };
 }

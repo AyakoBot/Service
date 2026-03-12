@@ -10,6 +10,8 @@ type APILanguage = typeof en;
 
 export default class SettingsPlugin extends Plugin<Events, APILanguage> {
  name = 'Settings';
+ settingName = '';
+ tableName = '';
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -27,4 +29,50 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
   commands: [],
   settings: [],
  });
+}
+
+export enum EditorType {
+ Channel = 'channel',
+ Channels = 'channels',
+ Role = 'role',
+ Roles = 'roles',
+ User = 'user',
+ Users = 'users',
+ Mention = 'mention',
+ Mentions = 'mentions',
+
+ Boolean = 'boolean',
+ Duration = 'duration',
+ String = 'string',
+ Language = 'language',
+ Number = 'number',
+ Punishment = 'punishment',
+ AntiRaidPunishment = 'antiraid-punishment',
+ Embed = 'embed',
+ Token = 'token',
+ BotToken = 'bot-token',
+ Message = 'message',
+ ShopType = 'shoptype',
+ FormulaType = 'formulatype',
+ Emote = 'emote',
+ Emotes = 'emotes',
+ Command = 'command',
+ AutoModRules = 'automodrules',
+ SettingLink = 'settinglink',
+ AutoPunishment = 'auto-punishment',
+ LvlUpMode = 'lvlupmode',
+ Strings = 'strings',
+ QuestionType = 'question-type',
+ Category = 'category',
+ Voice = 'voice',
+ Permission = 'permission',
+ RoleMode = 'rolemode',
+ Commands = 'commands',
+ Questions = 'questions',
+ Position = 'position',
+ ThreadAutoArchiveDuration = 'thread-archive-time',
+ WeekendsType = 'weekends-type',
+ TicketType = 'ticketing-type',
+
+ Ignore = '-'
 }

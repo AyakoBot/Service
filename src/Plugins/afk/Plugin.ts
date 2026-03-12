@@ -22,6 +22,8 @@ type AFKLanguage = typeof en;
 
 export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
  name = 'AFK';
+ settingName = 'afk';
+ tableName = 'AFKSetting';
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
