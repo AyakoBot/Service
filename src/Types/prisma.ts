@@ -74,7 +74,8 @@ export interface DataBaseTables {
  // linkedRolesDeco: PrismaTables.linkedRolesDeco;
  // pingReport: PrismaTables.pingReport;
  // votePunish: PrismaTables.votePunish;
- // ticketing: PrismaTables.ticketing;
+ ticketSetting: PrismaTables.TicketSetting;
+ dmTicket: PrismaTables.DMTicket;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
