@@ -1,6 +1,6 @@
 import { logger } from '@ayako/utility';
 
-import type { DataBaseTables, TableName, UpdateData, WhereUnique } from '../../Types/prisma.js';
+import type { DataBaseTables, FindManyArgs, TableName, UpdateData, WhereUnique } from '../../Types/prisma.js';
 import type Client from '../Client.js';
 import type Database from '../Database.js';
 
@@ -13,6 +13,7 @@ interface ModelDelegate<T extends TableName> {
   update: UpdateData<T>;
   where: WhereUnique<T>;
  }): Promise<DataBaseTables[T]>;
+ findMany(args: FindManyArgs<T>): Promise<DataBaseTables[T][]>;
 }
 
 export default abstract class DBEntry<const T extends TableName> {
@@ -60,5 +61,12 @@ export default abstract class DBEntry<const T extends TableName> {
   return this.delegate()
    .upsert({ where: this.identity, create: createData, update: updateData })
    .then((r) => r);
+ }
+
+ findMany(args: FindManyArgs<T>): Promise<DataBaseTables[T][]> {
+  logger.silly('[DBEntry] Finding many', this.tableName, 'entries with args:', args);
+  return this.delegate()
+   .findMany(args)
+   .then((r: DataBaseTables[T][]) => r);
  }
 }
