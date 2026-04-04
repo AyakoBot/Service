@@ -108,29 +108,37 @@ export default class SendMessageCache {
   try {
    const apiMessage = await (
     await this.client.getAPI(entry.guildId)
-   ).channels.createMessage(
-    entry.channelId,
-    {
-     embeds: payloads.flatMap((p) => p.embeds ?? []),
-     content: payloads
-      .map((p) => p.content)
-      .filter(Boolean)
-      .join('\n'),
-     files: payloads.flatMap((p) => p.files ?? []),
-     components: payloads.flatMap((p) => p.components ?? []),
-     allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
-     message_reference: payloads.find((p) => p.message_reference)?.message_reference,
-     flags,
-    },
-    {
-     origin: entry.debugInfo.map((d) => d.origin).join(', '),
-     reason: entry.debugInfo.map((d) => d.reason).join(', '),
-    },
-   );
+   ).channels
+    .createMessage(
+     entry.channelId,
+     {
+      embeds: payloads.flatMap((p) => p.embeds ?? []),
+      content: payloads
+       .map((p) => p.content)
+       .filter(Boolean)
+       .join('\n'),
+      files: payloads.flatMap((p) => p.files ?? []),
+      components: payloads.flatMap((p) => p.components ?? []),
+      allowed_mentions: this.mergeAllowedMentions(payloads.map((p) => p.allowed_mentions)),
+      message_reference: payloads.find((p) => p.message_reference)?.message_reference,
+      flags,
+     },
+     {
+      origin: entry.debugInfo.map((d) => d.origin).join(', '),
+      reason: entry.debugInfo.map((d) => d.reason).join(', '),
+     },
+    )
+    .catch((e: Error) =>
+     new RequestHandlerError({ guildId: entry.guildId, channelId: entry.channelId }, e.message)
+      .setAction('createMessage')
+      .setAppId(this.client.user?.id || '')
+      .setDetail(String(e.stack))
+      .setError(e),
+    );
 
    if (apiMessage instanceof RequestHandlerError) {
-    logger.debug('[SendMessageCache] Failed to send message to', entry.channelId);
-    logger.silly(apiMessage);
+    logger.debug('[SendMessageCache] 1 Failed to send message to', entry.channelId);
+    logger.debug(apiMessage);
     return;
    }
 
@@ -138,7 +146,7 @@ export default class SendMessageCache {
    const rMessage = this.client.cache.messages.apiToR(apiMessage, entry.guildId);
    entry.deferreds.forEach((d) => d.resolve(rMessage));
   } catch (error) {
-   logger.error('[SendMessageCache] Failed to send message to', entry.channelId, error);
+   logger.error('[SendMessageCache] 2 Failed to send message to', entry.channelId, error);
    (await this.client.getAPI(entry.guildId)).emit('error', error);
    entry.deferreds.forEach((d) => d.reject(error));
   }
