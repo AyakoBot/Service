@@ -5,8 +5,8 @@ import {
  MessageReferenceType,
  type AllowedMentionsTypes,
  type APIAllowedMentions,
- type APIApplicationCommandInteraction,
  type APIEmbed,
+ type APIInteraction,
  type APIMessageTopLevelComponent,
  type CreateMessageOptions,
  type DescriptiveRawFile,
@@ -111,7 +111,7 @@ export class MessagePayload {
  }
 
  setEmbeds(embeds: (APIEmbed | EmbedBuilder)[]) {
-  this.embeds = embeds.map((e) => (e instanceof EmbedBuilder ? e.toJSON() : e));
+  this.embeds = embeds.filter((e) => !!e).map((e) => (e instanceof EmbedBuilder ? e.toJSON() : e));
 
   return this;
  }
@@ -323,9 +323,12 @@ export class MessagePayload {
   return dm?.id;
  }
 
- reply(cmd: APIApplicationCommandInteraction, debugInfo: { origin: string; reason: string }) {
-  return this.client
-   .getAPI(cmd.guild_id)
-   .then((api) => api.interactions.reply(cmd.id, cmd.token, this.getAPIPayload(), debugInfo));
+ reply(cmd: APIInteraction) {
+  return this.client.getAPI(cmd.guild_id).then((api) =>
+   api.interactions.reply(cmd.id, cmd.token, this.getAPIPayload(), {
+    origin: this.origin,
+    reason: this.reason,
+   }),
+  );
  }
 }
