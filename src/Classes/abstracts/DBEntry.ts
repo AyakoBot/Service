@@ -1,6 +1,7 @@
 import { logger } from '@ayako/utility';
 
 import type {
+ CreateData,
  DataBaseTables,
  FindManyArgs,
  TableName,
@@ -15,7 +16,7 @@ interface ModelDelegate<T extends TableName> {
  delete(args: { where: WhereUnique<T> }): Promise<DataBaseTables[T]>;
  update(args: { where: WhereUnique<T>; data: UpdateData<T> }): Promise<DataBaseTables[T]>;
  upsert(args: {
-  create: Omit<DataBaseTables[T], keyof WhereUnique<T>>;
+  create: CreateData<T>;
   update: UpdateData<T>;
   where: WhereUnique<T>;
  }): Promise<DataBaseTables[T]>;
@@ -60,7 +61,7 @@ export default abstract class DBEntry<const T extends TableName> {
  }
 
  upsert(
-  createData: Omit<DataBaseTables[T], keyof WhereUnique<T>>,
+  createData: CreateData<T>,
   updateData: UpdateData<T>,
  ): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Upserting', this.tableName, 'entry');

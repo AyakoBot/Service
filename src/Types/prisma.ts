@@ -96,3 +96,4 @@ export type WhereUnique<T extends TableName> = Args<
 >['args']['where'];
 export type UpdateData<T extends TableName> = Args<ToPrismaModel<T>, 'update'>['args']['data'];
 export type FindManyArgs<T extends TableName> = Args<ToPrismaModel<T>, 'findMany'>['args'];
+export type CreateData<T extends TableName> = Args<ToPrismaModel<T>, 'create'>['args']['data'];
