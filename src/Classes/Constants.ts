@@ -2,7 +2,7 @@ import type { REmoji, RUser } from '@ayako/utility';
 
 class Constants {
  standard = {
-  prefix: 't!',
+  prefix: 'h!',
   botName: 'Ayako',
   botAddUrl: (id: string) => `https://discord.com/oauth2/authorize?client_id=${id}`,
  };

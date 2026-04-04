@@ -30,8 +30,7 @@ export default class Client {
  db: Database;
  user: APIApplication | null = null;
 
- // debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405'];
- debugGuilds = ['669893888856817665'];
+ debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405'];
 
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;
