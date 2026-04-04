@@ -7,9 +7,12 @@ import {
 import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
 
+import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
+
+export type BaseLang = TranslatorType<typeof baseLang>;
 
 /**
  * Categories for settings commands.
@@ -118,9 +121,11 @@ export default abstract class Plugin<
   * @param guildIdOrLocale - Guild ID (bigint/string) or locale string
   * @returns A typed translator proxy
   */
- t = async (guildIdOrLocale: string | bigint | null | undefined): Promise<TranslatorType<L>> => {
+ t = async (
+  guildIdOrLocale: string | bigint | null | undefined,
+ ): Promise<TranslatorType<L> & { base: BaseLang }> => {
   const lang = await this.getLanguage(guildIdOrLocale);
-  return createTranslator(lang);
+  return { ...createTranslator(lang), base: createTranslator(baseLang) };
  };
 
  abstract getCommands(): {
