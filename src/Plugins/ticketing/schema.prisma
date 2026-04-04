@@ -11,14 +11,20 @@ datasource db {
 //#endregion
 
 model TicketSetting {
- id                  Decimal    @id @db.Decimal
- guild               String     @db.VarChar
- active              Boolean    @default(false)
- logChannels         String[]   @db.VarChar
- archiveCategory     String?    @db.VarChar
- type                TicketType @default(Thread)
+ id     Decimal @id @db.Decimal
+ guild  String  @db.VarChar
+ active Boolean @default(false)
+
+ // Text Channel or Forum Channel
+ logChannels String[] @db.VarChar
+ appliedTags String[] @db.VarChar
+
+ // Only if type is dmToChannel or Channel
+ archiveCategory String? @db.VarChar
+ archiveDuration Decimal @default(60) @db.Decimal
+
  // Only need on dmToThread & Thread
- archiveDuration     Decimal    @default(60) @db.Decimal
+ type                TicketType @default(Thread)
  channel             String?    @db.VarChar
  // Only need on dmToChannel & Channel
  category            String?    @db.VarChar
@@ -28,16 +34,17 @@ model TicketSetting {
  mentionRoles String[] @db.VarChar
  mentionUsers String[] @db.VarChar
 
- denyUsers String[]   @db.VarChar
- denyRoles String[]   @db.VarChar
- DMTicket  DMTicket[]
+ denyUsers String[] @db.VarChar
+ denyRoles String[] @db.VarChar
+ Ticket    Ticket[]
 
  @@index(guild)
  @@index(type)
 }
 
-model DMTicket {
- dm         String  @id @db.VarChar
+model Ticket {
+ id         Decimal @id @db.Decimal
+ dm         String? @db.VarChar
  user       String  @unique @db.VarChar
  channel    String  @unique @db.VarChar
  settingsId Decimal @db.Decimal

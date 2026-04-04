@@ -74,5 +74,6 @@ export enum EditorType {
  WeekendsType = 'weekends-type',
  TicketType = 'ticketing-type',
 
- Ignore = '-'
+ GuildId = 'guild-id',
+ Id = 'id',
 }
