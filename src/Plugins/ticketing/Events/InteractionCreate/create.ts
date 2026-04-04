@@ -67,16 +67,16 @@ export default async function (
   return;
  }
 
- if (settings.Ticket.length) {
+ if (settings.Ticket.filter((t) => !!t.dm).length) {
   showCommandError.call(this.client, t.alreadyInTicket(), cmd, t.base);
   return;
  }
 
- const otherDmTickets = await Ticket.findMany(this.client, {
+ const otherTickets = await Ticket.findMany(this.client, {
   where: { user: user.id },
  });
 
- if (otherDmTickets.length) {
+ if (otherTickets.filter((t) => !!t.dm).length) {
   showCommandError.call(this.client, t.alreadyInTicket(), cmd, t.base);
   return;
  }
@@ -217,8 +217,6 @@ export default async function (
    origin: this.name,
    reason: 'Deleting ticket channel due to error',
   });
-
-  Ticket.delete(this.client, { user: user.id }).then();
   return;
  }
 
@@ -234,20 +232,21 @@ export default async function (
    .reply(cmd);
  }
 
- const ticket = await new Ticket(this.client, Date.now().toString()).upsert(
+ const ticketId = Date.now().toString();
+ const ticket = await new Ticket(this.client, ticketId).upsert(
   {
-   id: Date.now().toString(),
+   id: ticketId,
    dm: dmId,
    channel: supportChannel.id,
-   userId: user.id,
-   settings: settings.id,
+   user: user.id,
+   settingsId: settings.id,
   },
   {
    channel: supportChannel.id,
    dm: dmId,
    user: user.id,
    settingsId: settings.id,
-   id: new Date().toString(),
+   id: ticketId,
   },
  );
 

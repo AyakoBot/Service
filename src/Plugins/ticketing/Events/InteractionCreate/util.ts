@@ -1,5 +1,9 @@
 import { RequestHandlerError } from '@ayako/api';
-import type { Ticket as PrismaTicket, TicketSetting as PrismaTicketSetting } from '@ayako/database';
+import {
+ TicketLogMode,
+ type Ticket as PrismaTicket,
+ type TicketSetting as PrismaTicketSetting,
+} from '@ayako/database';
 import type { RChannel, RThread, RUser } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
 import { ChannelType } from 'discord-api-types/v10';
@@ -110,12 +114,10 @@ const createLogThread = async function (
  }
 
  return api.channels
-  .createThread(
-   channelId,
-   { name: `log-${ticketId}`, type: ChannelType.PrivateThread },
-   undefined,
-   { origin: this.name, reason: 'Creating log thread' },
-  )
+  .createThread(channelId, { name: `log-${ticketId}`, type: ChannelType.PublicThread }, undefined, {
+   origin: this.name,
+   reason: 'Creating log thread',
+  })
   .then((thread) => {
    if (thread instanceof RequestHandlerError) return null;
 
@@ -131,16 +133,19 @@ const createLogThread = async function (
 const getLogThread = async function (
  this: TicketPlugin,
  guildId: string,
- channelId: string,
+ threadOrChannelId: string,
  ticketId: string,
 ) {
- const existingThreads = await this.client.cache.threads.getAll(guildId, channelId);
- if (!existingThreads) return createLogThread.call(this, guildId, channelId, ticketId);
+ const thread = await this.client.cache.threads.get(threadOrChannelId);
+ if (thread) return thread;
 
- const thread = existingThreads.find((t) => t.name === `log-${ticketId}`);
- if (!thread) return createLogThread.call(this, guildId, channelId, ticketId);
+ const existingThreads = await this.client.cache.threads.getAll(guildId, threadOrChannelId);
+ if (!existingThreads) return createLogThread.call(this, guildId, threadOrChannelId, ticketId);
 
- return thread;
+ const forumThreads = existingThreads.find((t) => t.name === `log-${ticketId}`);
+ if (!forumThreads) return createLogThread.call(this, guildId, threadOrChannelId, ticketId);
+
+ return forumThreads;
 };
 
 export const getLogChannels = async function (
@@ -153,10 +158,27 @@ export const getLogChannels = async function (
 
  const logThreads = await Promise.all(
   logChannels
-   .map((channel, i) => (!channel ? ticket.settings.logChannels[i] : null))
+   .map((channel, i) => (!channel ? ticket.settings.logChannels[i] : channel.id))
    .filter((id): id is string => !!id)
    .map((id) => getLogThread.call(this, ticket.settings.guild, id, String(ticket.id))),
  );
 
- return [...logChannels, ...logThreads];
+ const textChannels = logChannels.filter(
+  (c): c is RChannel =>
+   !!c &&
+   c.type !== ChannelType.GuildForum &&
+   c.type !== ChannelType.GuildMedia &&
+   c.type !== ChannelType.GuildCategory,
+ );
+
+ return [
+  ...(ticket.settings.logMode === TicketLogMode.Channel
+   ? textChannels
+   : await Promise.all(
+      textChannels.map((c) =>
+       getLogThread.call(this, ticket.settings.guild, c.id, String(ticket.id)),
+      ),
+     )),
+  ...logThreads,
+ ];
 };

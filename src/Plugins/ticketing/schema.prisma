@@ -15,9 +15,11 @@ model TicketSetting {
  guild  String  @db.VarChar
  active Boolean @default(false)
 
+ // Decides whether to create threads in text-channels that support log creation
+ logMode     TicketLogMode @default(Channel)
  // Text Channel or Forum Channel
- logChannels String[] @db.VarChar
- appliedTags String[] @db.VarChar
+ logChannels String[]      @db.VarChar
+ appliedTags String[]      @db.VarChar
 
  // Only if type is dmToChannel or Channel
  archiveCategory String? @db.VarChar
@@ -44,8 +46,8 @@ model TicketSetting {
 
 model Ticket {
  id         Decimal @id @db.Decimal
- dm         String? @db.VarChar
- user       String  @unique @db.VarChar
+ dm         String? @unique @db.VarChar
+ user       String  @db.VarChar
  channel    String  @unique @db.VarChar
  settingsId Decimal @db.Decimal
 
@@ -60,4 +62,9 @@ enum TicketType {
  dmToChannel
  Thread
  Channel
+}
+
+enum TicketLogMode {
+ Channel
+ Thread
 }
