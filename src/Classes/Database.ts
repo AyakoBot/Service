@@ -41,12 +41,9 @@ export default class Database {
       const result = await query(args);
       return result;
      } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-       loggerInstance.error('[Prisma] Error on', model, operation, ':', (error as Error).message);
-       loggerInstance.silly('[Prisma] Stack:', (error as Error).stack);
-       return null;
-      }
-      throw error;
+      loggerInstance.error('[Prisma] Error on', model, operation, ':', (error as Error).message);
+      loggerInstance.debug('[Prisma] Stack:', (error as Error).stack);
+      return null;
      }
     },
    },
