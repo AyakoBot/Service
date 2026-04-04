@@ -1,6 +1,12 @@
 import { logger } from '@ayako/utility';
 
-import type { DataBaseTables, FindManyArgs, TableName, UpdateData, WhereUnique } from '../../Types/prisma.js';
+import type {
+ DataBaseTables,
+ FindManyArgs,
+ TableName,
+ UpdateData,
+ WhereUnique,
+} from '../../Types/prisma.js';
 import type Client from '../Client.js';
 import type Database from '../Database.js';
 
@@ -62,11 +68,28 @@ export default abstract class DBEntry<const T extends TableName> {
    .upsert({ where: this.identity, create: createData, update: updateData })
    .then((r) => r);
  }
-
- findMany(args: FindManyArgs<T>): Promise<DataBaseTables[T][]> {
-  logger.silly('[DBEntry] Finding many', this.tableName, 'entries with args:', args);
-  return this.delegate()
-   .findMany(args)
-   .then((r: DataBaseTables[T][]) => r);
- }
 }
+
+export const findMany = <T extends TableName>(
+ client: Client,
+ tableName: T,
+ args: FindManyArgs<T>,
+): Promise<DataBaseTables[T][]> => {
+ logger.silly('[DBEntry] Finding many', tableName, 'entries');
+ const delegate = (client.db.client as unknown as Record<string, unknown>)[
+  tableName
+ ] as ModelDelegate<T>;
+ return delegate.findMany(args).then((r: DataBaseTables[T][]) => r);
+};
+
+export const deleteMany = <T extends TableName>(
+ client: Client,
+ tableName: T,
+ where: WhereUnique<T>,
+) => {
+ logger.debug('[DBEntry] Deleting many', tableName, 'entries');
+ const delegate = (client.db.client as unknown as Record<string, unknown>)[
+  tableName
+ ] as ModelDelegate<T>;
+ return delegate.delete({ where });
+};
