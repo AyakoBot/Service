@@ -48,7 +48,7 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
       ]
     : [],
   )
-  .reply(cmd, { origin: this.name, reason: 'Set AFK status' });
+  .reply(cmd);
 
  await afkBase.upsert(
   {
