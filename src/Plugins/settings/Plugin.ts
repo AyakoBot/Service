@@ -73,6 +73,7 @@ export enum EditorType {
  ThreadAutoArchiveDuration = 'thread-archive-time',
  WeekendsType = 'weekends-type',
  TicketType = 'ticketing-type',
+ TicketLogMode = 'ticket-log-mode',
 
  Ignore = '-'
 }
