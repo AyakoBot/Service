@@ -33,6 +33,9 @@ model TicketSetting {
  // Only need on dmToThread & dmToChannel
  sendMessagePrefixes String[]   @db.Text
 
+ // Only need on Thread & Channel
+ allowCreatorClose Boolean @default(false)
+
  mentionRoles String[] @db.VarChar
  mentionUsers String[] @db.VarChar
 
@@ -45,16 +48,24 @@ model TicketSetting {
 }
 
 model Ticket {
- id         Decimal @id @db.Decimal
- dm         String? @unique @db.VarChar
- user       String  @db.VarChar
- channel    String  @unique @db.VarChar
- settingsId Decimal @db.Decimal
+ id         Decimal     @id @db.Decimal
+ dm         String?     @unique @db.VarChar
+ starterDm  String?     @unique @db.VarChar
+ user       String      @db.VarChar
+ channel    String      @unique @db.VarChar
+ settingsId Decimal     @db.Decimal
+ state      TicketState @default(opened)
 
  settings TicketSetting @relation(fields: [settingsId], references: [id])
 
  @@index(dm)
  @@index(channel)
+}
+
+enum TicketState {
+ opened
+ closed
+ claimed
 }
 
 enum TicketType {

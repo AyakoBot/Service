@@ -1,16 +1,23 @@
-import { type GatewayDispatchEvents } from '@discordjs/core';
+import type { TicketSetting } from '@ayako/database';
+import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
+import { type Gateway, type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin, { idSelector, SettingsCategory } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
-import en from './Language/en-GB.json' with { type: 'json' };
-import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import type { TicketSetting } from '@ayako/database';
 import { EditorType } from '../settings/Plugin.js';
+
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
+import messageUpdate from './Events/MessageUpdate/index.js';
+import en from './Language/en-GB.json' with { type: 'json' };
+import messageDelete from './Events/MessageDelete/index.js';
 
-type Events = GatewayDispatchEvents.MessageCreate | GatewayDispatchEvents.InteractionCreate;
+type Events =
+ | GatewayDispatchEvents.InteractionCreate
+ | GatewayDispatchEvents.MessageCreate
+ | GatewayDispatchEvents.MessageUpdate
+ | GatewayDispatchEvents.MessageDelete;
 type APILanguage = typeof en;
 
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
@@ -25,14 +32,51 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  /* eslint-enable @typescript-eslint/naming-convention */
 
  eventHandlers = {
+  MESSAGE_DELETE: (data) => {
+   if (
+    !data.guild_id
+     ? !this.client.debugUsers.includes(data.channel_id || '')
+     : !this.client.debugGuilds.includes(data.guild_id || '')
+   ) {
+    return; // TODO: remove
+   }
+   if (!this.isEnabled()) return;
+
+   messageDelete.call(this, data);
+  },
+  MESSAGE_UPDATE: (data) => {
+   if (
+    !data.guild_id
+     ? !this.client.debugUsers.includes(data.author?.id || '')
+     : !this.client.debugGuilds.includes(data.guild_id || '')
+   ) {
+    return; // TODO: remove
+   }
+   if (!this.isEnabled()) return;
+
+   messageUpdate.call(this, data);
+  },
   MESSAGE_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (
+    !data.guild_id
+     ? !this.client.debugUsers.includes(data.author.id || '')
+     : !this.client.debugGuilds.includes(data.guild_id || '')
+   ) {
+    return; // TODO: remove
+   }
+
    if (!this.isEnabled()) return;
 
    messageCreate.call(this, data);
   },
   INTERACTION_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (
+    !data.guild_id
+     ? !this.client.debugUsers.includes(data.user?.id || '')
+     : !this.client.debugGuilds.includes(data.guild_id || '')
+   ) {
+    return; // TODO: remove
+   }
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
@@ -72,6 +116,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   sendMessagePrefixes: EditorType.String,
   type: EditorType.TicketType,
   appliedTags: EditorType.Strings,
+  logMode: EditorType.TicketLogMode,
+  allowCreatorClose: EditorType.Boolean,
 
   guild: EditorType.GuildId,
   id: EditorType.Id,

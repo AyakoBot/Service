@@ -5,14 +5,14 @@ import type { DataBaseTables } from '../../Types/prisma.js';
 
 export default class TicketSetting extends DBEntry<'ticketSetting'> {
  constructor(client: Client, id: string) {
-  super(client, 'ticketSetting', { id });
+  super(client, 'ticketSetting', { where: { id } });
  }
 
  getWithInclude(
   include: Prisma.TicketSettingInclude,
  ): Promise<(DataBaseTables['ticketSetting'] & { Ticket: Ticket[] }) | null> {
   return this.client.db.client.ticketSetting.findUnique({
-   where: this.identity,
+   ...this.identity,
    include,
   });
  }

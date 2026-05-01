@@ -43,8 +43,9 @@ export default async function (
   return;
  }
 
- const base = new TicketSetting(this.client, id);
- const settings = await base.getWithInclude({ Ticket: { where: { user: user.id } } });
+ const settings = await new TicketSetting(this.client, id).getWithInclude({
+  Ticket: { where: { user: user.id } },
+ });
  const t = await this.t(cmd.guild_id);
 
  if (!settings || !settings.active || !settings.channel) {
@@ -67,31 +68,28 @@ export default async function (
   return;
  }
 
- if (settings.Ticket.filter((t) => !!t.dm).length) {
+ if (
+  [TicketType.dmToChannel, TicketType.dmToThread].includes(settings.type) &&
+  settings.Ticket.filter((t) => !!t.dm).length
+ ) {
   showCommandError.call(this.client, t.alreadyInTicket(), cmd, t.base);
   return;
  }
 
- const otherTickets = await Ticket.findMany(this.client, {
-  where: { user: user.id },
- });
-
- if (otherTickets.filter((t) => !!t.dm).length) {
-  showCommandError.call(this.client, t.alreadyInTicket(), cmd, t.base);
-  return;
- }
-
- let dmId: string | undefined = undefined;
+ let dm: { dmId: string; msgId: string } | undefined = undefined;
  const api = await this.client.getAPI(cmd.guild_id);
 
+ const ticketId = Date.now().toString();
+
  if ([TicketType.dmToThread, TicketType.dmToChannel].includes(settings.type)) {
-  dmId = await dmTicketHandler.call(
+  dm = await dmTicketHandler.call(
    this,
    settings,
    t,
    cmd,
    api,
    this.client.cache.users.apiToR(user),
+   ticketId
   );
  }
 
@@ -157,7 +155,7 @@ export default async function (
   origin: this.name,
   reason: 'Creating ticket message',
  })
-  .setAllowedMentionsUsers(settings.mentionUsers)
+  .setAllowedMentionsUsers([...settings.mentionUsers, user.id])
   .setAllowedMentionsRoles(settings.mentionRoles)
   .setContent(
    `${
@@ -167,8 +165,9 @@ export default async function (
     .join(' ')}`,
   )
   .setEmbeds([
-   initPayload.embeds[0],
-   ...(settings.sendMessagePrefixes.length
+   initPayload.embeds?.[0] || null,
+   ...(settings.sendMessagePrefixes.length &&
+   [TicketType.dmToChannel, TicketType.dmToThread].includes(settings.type)
     ? [
        {
         author: { name: t.replyWith() },
@@ -194,13 +193,13 @@ export default async function (
     components: [
      {
       type: ComponentType.Button,
-      custom_id: `tickets/close_${settings.id}`,
+      custom_id: `tickets/close_${ticketId}`,
       label: t.closeTicket(),
       style: ButtonStyle.Danger,
      },
      {
       type: ComponentType.Button,
-      custom_id: `tickets/claim_${settings.id}_${user.id}`,
+      custom_id: `tickets/claim_${ticketId}`,
       label: t.claimTicket(),
       style: ButtonStyle.Success,
      },
@@ -232,18 +231,19 @@ export default async function (
    .reply(cmd);
  }
 
- const ticketId = Date.now().toString();
  const ticket = await new Ticket(this.client, ticketId).upsert(
   {
    id: ticketId,
-   dm: dmId,
+   dm: dm?.dmId,
+   starterDm: dm?.msgId,
    channel: supportChannel.id,
    user: user.id,
    settingsId: settings.id,
   },
   {
    channel: supportChannel.id,
-   dm: dmId,
+   dm: dm?.dmId,
+   starterDm: dm?.msgId,
    user: user.id,
    settingsId: settings.id,
    id: ticketId,
@@ -254,10 +254,7 @@ export default async function (
 
  handleLog.call(this, String(ticket.id), {
   type: LogType.TicketCreated,
-  data: {
-   user: this.client.cache.users.apiToR(user),
-   channel: supportChannel,
-  },
+  data: { user: this.client.cache.users.apiToR(user) },
  });
 }
 
@@ -268,6 +265,7 @@ async function dmTicketHandler(
  cmd: APIMessageComponentInteraction,
  api: Awaited<ReturnType<typeof this.client.getAPI>>,
  user: RUser,
+ ticketId: string,
 ) {
  if (
   (!settings.channel && settings.type === TicketType.dmToThread) ||
@@ -299,7 +297,7 @@ async function dmTicketHandler(
          components: [
           {
            type: ComponentType.Button,
-           custom_id: `tickets/leave_${settings.id}`,
+           custom_id: `tickets/leave_${ticketId}`,
            label: t.leaveTicket(),
            style: ButtonStyle.Danger,
           },
@@ -333,5 +331,5 @@ async function dmTicketHandler(
    .toJSON(),
  ]);
 
- return dm.id;
+ return { dmId: dm.id, msgId: msg.id };
 }
