@@ -3,6 +3,6 @@ import type Client from '../../Classes/Client.js';
 
 export default class GuildSetting extends DBEntry<'guildSetting'> {
  constructor(client: Client, guildId: string) {
-  super(client, 'guildSetting', { guildId });
+  super(client, 'guildSetting', { where: { guildId } });
  }
 }
