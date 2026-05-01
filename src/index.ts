@@ -3,6 +3,7 @@ import { getPathFromError, logger } from '@ayako/utility';
 import { config } from 'dotenv';
 import 'longjohn';
 import { scheduleJob } from 'node-schedule';
+import { inspect } from 'node:util';
 import { install } from 'source-map-support';
 
 config({
@@ -16,6 +17,7 @@ const { default: pluginAFK } = await import('./Plugins/afk/Plugin.js');
 const { default: pluginFilterScraper } = await import('./Plugins/filterScraper/Plugin.js');
 const { default: pluginSettings } = await import('./Plugins/settings/Plugin.js');
 const { default: pluginCustomClients } = await import('./Plugins/customClients/Plugin.js');
+const { default: pluginEval } = await import('./Plugins/eval/Plugin.js');
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');
@@ -53,6 +55,7 @@ client.registerPlugin(pluginAFK);
 client.registerPlugin(pluginFilterScraper);
 client.registerPlugin(pluginSettings);
 client.registerPlugin(pluginCustomClients);
+client.registerPlugin(pluginEval);
 
 // TODO: remove
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
@@ -70,10 +73,11 @@ process.on('SIGTERM', () => {
 });
 
 process.on('uncaughtException', (error) => {
- logger.error('[Process] Uncaught exception:', error.message);
- logger.silly('[Process] Stack:', error.stack);
+ logger.error('[Process] Uncaught exception:');
+ logger.error(inspect(error, { depth: null }));
 });
 
 process.on('unhandledRejection', (reason) => {
- logger.error('[Process] Unhandled rejection', JSON.stringify(reason));
+ logger.error('[Process] Unhandled rejection');
+ logger.error(inspect(reason, { depth: null }));
 });
