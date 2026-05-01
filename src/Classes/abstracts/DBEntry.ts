@@ -4,9 +4,9 @@ import type {
  CreateData,
  DataBaseTables,
  FindManyArgs,
+ FindUniqueArgs,
  TableName,
  UpdateData,
- WhereUnique,
 } from '../../Types/prisma.js';
 import type Client from '../Client.js';
 import type Database from '../Database.js';
@@ -25,11 +25,11 @@ interface ModelDelegate<T extends TableName> {
 
 export default abstract class DBEntry<const T extends TableName> {
  protected tableName: T;
- protected identity: WhereUnique<T>;
+ protected identity: FindUniqueArgs<T>;
  protected db: Database;
  protected client: Client;
 
- constructor(client: Client, tableName: T, identity: WhereUnique<T>) {
+ constructor(client: Client, tableName: T, identity: FindUniqueArgs<T>) {
   this.db = client.db;
   this.client = client;
   this.tableName = tableName;
@@ -43,20 +43,20 @@ export default abstract class DBEntry<const T extends TableName> {
 
  get(): Promise<DataBaseTables[T] | null> {
   logger.silly('[DBEntry] Getting', this.tableName, 'entry');
-  return this.delegate().findUnique({ where: this.identity });
+  return this.delegate().findUnique(this.identity);
  }
 
  delete(): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Deleting', this.tableName, 'entry');
   return this.delegate()
-   .delete({ where: this.identity })
+   .delete(this.identity)
    .then((r) => r);
  }
 
  update(data: UpdateData<T>): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Updating', this.tableName, 'entry');
   return this.delegate()
-   .update({ where: this.identity, data })
+   .update({ ...this.identity, data })
    .then((r) => r);
  }
 
@@ -66,7 +66,7 @@ export default abstract class DBEntry<const T extends TableName> {
  ): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Upserting', this.tableName, 'entry');
   return this.delegate()
-   .upsert({ where: this.identity, create: createData, update: updateData })
+   .upsert({ ...this.identity, create: createData, update: updateData })
    .then((r) => r);
  }
 }
@@ -86,11 +86,23 @@ export const findMany = <T extends TableName>(
 export const deleteMany = <T extends TableName>(
  client: Client,
  tableName: T,
- where: WhereUnique<T>,
+ args: FindUniqueArgs<T>,
 ) => {
  logger.debug('[DBEntry] Deleting many', tableName, 'entries');
  const delegate = (client.db.client as unknown as Record<string, unknown>)[
   tableName
  ] as ModelDelegate<T>;
- return delegate.delete({ where });
+ return delegate.delete(args);
+};
+
+export const findUnique = <T extends TableName>(
+ client: Client,
+ tableName: T,
+ args: FindUniqueArgs<T>,
+): Promise<DataBaseTables[T] | null> => {
+ logger.silly('[DBEntry] Finding unique', tableName, 'entry');
+ const delegate = (client.db.client as unknown as Record<string, unknown>)[
+  tableName
+ ] as ModelDelegate<T>;
+ return delegate.findUnique(args).then((r: DataBaseTables[T] | null) => r);
 };

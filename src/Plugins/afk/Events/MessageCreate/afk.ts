@@ -30,10 +30,16 @@ export default async function (
 
  if (!canRunCommand.response) {
   (await this.client.getAPI(msg.guild_id)).channels
-   .addMessageReaction(msg.guild_id, msg.channel_id, msg.id, '❌', {
-    origin: this.name,
-    reason: 'User does not have permission to execute the AFK command',
-   })
+   .addMessageReaction(
+    msg.guild_id,
+    msg.channel_id,
+    msg.id,
+    { main: '❌', alt: '❌' },
+    {
+     origin: this.name,
+     reason: 'User does not have permission to execute the AFK command',
+    },
+   )
    .catch(() => null);
   return;
  }

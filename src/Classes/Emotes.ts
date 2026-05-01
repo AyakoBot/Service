@@ -219,6 +219,8 @@ class Emotes {
 
  warning = { name: '⚠', link: 'https://cdn.ayakobot.com/Ayako_Assets/Warning.png' };
 
+ tools = { name: '🛠️' };
+
  settings = {
   name: 'Settings',
   id: '1155535411368710234',

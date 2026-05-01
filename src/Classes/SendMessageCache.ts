@@ -96,7 +96,7 @@ export default class SendMessageCache {
   return deferred.promise;
  };
 
- private send = async (entry: Entry) => {
+ private send = async (entry: Entry, trace: Error = new Error()) => {
   this.cache.delete(entry.channelId);
   entry.job.cancel();
 
@@ -132,7 +132,7 @@ export default class SendMessageCache {
      new RequestHandlerError({ guildId: entry.guildId, channelId: entry.channelId }, e.message)
       .setAction('createMessage')
       .setAppId(this.client.user?.id || '')
-      .setDetail(String(e.stack))
+      .setDetail(String(trace.stack))
       .setError(e),
     );
 

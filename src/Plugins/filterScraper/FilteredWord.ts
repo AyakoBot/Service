@@ -5,6 +5,6 @@ import type Client from '../../Classes/Client.js';
 
 export default class FilteredWord extends DBEntry<'filteredWord'> {
  constructor(client: Client, keyword: string, filterType: FilterType) {
-  super(client, 'filteredWord', { keyword_filterType: { keyword, filterType } });
+  super(client, 'filteredWord', { where: { keyword_filterType: { keyword, filterType } } });
  }
 }

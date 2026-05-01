@@ -1,7 +1,8 @@
-import { API, RequestHandlerError } from '@ayako/api';
 import { Cache, logger as Logger } from '@ayako/utility';
-import { GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
+import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
+import { REST } from '@discordjs/rest';
 
+import { API as CustomAPI } from '@ayako/api';
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 import type Plugin from './abstracts/Plugin.js';
@@ -11,19 +12,18 @@ import JobCache from './JobCache.js';
 import Metrics from './Metrics.js';
 import SendMessageCache from './SendMessageCache.js';
 
-const isDev = process.argv.includes('--dev');
-const token = (isDev ? process.env.DevToken : process.env.Token) || '';
-
 export default class Client {
+ isDev = process.argv.includes('--dev');
+
  cache = new Cache(0, 1, true);
  // TODO: reenable this
  // cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  logger: typeof Logger = Logger;
+
  private api = new API(
-  token.replace('Bot ', ''),
-  this.logger,
-  this.cache,
-  Buffer.from(token.split('.')[0].replace('Bot ', ''), 'base64').toString(),
+  new REST({
+   api: `http://${process.argv.includes('--local') ? 'localhost' : 'nirn'}:8080/api`,
+  }).setToken((this.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', '')),
  );
 
  metrics = Metrics;
@@ -31,6 +31,7 @@ export default class Client {
  user: APIApplication | null = null;
 
  debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405'];
+ debugUsers = ['318453143476371456', '564052925828038658', '669915074458025984'];
 
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;
@@ -39,10 +40,6 @@ export default class Client {
  plugins: Plugin<GatewayDispatchEvents, BaseLanguage>[] = [];
 
  constructor() {
-  this.api.on('error', (err) => {
-   this.logger.error('[BASE API] API Error:', err);
-  });
-
   this.logger.log('[Client] Initializing Client...');
   this.logger.debug(
    '[Client] Running in',
@@ -72,16 +69,12 @@ export default class Client {
   });
 
   this.api.applications
-   .getCurrent({
-    origin: 'Client Initialization',
-    reason: 'Fetch bot application info on startup',
-   })
+   .getCurrent()
    .then((app) => {
-    if (app instanceof RequestHandlerError) {
-     throw new Error(`Failed to fetch application info during client initialization: ${app.debug}`);
-    }
-
     this.user = app;
+   })
+   .catch((err) => {
+    console.error(`Failed to fetch application info during client initialization: ${err}`);
    });
 
   this.logger.log('[Client] Client initialization complete');
@@ -112,7 +105,13 @@ export default class Client {
   return setting?.language || 'en-GB';
  };
 
- getAPI = async (_guildId?: string) => this.api;
- getBaseAPI = (): API => this.api;
+ getAPI = async (_guildId: string) => this.getBaseAPI();
+ getBaseAPI = () =>
+  new CustomAPI(
+   (this.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', ''),
+   this.logger,
+   this.cache,
+   'this should never appear in logs',
+  );
  getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
 }
