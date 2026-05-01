@@ -5,11 +5,9 @@ import type Client from '../../Classes/Client.js';
 
 export default class CustomClient extends DBEntry<'customClient'> {
  apiCache: Map<string, API> = new Map();
- baseApi: API;
 
  constructor(client: Client, guildId: string) {
-  super(client, 'customClient', { guildId });
-  this.baseApi = this.client.getBaseAPI();
+  super(client, 'customClient', { where: { guildId } });
  }
 
  getBotIdForGuildId = async (guildId: string) => {
@@ -25,17 +23,31 @@ export default class CustomClient extends DBEntry<'customClient'> {
   );
  };
 
+ createBaseAPI = (guildId: string) => {
+  const api = new API(
+   (this.client.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', ''),
+   this.client.logger,
+   this.client.cache,
+   guildId,
+  );
+
+  this.registerErrorHandler(api);
+
+  this.apiCache.set(guildId, api);
+  return api;
+ };
+
  getAPIforGuildId = async (guildId: string) => {
   const base = new CustomClient(this.client, guildId);
   const cached = this.apiCache.get(guildId);
   if (cached) return cached;
 
   const entry = await base.get();
-  if (!entry || !entry.token) return this.baseApi;
+  if (!entry || !entry.token) return this.createBaseAPI(guildId);
 
   const api = new API(entry.token, this.client.logger, this.client.cache, guildId);
   const isValid = await this.validateAPI(guildId, api);
-  if (!isValid) return this.client.getBaseAPI();
+  if (!isValid) this.createBaseAPI(guildId);
 
   this.apiCache.set(guildId, api);
   return api;
@@ -59,6 +71,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
  };
 
  registerErrorHandler = (api: API) => {
+  // TODO: implement error debug channel
   api.on('error', async (message: RequestHandlerError<RequestHandlerErrorType>) => {
    const guildIds = await this.getGuildIdFromError(api, message);
    if (!guildIds) {
