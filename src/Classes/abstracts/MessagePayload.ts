@@ -1,6 +1,7 @@
 import { RequestHandlerError } from '@ayako/api';
 import { logger, type RChannel, type RMessage, type RThread, type RUser } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
+import { type CreateMessageOptions, type DescriptiveRawFile } from '@discordjs/core';
 import {
  MessageReferenceType,
  type AllowedMentionsTypes,
@@ -8,13 +9,12 @@ import {
  type APIEmbed,
  type APIInteraction,
  type APIMessageTopLevelComponent,
- type CreateMessageOptions,
- type DescriptiveRawFile,
  type MessageFlags,
  type RESTAPIMessageReference,
-} from '@discordjs/core';
+} from 'discord-api-types/v10';
 
 import type Client from '../Client.js';
+import constants from '../Constants.js';
 
 type SendTo = {
  channel: RUser | RChannel | RThread | RUser[] | RChannel[] | RThread[] | string | string[];
@@ -26,7 +26,7 @@ export class MessagePayload {
 
  files: DescriptiveRawFile[] = [];
  content?: string | null = undefined;
- embeds: APIEmbed[] = [];
+ embeds: APIEmbed[] | null = null;
  flags: MessageFlags | 0 = 0;
  allowedMentions: APIAllowedMentions | null = null;
  components: APIMessageTopLevelComponent[] | null = null;
@@ -110,16 +110,17 @@ export class MessagePayload {
   return this;
  }
 
- setEmbeds(embeds: (APIEmbed | EmbedBuilder)[]) {
+ setEmbeds(embeds: (APIEmbed | EmbedBuilder | null)[]) {
   this.embeds = embeds.filter((e) => !!e).map((e) => (e instanceof EmbedBuilder ? e.toJSON() : e));
 
   return this;
  }
 
  addEmbeds(...embeds: (APIEmbed | EmbedBuilder)[]) {
+  if (this.embeds === null) this.embeds = [];
   embeds.forEach((e) => {
-   if (e instanceof EmbedBuilder) this.embeds.push(e.toJSON());
-   else this.embeds.push(e);
+   if (e instanceof EmbedBuilder) this.embeds!.push(e.toJSON());
+   else this.embeds!.push(e);
   });
 
   return this;
@@ -237,13 +238,24 @@ export class MessagePayload {
  getAPIPayload(): CreateMessageOptions {
   return {
    content: this.content ?? undefined,
-   embeds: this.embeds.length ? this.embeds : undefined,
+   embeds: this.embeds?.length
+    ? MessagePayload.setAuthorURL(this.embeds)
+    : this.embeds || undefined,
    flags: this.flags || undefined,
    components: this.components || undefined,
    files: this.files.length ? this.files : undefined,
    allowed_mentions: this.getAllowedMentions(),
    message_reference: this.messageReference,
   };
+ }
+
+ private static setAuthorURL(embeds: APIEmbed[]) {
+  return embeds.map((e) => ({
+   ...e,
+   author: e.author
+    ? { ...e.author, url: e.author.url || constants.standard.botAddUrl() }
+    : undefined,
+  }));
  }
 
  private getAllowedMentions(): APIAllowedMentions {
@@ -260,7 +272,7 @@ export class MessagePayload {
  private embedCharLense() {
   let total = 0;
 
-  this.embeds.forEach((embed) => {
+  this.embeds?.forEach((embed) => {
    Object.values(embed).forEach((data) => {
     if (typeof data === 'string') total += data.length;
    });
@@ -315,7 +327,7 @@ export class MessagePayload {
 
  private async getDM(userId: string, guildId: string | undefined = undefined) {
   logger.silly('[MessagePayload] Opening DM channel for user:', userId);
-  const dm = await (await this.client.getAPI(guildId)).users
+  const dm = await (guildId ? await this.client.getAPI(guildId) : this.client.getBaseAPI()).users
    .createDM(userId, { origin: this.origin, reason: this.reason })
    .then((res) => (res instanceof RequestHandlerError ? null : res));
 
@@ -324,11 +336,34 @@ export class MessagePayload {
  }
 
  reply(cmd: APIInteraction) {
-  return this.client.getAPI(cmd.guild_id).then((api) =>
-   api.interactions.reply(cmd.id, cmd.token, this.getAPIPayload(), {
+  return this.client.getBaseAPI().interactions.reply(cmd.id, cmd.token, this.getAPIPayload(), {
+   origin: this.origin,
+   reason: this.reason,
+  });
+ }
+
+ edit(channelId: string, messageId: string) {
+  return this.client.getBaseAPI().channels.editMessage(channelId, messageId, this.getAPIPayload(), {
+   origin: this.origin,
+   reason: this.reason,
+  });
+ }
+
+ editDM(channelId: string, messageId: string) {
+  return this.client
+   .getBaseAPI()
+   .channels.editDirectMessage(channelId, messageId, this.getAPIPayload(), {
     origin: this.origin,
     reason: this.reason,
-   }),
-  );
+   });
+ }
+
+ update(cmd: APIInteraction) {
+  return this.client
+   .getBaseAPI()
+   .interactions.updateMessage(cmd.id, cmd.token, this.getAPIPayload(), {
+    origin: this.origin,
+    reason: this.reason,
+   });
  }
 }
