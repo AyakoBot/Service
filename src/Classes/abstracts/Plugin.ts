@@ -11,6 +11,7 @@ import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
+import type { RequestHandlerError, RequestHandlerErrorType } from '@ayako/api';
 
 export type BaseLang = TranslatorType<typeof baseLang>;
 
@@ -131,5 +132,9 @@ export default abstract class Plugin<
  abstract getCommands(): {
   commands: SlashCommandOptionsOnlyBuilder[];
   settings: { category: SettingsCategory | null; commands: SlashCommandSubcommandBuilder[] }[];
+ };
+
+ nonFatalError = (error: Error | RequestHandlerError<RequestHandlerErrorType>, context: string) => {
+  logger.error(`[Plugin:${this.name}] Non-fatal error in ${context}:`, error);
  };
 }

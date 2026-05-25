@@ -1,6 +1,6 @@
 import type { TicketSetting } from '@ayako/database';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { type Gateway, type GatewayDispatchEvents } from '@discordjs/core';
+import { type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin, { idSelector, SettingsCategory } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
@@ -9,9 +9,9 @@ import { EditorType } from '../settings/Plugin.js';
 
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
+import messageDelete from './Events/MessageDelete/index.js';
 import messageUpdate from './Events/MessageUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
-import messageDelete from './Events/MessageDelete/index.js';
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate

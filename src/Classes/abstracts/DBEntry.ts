@@ -12,14 +12,15 @@ import type Client from '../Client.js';
 import type Database from '../Database.js';
 
 interface ModelDelegate<T extends TableName> {
- findUnique(args: { where: WhereUnique<T> }): Promise<DataBaseTables[T] | null>;
- delete(args: { where: WhereUnique<T> }): Promise<DataBaseTables[T]>;
- update(args: { where: WhereUnique<T>; data: UpdateData<T> }): Promise<DataBaseTables[T]>;
- upsert(args: {
-  create: CreateData<T>;
-  update: UpdateData<T>;
-  where: WhereUnique<T>;
- }): Promise<DataBaseTables[T]>;
+ findUnique(args: FindUniqueArgs<T>): Promise<DataBaseTables[T] | null>;
+ delete(args: FindUniqueArgs<T>): Promise<DataBaseTables[T]>;
+ update(args: FindUniqueArgs<T> & { data: UpdateData<T> }): Promise<DataBaseTables[T]>;
+ upsert(
+  args: FindUniqueArgs<T> & {
+   create: CreateData<T>;
+   update: UpdateData<T>;
+  },
+ ): Promise<DataBaseTables[T]>;
  findMany(args: FindManyArgs<T>): Promise<DataBaseTables[T][]>;
 }
 
@@ -53,17 +54,14 @@ export default abstract class DBEntry<const T extends TableName> {
    .then((r) => r);
  }
 
- update(data: UpdateData<T>): Promise<DataBaseTables[T]> {
+ update(data: UpdateData<T> & FindUniqueArgs<T>): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Updating', this.tableName, 'entry');
   return this.delegate()
    .update({ ...this.identity, data })
    .then((r) => r);
  }
 
- upsert(
-  createData: CreateData<T>,
-  updateData: UpdateData<T>,
- ): Promise<DataBaseTables[T]> {
+ upsert(createData: CreateData<T>, updateData: UpdateData<T>): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Upserting', this.tableName, 'entry');
   return this.delegate()
    .upsert({ ...this.identity, create: createData, update: updateData })

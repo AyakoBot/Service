@@ -1,57 +1,38 @@
 import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
-import showCommandError from '../../../../Util/showCommandError.js';
-
 import type TicketPlugin from '../../Plugin.js';
-import Ticket from '../../Ticket.js';
-import { handleLog, LogType } from './util.js';
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import handleTicketError from '../../Util/handleTicketError.js';
+import BaseTicket from '../../Classes/BaseTicket.js';
+import { BaseTicketErrors } from '../../Classes/Enums.js';
 
 export default async function (
  this: TicketPlugin,
  cmd: APIMessageComponentInteraction,
  args: string[],
 ) {
- if (!cmd.channel) return;
- if (!cmd.guild_id) return;
- if (!cmd.member) return;
+ if (!cmd.guild || !cmd.guild_id) return;
 
- const ticketId = args.shift();
- if (!ticketId) return;
+ const ticket = await BaseTicket.getTicketById(this.client, args[0]).catch((e: Error) => e);
+ const userId = cmd.user?.id || cmd.member?.user.id;
 
- const user = cmd.user || cmd.member?.user;
- if (!user) return;
-
- const ticket = await new Ticket(this.client, ticketId).getWithInclude({ settings: true });
- if (!ticket || !ticket.settings || !ticket.settings.active) return;
-
- const t = await this.t(cmd.guild_id);
-
- if (
-  !cmd.member.roles.some((role) => ticket.settings.mentionRoles.includes(role)) &&
-  !ticket.settings.mentionUsers.includes(user.id)
- ) {
-  showCommandError.call(this.client, t.onlyStaffCanDelete(), cmd, t.base);
+ if (!userId) {
+  handleTicketError.call(this.client, {
+   guildId: (cmd.guild?.id || cmd.guild_id)!,
+   error: new Error(BaseTicketErrors.userNotFound, { cause: userId }),
+   cmd,
+  });
   return;
  }
 
- new MessagePayload(this.client, { origin: this.name, reason: '"Prepping delete" message' })
-  .setEmbeds([])
-  .setComponents([])
-  .setContent(t.deleting())
-  .update(cmd);
-
- await handleLog.call(this, ticketId, {
-  type: LogType.TicketDeleted,
-  data: { user },
- });
-
- const res = (await this.client.getAPI(cmd.guild_id)).channels.delete(cmd.channel.id, {
-  origin: this.name,
-  reason: 'Ticket deleted',
- });
- if (res && 'message' in res) {
-  showCommandError.call(this.client, t.cantDelete(), cmd, t.base);
+ if (ticket instanceof Error || ticket === null) {
+  handleTicketError.call(this.client, {
+   guildId: (cmd.guild?.id || cmd.guild_id)!,
+   error: ticket || new Error(BaseTicketErrors.ticketNotFound, { cause: args[0] }),
+   cmd,
+  });
   return;
  }
+
+ const del = ticket.delete({ cmd, userId });
+ del.next();
 }

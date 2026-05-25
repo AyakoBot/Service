@@ -1,0 +1,123 @@
+import type { RMessage } from '@ayako/utility';
+import {
+ ButtonBuilder,
+ FileBuilder,
+ MediaGalleryBuilder,
+ MediaGalleryItemBuilder,
+ SectionBuilder,
+ SeparatorBuilder,
+ TextDisplayBuilder,
+ type ContainerBuilder,
+} from '@discordjs/builders';
+import {
+ ButtonStyle,
+ SeparatorSpacingSize,
+ StickerFormatType,
+ type GatewayMessageDeleteDispatchData,
+} from 'discord-api-types/v10';
+
+import constants from '../Classes/Constants.js';
+
+type ContextButton =
+ | { authorName: string; button: ButtonBuilder; context?: never }
+ | { authorName: string; button?: never; context: string }
+ | { authorName: string; button?: never; context?: never };
+
+const addSeparator = function (this: ContainerBuilder) {
+ this.addSeparatorComponents(
+  new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+ );
+};
+
+const getAuthorNameComponent = function (authorName: string) {
+ return new TextDisplayBuilder().setContent(`-# ${authorName}`);
+};
+
+export const cloneMessageIntoContainer = function (
+ this: ContainerBuilder,
+ msg: RMessage | GatewayMessageDeleteDispatchData | null,
+ contextButton?: ContextButton,
+) {
+ switch (true) {
+  case !!(contextButton?.authorName && contextButton?.button): {
+   this.addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(getAuthorNameComponent(contextButton.authorName))
+     .setButtonAccessory(contextButton.button),
+   );
+
+   addSeparator.call(this);
+   break;
+  }
+
+  case !!(contextButton?.authorName && contextButton?.context): {
+   this.addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(getAuthorNameComponent(contextButton.authorName))
+     .setButtonAccessory(
+      new ButtonBuilder()
+       .setStyle(ButtonStyle.Secondary)
+       .setDisabled(true)
+       .setCustomId(contextButton.context)
+       .setLabel('‎'),
+     ),
+   );
+
+   addSeparator.call(this);
+   break;
+  }
+
+  case !!contextButton?.authorName: {
+   this.addTextDisplayComponents(getAuthorNameComponent(contextButton.authorName));
+
+   addSeparator.call(this);
+   break;
+  }
+
+  default:
+   break;
+ }
+
+ if (!msg || !('content' in msg)) return;
+
+ if (msg.content) {
+  this.addTextDisplayComponents(new TextDisplayBuilder().setContent(msg.content));
+ }
+
+ const mediaAttachments = msg.attachments.filter((a) => a.width && a.height);
+ if (mediaAttachments.length) {
+  this.addMediaGalleryComponents(
+   new MediaGalleryBuilder().addItems(
+    mediaAttachments.map((a) => {
+     const item = new MediaGalleryItemBuilder().setURL(a.url);
+     if (a.description) item.setDescription(a.description);
+     return item;
+    }),
+   ),
+  );
+ }
+
+ const nonMediaAttachments = msg.attachments.filter((a) => !a.width || !a.height);
+ if (nonMediaAttachments.length) {
+  nonMediaAttachments.forEach((a) => this.addFileComponents(new FileBuilder().setURL(a.url)));
+ }
+
+ if (msg.sticker_items?.length) {
+  this.addMediaGalleryComponents(
+   new MediaGalleryBuilder().addItems(
+    msg.sticker_items.map((i) =>
+     new MediaGalleryItemBuilder().setURL(
+      `https://media.discordapp.net/stickers/${i.id}.${StickerFormatType[i.format_type].replace('A', '')}`,
+     ),
+    ),
+   ),
+  );
+ }
+
+ addSeparator.call(this);
+ this.addTextDisplayComponents(
+  new TextDisplayBuilder().setContent(
+   `-# ${constants.formatters.getTime(new Date(msg.timestamp).getTime())}`,
+  ),
+ );
+};

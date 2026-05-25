@@ -338,6 +338,7 @@
   "relationships.read": "See Relationships"
  },
  "errors": {
+  "unknownError": "An unknown error occurred",
   "invalidColor": "Color is not a valid HEX Code",
   "fileNotFound": "File not found or empty",
   "stickerNotFound": "The Mentioned Sticker could not be found",

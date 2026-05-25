@@ -90,7 +90,11 @@ export type ToPrismaModel<T extends TableName> =
 export type Operations<T extends PrismaModelName> = Prisma.TypeMap['model'][T]['operations'];
 export type Args<T extends PrismaModelName, K extends keyof Operations<T>> = Operations<T>[K];
 
-export type FindUniqueArgs<T extends TableName> = Args<ToPrismaModel<T>, 'findUnique'>['args'];
+export type WhereUnique<T extends TableName> = Args<
+ ToPrismaModel<T>,
+ 'findUnique'
+>['args']['where'];
 export type UpdateData<T extends TableName> = Args<ToPrismaModel<T>, 'update'>['args']['data'];
+export type FindUniqueArgs<T extends TableName> = Args<ToPrismaModel<T>, 'findUnique'>['args'];
 export type FindManyArgs<T extends TableName> = Args<ToPrismaModel<T>, 'findMany'>['args'];
 export type CreateData<T extends TableName> = Args<ToPrismaModel<T>, 'create'>['args']['data'];

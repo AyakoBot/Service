@@ -10,7 +10,7 @@ import { ChannelType, MessageType, type GatewayDispatchEvents } from 'discord-ap
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 
 import type TicketPlugin from '../../Plugin.js';
-import Ticket from '../../Ticket.js';
+import DBTicket from '../../DBTicket.js';
 
 import { type handleTicketDelete } from '../MessageDelete/index.js';
 
@@ -38,7 +38,7 @@ export default async function (
  if ('type' in msg && ![MessageType.Default, MessageType.Reply].includes(mCU.type)) return;
 
  if (!msg.guild_id) {
-  const ticket = await Ticket.findUniqueWithInclude(this.client, {
+  const ticket = await DBTicket.findUniqueWithInclude(this.client, {
    where: { dm: msg.channel_id },
    include: { settings: true },
   });
@@ -59,7 +59,7 @@ export default async function (
   ) &&
   channel.name.startsWith('log-')
  ) {
-  const ticket = await new Ticket(this.client, channel.name.split('-').at(1) || '').getWithInclude({
+  const ticket = await new DBTicket(this.client, channel.name.split('-').at(1) || '').getWithInclude({
    settings: true,
   });
   if (!ticket || !isTicketActive(ticket?.settings)) return;
@@ -68,7 +68,7 @@ export default async function (
   return;
  }
 
- const ticket = await Ticket.findUniqueWithInclude(this.client, {
+ const ticket = await DBTicket.findUniqueWithInclude(this.client, {
   where: { channel: msg.channel_id },
   include: { settings: true },
  });

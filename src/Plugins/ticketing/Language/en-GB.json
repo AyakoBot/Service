@@ -27,6 +27,7 @@
  "cantClaim": "You can't claim this Ticket",
  "reportAbuse": "Please report abuse to the Ayako Support-Team",
  "closed": "closed",
+ "archived": "archived",
  "claimTicket": "Claim Ticket",
  "claimed": "claimed",
  "claimedBy": "Claimed By",
@@ -63,5 +64,48 @@
   "authorMessageDeletedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# deleted and delete forwarded",
   "authorMessageEditedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited and edit forwarded",
   "transcript": "Transcript"
+ },
+ "errors": {
+  "threadNotFound": "Couldn't find the Ticket-Thread",
+  "threadChannelNotSet": "Thread-Channel is not set in settings",
+  "ticketPluginNotFound": "Fatal error: Couldn't find TicketPlugin instance - Please contact support",
+  "unknownTicketType": "Fatal error: Unknown Ticket Type - Please contact support",
+  "dmChannelNotFound": "Couldn't find the DM Channel with the user",
+  "couldntSendDm": "Couldn't send a DM to the user",
+  "channelNotFound": "Couldn't find the Ticket-Channel",
+  "badChannelSupplied": "Fatal error: Bad Channel supplied - Please contact support",
+  "ticketNotFound": "Couldn't find the Ticket, it might have been deleted already",
+
+  "create.cantCreateChannel": "Couldn't create a Ticket-Channel",
+  "create.cantUpdatePermissions": "Couldn't update the Ticket-Channel permissions",
+  "create.cantSendInitMessage": "Couldn't send the initial Message in the Ticket-Channel",
+  "create.ticketExists": "A Ticket already exists for you",
+  "create.settingsNotFound": "Couldn't find the Ticket-System settings for this Server",
+  "create.settingsChannelNotFound": "Couldn't find the Channel set in the Ticket-System settings",
+  "create.settingsInactive": "The Ticket-System is not active",
+  "create.userDenied": "You are blocked from creating Tickets",
+  "create.roleDenied": "One of your Roles is blocked from creating Tickets",
+  "create.dbEntryFailed": "Fatal error: Failed to create a Ticket entry in the database - Please contact support",
+  "create.cantReplyMessage": "Couldn't send the reply Message in the Ticket-Creation-Channel",
+
+  "claim.cantEditChannel": "Couldn't edit the Ticket-Channel",
+  "claim.cantEditMessage": "Couldn't edit the initial Message in the Ticket-Channel",
+  "claim.ticketAlreadyClosed": "The Ticket is already closed",
+  "claim.ticketAlreadyClaimed": "The Ticket is already claimed",
+  "claim.creatorCannotClaim": "The Ticket creator can't claim their own Ticket",
+  "claim.userNotStaff": "You are not in the Support-Team and can't claim Tickets",
+  "claim.ticketNotOpened": "The Ticket is not opened and can't be claimed",
+
+  "close.cantEditInitMessage": "Couldn't edit the initial Message in the Ticket-Channel",
+  "close.cantEditChannel": "Couldn't edit the Ticket-Channel",
+  "close.cantReplyMessage": "Couldn't send the closing Message in the Ticket-Channel",
+  "close.ticketAlreadyClosed": "The Ticket is already closed",
+  "close.userNotStaff": "You are not in the Support-Team and can't close Tickets",
+
+  "delete.cantUpdateMessage": "Couldn't update the Message in the Ticket-Channel",
+  "delete.cantDeleteChannel": "Couldn't delete the Ticket-Channel",
+  "delete.ticketNotFound": "Couldn't find the Ticket",
+  "delete.onlyStaffCanDelete": "Only the Support-Team can delete Tickets",
+  "delete.ticketNotClosed": "The Ticket is not closed and can't be deleted"
  }
 }

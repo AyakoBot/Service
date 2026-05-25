@@ -3,7 +3,7 @@ import DBEntry, { deleteMany, findMany, findUnique } from '../../Classes/abstrac
 import type Client from '../../Classes/Client.js';
 import type { DataBaseTables, FindManyArgs, FindUniqueArgs } from '../../Types/prisma.js';
 
-export default class Ticket extends DBEntry<'ticket'> {
+export default class DBTicket extends DBEntry<'ticket'> {
  constructor(client: Client, id: string) {
   super(client, 'ticket', { where: { id } });
  }

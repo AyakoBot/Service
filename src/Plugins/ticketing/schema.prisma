@@ -38,6 +38,8 @@ model TicketSetting {
 
  mentionRoles String[] @db.VarChar
  mentionUsers String[] @db.VarChar
+ staffRoles String[] @db.VarChar
+ staffUsers String[] @db.VarChar
 
  denyUsers String[] @db.VarChar
  denyRoles String[] @db.VarChar
