@@ -75,6 +75,7 @@
   "channelNotFound": "Couldn't find the Ticket-Channel",
   "badChannelSupplied": "Fatal error: Bad Channel supplied - Please contact support",
   "ticketNotFound": "Couldn't find the Ticket, it might have been deleted already",
+  "settingsNotFound": "Couldn't find the Ticket-System settings for this Server",
 
   "create.cantCreateChannel": "Couldn't create a Ticket-Channel",
   "create.cantUpdatePermissions": "Couldn't update the Ticket-Channel permissions",

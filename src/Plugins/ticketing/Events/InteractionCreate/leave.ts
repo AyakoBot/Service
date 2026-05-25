@@ -6,11 +6,7 @@ import DmToChannelTicket from '../../Classes/DmToChannelTicket.js';
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import handleTicketError from '../../Util/handleTicketError.js';
 
-export default async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
- args: string[],
-) {
+export default async function (this: TicketPlugin, cmd: APIMessageComponentInteraction) {
  if (!cmd.guild || !cmd.guild_id) return;
 
  const ticket = await DmToChannelTicket.findTicketByDMChannelId(this.client, cmd.channel.id).catch(
@@ -30,7 +26,7 @@ export default async function (
  if (ticket instanceof Error || ticket === null) {
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: ticket || new Error(BaseTicketErrors.ticketNotFound, { cause: args[0] }),
+   error: ticket || new Error(BaseTicketErrors.ticketNotFound),
    cmd,
   });
   return;

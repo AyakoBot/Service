@@ -11,13 +11,13 @@ export default class DmToChannelTicket extends DMTicketMixin(ChannelTicket) {
   super(client, ticketId, plugin);
  }
 
- async createChannel(api: API, username: string) {
+ async createChannel(api: API, username: string, settingsId: string) {
   const initDmPayload = await this.getInitDmPayload();
   const dmMessage = await this.forwardToDmChannel(initDmPayload);
   await this.setStarterDm(dmMessage?.id);
   await this.pinMessage(dmMessage);
 
-  return super.createChannel(api, username);
+  return super.createChannel(api, username, settingsId);
  }
 
  async claimChannel(

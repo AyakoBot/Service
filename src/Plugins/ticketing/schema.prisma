@@ -68,6 +68,7 @@ enum TicketState {
  opened
  closed
  claimed
+ prepared
 }
 
 enum TicketType {

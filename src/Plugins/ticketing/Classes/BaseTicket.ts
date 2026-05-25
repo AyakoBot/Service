@@ -1,45 +1,21 @@
-import { Prisma, TicketState, TicketType } from '@ayako/database';
+import { Prisma, TicketState } from '@ayako/database';
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import type Client from '../../../Classes/Client.js';
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type TicketPlugin from '../Plugin.js';
 import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
-import ChannelTicket from './ChannelTicket.js';
-import DmToChannelTicket from './DmToChannelTicket.js';
-import DmToThreadTicket from './DmToThreadTicket.js';
 import { BaseTicketErrors } from './Enums.js';
-import ThreadTicket from './ThreadTicket.js';
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
   super(client, ticketId, plugin);
  }
 
- static async getTicketById(client: Client, ticketId: string) {
-  const entry = await client.db.client.ticket.findUnique({
-   where: { id: ticketId },
-   include: { settings: true },
-  });
-  if (!entry) return null;
-  const plugin = client.plugins.find((p) => p.name === 'Ticketing') as TicketPlugin;
-
-  switch (entry.settings.type) {
-   case TicketType.dmToChannel:
-    return new DmToChannelTicket(client, ticketId, plugin);
-
-   case TicketType.dmToThread:
-    return new DmToThreadTicket(client, ticketId, plugin);
-
-   case TicketType.Channel:
-    return new ChannelTicket(client, ticketId, plugin);
-
-   case TicketType.Thread:
-    return new ThreadTicket(client, ticketId, plugin);
-
-   default:
-    throw new Error(BaseTicketErrors.unknownTicketType, { cause: entry.settings.type });
-  }
- }
+ getTicketSettings = async (settingsId: string) => {
+  const settings = await this.db.ticketSetting.findUnique({ where: { id: settingsId } });
+  if (!settings) throw new Error(BaseTicketErrors.settingsNotFound);
+  return settings;
+ };
 
  isOpened = async () => {
   const ticket = await this.getTicket();
@@ -144,31 +120,60 @@ export default class BaseTicket extends BaseTicketLogger {
  }
 
  async *create(
-  dbOpts: { settingsId: string; userId: string; channelId: string },
+  dbOpts: { settingsId: string; userId: string },
   createOpts: { userId: string; roleIds: string[] },
  ) {
   const exists = await this.getTicket().catch(() => null);
   if (exists) throw new Error(BaseTicketErrors.create_TicketExists);
 
-  const createDbEntry = this.createDbEntry(dbOpts);
-  createDbEntry.next();
+  const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId);
+  this.dbTicket = preparedEntry;
+  const { channelId }: { channelId: string } = yield;
 
-  const { iteration, result: settings } = (await createDbEntry.next()).value;
-  if (iteration !== 1) throw new Error(BaseTicketErrors.create_DBEntryFailed);
-  if (settings.denyUsers.includes(createOpts.userId))
-   throw new Error(BaseTicketErrors.create_UserDenied);
-  if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
-   throw new Error(BaseTicketErrors.create_RoleDenied);
+  try {
+   const createDbEntry = this.createDbEntry({ ...dbOpts, channelId });
+   const { iteration, result: settings } = (await createDbEntry.next()).value;
+
+   if (iteration !== 1) throw new Error(BaseTicketErrors.create_DBEntryFailed);
+   if (settings.denyUsers.includes(createOpts.userId))
+    throw new Error(BaseTicketErrors.create_UserDenied);
+   if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
+    throw new Error(BaseTicketErrors.create_RoleDenied);
+   }
+
+   yield;
+
+   const ticket = (await createDbEntry.next()).value;
+   if (ticket.iteration !== 2) throw new Error(BaseTicketErrors.create_DBEntryFailed);
+
+   this.handleBaseLog({ type: LogType.TicketCreated, data: { userId: dbOpts.userId } });
+
+   return this;
+  } finally {
+   this.deletePreparedEntry();
   }
+ }
 
-  yield;
+ async deletePreparedEntry() {
+  const ticket = await this.getTicket();
+  if (ticket.state !== TicketState.prepared) return;
 
-  const ticket = (await createDbEntry.next()).value;
-  if (ticket.iteration !== 2) throw new Error(BaseTicketErrors.create_DBEntryFailed);
+  this.db.ticket.delete({ where: { id: ticket.id } }).then();
+ }
 
-  this.handleBaseLog({ type: LogType.TicketCreated, data: { userId: dbOpts.userId } });
+ async prepareEntry(userId: string, settingsId: string) {
+  this.id = String(Date.now());
 
-  return this;
+  return this.db.ticket.create({
+   data: {
+    channel: `temp-${Date.now()}`,
+    id: this.id,
+    user: userId,
+    settings: { connect: { id: settingsId } },
+    state: TicketState.prepared,
+   },
+   include: { settings: true },
+  });
  }
 
  async *createDbEntry(dbOpts: { settingsId: string; userId: string; channelId: string }) {
@@ -182,18 +187,17 @@ export default class BaseTicket extends BaseTicketLogger {
 
   yield { iteration: 1 as const, result: settings };
 
-  const ticketId = Date.now().toString();
+  const preparedTicket = await this.getTicket();
 
-  const createTicketPayload: Prisma.TicketCreateInput = {
-   channel: dbOpts.channelId,
-   id: ticketId,
-   user: dbOpts.userId,
-   settings: { connect: { id: dbOpts.settingsId } },
-   state: TicketState.opened,
-  };
-
-  const ticket = await this.db.ticket.create({ data: createTicketPayload });
-  this.dbTicket = { ...ticket, settings };
+  this.dbTicket = await this.db.ticket.update({
+   data: {
+    channel: dbOpts.channelId,
+    user: dbOpts.userId,
+    state: TicketState.opened,
+   },
+   where: { id: preparedTicket.id },
+   include: { settings: true },
+  });
 
   yield {
    iteration: 2 as const,

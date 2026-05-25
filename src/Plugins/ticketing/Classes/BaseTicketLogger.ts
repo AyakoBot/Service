@@ -65,7 +65,6 @@ export default abstract class BaseTicketLogger {
   this.id = ticketId;
   this.db = this.client.db.client;
   this.plugin = plugin;
-  this.refreshDbTicket();
  }
 
  getTicket = async () => {
@@ -309,7 +308,7 @@ export default abstract class BaseTicketLogger {
 
   switch (logOpts.type) {
    case LogType.TicketCreated:
-    this.ticketCreateLog(
+    await this.ticketCreateLog(
      payload,
      logOpts as LogOpts<LogType.TicketCreated>,
      channel,
@@ -317,16 +316,31 @@ export default abstract class BaseTicketLogger {
     );
     break;
    case LogType.TicketClaimed:
-    this.ticketClaimLog(payload, logOpts as LogOpts<LogType.TicketClaimed>, channel, ticketChannel);
+    await this.ticketClaimLog(
+     payload,
+     logOpts as LogOpts<LogType.TicketClaimed>,
+     channel,
+     ticketChannel,
+    );
     break;
    case LogType.TicketClosed:
-    this.ticketClosedLog(payload, logOpts as LogOpts<LogType.TicketClosed>, channel, ticketChannel);
+    await this.ticketClosedLog(
+     payload,
+     logOpts as LogOpts<LogType.TicketClosed>,
+     channel,
+     ticketChannel,
+    );
     break;
    case LogType.TicketLeft:
-    this.ticketLeftLog(payload, logOpts as LogOpts<LogType.TicketLeft>, channel, ticketChannel);
+    await this.ticketLeftLog(
+     payload,
+     logOpts as LogOpts<LogType.TicketLeft>,
+     channel,
+     ticketChannel,
+    );
     break;
    case LogType.TicketDeleted:
-    this.ticketDeletedLog(
+    await this.ticketDeletedLog(
      payload,
      logOpts as LogOpts<LogType.TicketDeleted>,
      channel,
@@ -334,13 +348,13 @@ export default abstract class BaseTicketLogger {
     );
     break;
    case LogType.MessageSent:
-    this.messageSentLog(payload, logOpts as LogOpts<LogType.MessageSent>);
+    await this.messageSentLog(payload, logOpts as LogOpts<LogType.MessageSent>);
     break;
    case LogType.MessageEdited:
-    this.messageEditedLog(payload, logOpts as LogOpts<LogType.MessageEdited>);
+    await this.messageEditedLog(payload, logOpts as LogOpts<LogType.MessageEdited>);
     break;
    case LogType.MessageDeleted:
-    this.messageDeletedLog(payload, logOpts as LogOpts<LogType.MessageDeleted>);
+    await this.messageDeletedLog(payload, logOpts as LogOpts<LogType.MessageDeleted>);
     break;
 
    default: {

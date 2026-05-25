@@ -5,6 +5,7 @@ import { RequestHandlerError } from '@ayako/api';
 import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
+import { inspect } from 'node:util';
 
 type Deferred<T> = {
  promise: Promise<T>;
@@ -138,7 +139,8 @@ export default class SendMessageCache {
 
    if (apiMessage instanceof RequestHandlerError) {
     logger.debug('[SendMessageCache] 1 Failed to send message to', entry.channelId);
-    logger.debug(apiMessage);
+    logger.debug(inspect(apiMessage));
+    logger.debug(inspect(apiMessage.cause));
     return;
    }
 

@@ -83,7 +83,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     // );
    }
 
-   const send = await api.channels.createMessage(dm.id, payload.getAPIPayload(), {
+   const send = await api.channels.createDirectMessage(dm.id, payload.getAPIPayload(), {
     origin: DMTicket.name,
     reason: 'Forwarding message to ticket DM channel',
    });
@@ -138,11 +138,9 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     reason: 'Pinning initial ticket message',
    });
 
-   if (!pin || pin instanceof RequestHandlerError) {
-    this.plugin.nonFatalError(pin || new Error(), this.pinMessage.name);
-   }
+   if (!pin) return;
 
-   return pin;
+   this.plugin.nonFatalError(pin || new Error(), this.pinMessage.name);
   }
 
   async leaveSure(cmd: APIMessageComponentInteraction) {
@@ -236,28 +234,12 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
      new ActionRowBuilder()
       .setComponents(
        new ButtonBuilder()
-        .setCustomId(`tickets/leave_${ticket.id}`)
+        .setCustomId('tickets/leave')
         .setLabel(t.leaveTicket())
         .setStyle(ButtonStyle.Danger),
       )
       .toJSON() as APIMessageTopLevelComponent,
     ]);
-  }
-
-  async getCreationReplyPayload() {
-   const ticket = await this.getTicket();
-   const t = await this.plugin.t(ticket.settings.guild);
-
-   return new MessagePayload(this.client, {
-    origin: DMTicket.name,
-    reason: 'Replying to ticket creation interaction',
-   }).setComponents([
-    new TextDisplayBuilder()
-     .setContent(
-      `${t.dmd()} => ${constants.formatters.msgURL('@me', ticket.dm!, ticket.starterDm!)}`,
-     )
-     .toJSON(),
-   ]);
   }
 
   async setStarterDm(msgId: string | null) {

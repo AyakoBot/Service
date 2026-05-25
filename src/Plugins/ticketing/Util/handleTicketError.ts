@@ -12,8 +12,8 @@ export default async function (
  const t = await plugin.t(guildId);
 
  const errorMessage = getErrorMessage.call(this, t, error);
-
  showCommandError.call(this, errorMessage, cmd, t.base);
+
  return true;
 }
 

@@ -30,6 +30,7 @@ enum TicketErrors2 {
  close_UserNotStaff = 'close.userNotStaff',
 
  unknownTicketType = 'unknownTicketType',
+ settingsNotFound = 'settingsNotFound',
 }
 
 export const BaseTicketErrors = { ...TicketErrors2, ...BaseTicketLoggerErrors } as const;

@@ -20,6 +20,7 @@ import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
 import BaseTicket from './BaseTicket.js';
 import { ChannelTicketErrors } from './Enums.js';
+import { inspect } from 'node:util';
 
 export default class ChannelTicket extends BaseTicket {
  static threadTypes = [
@@ -306,7 +307,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *create(
-  dbOpts: { settingsId: string; userId: string; channelId: string },
+  dbOpts: { settingsId: string; userId: string },
   createOpts: {
    cmd: APIMessageComponentInteraction;
    userId: string;
@@ -316,24 +317,32 @@ export default class ChannelTicket extends BaseTicket {
  ) {
   const superCreate = super.create(dbOpts, createOpts);
   await superCreate.next();
-  const ticket = await this.getTicket();
 
-  const api = await this.client.getAPI(ticket.settings.guild);
-  const channel = await this.createChannel(api, createOpts.username);
+  try {
+   const ticketSettings = await this.getTicketSettings(dbOpts.settingsId);
+   const api = await this.client.getAPI(ticketSettings.guild);
+   const channel = await this.createChannel(api, createOpts.username, dbOpts.settingsId);
 
-  await this.grantChannelAccess(api, channel.id, createOpts.userId);
-  const initPayload = await this.getInitPayload(true, false);
-  const initMessage = await this.sendInitMessage(api, initPayload);
+   await superCreate.next({ channelId: channel.id });
 
-  const replyPayload = await this.getCreateReplyPayload(channel.id, initMessage.id);
-  await this.replyMessage(
-   createOpts.cmd,
-   replyPayload,
-   ChannelTicketErrors.create_cantReplyMessage,
-  );
+   await this.grantChannelAccess(api, channel.id, createOpts.userId);
 
-  await superCreate.next();
-  return this;
+   await superCreate.next();
+
+   const initPayload = await this.getInitPayload(true, false);
+   const initMessage = await this.sendInitMessage(api, initPayload);
+
+   const replyPayload = await this.getCreateReplyPayload(channel.id, initMessage.id);
+   await this.replyMessage(
+    createOpts.cmd,
+    replyPayload,
+    ChannelTicketErrors.create_cantReplyMessage,
+   );
+
+   return this;
+  } finally {
+   this.deletePreparedEntry();
+  }
  }
 
  async getCreateReplyPayload(channelId: string, messageId: string) {
@@ -350,15 +359,15 @@ export default class ChannelTicket extends BaseTicket {
    .setFlags(MessageFlags.Ephemeral);
  }
 
- async createChannel(api: API, username: string): Promise<RChannel | RThread> {
-  const ticket = await this.getTicket();
+ async createChannel(api: API, username: string, settingsId: string): Promise<RChannel | RThread> {
+  const ticketSettings = await this.getTicketSettings(settingsId);
 
   const channel = await api.guilds.createChannel(
-   ticket.settings.guild,
+   ticketSettings.guild,
    {
     name: username,
     type: ChannelType.GuildText,
-    parent_id: ticket.settings.category,
+    parent_id: ticketSettings.category,
    },
    { origin: ChannelTicket.name, reason: 'Creating channel for ticket' },
   );
@@ -409,7 +418,7 @@ export default class ChannelTicket extends BaseTicket {
     reason: 'Deleting ticket channel due to error',
    });
 
-   throw new Error(ChannelTicketErrors.create_CantSendInitMessage, { cause: msg });
+   throw new Error(ChannelTicketErrors.create_CantSendInitMessage, { cause: inspect(msg?.cause) });
   }
 
   return msg;
