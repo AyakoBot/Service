@@ -34,5 +34,11 @@ export default async function (
  }
 
  const close = ticket.close({ cmd, userId });
- close.next();
+ close.next().catch((e: Error) =>
+  handleTicketError.call(this.client, {
+   guildId: (cmd.guild?.id || cmd.guild_id)!,
+   error: e,
+   cmd,
+  }),
+ );
 }

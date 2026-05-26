@@ -34,5 +34,11 @@ export default async function (
  }
 
  const del = ticket.delete({ cmd, userId });
- del.next();
+ del.next().catch((e: Error) =>
+  handleTicketError.call(this.client, {
+   guildId: (cmd.guild?.id || cmd.guild_id)!,
+   error: e,
+   cmd,
+  }),
+ );
 }

@@ -54,5 +54,11 @@ export default async function (
   { settingsId: args[0], userId: user.id },
   { cmd, userId: user.id, roleIds: cmd.member.roles, username: user.username },
  );
- create.next();
+ create.next().catch((e: Error) =>
+  handleTicketError.call(this.client, {
+   guildId: (cmd.guild?.id || cmd.guild_id)!,
+   error: e,
+   cmd,
+  }),
+ );
 }

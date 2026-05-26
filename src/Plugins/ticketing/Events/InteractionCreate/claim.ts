@@ -12,7 +12,6 @@ export default async function (
 ) {
  if (!cmd.guild || !cmd.guild_id) return;
 
- const ticket = await getTicketClassById.call(this.client, args[0]).catch((e: Error) => e);
  const userId = cmd.user?.id || cmd.member?.user.id;
 
  if (!userId) {
@@ -24,6 +23,8 @@ export default async function (
   return;
  }
 
+ const ticket = await getTicketClassById.call(this.client, args[0]).catch((e: Error) => e);
+
  if (ticket instanceof Error || ticket === null) {
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
@@ -34,5 +35,11 @@ export default async function (
  }
 
  const claim = ticket.claim({ cmd, userId });
- claim.next();
+ claim.next().catch((e: Error) =>
+  handleTicketError.call(this.client, {
+   guildId: (cmd.guild?.id || cmd.guild_id)!,
+   error: e,
+   cmd,
+  }),
+ );
 }
