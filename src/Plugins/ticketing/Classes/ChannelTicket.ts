@@ -1,5 +1,5 @@
 import { API, RequestHandlerError } from '@ayako/api';
-import type { RChannel, RThread } from '@ayako/utility';
+import { logger, type RChannel, type RThread } from '@ayako/utility';
 import {
  ButtonStyle,
  ChannelType,
@@ -35,6 +35,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *delete(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+  logger.silly('[ChannelTicket] delete ticket:', this.id, 'by user:', data.userId);
   const superDel = super.delete(data);
   await superDel.next();
 
@@ -49,6 +50,7 @@ export default class ChannelTicket extends BaseTicket {
 
  async deleteChannel() {
   const ticket = await this.getTicket();
+  logger.debug('[ChannelTicket] deleteChannel ticket:', this.id, 'channel:', ticket.channel);
   const res = (await this.client.getAPI(ticket.settings.guild)).channels.delete(ticket.channel, {
    origin: ChannelTicket.name,
    reason: 'Ticket deleted',
@@ -89,6 +91,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *close(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+  logger.silly('[ChannelTicket] close ticket:', this.id, 'by user:', data.userId);
   const superClose = super.close({ userId: data.userId });
   superClose.next();
 
@@ -142,6 +145,7 @@ export default class ChannelTicket extends BaseTicket {
  async revokeChannelAccess(api: API, channel: RChannel | RThread) {
   if (!this.isChannel(channel)) throw new Error(ChannelTicketErrors.badChannelSupplied);
 
+  logger.debug('[ChannelTicket] revokeChannelAccess channel:', channel.id);
   const modify = await Promise.all(
    channel.permission_overwrites
     ?.filter((o) => o.type === OverwriteType.Member)
@@ -165,6 +169,7 @@ export default class ChannelTicket extends BaseTicket {
 
  async closeChannel(api: API, channel: RChannel | RThread) {
   const ticket = await this.getTicket();
+  logger.debug('[ChannelTicket] closeChannel channel:', ticket.channel);
 
   const archiveCategory = await this.getChannel(ticket.settings.archiveCategory || '');
   if (!this.isChannel(archiveCategory)) throw new Error(ChannelTicketErrors.badChannelSupplied);
@@ -230,6 +235,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *claim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+  logger.silly('[ChannelTicket] claim ticket:', this.id, 'by user:', data.userId);
   const superClaim = super.claim({ userId: data.userId });
   await superClaim.next();
   const ticket = await this.getTicket();
@@ -291,6 +297,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
+  logger.debug('[ChannelTicket] claimChannel channel:', channelId);
   const t = await this.plugin.t(guildId);
 
   const modify = await api.channels.edit(
@@ -315,6 +322,7 @@ export default class ChannelTicket extends BaseTicket {
    username: string;
   },
  ) {
+  logger.silly('[ChannelTicket] create user:', dbOpts.userId, 'settings:', dbOpts.settingsId);
   const superCreate = super.create(dbOpts, createOpts);
   await superCreate.next();
 
@@ -360,6 +368,12 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async createChannel(api: API, username: string, settingsId: string): Promise<RChannel | RThread> {
+  logger.debug(
+   '[ChannelTicket] createChannel username:',
+   username,
+   'settings:',
+   settingsId,
+  );
   const ticketSettings = await this.getTicketSettings(settingsId);
 
   const channel = await api.guilds.createChannel(
@@ -380,6 +394,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async grantChannelAccess(api: API, channelId: string, userId: string) {
+  logger.debug('[ChannelTicket] grantChannelAccess channel:', channelId, 'user:', userId);
   const modify = await api.channels.editPermissionOverwrite(
    channelId,
    userId,
@@ -407,12 +422,17 @@ export default class ChannelTicket extends BaseTicket {
 
  async sendInitMessage(api: API, initPayload: MessagePayload) {
   const ticket = await this.getTicket();
+  logger.debug('[ChannelTicket] sendInitMessage channel:', ticket.channel);
   const msg = await initPayload
    .setSendTo([{ channel: ticket.channel, guildId: ticket.settings.guild }])
    .send()
    .then((m) => m[0]);
 
   if (!msg || msg instanceof RequestHandlerError) {
+   logger.warn(
+    '[ChannelTicket] sendInitMessage failed — rolling back channel:',
+    ticket.channel,
+   );
    api.channels.delete(ticket.channel, {
     origin: ChannelTicket.name,
     reason: 'Deleting ticket channel due to error',

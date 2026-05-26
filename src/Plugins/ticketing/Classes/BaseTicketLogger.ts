@@ -1,6 +1,6 @@
 import { RequestHandlerError } from '@ayako/api';
 import { TicketLogMode, type Ticket, type TicketSetting } from '@ayako/database';
-import { txtFileWriter, type RChannel, type RMessage, type RThread } from '@ayako/utility';
+import { logger, txtFileWriter, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
  ContainerBuilder,
  EmbedBuilder,
@@ -73,6 +73,7 @@ export default abstract class BaseTicketLogger {
  };
 
  refreshDbTicket = async () => {
+  logger.silly('[BaseTicketLogger] refreshDbTicket id:', this.id);
   this.dbTicket = await this.db.ticket.findUnique({
    where: { id: this.id },
    include: { settings: true },
@@ -84,6 +85,7 @@ export default abstract class BaseTicketLogger {
  async getUser(userId: string) {
   const user = await getUser.call(this.client, userId);
   if (user instanceof RequestHandlerError) {
+   logger.warn('[BaseTicketLogger] getUser failed for userId:', userId);
    this.plugin.nonFatalError(
     new Error(BaseTicketLoggerErrors.userNotFound, { cause: user }),
     this.getUser.name,
@@ -284,8 +286,12 @@ export default abstract class BaseTicketLogger {
  }
 
  async handleBaseLog<T extends LogType>(logOpts: LogOpts<T>) {
+  logger.silly('[BaseTicketLogger] handleBaseLog type:', logOpts.type, 'ticket:', this.id);
   const ticket = await this.getTicket();
-  if (!ticket.settings.logChannels.length) return;
+  if (!ticket.settings.logChannels.length) {
+   logger.silly('[BaseTicketLogger] handleBaseLog skip — no log channels configured');
+   return;
+  }
 
   const logChannels = await this.getLogChannels().then((r) => r.filter((c) => !!c));
 
@@ -366,6 +372,14 @@ export default abstract class BaseTicketLogger {
    }
   }
 
+  logger.debug(
+   '[BaseTicketLogger] dispatching log type:',
+   logOpts.type,
+   'to',
+   logChannels.length,
+   'channel(s)',
+  );
+
   payload
    .setSendTo(
     [...new Set(logChannels.map((c) => c.id))].map((c) => ({
@@ -426,6 +440,7 @@ export default abstract class BaseTicketLogger {
  }
 
  async createLogThread(channelId: string) {
+  logger.debug('[BaseTicketLogger] createLogThread channel:', channelId, 'ticket:', this.id);
   const ticket = await this.getTicket();
 
   const t = await this.plugin.t(ticket.settings.guild);
@@ -525,6 +540,7 @@ export default abstract class BaseTicketLogger {
  }
 
  async getTranscript(channel: RChannel | RThread) {
+  logger.debug('[BaseTicketLogger] getTranscript channel:', channel.id, 'ticket:', this.id);
   const messages = await fetchMessages.call(
    this.client,
    channel.id,

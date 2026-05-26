@@ -1,5 +1,5 @@
 import type { API } from '@ayako/api';
-import type { RChannel, RThread } from '@ayako/utility';
+import { logger, type RChannel, type RThread } from '@ayako/utility';
 import type { APIChannel } from 'discord-api-types/v10';
 import type Client from '../../../Classes/Client.js';
 import type TicketPlugin from '../Plugin.js';
@@ -12,6 +12,7 @@ export default class DmToThreadTicket extends DMTicketMixin(ThreadTicket) {
  }
 
  async createChannel(api: API, username: string) {
+  logger.silly('[DmToThreadTicket] createChannel ticket:', this.id);
   const initDmPayload = await this.getInitDmPayload();
   const dmMessage = await this.forwardToDmChannel(initDmPayload);
   await this.setStarterDm(dmMessage?.id);
@@ -26,10 +27,12 @@ export default class DmToThreadTicket extends DMTicketMixin(ThreadTicket) {
   guildId: string,
   channelName: string,
  ): Promise<APIChannel> {
+  logger.silly('[DmToThreadTicket] claimChannel ticket:', this.id);
   return super.claimChannel(api, channelId, guildId, channelName);
  }
 
  async closeChannel(api: API, channel: RChannel | RThread) {
+  logger.silly('[DmToThreadTicket] closeChannel ticket:', this.id);
   const closeDmPayload = await this.getCloseDmPayload();
   await this.forwardToDmChannel(closeDmPayload);
   await this.unpinStartMessage();

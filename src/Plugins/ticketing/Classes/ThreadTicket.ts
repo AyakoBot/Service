@@ -1,6 +1,6 @@
 import { API, RequestHandlerError } from '@ayako/api';
 import { TicketType } from '@ayako/database';
-import type { RChannel, RThread } from '@ayako/utility';
+import { logger, type RChannel, type RThread } from '@ayako/utility';
 import { ChannelType } from 'discord-api-types/v10';
 import type Client from '../../../Classes/Client.js';
 import getUser from '../../../Util/getUser.js';
@@ -35,6 +35,7 @@ export default class ThreadTicket extends ChannelTicket {
 
  async deleteChannel() {
   const ticket = await this.getTicket();
+  logger.debug('[ThreadTicket] deleteChannel ticket:', this.id, 'thread:', ticket.channel);
   let user = await getUser.call(this.client, ticket.user);
   if (!user || user instanceof RequestHandlerError) {
    this.plugin.nonFatalError(user || new Error(), this.deleteChannel.name);
@@ -63,6 +64,7 @@ export default class ThreadTicket extends ChannelTicket {
 
  async revokeChannelAccess(api: API) {
   const ticket = await this.getTicket();
+  logger.debug('[ThreadTicket] revokeChannelAccess thread:', ticket.channel, 'user:', ticket.user);
   const remove = await api.threads.removeMember(ticket.channel, ticket.user, {
    origin: ThreadTicket.name,
    reason: 'Ticket closed',
@@ -77,6 +79,7 @@ export default class ThreadTicket extends ChannelTicket {
 
  async closeChannel(api: API, channel: RChannel | RThread) {
   const ticket = await this.getTicket();
+  logger.debug('[ThreadTicket] closeChannel thread:', ticket.channel);
   const t = await this.plugin.t(ticket.settings.guild);
   let user = await getUser.call(this.client, ticket.user);
 
@@ -110,6 +113,7 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async createChannel(api: API, username: string) {
+  logger.debug('[ThreadTicket] createChannel username:', username, 'ticket:', this.id);
   const ticket = await this.getTicket();
   if (!ticket.settings.channel) {
    throw new Error(ThreadTicketErrors.threadChannelNotSet);
@@ -134,6 +138,7 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async grantChannelAccess(api: API, channelId: string, userId: string): Promise<void> {
+  logger.debug('[ThreadTicket] grantChannelAccess thread:', channelId, 'user:', userId);
   const modify = await api.threads.addMember(channelId, userId, {
    origin: ThreadTicket.name,
    reason: 'Granting access to ticket thread channel',

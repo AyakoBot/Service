@@ -1,5 +1,6 @@
 import { RequestHandlerError } from '@ayako/api';
 import { TicketType } from '@ayako/database';
+import { logger } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
@@ -61,6 +62,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async forwardToDmChannel(payload: MessagePayload) {
    const ticket = await this.getTicket();
+   logger.debug('[DMTicket] forwardToDmChannel ticket:', this.id, 'user:', ticket.user);
    const api = await this.client.getAPI(ticket.settings.guild);
    const dm = await api.users.createDM(ticket.user, {
     origin: DMTicket.name,
@@ -106,6 +108,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async leave(cmd: APIMessageComponentInteraction) {
+   logger.silly('[DMTicket] leave ticket:', this.id);
    if (cmd.message.embeds.length) {
     this.leaveSure(cmd);
     return;
@@ -123,6 +126,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async pinMessage(message: APIMessage) {
+   logger.silly('[DMTicket] pinMessage channel:', message.channel_id, 'message:', message.id);
    const ticket = await this.getTicket();
    const api = await this.client.getAPI(ticket.settings.guild);
 
@@ -138,6 +142,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async leaveSure(cmd: APIMessageComponentInteraction) {
    const ticket = await this.getTicket();
+   logger.log('[DMTicket] leave ticket:', this.id, 'by user:', ticket.user);
    const leavePayload = await this.getLeavePayload();
    await this.forwardToDmChannel(leavePayload);
 
@@ -193,6 +198,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async unpinMessage(cmd: APIMessageComponentInteraction) {
+   logger.silly('[DMTicket] unpinMessage channel:', cmd.channel.id, 'message:', cmd.message.id);
    const ticket = await this.getTicket();
    const api = await this.client.getAPI(ticket.settings.guild);
 
@@ -234,6 +240,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async setStarterDm(msgId: string | null) {
+   logger.silly('[DMTicket] setStarterDm ticket:', this.id, 'msgId:', msgId);
    this.dbTicket = await this.client.db.client.ticket.update({
     where: { id: this.id },
     data: { starterDm: msgId },
@@ -245,8 +252,12 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async unpinStartMessage() {
    const ticket = await this.getTicket();
-   if (!ticket.starterDm) return;
+   if (!ticket.starterDm) {
+    logger.silly('[DMTicket] unpinStartMessage skip — no starterDm');
+    return;
+   }
 
+   logger.silly('[DMTicket] unpinStartMessage ticket:', this.id, 'message:', ticket.starterDm);
    const api = await this.client.getAPI(ticket.settings.guild);
    const unpin = await api.channels.unpinDirectMessage(ticket.dm!, ticket.starterDm, {
     origin: DMTicket.name,
@@ -284,6 +295,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     username: string;
    },
   ) {
+   logger.silly('[DMTicket] create user:', dbOpts.userId, 'settings:', dbOpts.settingsId);
    const hasDmTicket = await this.hasDmTicket(dbOpts.userId);
    if (hasDmTicket) throw new Error(DMTicketErrors.create_userAlreadyInDmTicket);
 
@@ -292,6 +304,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async hasDmTicket(userId: string) {
+   logger.silly('[DMTicket] hasDmTicket user:', userId);
    const existing = await this.client.db.client.ticket.findFirst({
     where: { user: userId },
    });
