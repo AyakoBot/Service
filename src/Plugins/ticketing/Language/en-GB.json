@@ -88,6 +88,7 @@
   "create.roleDenied": "One of your Roles is blocked from creating Tickets",
   "create.dbEntryFailed": "Fatal error: Failed to create a Ticket entry in the database - Please contact support",
   "create.cantReplyMessage": "Couldn't send the reply Message in the Ticket-Creation-Channel",
+  "create.userAlreadyInDmTicket": "You already have an open Ticket in DMs. Please leave it first before opening a new one",
 
   "claim.cantEditChannel": "Couldn't edit the Ticket-Channel",
   "claim.cantEditMessage": "Couldn't edit the initial Message in the Ticket-Channel",

@@ -62,6 +62,8 @@ enum TicketErrors4 {
  unknownTicketType = 'unknownTicketType',
  dmChannelNotFound = 'dmChannelNotFound',
  couldntSendDm = 'couldntSendDm',
+
+ create_userAlreadyInDmTicket = 'create.userAlreadyInDmTicket',
 }
 
 export const DMTicketErrors = { ...TicketErrors4, ...ChannelTicketErrors } as const;

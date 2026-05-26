@@ -63,7 +63,7 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
    break;
   }
   case 'tickets/leave': {
-   leave.call(this, cmd, args);
+   leave.call(this, cmd);
    break;
   }
   case 'tickets/delete': {

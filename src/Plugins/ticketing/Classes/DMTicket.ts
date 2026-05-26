@@ -1,11 +1,6 @@
 import { RequestHandlerError } from '@ayako/api';
 import { TicketType } from '@ayako/database';
-import {
- ActionRowBuilder,
- ButtonBuilder,
- EmbedBuilder,
- TextDisplayBuilder,
-} from '@discordjs/builders';
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
  ChannelType,
@@ -57,11 +52,9 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   ) {
    const modify = await payload.reply(cmd);
 
-   if (!modify || modify instanceof RequestHandlerError) {
+   if (modify instanceof RequestHandlerError) {
     this.plugin.nonFatalError(new Error(errorCode, { cause: modify }), this.replyMessage.name);
    }
-
-   await this.forwardToDmChannel(payload);
 
    return modify;
   }
@@ -146,9 +139,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   async leaveSure(cmd: APIMessageComponentInteraction) {
    const ticket = await this.getTicket();
    const leavePayload = await this.getLeavePayload();
-   await leavePayload
-    .setSendTo([{ channel: cmd.channel.id, guildId: ticket.settings.guild }])
-    .send();
+   await this.forwardToDmChannel(leavePayload);
 
    await this.handleBaseLog({ type: LogType.TicketLeft, data: { userId: ticket.user } });
    await this.unpinMessage(cmd);
@@ -282,6 +273,29 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
      color: Colors.Danger,
     },
    ]);
+  }
+
+  async *create(
+   dbOpts: { settingsId: string; userId: string },
+   createOpts: {
+    cmd: APIMessageComponentInteraction;
+    userId: string;
+    roleIds: string[];
+    username: string;
+   },
+  ) {
+   const hasDmTicket = await this.hasDmTicket(dbOpts.userId);
+   if (hasDmTicket) throw new Error(DMTicketErrors.create_userAlreadyInDmTicket);
+
+   const create = super.create(dbOpts, createOpts);
+   return yield* create;
+  }
+
+  async hasDmTicket(userId: string) {
+   const existing = await this.client.db.client.ticket.findFirst({
+    where: { user: userId },
+   });
+   return !!existing;
   }
  }
 
