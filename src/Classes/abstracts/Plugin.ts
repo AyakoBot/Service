@@ -7,11 +7,12 @@ import {
 import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
 
+import type { RequestHandlerError, RequestHandlerErrorType } from '@ayako/api';
+import { inspect } from 'node:util';
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
-import type { RequestHandlerError, RequestHandlerErrorType } from '@ayako/api';
 
 export type BaseLang = TranslatorType<typeof baseLang>;
 
@@ -135,6 +136,6 @@ export default abstract class Plugin<
  };
 
  nonFatalError = (error: Error | RequestHandlerError<RequestHandlerErrorType>, context: string) => {
-  logger.error(`[Plugin:${this.name}] Non-fatal error in ${context}:`, error);
+  logger.error(`[Plugin:${this.name}] Non-fatal error in ${context}:`, inspect(error));
  };
 }
