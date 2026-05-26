@@ -19,23 +19,23 @@ export default class BaseTicket extends BaseTicketLogger {
 
  isOpened = async () => {
   const ticket = await this.getTicket();
-  return { opened: ticket.state === TicketState.opened, ticket: ticket };
+  return ticket.state === TicketState.opened;
  };
 
  isClosed = async () => {
   const ticket = await this.getTicket();
-  return { closed: ticket.state === TicketState.closed, ticket };
+  return ticket.state === TicketState.closed;
  };
 
  isClaimed = async () => {
   const ticket = await this.getTicket();
-  return { claimed: ticket.state === TicketState.claimed, ticket };
+  return ticket.state === TicketState.claimed;
  };
 
  async *claim({ userId }: { userId: string }) {
   if (await this.isClosed()) throw new Error(BaseTicketErrors.claim_TicketAlreadyClosed);
   if (await this.isClaimed()) throw new Error(BaseTicketErrors.claim_TicketAlreadyClaimed);
-  if (!(await this.isOpened()).opened) throw new Error(BaseTicketErrors.claim_TicketNotOpened);
+  if (!(await this.isOpened())) throw new Error(BaseTicketErrors.claim_TicketNotOpened);
 
   const ticket = await this.getTicket();
   if (ticket.user === userId) throw new Error(BaseTicketErrors.claim_CreatorCannotClaim);
