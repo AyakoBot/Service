@@ -38,11 +38,11 @@ export const BaseTicketErrors = { ...TicketErrors2, ...BaseTicketLoggerErrors } 
 enum TicketErrors3 {
  channelNotFound = 'channelNotFound',
  badChannelSupplied = 'badChannelSupplied',
+ cantSendMessage = 'cantSendMessage',
 
  create_CantCreateChannel = 'create.cantCreateChannel',
  create_CantUpdatePermissions = 'create.cantUpdatePermissions',
- create_CantSendInitMessage = 'create.cantSendInitMessage',
- create_cantReplyMessage = 'create.cantReplyMessage',
+ create_CantReplyMessage = 'create.cantReplyMessage',
 
  claim_CantEditChannel = 'claim.cantEditChannel',
  claim_CantEditMessage = 'claim.cantEditMessage',
@@ -51,8 +51,8 @@ enum TicketErrors3 {
  close_CantEditChannel = 'close.cantEditChannel',
  close_CantReplyMessage = 'close.cantReplyMessage',
 
- delete_cantUpdateMessage = 'delete.cantUpdateMessage',
- delete_cantDeleteChannel = 'delete.cantDeleteChannel',
+ delete_CantUpdateMessage = 'delete.cantUpdateMessage',
+ delete_CantDeleteChannel = 'delete.cantDeleteChannel',
 }
 
 export const ChannelTicketErrors = { ...BaseTicketErrors, ...TicketErrors3 } as const;
@@ -63,7 +63,8 @@ enum TicketErrors4 {
  dmChannelNotFound = 'dmChannelNotFound',
  couldntSendDm = 'couldntSendDm',
 
- create_userAlreadyInDmTicket = 'create.userAlreadyInDmTicket',
+ create_UserAlreadyInDmTicket = 'create.userAlreadyInDmTicket',
+ create_CantCreateDMChannel = 'create.cantCreateDMChannel',
 }
 
 export const DMTicketErrors = { ...TicketErrors4, ...ChannelTicketErrors } as const;

@@ -1,11 +1,13 @@
-import { Prisma, TicketState } from '@ayako/database';
-import { logger } from '@ayako/utility';
+import { RequestHandlerError } from '@ayako/api';
+import { TicketState } from '@ayako/database';
+import { LogLevel } from '@ayako/utility';
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
+import { inspect } from 'node:util';
 import type Client from '../../../Classes/Client.js';
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type TicketPlugin from '../Plugin.js';
 import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
-import { BaseTicketErrors } from './Enums.js';
+import { BaseTicketErrors, ChannelTicketErrors } from './Enums.js';
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -13,7 +15,7 @@ export default class BaseTicket extends BaseTicketLogger {
  }
 
  getTicketSettings = async (settingsId: string) => {
-  logger.silly('[BaseTicket] getTicketSettings:', settingsId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   const settings = await this.db.ticketSetting.findUnique({ where: { id: settingsId } });
   if (!settings) throw new Error(BaseTicketErrors.settingsNotFound);
   return settings;
@@ -35,7 +37,7 @@ export default class BaseTicket extends BaseTicketLogger {
  };
 
  async *claim({ userId }: { userId: string }) {
-  logger.silly('[BaseTicket] claim attempt ticket:', this.id, 'by user:', userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) throw new Error(BaseTicketErrors.claim_TicketAlreadyClosed);
   if (await this.isClaimed()) throw new Error(BaseTicketErrors.claim_TicketAlreadyClaimed);
   if (!(await this.isOpened())) throw new Error(BaseTicketErrors.claim_TicketNotOpened);
@@ -43,15 +45,10 @@ export default class BaseTicket extends BaseTicketLogger {
   const ticket = await this.getTicket();
   if (ticket.user === userId) throw new Error(BaseTicketErrors.claim_CreatorCannotClaim);
 
-  const isUserStaff = this.isUserStaff(userId);
-  let userIsStaff = (await isUserStaff.next()).value;
+  const canClaim = await this.canUserClaim(userId);
+  if (!canClaim) throw new Error(BaseTicketErrors.claim_UserNotStaff);
 
-  if (!userIsStaff) {
-   userIsStaff = (await isUserStaff.next()).value;
-   if (!userIsStaff) throw new Error(BaseTicketErrors.claim_UserNotStaff);
-  }
-
-  logger.debug('[BaseTicket] claim guards passed ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
   const newTicket = await this.db.ticket.update({
@@ -61,37 +58,50 @@ export default class BaseTicket extends BaseTicketLogger {
   });
 
   this.dbTicket = newTicket;
-  logger.log('[BaseTicket] claim ticket:', this.id, 'by user:', userId);
   this.handleBaseLog({ type: LogType.TicketClaimed, data: { userId } });
 
   return this;
  }
 
- async *isUserStaff(userId: string) {
-  logger.silly('[BaseTicket] isUserStaff check user:', userId, 'ticket:', this.id);
+ async canUserClose(userId: string) {
+  const isStaff = await this.isUserStaff(userId);
+  if (isStaff) return true;
+
+  const ticket = await this.getTicket();
+  if (ticket.settings.allowCreatorClose && ticket.user === userId) return true;
+
+  return false;
+ }
+
+ async canUserClaim(userId: string) {
+  return this.isUserStaff(userId);
+ }
+
+ async canUserDelete(userId: string) {
+  return this.isUserStaff(userId);
+ }
+
+ async isUserStaff(userId: string) {
+  this.plugin.logger.logLocation(LogLevel.silly);
+
   const ticket = await this.getTicket();
   if (ticket.settings.staffUsers.includes(userId)) return true;
 
   const member = await this.client.cache.members.get(ticket.settings.guild, userId);
-  if (!member) throw new Error('MEMBER_NOT_FOUND');
+  if (!member) throw new Error(BaseTicketErrors.userNotFound);
 
   const hasStaffRole = ticket.settings.staffRoles.some((r) => member.roles.includes(r));
   return hasStaffRole;
  }
 
  async *close({ userId }: { userId: string }) {
-  logger.silly('[BaseTicket] close attempt ticket:', this.id, 'by user:', userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) throw new Error(BaseTicketErrors.close_TicketAlreadyClosed);
 
-  const isUserStaff = this.isUserStaff(userId);
-  let userIsStaff = (await isUserStaff.next()).value;
+  const canClose = await this.canUserClose(userId);
+  if (!canClose) throw new Error(BaseTicketErrors.close_UserNotStaff);
 
-  if (!userIsStaff) {
-   userIsStaff = (await isUserStaff.next()).value;
-   if (!userIsStaff) throw new Error(BaseTicketErrors.close_UserNotStaff);
-  }
-
-  logger.debug('[BaseTicket] close guards passed ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
   const newTicket = await this.db.ticket.update({
@@ -101,31 +111,23 @@ export default class BaseTicket extends BaseTicketLogger {
   });
 
   this.dbTicket = newTicket;
-
-  logger.log('[BaseTicket] close ticket:', this.id, 'by user:', userId);
   this.handleBaseLog({ type: LogType.TicketClosed, data: { userId } });
 
   return this;
  }
 
  async *delete({ userId }: { userId: string }) {
-  logger.silly('[BaseTicket] delete attempt ticket:', this.id, 'by user:', userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   const ticket = await this.getTicket();
   if (!ticket) throw new Error(BaseTicketErrors.delete_TicketNotFound);
   if (ticket.state !== TicketState.closed) throw new Error(BaseTicketErrors.delete_TicketNotClosed);
 
-  const isUserStaff = this.isUserStaff(userId);
-  let userIsStaff = (await isUserStaff.next()).value;
+  const canDelete = await this.canUserDelete(userId);
+  if (!canDelete) throw new Error(BaseTicketErrors.delete_OnlyStaffCanDelete);
 
-  if (!userIsStaff) {
-   userIsStaff = (await isUserStaff.next()).value;
-   if (!userIsStaff) throw new Error(BaseTicketErrors.delete_OnlyStaffCanDelete);
-  }
-
-  logger.debug('[BaseTicket] delete guards passed ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
-  logger.log('[BaseTicket] delete ticket:', this.id, 'by user:', userId);
   this.handleBaseLog({ type: LogType.TicketDeleted, data: { userId } });
 
   return true;
@@ -135,67 +137,51 @@ export default class BaseTicket extends BaseTicketLogger {
   dbOpts: { settingsId: string; userId: string },
   createOpts: { userId: string; roleIds: string[] },
  ) {
-  logger.silly(
-   '[BaseTicket] create attempt user:',
-   dbOpts.userId,
-   'settings:',
-   dbOpts.settingsId,
-  );
+  this.plugin.logger.logLocation(LogLevel.silly);
   const exists = await this.getTicket().catch(() => null);
   if (exists) throw new Error(BaseTicketErrors.create_TicketExists);
 
   const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId);
   this.dbTicket = preparedEntry;
-  logger.debug('[BaseTicket] create prepared entry ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
+
+  const settings = await this.getTicketSettings(dbOpts.settingsId);
+
+  if (settings.denyUsers.includes(createOpts.userId)) {
+   throw new Error(BaseTicketErrors.create_UserDenied);
+  }
+  if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
+   throw new Error(BaseTicketErrors.create_RoleDenied);
+  }
+
   const { channelId }: { channelId: string } = yield;
 
   try {
-   const createDbEntry = this.createDbEntry({ ...dbOpts, channelId });
-   const { iteration, result: settings } = (await createDbEntry.next()).value;
+   await this.createDbEntry({ ...dbOpts, channelId });
 
-   if (iteration !== 1) throw new Error(BaseTicketErrors.create_DBEntryFailed);
-   if (settings.denyUsers.includes(createOpts.userId))
-    throw new Error(BaseTicketErrors.create_UserDenied);
-   if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
-    throw new Error(BaseTicketErrors.create_RoleDenied);
-   }
-
-   logger.debug('[BaseTicket] create deny-list passed ticket:', this.id);
-   yield;
-
-   const ticket = (await createDbEntry.next()).value;
-   if (ticket.iteration !== 2) throw new Error(BaseTicketErrors.create_DBEntryFailed);
-
-   logger.log(
-    '[BaseTicket] create ticket:',
-    this.id,
-    'for user:',
-    dbOpts.userId,
-    'channel:',
-    channelId,
-   );
+   this.plugin.logger.logLocation(LogLevel.debug);
    this.handleBaseLog({ type: LogType.TicketCreated, data: { userId: dbOpts.userId } });
 
    return this;
   } finally {
-   this.deletePreparedEntry();
+   await this.deletePreparedEntry();
   }
  }
 
  async deletePreparedEntry() {
   const ticket = await this.getTicket();
   if (ticket.state !== TicketState.prepared) {
-   logger.silly('[BaseTicket] deletePreparedEntry skip — state:', ticket.state);
+   this.plugin.logger.logLocation(LogLevel.silly);
    return;
   }
 
-  logger.debug('[BaseTicket] deletePreparedEntry ticket:', ticket.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
   this.db.ticket.delete({ where: { id: ticket.id } }).then();
  }
 
  async prepareEntry(userId: string, settingsId: string) {
   this.id = String(Date.now());
-  logger.silly('[BaseTicket] prepareEntry id:', this.id, 'user:', userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
 
   return this.db.ticket.create({
    data: {
@@ -209,15 +195,9 @@ export default class BaseTicket extends BaseTicketLogger {
   });
  }
 
- async *createDbEntry(dbOpts: { settingsId: string; userId: string; channelId: string }) {
-  logger.silly(
-   '[BaseTicket] createDbEntry settings:',
-   dbOpts.settingsId,
-   'user:',
-   dbOpts.userId,
-   'channel:',
-   dbOpts.channelId,
-  );
+ async createDbEntry(dbOpts: { settingsId: string; userId: string; channelId: string }) {
+  this.plugin.logger.logLocation(LogLevel.silly);
+
   const settings = await this.db.ticketSetting.findUnique({
    where: { id: dbOpts.settingsId },
    include: { Ticket: { where: { user: dbOpts.userId } } },
@@ -226,26 +206,16 @@ export default class BaseTicket extends BaseTicketLogger {
   if (!settings.channel) throw new Error(BaseTicketErrors.create_SettingsChannelNotFound);
   if (!settings.active) throw new Error(BaseTicketErrors.create_SettingsInactive);
 
-  yield { iteration: 1 as const, result: settings };
-
   const preparedTicket = await this.getTicket();
 
   this.dbTicket = await this.db.ticket.update({
-   data: {
-    channel: dbOpts.channelId,
-    user: dbOpts.userId,
-    state: TicketState.opened,
-   },
+   data: { channel: dbOpts.channelId, user: dbOpts.userId, state: TicketState.opened },
    where: { id: preparedTicket.id },
    include: { settings: true },
   });
 
-  logger.debug('[BaseTicket] createDbEntry promoted ticket to opened:', this.dbTicket.id);
-  yield {
-   iteration: 2 as const,
-   result: this.dbTicket,
-  };
-  return { iteration: 3 as const, result: undefined };
+  this.plugin.logger.logLocation(LogLevel.debug);
+  return this.dbTicket;
  }
 
  /**
@@ -316,5 +286,22 @@ export default class BaseTicket extends BaseTicketLogger {
      ],
     },
    ]);
+ }
+
+ async sendMessage(payload: MessagePayload) {
+  const ticket = await this.getTicket();
+  this.plugin.logger.logLocation(LogLevel.debug);
+  const msg = await payload
+   .setSendTo([{ channel: ticket.channel, guildId: ticket.settings.guild }])
+   .send()
+   .then((m) => m[0]);
+
+  if (!msg || msg instanceof RequestHandlerError) {
+   this.plugin.logger.logLocation(LogLevel.error);
+
+   throw new Error(ChannelTicketErrors.cantSendMessage, { cause: inspect(msg?.cause) });
+  }
+
+  return msg;
  }
 }

@@ -1,4 +1,5 @@
-import { logger } from '@ayako/utility';
+import type { RequestHandlerError, RequestHandlerErrorType } from '@ayako/api';
+import { ScopedLogger } from '@ayako/utility';
 import {
  SlashCommandStringOption,
  type SlashCommandOptionsOnlyBuilder,
@@ -6,8 +7,6 @@ import {
 } from '@discordjs/builders';
 import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
-
-import type { RequestHandlerError, RequestHandlerErrorType } from '@ayako/api';
 import { inspect } from 'node:util';
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
@@ -67,22 +66,23 @@ export default abstract class Plugin<
  private enabled: boolean = true;
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
+ logger = new ScopedLogger();
 
  constructor(client: Client) {
   this.client = client;
  }
 
  registerEvents() {
-  logger.debug(`[${this.name}] Registering event handlers...`);
+  this.logger.debug(`[${this.name}] Registering event handlers...`);
   const events = Object.keys(this.eventHandlers) as E[];
 
-  logger.debug(`[Plugin:${this.name}] Registering ${events.length} event handlers...`);
+  this.logger.debug(`[Plugin:${this.name}] Registering ${events.length} event handlers...`);
 
   events.forEach((event) => {
-   logger.debug(`[Plugin:${this.name}] Registering handler for event:`, event);
+   this.logger.debug(`[Plugin:${this.name}] Registering handler for event:`, event);
 
    this.client.cache.on(event, (data: GatewayEventPayloadMap[E]) => {
-    logger.silly(`[Plugin:${this.name}] Event received:`, event);
+    this.client.logger.silly(`[Plugin:${this.name}] Event received:`, event);
     this.eventHandlers[event](data);
    });
   });
@@ -103,7 +103,7 @@ export default abstract class Plugin<
   guildIdOrLocale: string | bigint | null | undefined,
  ): Promise<L> => {
   const locale = await this.client.getLocale(guildIdOrLocale);
-  logger.silly(`[Plugin:${this.name}] Getting language for locale:`, locale);
+  this.logger.silly(`[Plugin:${this.name}] Getting language for locale:`, locale);
 
   return merge(
    {},
@@ -118,7 +118,7 @@ export default abstract class Plugin<
   *
   * @example
   * const t = await plugin.t(guildId);
-  * t.messages.welcome({ user: { username: 'Lolo' } });
+  * t.messages.welcome({ user: { username: 'Ayako' } });
   *
   * @param guildIdOrLocale - Guild ID (bigint/string) or locale string
   * @returns A typed translator proxy
@@ -136,6 +136,6 @@ export default abstract class Plugin<
  };
 
  nonFatalError = (error: Error | RequestHandlerError<RequestHandlerErrorType>, context: string) => {
-  logger.error(`[Plugin:${this.name}] Non-fatal error in ${context}:`, inspect(error));
+  this.logger.error(`[Plugin:${this.name}] Non-fatal error in ${context}:`, inspect(error));
  };
 }

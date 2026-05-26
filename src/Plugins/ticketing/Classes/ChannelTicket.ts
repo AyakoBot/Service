@@ -1,5 +1,5 @@
 import { API, RequestHandlerError } from '@ayako/api';
-import { logger, type RChannel, type RThread } from '@ayako/utility';
+import { LogLevel, type RChannel, type RThread } from '@ayako/utility';
 import {
  ButtonStyle,
  ChannelType,
@@ -20,7 +20,6 @@ import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
 import BaseTicket from './BaseTicket.js';
 import { ChannelTicketErrors } from './Enums.js';
-import { inspect } from 'node:util';
 
 export default class ChannelTicket extends BaseTicket {
  static threadTypes = [
@@ -35,12 +34,12 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *delete(data: { userId: string; cmd: APIMessageComponentInteraction }) {
-  logger.silly('[ChannelTicket] delete ticket:', this.id, 'by user:', data.userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   const superDel = super.delete(data);
   await superDel.next();
 
   const deletePayload = await this.getDeletePayload();
-  await this.replyMessage(data.cmd, deletePayload, ChannelTicketErrors.delete_cantUpdateMessage);
+  await this.replyMessage(data.cmd, deletePayload, ChannelTicketErrors.delete_CantUpdateMessage);
 
   await this.deleteChannel();
   await superDel.next();
@@ -50,14 +49,19 @@ export default class ChannelTicket extends BaseTicket {
 
  async deleteChannel() {
   const ticket = await this.getTicket();
-  logger.debug('[ChannelTicket] deleteChannel ticket:', this.id, 'channel:', ticket.channel);
+  this.plugin.logger.debug(
+   '[ChannelTicket] deleteChannel ticket:',
+   this.id,
+   'channel:',
+   ticket.channel,
+  );
   const res = (await this.client.getAPI(ticket.settings.guild)).channels.delete(ticket.channel, {
    origin: ChannelTicket.name,
    reason: 'Ticket deleted',
   });
 
   if (res && res instanceof RequestHandlerError) {
-   throw new Error(ChannelTicketErrors.delete_cantDeleteChannel, { cause: res });
+   throw new Error(ChannelTicketErrors.delete_CantDeleteChannel, { cause: res });
   }
 
   return res;
@@ -91,9 +95,10 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *close(data: { userId: string; cmd: APIMessageComponentInteraction }) {
-  logger.silly('[ChannelTicket] close ticket:', this.id, 'by user:', data.userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
+
   const superClose = super.close({ userId: data.userId });
-  superClose.next();
+  await superClose.next();
 
   const closeInitPayload = await this.getCloseInitPayload(data.cmd);
   await this.updateInitCloseMessage(data.cmd, closeInitPayload);
@@ -108,7 +113,7 @@ export default class ChannelTicket extends BaseTicket {
   const closeReplyPayload = await this.getCloseReplyPayload();
   await this.replyMessage(data.cmd, closeReplyPayload, ChannelTicketErrors.close_CantReplyMessage);
 
-  superClose.next();
+  await superClose.next();
   return this;
  }
 
@@ -145,7 +150,7 @@ export default class ChannelTicket extends BaseTicket {
  async revokeChannelAccess(api: API, channel: RChannel | RThread) {
   if (!this.isChannel(channel)) throw new Error(ChannelTicketErrors.badChannelSupplied);
 
-  logger.debug('[ChannelTicket] revokeChannelAccess channel:', channel.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
   const modify = await Promise.all(
    channel.permission_overwrites
     ?.filter((o) => o.type === OverwriteType.Member)
@@ -168,9 +173,9 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async closeChannel(api: API, channel: RChannel | RThread) {
-  const ticket = await this.getTicket();
-  logger.debug('[ChannelTicket] closeChannel channel:', ticket.channel);
+  this.plugin.logger.logLocation(LogLevel.debug);
 
+  const ticket = await this.getTicket();
   const archiveCategory = await this.getChannel(ticket.settings.archiveCategory || '');
   if (!this.isChannel(archiveCategory)) throw new Error(ChannelTicketErrors.badChannelSupplied);
 
@@ -235,7 +240,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async *claim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
-  logger.silly('[ChannelTicket] claim ticket:', this.id, 'by user:', data.userId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   const superClaim = super.claim({ userId: data.userId });
   await superClaim.next();
   const ticket = await this.getTicket();
@@ -250,7 +255,7 @@ export default class ChannelTicket extends BaseTicket {
   const claimPayload = await this.getClaimPayload(data.cmd);
   await this.updateInitClaimMessage(data.cmd, claimPayload);
 
-  superClaim.next();
+  await superClaim.next();
 
   return this;
  }
@@ -297,7 +302,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
-  logger.debug('[ChannelTicket] claimChannel channel:', channelId);
+  this.plugin.logger.logLocation(LogLevel.debug);
   const t = await this.plugin.t(guildId);
 
   const modify = await api.channels.edit(
@@ -322,7 +327,7 @@ export default class ChannelTicket extends BaseTicket {
    username: string;
   },
  ) {
-  logger.silly('[ChannelTicket] create user:', dbOpts.userId, 'settings:', dbOpts.settingsId);
+  this.plugin.logger.logLocation(LogLevel.silly);
   const superCreate = super.create(dbOpts, createOpts);
   await superCreate.next();
 
@@ -335,16 +340,15 @@ export default class ChannelTicket extends BaseTicket {
 
    await this.grantChannelAccess(api, channel.id, createOpts.userId);
 
-   await superCreate.next();
 
    const initPayload = await this.getInitPayload(true, false);
-   const initMessage = await this.sendInitMessage(api, initPayload);
+   const initMessage = await this.sendMessage(initPayload);
 
    const replyPayload = await this.getCreateReplyPayload(channel.id, initMessage.id);
    await this.replyMessage(
     createOpts.cmd,
     replyPayload,
-    ChannelTicketErrors.create_cantReplyMessage,
+    ChannelTicketErrors.create_CantReplyMessage,
    );
 
    return this;
@@ -368,12 +372,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async createChannel(api: API, username: string, settingsId: string): Promise<RChannel | RThread> {
-  logger.debug(
-   '[ChannelTicket] createChannel username:',
-   username,
-   'settings:',
-   settingsId,
-  );
+  this.plugin.logger.logLocation(LogLevel.debug);
   const ticketSettings = await this.getTicketSettings(settingsId);
 
   const channel = await api.guilds.createChannel(
@@ -394,7 +393,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async grantChannelAccess(api: API, channelId: string, userId: string) {
-  logger.debug('[ChannelTicket] grantChannelAccess channel:', channelId, 'user:', userId);
+  this.plugin.logger.logLocation(LogLevel.debug);
   const modify = await api.channels.editPermissionOverwrite(
    channelId,
    userId,
@@ -418,29 +417,5 @@ export default class ChannelTicket extends BaseTicket {
   }
 
   return modify;
- }
-
- async sendInitMessage(api: API, initPayload: MessagePayload) {
-  const ticket = await this.getTicket();
-  logger.debug('[ChannelTicket] sendInitMessage channel:', ticket.channel);
-  const msg = await initPayload
-   .setSendTo([{ channel: ticket.channel, guildId: ticket.settings.guild }])
-   .send()
-   .then((m) => m[0]);
-
-  if (!msg || msg instanceof RequestHandlerError) {
-   logger.warn(
-    '[ChannelTicket] sendInitMessage failed — rolling back channel:',
-    ticket.channel,
-   );
-   api.channels.delete(ticket.channel, {
-    origin: ChannelTicket.name,
-    reason: 'Deleting ticket channel due to error',
-   });
-
-   throw new Error(ChannelTicketErrors.create_CantSendInitMessage, { cause: inspect(msg?.cause) });
-  }
-
-  return msg;
  }
 }

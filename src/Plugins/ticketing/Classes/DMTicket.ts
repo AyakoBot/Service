@@ -1,10 +1,9 @@
 import { RequestHandlerError } from '@ayako/api';
-import { TicketType } from '@ayako/database';
-import { logger } from '@ayako/utility';
+import { TicketState, TicketType } from '@ayako/database';
+import { LogLevel } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
- ChannelType,
  type APIMessage,
  type APIMessageComponentInteraction,
  type APIMessageTopLevelComponent,
@@ -14,7 +13,7 @@ import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
-import type TicketPlugin from '../Plugin.js';
+import TicketPlugin from '../Plugin.js';
 import type BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
@@ -31,7 +30,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    });
    if (!entry) return null;
 
-   const ticketPlugin = client.plugins.find((p) => p.name === 'Ticketing') as TicketPlugin;
+   const ticketPlugin = client.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
    if (!ticketPlugin) throw new Error(DMTicketErrors.ticketPluginNotFound);
 
    switch (true) {
@@ -61,39 +60,19 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async forwardToDmChannel(payload: MessagePayload) {
+   this.plugin.logger.logLocation(LogLevel.debug);
+
    const ticket = await this.getTicket();
-   logger.debug('[DMTicket] forwardToDmChannel ticket:', this.id, 'user:', ticket.user);
    const api = await this.client.getAPI(ticket.settings.guild);
-   const dm = await api.users.createDM(ticket.user, {
+
+   if (!ticket.dm) return null;
+
+   const send = await api.channels.createDirectMessage(ticket.dm, payload.getAPIPayload(), {
     origin: DMTicket.name,
     reason: 'Forwarding message to ticket DM channel',
    });
 
-   if (!dm || dm instanceof RequestHandlerError) {
-    throw new Error(DMTicketErrors.dmChannelNotFound, { cause: dm });
-    // if (failIfError)
-    // return this.plugin.nonFatalError(
-    //  new Error(DMTicketErrors.dmChannelNotFound, { cause: dm }),
-    //  this.forwardToDmChannel.name,
-    // );
-   }
-
-   const send = await api.channels.createDirectMessage(dm.id, payload.getAPIPayload(), {
-    origin: DMTicket.name,
-    reason: 'Forwarding message to ticket DM channel',
-   });
-
-   if (!send || send instanceof RequestHandlerError) {
-    throw new Error(DMTicketErrors.couldntSendDm);
-    // if (failIfError)
-    // this.plugin.nonFatalError(
-    //  new Error(
-    //   `Failed to send message to DM channel: ${send instanceof RequestHandlerError ? send : 'Unknown error'}`,
-    //  ),
-    //  this.forwardToDmChannel.name,
-    // );
-   }
-
+   if (!send || send instanceof RequestHandlerError) throw new Error(DMTicketErrors.couldntSendDm);
    return send;
   }
 
@@ -108,13 +87,22 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async leave(cmd: APIMessageComponentInteraction) {
-   logger.silly('[DMTicket] leave ticket:', this.id);
+   this.plugin.logger.logLocation(LogLevel.silly);
    if (cmd.message.embeds.length) {
     this.leaveSure(cmd);
     return;
    }
+
    const payload = await this.getLeaveConfirmationPayload();
    payload.update(cmd);
+  }
+
+  async setDbEntryLeft() {
+   this.dbTicket = await this.client.db.client.ticket.update({
+    where: { id: this.id },
+    data: { dm: null },
+    include: { settings: true },
+   });
   }
 
   async revokeChannelAccess() {
@@ -126,7 +114,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async pinMessage(message: APIMessage) {
-   logger.silly('[DMTicket] pinMessage channel:', message.channel_id, 'message:', message.id);
+   this.plugin.logger.logLocation(LogLevel.silly);
+
    const ticket = await this.getTicket();
    const api = await this.client.getAPI(ticket.settings.guild);
 
@@ -142,15 +131,27 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async leaveSure(cmd: APIMessageComponentInteraction) {
    const ticket = await this.getTicket();
-   logger.log('[DMTicket] leave ticket:', this.id, 'by user:', ticket.user);
+
    const leavePayload = await this.getLeavePayload();
    await this.forwardToDmChannel(leavePayload);
 
    await this.handleBaseLog({ type: LogType.TicketLeft, data: { userId: ticket.user } });
-   await this.unpinMessage(cmd);
+   await this.unpinMessage();
 
-   const leftPayload = await this.getLeftPayload();
-   await this.updateMessage(cmd, leftPayload);
+   const leftPayload = await this.getLeavePayload();
+   await this.sendMessage(leftPayload);
+   await this.updateMessage(cmd, this.getLeaveUpdatePayload());
+
+   await this.setDbEntryLeft();
+  }
+
+  getLeaveUpdatePayload() {
+   return new MessagePayload(this.client, {
+    origin: this.plugin.name,
+    reason: 'Generating leave update payload',
+   })
+    .setEmbeds([])
+    .setComponents([]);
   }
 
   async updateMessage(cmd: APIMessageComponentInteraction, payload: MessagePayload) {
@@ -161,19 +162,9 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     reason: 'Updating message after leaving ticket',
    });
 
-   if (modify && !(modify instanceof RequestHandlerError)) return;
+   if (!modify || !(modify instanceof RequestHandlerError)) return;
 
    this.plugin.nonFatalError(modify || new Error(), this.updateMessage.name);
-  }
-
-  async getLeftPayload() {
-   const ticket = await this.getTicket();
-   const t = await this.plugin.t(ticket.settings.guild);
-
-   return new MessagePayload(this.client, { origin: DMTicket.name, reason: 'User left ticket' })
-    .setEmbeds([])
-    .setComponents([])
-    .setContent(t.ticketLeft());
   }
 
   async getLeavePayload() {
@@ -197,21 +188,17 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    ]);
   }
 
-  async unpinMessage(cmd: APIMessageComponentInteraction) {
-   logger.silly('[DMTicket] unpinMessage channel:', cmd.channel.id, 'message:', cmd.message.id);
+  async unpinMessage() {
+   this.plugin.logger.logLocation(LogLevel.silly);
+
    const ticket = await this.getTicket();
+   if (!ticket.starterDm || !ticket.dm) return;
    const api = await this.client.getAPI(ticket.settings.guild);
 
-   const unpin =
-    cmd.channel.type === ChannelType.DM
-     ? api.channels.unpinDirectMessage(cmd.channel.id, cmd.message.id, {
-        origin: DMTicket.name,
-        reason: 'Unpinning leave confirmation message',
-       })
-     : api.channels.unpinMessage(cmd.channel.id, cmd.message.id, {
-        origin: DMTicket.name,
-        reason: 'Unpinning leave confirmation message',
-       });
+   const unpin = await api.channels.unpinDirectMessage(ticket.dm, ticket.starterDm, {
+    origin: DMTicket.name,
+    reason: 'Unpinning leave confirmation message',
+   });
 
    if (!(unpin instanceof RequestHandlerError)) return;
 
@@ -240,7 +227,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async setStarterDm(msgId: string | null) {
-   logger.silly('[DMTicket] setStarterDm ticket:', this.id, 'msgId:', msgId);
+   this.plugin.logger.logLocation(LogLevel.silly);
    this.dbTicket = await this.client.db.client.ticket.update({
     where: { id: this.id },
     data: { starterDm: msgId },
@@ -252,14 +239,14 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async unpinStartMessage() {
    const ticket = await this.getTicket();
-   if (!ticket.starterDm) {
-    logger.silly('[DMTicket] unpinStartMessage skip — no starterDm');
+   if (!ticket.starterDm || !ticket.dm) {
+    this.plugin.logger.logLocation(LogLevel.silly);
     return;
    }
 
-   logger.silly('[DMTicket] unpinStartMessage ticket:', this.id, 'message:', ticket.starterDm);
+   this.plugin.logger.logLocation(LogLevel.silly);
    const api = await this.client.getAPI(ticket.settings.guild);
-   const unpin = await api.channels.unpinDirectMessage(ticket.dm!, ticket.starterDm, {
+   const unpin = await api.channels.unpinDirectMessage(ticket.dm, ticket.starterDm, {
     origin: DMTicket.name,
     reason: 'Unpinning starter DM message',
    });
@@ -295,20 +282,86 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     username: string;
    },
   ) {
-   logger.silly('[DMTicket] create user:', dbOpts.userId, 'settings:', dbOpts.settingsId);
+   this.plugin.logger.logLocation(LogLevel.silly);
+
    const hasDmTicket = await this.hasDmTicket(dbOpts.userId);
-   if (hasDmTicket) throw new Error(DMTicketErrors.create_userAlreadyInDmTicket);
+   if (hasDmTicket) throw new Error(DMTicketErrors.create_UserAlreadyInDmTicket);
 
    const create = super.create(dbOpts, createOpts);
    return yield* create;
   }
 
   async hasDmTicket(userId: string) {
-   logger.silly('[DMTicket] hasDmTicket user:', userId);
+   this.plugin.logger.logLocation(LogLevel.silly);
+
    const existing = await this.client.db.client.ticket.findFirst({
-    where: { user: userId },
+    where: {
+     user: userId,
+     dm: { not: null },
+     state: { in: [TicketState.opened, TicketState.claimed] },
+    },
    });
+
    return !!existing;
+  }
+
+  async setDmChannel() {
+   const ticket = await this.getTicket();
+   if (ticket.dm) return;
+
+   const api = await this.client.getAPI(ticket.settings.guild);
+   const dmChannel = await api.users.createDM(ticket.user, {
+    origin: this.plugin.name,
+    reason: 'Creating DM channel for ticket',
+   });
+
+   if (!dmChannel || dmChannel instanceof RequestHandlerError) {
+    throw new Error(DMTicketErrors.create_CantCreateDMChannel, { cause: dmChannel });
+   }
+
+   this.dbTicket = await this.client.db.client.ticket.update({
+    where: { id: ticket.id },
+    data: { dm: dmChannel.id },
+    include: { settings: true },
+   });
+  }
+
+  async *close(data: { userId: string }) {
+   const superClose = yield* super.close(data);
+
+   const initialMessage = await this.editInitialMessage(this.getLeaveUpdatePayload());
+   if (initialMessage) await this.unpinMessage();
+
+   await this.setDbEntryLeft();
+
+   return superClose;
+  }
+
+  async editInitialMessage(payload: MessagePayload) {
+   const ticket = await this.getTicket();
+   if (!ticket.starterDm || !ticket.dm) return;
+
+   const api = await this.client.getAPI(ticket.settings.guild);
+   const modify = await api.channels.editDirectMessage(
+    ticket.dm,
+    ticket.starterDm,
+    payload.getAPIPayload(),
+    {
+     origin: DMTicket.name,
+     reason: 'Editing initial message after ticket closed',
+    },
+   );
+
+   if (!modify || modify instanceof RequestHandlerError) {
+    this.plugin.nonFatalError(
+     modify || new Error(DMTicketErrors.close_CantEditInitMessage),
+     this.editInitialMessage.name,
+    );
+
+    return null;
+   }
+
+   return modify;
   }
  }
 

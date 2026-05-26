@@ -19,7 +19,7 @@
  "leaveTicket": "Leave Ticket",
  "leaveSure": "Are you sure you want to leave the Ticket? You will not be able to rejoin it.",
  "alreadyInTicket": "You already are in a Ticket. Please leave it first via the `Leave Ticket` button.\nThe Message with the Button is Pinned to our DMs",
- "ticketLeft": "You left the Ticket. You will no longer receive messages sent there and yours will no longer be relayed to the Support-Team",
+ "ticketLeft": "User left the Ticket. Messages sent will no longer be relayed",
  "ticketAlreadyClosed": "The Ticket is already closed",
  "leftTicket": "Left Ticket. Messages will no longer be delivered.",
  "dmd": "I've sent you a DM",
@@ -76,10 +76,10 @@
   "badChannelSupplied": "Fatal error: Bad Channel supplied - Please contact support",
   "ticketNotFound": "Couldn't find the Ticket, it might have been deleted already",
   "settingsNotFound": "Couldn't find the Ticket-System settings for this Server",
+  "cantSendMessage": "Couldn't send Message into Channel",
 
   "create.cantCreateChannel": "Couldn't create a Ticket-Channel",
   "create.cantUpdatePermissions": "Couldn't update the Ticket-Channel permissions",
-  "create.cantSendInitMessage": "Couldn't send the initial Message in the Ticket-Channel",
   "create.ticketExists": "A Ticket already exists for you",
   "create.settingsNotFound": "Couldn't find the Ticket-System settings for this Server",
   "create.settingsChannelNotFound": "Couldn't find the Channel set in the Ticket-System settings",
@@ -89,6 +89,7 @@
   "create.dbEntryFailed": "Fatal error: Failed to create a Ticket entry in the database - Please contact support",
   "create.cantReplyMessage": "Couldn't send the reply Message in the Ticket-Creation-Channel",
   "create.userAlreadyInDmTicket": "You already have an open Ticket in DMs. Please leave it first before opening a new one",
+  "create.cantCreateDMChannel": "Couldn't create a DM Channel with the user",
 
   "claim.cantEditChannel": "Couldn't edit the Ticket-Channel",
   "claim.cantEditMessage": "Couldn't edit the initial Message in the Ticket-Channel",

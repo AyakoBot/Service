@@ -37,9 +37,9 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   ) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
-   this.client.logger.debug(`[Plugin:${this.name}] MessageCreate event received`);
+   this.logger.debug(`[Plugin:${this.name}] MessageCreate event received`);
    if (!this.isEnabled()) return;
-   this.client.logger.debug(`[Plugin:${this.name}] Processing MessageCreate event`);
+   this.logger.debug(`[Plugin:${this.name}] Processing MessageCreate event`);
    MessageCreate.call(this, data);
   },
 
@@ -48,9 +48,9 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   ) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
-   this.client.logger.debug(`[Plugin:${this.name}] InteractionCreate event received`);
+   this.logger.debug(`[Plugin:${this.name}] InteractionCreate event received`);
    if (!this.isEnabled()) return;
-   this.client.logger.debug(`[Plugin:${this.name}] Processing InteractionCreate event`);
+   this.logger.debug(`[Plugin:${this.name}] Processing InteractionCreate event`);
    InteractionCreate.call(this, data);
   },
  };

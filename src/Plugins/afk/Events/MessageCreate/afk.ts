@@ -24,7 +24,7 @@ export default async function (
   msg.author_id,
   msg.channel_id,
  );
- this.client.logger.debug(
+ this.logger.debug(
   `[Plugin:${this.name}] canUserExecuteCommand response: ${canRunCommand.response}, debug: ${canRunCommand.debug}`,
  );
 

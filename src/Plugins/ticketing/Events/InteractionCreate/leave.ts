@@ -5,6 +5,8 @@ import type TicketPlugin from '../../Plugin.js';
 import DmToChannelTicket from '../../Classes/DmToChannelTicket.js';
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import handleTicketError from '../../Util/handleTicketError.js';
+import { LogLevel } from '@ayako/utility';
+import { inspect } from 'node:util';
 
 export default async function (this: TicketPlugin, cmd: APIMessageComponentInteraction) {
  const ticket = await DmToChannelTicket.findTicketByDMChannelId(this.client, cmd.channel.id).catch(
@@ -22,6 +24,9 @@ export default async function (this: TicketPlugin, cmd: APIMessageComponentInter
  }
 
  if (ticket instanceof Error || ticket === null) {
+  this.logger.logLocation(LogLevel.error, inspect(ticket));
+  console.log(cmd.channel.id);
+
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
    error: ticket || new Error(BaseTicketErrors.ticketNotFound),

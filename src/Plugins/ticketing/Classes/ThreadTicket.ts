@@ -1,10 +1,10 @@
 import { API, RequestHandlerError } from '@ayako/api';
 import { TicketType } from '@ayako/database';
-import { logger, type RChannel, type RThread } from '@ayako/utility';
+import { LogLevel, type RChannel, type RThread } from '@ayako/utility';
 import { ChannelType } from 'discord-api-types/v10';
 import type Client from '../../../Classes/Client.js';
 import getUser from '../../../Util/getUser.js';
-import type TicketPlugin from '../Plugin.js';
+import TicketPlugin from '../Plugin.js';
 import ChannelTicket from './ChannelTicket.js';
 import { ThreadTicketErrors } from './Enums.js';
 
@@ -23,7 +23,7 @@ export default class ThreadTicket extends ChannelTicket {
   });
   if (!entry) return null;
 
-  const ticketPlugin = client.plugins.find((p) => p.name === 'Ticketing') as TicketPlugin;
+  const ticketPlugin = client.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
   if (!ticketPlugin) throw new Error('TicketPlugin not found');
 
   if (entry.settings.type !== TicketType.Thread) {
@@ -35,7 +35,12 @@ export default class ThreadTicket extends ChannelTicket {
 
  async deleteChannel() {
   const ticket = await this.getTicket();
-  logger.debug('[ThreadTicket] deleteChannel ticket:', this.id, 'thread:', ticket.channel);
+  this.plugin.logger.debug(
+   '[ThreadTicket] deleteChannel ticket:',
+   this.id,
+   'thread:',
+   ticket.channel,
+  );
   let user = await getUser.call(this.client, ticket.user);
   if (!user || user instanceof RequestHandlerError) {
    this.plugin.nonFatalError(user || new Error(), this.deleteChannel.name);
@@ -64,7 +69,12 @@ export default class ThreadTicket extends ChannelTicket {
 
  async revokeChannelAccess(api: API) {
   const ticket = await this.getTicket();
-  logger.debug('[ThreadTicket] revokeChannelAccess thread:', ticket.channel, 'user:', ticket.user);
+  this.plugin.logger.debug(
+   '[ThreadTicket] revokeChannelAccess thread:',
+   ticket.channel,
+   'user:',
+   ticket.user,
+  );
   const remove = await api.threads.removeMember(ticket.channel, ticket.user, {
    origin: ThreadTicket.name,
    reason: 'Ticket closed',
@@ -79,7 +89,7 @@ export default class ThreadTicket extends ChannelTicket {
 
  async closeChannel(api: API, channel: RChannel | RThread) {
   const ticket = await this.getTicket();
-  logger.debug('[ThreadTicket] closeChannel thread:', ticket.channel);
+  this.plugin.logger.logLocation(LogLevel.debug);
   const t = await this.plugin.t(ticket.settings.guild);
   let user = await getUser.call(this.client, ticket.user);
 
@@ -113,7 +123,7 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async createChannel(api: API, username: string) {
-  logger.debug('[ThreadTicket] createChannel username:', username, 'ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.debug);
   const ticket = await this.getTicket();
   if (!ticket.settings.channel) {
    throw new Error(ThreadTicketErrors.threadChannelNotSet);
@@ -138,7 +148,7 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async grantChannelAccess(api: API, channelId: string, userId: string): Promise<void> {
-  logger.debug('[ThreadTicket] grantChannelAccess thread:', channelId, 'user:', userId);
+  this.plugin.logger.logLocation(LogLevel.debug);
   const modify = await api.threads.addMember(channelId, userId, {
    origin: ThreadTicket.name,
    reason: 'Granting access to ticket thread channel',

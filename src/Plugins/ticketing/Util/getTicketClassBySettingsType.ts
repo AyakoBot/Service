@@ -5,10 +5,10 @@ import DmToThreadTicket from '../Classes/DmToThreadTicket.js';
 import ChannelTicket from '../Classes/ChannelTicket.js';
 import ThreadTicket from '../Classes/ThreadTicket.js';
 import { BaseTicketErrors } from '../Classes/Enums.js';
-import type TicketPlugin from '../Plugin.js';
+import TicketPlugin from '../Plugin.js';
 
 export default function (this: Client, type: TicketType, ticketId: string) {
- const plugin = this.plugins.find((p) => p.name === 'Ticketing') as TicketPlugin;
+ const plugin = this.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
 
  switch (type) {
   case TicketType.dmToChannel:

@@ -12,6 +12,7 @@ import messageCreate from './Events/MessageCreate/index.js';
 import messageDelete from './Events/MessageDelete/index.js';
 import messageUpdate from './Events/MessageUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
+import { LogLevel } from '@ayako/utility';
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate
@@ -85,6 +86,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
 
  constructor(client: Client) {
   super(client);
+
+  this.logger.setLevel(LogLevel.silly);
  }
 
  getCommands = () => ({

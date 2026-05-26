@@ -29,7 +29,7 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   client.getBotIdForGuildId = this.getBotIdForGuildId;
 
   this.client.cache.on('interaction', (message) => {
-   this.client.logger.silly('[CustomClientsPlugin] Received interaction event:', message);
+   this.logger.silly('[CustomClientsPlugin] Received interaction event:', message);
    this.client.cache.emit(GatewayDispatchEvents.InteractionCreate, message);
   });
  }

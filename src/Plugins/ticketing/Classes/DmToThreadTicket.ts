@@ -1,10 +1,11 @@
 import type { API } from '@ayako/api';
-import { logger, type RChannel, type RThread } from '@ayako/utility';
+import { LogLevel, type RChannel, type RThread } from '@ayako/utility';
 import type { APIChannel } from 'discord-api-types/v10';
 import type Client from '../../../Classes/Client.js';
 import type TicketPlugin from '../Plugin.js';
 import { DMTicketMixin } from './DMTicket.js';
 import ThreadTicket from './ThreadTicket.js';
+import { DMTicketErrors } from './Enums.js';
 
 export default class DmToThreadTicket extends DMTicketMixin(ThreadTicket) {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -12,13 +13,19 @@ export default class DmToThreadTicket extends DMTicketMixin(ThreadTicket) {
  }
 
  async createChannel(api: API, username: string) {
-  logger.silly('[DmToThreadTicket] createChannel ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.silly);
+
+  await this.setDmChannel();
+  const superCreate = await super.createChannel(api, username);
+
   const initDmPayload = await this.getInitDmPayload();
   const dmMessage = await this.forwardToDmChannel(initDmPayload);
-  await this.setStarterDm(dmMessage?.id);
+  if (!dmMessage) throw new Error(DMTicketErrors.cantSendMessage);
+
+  await this.setStarterDm(dmMessage?.id || null);
   await this.pinMessage(dmMessage);
 
-  return super.createChannel(api, username);
+  return superCreate;
  }
 
  async claimChannel(
@@ -27,16 +34,18 @@ export default class DmToThreadTicket extends DMTicketMixin(ThreadTicket) {
   guildId: string,
   channelName: string,
  ): Promise<APIChannel> {
-  logger.silly('[DmToThreadTicket] claimChannel ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.silly);
   return super.claimChannel(api, channelId, guildId, channelName);
  }
 
  async closeChannel(api: API, channel: RChannel | RThread) {
-  logger.silly('[DmToThreadTicket] closeChannel ticket:', this.id);
+  this.plugin.logger.logLocation(LogLevel.silly);
+
+  const superClose = await super.closeChannel(api, channel);
   const closeDmPayload = await this.getCloseDmPayload();
   await this.forwardToDmChannel(closeDmPayload);
   await this.unpinStartMessage();
 
-  return super.closeChannel(api, channel);
+  return superClose;
  }
 }
