@@ -269,7 +269,7 @@ export default class ChannelTicket extends BaseTicket {
 
  async updateInitClaimMessage(cmd: APIMessageComponentInteraction, payload: MessagePayload) {
   const modify = await payload.update(cmd);
-  if (!modify || modify instanceof RequestHandlerError) {
+  if (modify && modify instanceof RequestHandlerError) {
    throw new Error(ChannelTicketErrors.claim_CantEditMessage, { cause: modify });
   }
 
@@ -339,7 +339,6 @@ export default class ChannelTicket extends BaseTicket {
    await superCreate.next({ channelId: channel.id });
 
    await this.grantChannelAccess(api, channel.id, createOpts.userId);
-
 
    const initPayload = await this.getInitPayload(true, false);
    const initMessage = await this.sendMessage(initPayload);
