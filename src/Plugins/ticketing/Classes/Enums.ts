@@ -65,6 +65,7 @@ enum TicketErrors4 {
 
  create_UserAlreadyInDmTicket = 'create.userAlreadyInDmTicket',
  create_CantCreateDMChannel = 'create.cantCreateDMChannel',
+ create_CantGenerateMessageUrlNoDm = 'create.cantGenerateMessageUrlNoDm',
 }
 
 export const DMTicketErrors = { ...TicketErrors4, ...ChannelTicketErrors } as const;

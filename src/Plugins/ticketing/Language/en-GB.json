@@ -90,6 +90,7 @@
   "create.cantReplyMessage": "Couldn't send the reply Message in the Ticket-Creation-Channel",
   "create.userAlreadyInDmTicket": "You already have an open Ticket in DMs. Please leave it first before opening a new one",
   "create.cantCreateDMChannel": "Couldn't create a DM Channel with the user",
+  "create.cantGenerateMessageUrlNoDm": "Couldn't generate a Message URL because there is no DM Channel",
 
   "claim.cantEditChannel": "Couldn't edit the Ticket-Channel",
   "claim.cantEditMessage": "Couldn't edit the initial Message in the Ticket-Channel",

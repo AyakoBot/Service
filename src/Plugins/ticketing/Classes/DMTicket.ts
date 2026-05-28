@@ -363,6 +363,17 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
    return modify;
   }
+
+  async getMessageUrl() {
+   this.plugin.logger.logLocation(LogLevel.silly);
+
+   const ticket = await this.getTicket();
+   if (!ticket.dm || !ticket.starterDm) {
+    throw new Error(DMTicketErrors.create_CantGenerateMessageUrlNoDm);
+   }
+
+   return constants.formatters.msgURL(ticket.settings.guild, ticket.dm, ticket.starterDm);
+  }
  }
 
  return DMTicket;

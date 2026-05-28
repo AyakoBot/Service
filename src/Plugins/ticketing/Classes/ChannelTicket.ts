@@ -364,10 +364,13 @@ export default class ChannelTicket extends BaseTicket {
    origin: this.plugin.name,
    reason: 'Replying to ticket creation interaction',
   })
-   .setContent(
-    `${t.ticketed()} => ${constants.formatters.msgURL(ticket.settings.guild, channelId, messageId)}`,
-   )
+   .setContent(`${t.ticketed()} => ${await this.getMessageUrl(channelId, messageId)}`)
    .setFlags(MessageFlags.Ephemeral);
+ }
+
+ async getMessageUrl(channelId: string, messageId: string) {
+  const ticket = await this.getTicket();
+  return constants.formatters.msgURL(ticket.settings.guild, channelId, messageId);
  }
 
  async createChannel(api: API, username: string, settingsId: string): Promise<RChannel | RThread> {
