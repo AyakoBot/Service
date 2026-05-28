@@ -34,13 +34,9 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async deleteChannel() {
+  this.plugin.logger.logLocation(LogLevel.debug);
+
   const ticket = await this.getTicket();
-  this.plugin.logger.debug(
-   '[ThreadTicket] deleteChannel ticket:',
-   this.id,
-   'thread:',
-   ticket.channel,
-  );
   let user = await getUser.call(this.client, ticket.user);
   if (!user || user instanceof RequestHandlerError) {
    this.plugin.nonFatalError(user || new Error(), this.deleteChannel.name);
@@ -68,13 +64,9 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async revokeChannelAccess(api: API) {
+  this.plugin.logger.logLocation(LogLevel.debug);
+
   const ticket = await this.getTicket();
-  this.plugin.logger.debug(
-   '[ThreadTicket] revokeChannelAccess thread:',
-   ticket.channel,
-   'user:',
-   ticket.user,
-  );
   const remove = await api.threads.removeMember(ticket.channel, ticket.user, {
    origin: ThreadTicket.name,
    reason: 'Ticket closed',
@@ -88,8 +80,9 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async closeChannel(api: API, channel: RChannel | RThread) {
-  const ticket = await this.getTicket();
   this.plugin.logger.logLocation(LogLevel.debug);
+
+  const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   let user = await getUser.call(this.client, ticket.user);
 
@@ -124,6 +117,7 @@ export default class ThreadTicket extends ChannelTicket {
 
  async createChannel(api: API, username: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
+
   const ticket = await this.getTicket();
   if (!ticket.settings.channel) {
    throw new Error(ThreadTicketErrors.threadChannelNotSet);
@@ -149,6 +143,7 @@ export default class ThreadTicket extends ChannelTicket {
 
  async grantChannelAccess(api: API, channelId: string, userId: string): Promise<void> {
   this.plugin.logger.logLocation(LogLevel.debug);
+
   const modify = await api.threads.addMember(channelId, userId, {
    origin: ThreadTicket.name,
    reason: 'Granting access to ticket thread channel',

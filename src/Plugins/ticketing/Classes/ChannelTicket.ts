@@ -1,5 +1,5 @@
 import { API, RequestHandlerError } from '@ayako/api';
-import { LogLevel, type RChannel, type RThread } from '@ayako/utility';
+import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
  ButtonStyle,
  ChannelType,
@@ -419,5 +419,16 @@ export default class ChannelTicket extends BaseTicket {
   }
 
   return modify;
+ }
+
+ async messageSent(msg: RMessage) {
+  const ticket = await this.getTicket();
+
+  if (msg.channel_id === ticket.channel) return super.messageSent(msg, true);
+  if (!(await this.startsWithPrefix(msg.content))) return super.messageSent(msg, true);
+
+  await this.forwardToTicketChannel(msg);
+
+  return super.messageSent(msg);
  }
 }

@@ -1,6 +1,6 @@
 import { RequestHandlerError } from '@ayako/api';
 import { TicketState, TicketType } from '@ayako/database';
-import { LogLevel } from '@ayako/utility';
+import { LogLevel, type RMessage } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
@@ -14,11 +14,12 @@ import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
-import type BaseTicket from './BaseTicket.js';
+import BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
 import DmToThreadTicket from './DmToThreadTicket.js';
 import { DMTicketErrors } from './Enums.js';
+import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 
 type AbstractCtor<T = {}> = new (...args: any[]) => T;
 export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBase) {
@@ -373,6 +374,39 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    }
 
    return constants.formatters.msgURL(ticket.settings.guild, ticket.dm, ticket.starterDm);
+  }
+
+  async messageSent(msg: RMessage) {
+   const ticket = await this.getTicket();
+
+   if (ticket.dm === msg.channel_id) return super.messageSent(msg);
+
+   if (ticket.channel === msg.channel_id) {
+    await this.cloneToDm(msg);
+    return super.messageSent(msg);
+   }
+
+   if (!(await this.startsWithPrefix(msg.content))) {
+    await this.forwardToTicketChannel(msg);
+    return BaseTicket.prototype.messageSent.call(this, msg);
+   } else await this.cloneToDm(msg);
+
+   return super.messageSent(msg);
+  }
+
+  async cloneToDm(msg: RMessage) {
+   const ticket = await this.getTicket();
+   const t = await this.plugin.t(ticket.settings.guild);
+
+   const container = this.createMessageContainer(`${emotes.tools.name} | ${t.SupportTeam()}`);
+   cloneMessageIntoContainer.call(container, msg);
+
+   this.forwardToDmChannel(
+    new MessagePayload(this.client, {
+     origin: DMTicket.name,
+     reason: 'Forwarding message from ticket channel to DM',
+    }).setComponents([container.toJSON()]),
+   );
   }
  }
 

@@ -292,12 +292,8 @@ export default abstract class BaseTicketLogger {
  }
 
  async handleBaseLog<T extends LogType>(logOpts: LogOpts<T>) {
-  this.plugin.logger.silly(
-   '[BaseTicketLogger] handleBaseLog type:',
-   logOpts.type,
-   'ticket:',
-   this.id,
-  );
+  this.plugin.logger.logLocation(LogLevel.silly);
+
   const ticket = await this.getTicket();
   if (!ticket.settings.logChannels.length) {
    this.plugin.logger.logLocation(LogLevel.silly);
@@ -383,13 +379,7 @@ export default abstract class BaseTicketLogger {
    }
   }
 
-  this.plugin.logger.debug(
-   '[BaseTicketLogger] dispatching log type:',
-   logOpts.type,
-   'to',
-   logChannels.length,
-   'channel(s)',
-  );
+  this.plugin.logger.logLocation(LogLevel.debug);
 
   payload
    .setSendTo(
@@ -451,12 +441,8 @@ export default abstract class BaseTicketLogger {
  }
 
  async createLogThread(channelId: string) {
-  this.plugin.logger.debug(
-   '[BaseTicketLogger] createLogThread channel:',
-   channelId,
-   'ticket:',
-   this.id,
-  );
+  this.plugin.logger.logLocation(LogLevel.debug);
+
   const ticket = await this.getTicket();
 
   const t = await this.plugin.t(ticket.settings.guild);
@@ -556,12 +542,7 @@ export default abstract class BaseTicketLogger {
  }
 
  async getTranscript(channel: RChannel | RThread) {
-  this.plugin.logger.debug(
-   '[BaseTicketLogger] getTranscript channel:',
-   channel.id,
-   'ticket:',
-   this.id,
-  );
+  this.plugin.logger.logLocation(LogLevel.debug);
   const messages = await fetchMessages.call(
    this.client,
    channel.id,
@@ -589,5 +570,26 @@ export default abstract class BaseTicketLogger {
    .addSeparatorComponents(
     new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
    );
+ }
+
+ messageSent(msg: RMessage, internal: boolean = false) {
+  // TODO: handle internal
+  this.handleBaseLog({ type: LogType.MessageSent, data: { userId: msg.author_id, message: msg } });
+ }
+
+ messageEdited(msg: RMessage, internal: boolean = false) {
+  // TODO: handle internal
+  this.handleBaseLog({
+   type: LogType.MessageEdited,
+   data: { userId: msg.author_id, message: msg },
+  });
+ }
+
+ messageDeleted(msg: RMessage, internal: boolean = false) {
+  // TODO: handle internal
+  this.handleBaseLog({
+   type: LogType.MessageDeleted,
+   data: { userId: msg.author_id, message: msg },
+  });
  }
 }
