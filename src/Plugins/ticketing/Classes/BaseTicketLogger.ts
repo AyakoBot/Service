@@ -89,6 +89,12 @@ export default abstract class BaseTicketLogger {
  };
 
  async getUser(userId: string) {
+  if (!this.client) {
+   throw new Error(
+    '[BaseTicketLogger] getUser called without client — receiver is ' + this?.constructor?.name,
+   );
+  }
+
   const user = await getUser.call(this.client, userId);
   if (user instanceof RequestHandlerError) {
    this.plugin.logger.logLocation(LogLevel.warn);

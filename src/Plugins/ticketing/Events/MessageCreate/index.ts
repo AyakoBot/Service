@@ -9,6 +9,8 @@ export default async function (
  this: TicketPlugin,
  msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
 ) {
+ if (msg.author.bot) return;
+
  dm.call(this, msg);
  channel.call(this, msg);
  log.call(this, msg);
@@ -73,7 +75,7 @@ const log = async function (
 
  const ticketId = threadOrChannel.name.split('-')[1];
  if (!ticketId) return;
- 
+
  const dbTicket = await this.client.db.client.ticket.findUnique({
   where: { id: ticketId },
   include: { settings: true },

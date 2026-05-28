@@ -425,7 +425,6 @@ export default class ChannelTicket extends BaseTicket {
   const ticket = await this.getTicket();
 
   if (msg.channel_id === ticket.channel) return super.messageSent(msg, true);
-  if (!(await this.startsWithPrefix(msg.content))) return super.messageSent(msg, true);
 
   await this.forwardToTicketChannel(msg);
 

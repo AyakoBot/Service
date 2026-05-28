@@ -1,7 +1,7 @@
 import { RequestHandlerError } from '@ayako/api';
 import { TicketState } from '@ayako/database';
 import { LogLevel, type RMessage } from '@ayako/utility';
-import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
+import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
 import { inspect } from 'node:util';
 import type Client from '../../../Classes/Client.js';
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
@@ -10,6 +10,8 @@ import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
 import { BaseTicketErrors, ChannelTicketErrors } from './Enums.js';
 import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import ChannelTicket from './ChannelTicket.js';
+import emotes from '../../../Classes/Emotes.js';
+import constants from '../../../Classes/Constants.js';
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -293,6 +295,7 @@ export default class BaseTicket extends BaseTicketLogger {
  async sendMessage(payload: MessagePayload) {
   const ticket = await this.getTicket();
   this.plugin.logger.logLocation(LogLevel.debug);
+
   const msg = await payload
    .setSendTo([{ channel: ticket.channel, guildId: ticket.settings.guild }])
    .send()
@@ -317,17 +320,20 @@ export default class BaseTicket extends BaseTicketLogger {
  async forwardToTicketChannel(msg: RMessage) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
+  const user = await this.getUser(msg.author_id);
 
-  const user = await this.getUser.call(this.client, msg.author_id);
-
-  const container = this.createMessageContainer(user?.username || t.base.t.unknownUser());
+  const container = this.createMessageContainer(
+   `${constants.formatters.getEmote(emotes.Member)} ${user?.username || t.base.t.unknownUser()}`,
+  );
   cloneMessageIntoContainer.call(container, msg);
 
   this.sendMessage(
    new MessagePayload(this.client, {
     origin: ChannelTicket.name,
     reason: 'Logging sent message',
-   }).setComponents([container.toJSON()]),
+   })
+    .setComponents([container.toJSON()])
+    .setFlags(MessageFlags.IsComponentsV2),
   );
  }
 }
