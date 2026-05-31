@@ -132,7 +132,10 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
-  this.handleBaseLog({ type: LogType.TicketDeleted, data: { userId } });
+  await this.handleBaseLog({ type: LogType.TicketDeleted, data: { userId } });
+  yield;
+
+  await this.db.ticket.delete({ where: { id: ticket.id } });
 
   return true;
  }
@@ -335,5 +338,30 @@ export default class BaseTicket extends BaseTicketLogger {
     .setComponents([container.toJSON()])
     .setFlags(MessageFlags.IsComponentsV2),
   );
+ }
+
+ async react(msg: RMessage, forwarded: boolean) {
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const opts = { origin: BaseTicket.name, reason: 'Reacting to ticket message' };
+  const main = constants.formatters.getEmoteIdentifier(
+   forwarded ? emotes.tickWithBackground : emotes.crossWithBackground,
+  );
+
+  if (msg.channel_id === ticket.dm) {
+   const res = await api.channels.addDirectMessageReaction(msg.channel_id, msg.id, main, opts);
+   if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.react.name);
+   return;
+  }
+
+  const alt = constants.formatters.getEmoteIdentifier({ name: forwarded ? '✅' : '❌' });
+  const res = await api.channels.addMessageReaction(
+   ticket.settings.guild,
+   msg.channel_id,
+   msg.id,
+   { main, alt },
+   opts,
+  );
+  if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.react.name);
  }
 }

@@ -1,7 +1,8 @@
-import { ChannelType, type GatewayDispatchEvents } from 'discord-api-types/v10';
+import { type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 
+import type Client from '../../../../Classes/Client.js';
 import type TicketPlugin from '../../Plugin.js';
 import getTicketClassBySettingsType from '../../Util/getTicketClassBySettingsType.js';
 
@@ -11,105 +12,33 @@ export default async function (
 ) {
  if (msg.author.bot) return;
 
- dm.call(this, msg);
- channel.call(this, msg);
- log.call(this, msg);
+ const ticket = await resolveTicket.call(this.client, msg);
+ if (!ticket) return;
+
+ await ticket.messageSent(this.client.cache.messages.apiToR(msg, msg.guild_id || '@me'));
 }
 
-const dm = async function (
- this: TicketPlugin,
+const resolveTicket = async function (
+ this: Client,
  msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
 ) {
- const dbTicket = await this.client.db.client.ticket.findFirst({
-  where: { dm: msg.channel_id },
+ const direct = await this.db.client.ticket.findFirst({
+  where: { OR: [{ dm: msg.channel_id }, { channel: msg.channel_id }] },
   include: { settings: true },
  });
- if (!dbTicket) return;
+ if (direct) {
+  return getTicketClassBySettingsType.call(this, direct.settings.type, String(direct.id));
+ }
 
- const ticket = getTicketClassBySettingsType.call(
-  this.client,
-  dbTicket.settings.type,
-  String(dbTicket.id),
- );
- if (!ticket) return;
+ const thread = await this.cache.threads.get(msg.channel_id);
+ const ticketId = thread?.name.split('-')[1];
+ if (!thread || !ticketId || !/^\d+$/.test(ticketId)) return null;
 
- await ticket.messageSent(this.client.cache.messages.apiToR(msg, msg.guild_id || '@me'));
-};
-
-const channel = async function (
- this: TicketPlugin,
- msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
-) {
- const dbTicket = await this.client.db.client.ticket.findFirst({
-  where: { channel: msg.channel_id },
-  include: { settings: true },
- });
- if (!dbTicket) return;
-
- const ticket = getTicketClassBySettingsType.call(
-  this.client,
-  dbTicket.settings.type,
-  String(dbTicket.id),
- );
- if (!ticket) return;
-
- await ticket.messageSent(this.client.cache.messages.apiToR(msg, msg.guild_id || '@me'));
-};
-
-const log = async function (
- this: TicketPlugin,
- msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
-) {
- const threadOrChannel =
-  (await this.client.cache.channels.get(msg.channel_id)) ||
-  (await this.client.cache.threads.get(msg.channel_id));
- if (!threadOrChannel) return;
-
- const isThread = [
-  ChannelType.AnnouncementThread,
-  ChannelType.PublicThread,
-  ChannelType.PrivateThread,
- ].includes(threadOrChannel.type);
-
- if (!isThread) return;
-
- const ticketId = threadOrChannel.name.split('-')[1];
- if (!ticketId) return;
-
- const dbTicket = await this.client.db.client.ticket.findUnique({
+ const dbTicket = await this.db.client.ticket.findUnique({
   where: { id: ticketId },
   include: { settings: true },
  });
- if (!dbTicket) return;
+ if (!dbTicket || !dbTicket.settings.logChannels.includes(thread.parent_id ?? '')) return null;
 
- const ticket = getTicketClassBySettingsType.call(
-  this.client,
-  dbTicket.settings.type,
-  String(dbTicket.id),
- );
- if (!ticket) return;
-
- ticket.messageSent(this.client.cache.messages.apiToR(msg, msg.guild_id || '@me'));
+ return getTicketClassBySettingsType.call(this, dbTicket.settings.type, String(dbTicket.id));
 };
-
-// Cases
-/**
- * dmToChannel
- * ✅ Channel to direct message
- * ✅ Direct message to channel
- * logThreadLog
- *
- * dmToThread
- * Thread to direct message
- * Direct message to thread
- * Thread private
- * Log
- *
- * Channel
- * Log to Channel
- * Log
- *
- * Thread
- * Log to Thread
- * Log
- */

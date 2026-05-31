@@ -41,6 +41,8 @@ export default class ChannelTicket extends BaseTicket {
   const deletePayload = await this.getDeletePayload();
   await this.replyMessage(data.cmd, deletePayload, ChannelTicketErrors.delete_CantUpdateMessage);
 
+  await superDel.next();
+
   await this.deleteChannel();
   await superDel.next();
 
@@ -426,8 +428,12 @@ export default class ChannelTicket extends BaseTicket {
 
   if (msg.channel_id === ticket.channel) return super.messageSent(msg, true);
 
-  await this.forwardToTicketChannel(msg);
-
-  return super.messageSent(msg);
+  const { sendMessagePrefixes } = ticket.settings;
+  const forwarded = !!sendMessagePrefixes.length && (await this.startsWithPrefix(msg.content));
+  if (forwarded) {
+   msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
+   await this.forwardToTicketChannel(msg);
+  }
+  await this.react(msg, forwarded);
  }
 }

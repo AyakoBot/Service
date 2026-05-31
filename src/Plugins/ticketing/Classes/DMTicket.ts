@@ -4,6 +4,7 @@ import { LogLevel, type RMessage } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
+ MessageFlags,
  type APIMessage,
  type APIMessageComponentInteraction,
  type APIMessageTopLevelComponent,
@@ -14,7 +15,7 @@ import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
-import BaseTicket from './BaseTicket.js';
+import type BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
 import DmToThreadTicket from './DmToThreadTicket.js';
@@ -378,20 +379,33 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async messageSent(msg: RMessage) {
    const ticket = await this.getTicket();
+   const { sendMessagePrefixes } = ticket.settings;
 
-   if (ticket.dm === msg.channel_id) return super.messageSent(msg);
+   if (ticket.dm === msg.channel_id) {
+    await this.forwardToTicketChannel(msg);
+    await this.react(msg, true);
+    return this.handleBaseLog({
+     type: LogType.MessageSent,
+     data: { userId: msg.author_id, message: msg },
+    });
+   }
 
    if (ticket.channel === msg.channel_id) {
-    await this.cloneToDm(msg);
+    const relay = !sendMessagePrefixes.length || (await this.startsWithPrefix(msg.content));
+    if (relay) {
+     msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
+     await this.cloneToDm(msg);
+    }
+    await this.react(msg, relay);
     return super.messageSent(msg);
    }
 
-   if (!(await this.startsWithPrefix(msg.content))) {
-    await this.forwardToTicketChannel(msg);
-    return BaseTicket.prototype.messageSent.call(this, msg);
-   } else await this.cloneToDm(msg);
+   const relayToDm = !!sendMessagePrefixes.length && (await this.startsWithPrefix(msg.content));
+   if (relayToDm) msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
 
-   return super.messageSent(msg);
+   await this.forwardToTicketChannel(msg);
+   if (relayToDm) await this.cloneToDm(msg);
+   await this.react(msg, true);
   }
 
   async cloneToDm(msg: RMessage) {
@@ -405,7 +419,9 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     new MessagePayload(this.client, {
      origin: DMTicket.name,
      reason: 'Forwarding message from ticket channel to DM',
-    }).setComponents([container.toJSON()]),
+    })
+     .setComponents([container.toJSON()])
+     .setFlags(MessageFlags.IsComponentsV2),
    );
   }
  }
