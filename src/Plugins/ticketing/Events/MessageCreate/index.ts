@@ -1,7 +1,6 @@
 import { ChannelType, type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
-
 import type TicketPlugin from '../../Plugin.js';
 import getTicketClassBySettingsType from '../../Util/getTicketClassBySettingsType.js';
 
@@ -73,7 +72,7 @@ const log = async function (
 
  if (!isThread) return;
 
- const ticketId = threadOrChannel.name.split('-')[1];
+ const [, ticketId] = threadOrChannel.name.split('-');
  if (!ticketId) return;
 
  const dbTicket = await this.client.db.client.ticket.findUnique({
