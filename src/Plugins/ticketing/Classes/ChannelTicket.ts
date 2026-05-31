@@ -1,4 +1,5 @@
-import { API, RequestHandlerError } from '@ayako/api';
+import type { API } from '@ayako/api';
+import { RequestHandlerError } from '@ayako/api';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
  ButtonStyle,
@@ -11,6 +12,7 @@ import {
  type APIButtonComponentWithCustomId,
  type APIMessageComponentInteraction,
 } from 'discord-api-types/v10';
+
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
@@ -18,6 +20,7 @@ import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
+
 import BaseTicket from './BaseTicket.js';
 import { ChannelTicketErrors } from './Enums.js';
 
@@ -33,6 +36,7 @@ export default class ChannelTicket extends BaseTicket {
   this.plugin = plugin;
  }
 
+ // eslint-disable-next-line require-yield
  async *delete(data: { userId: string; cmd: APIMessageComponentInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superDel = super.delete(data);
@@ -48,14 +52,11 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async deleteChannel() {
+  this.plugin.logger.logLocation(LogLevel.debug);
+
   const ticket = await this.getTicket();
-  this.plugin.logger.debug(
-   '[ChannelTicket] deleteChannel ticket:',
-   this.id,
-   'channel:',
-   ticket.channel,
-  );
-  const res = (await this.client.getAPI(ticket.settings.guild)).channels.delete(ticket.channel, {
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const res = await api.channels.delete(ticket.channel, {
    origin: ChannelTicket.name,
    reason: 'Ticket deleted',
   });
@@ -94,6 +95,7 @@ export default class ChannelTicket extends BaseTicket {
    .setContent(t.deleting());
  }
 
+ // eslint-disable-next-line require-yield
  async *close(data: { userId: string; cmd: APIMessageComponentInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
@@ -239,6 +241,7 @@ export default class ChannelTicket extends BaseTicket {
   );
  }
 
+ // eslint-disable-next-line require-yield
  async *claim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superClaim = super.claim({ userId: data.userId });
@@ -318,6 +321,7 @@ export default class ChannelTicket extends BaseTicket {
   return modify;
  }
 
+ // eslint-disable-next-line require-yield
  async *create(
   dbOpts: { settingsId: string; userId: string },
   createOpts: {
