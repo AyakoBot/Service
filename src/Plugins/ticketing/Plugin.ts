@@ -1,10 +1,10 @@
 import type { TicketSetting } from '@ayako/database';
+import { LogLevel } from '@ayako/utility';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin, { idSelector, SettingsCategory } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
-
 import { EditorType } from '../settings/Plugin.js';
 
 import interactionCreate from './Events/InteractionCreate/index.js';
@@ -12,7 +12,6 @@ import messageCreate from './Events/MessageCreate/index.js';
 import messageDelete from './Events/MessageDelete/index.js';
 import messageUpdate from './Events/MessageUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
-import { LogLevel } from '@ayako/utility';
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate
@@ -30,7 +29,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  languageFiles = {
   'en-GB': en,
  };
- /* eslint-enable @typescript-eslint/naming-convention */
 
  eventHandlers = {
   MESSAGE_DELETE: (data) => {
@@ -83,6 +81,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    interactionCreate.call(this, data);
   },
  } as Plugin<Events, APILanguage>['eventHandlers'];
+ /* eslint-enable @typescript-eslint/naming-convention */
 
  constructor(client: Client) {
   super(client);
@@ -116,6 +115,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   logChannels: EditorType.Channels,
   mentionRoles: EditorType.Roles,
   mentionUsers: EditorType.Users,
+  staffRoles: EditorType.Roles,
+  staffUsers: EditorType.Users,
   sendMessagePrefixes: EditorType.String,
   type: EditorType.TicketType,
   appliedTags: EditorType.Strings,
