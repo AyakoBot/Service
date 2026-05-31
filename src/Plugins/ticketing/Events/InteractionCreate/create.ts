@@ -2,8 +2,8 @@ import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
-import handleTicketError from '../../Util/handleTicketError.js';
 import getTicketClassBySettingsType from '../../Util/getTicketClassBySettingsType.js';
+import handleTicketError from '../../Util/handleTicketError.js';
 
 export default async function (
  this: TicketPlugin,
@@ -43,7 +43,7 @@ export default async function (
 
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: new Error(t.errors['create.settingsNotFound'](), { cause: args[0] }),
+   error: new Error(t.errors[BaseTicketErrors.create_SettingsNotFound](), { cause: args[0] }),
    cmd,
   });
   return;
