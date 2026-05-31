@@ -1,10 +1,11 @@
 import { TicketType } from '@ayako/database';
+
 import type Client from '../../../Classes/Client.js';
+import ChannelTicket from '../Classes/ChannelTicket.js';
 import DmToChannelTicket from '../Classes/DmToChannelTicket.js';
 import DmToThreadTicket from '../Classes/DmToThreadTicket.js';
-import ChannelTicket from '../Classes/ChannelTicket.js';
-import ThreadTicket from '../Classes/ThreadTicket.js';
 import { BaseTicketErrors } from '../Classes/Enums.js';
+import ThreadTicket from '../Classes/ThreadTicket.js';
 import TicketPlugin from '../Plugin.js';
 
 export default function (this: Client, type: TicketType, ticketId: string) {

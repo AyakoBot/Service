@@ -1,7 +1,8 @@
 import { MessageFlags, type APIInteraction } from 'discord-api-types/v10';
 
-import type Client from '../Classes/Client.js';
 import type { BaseLang } from '../Classes/abstracts/Plugin.js';
+import type Client from '../Classes/Client.js';
+
 import getErrorMessagePayload from './getErrorMessagePayload.js';
 
 export default async function (

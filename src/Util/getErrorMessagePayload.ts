@@ -6,9 +6,9 @@ import {
 } from '@discordjs/builders';
 
 import { MessagePayload } from '../Classes/abstracts/MessagePayload.js';
+import type { BaseLang } from '../Classes/abstracts/Plugin.js';
 import type Client from '../Classes/Client.js';
 import { Colors } from '../Types/index.js';
-import type { BaseLang } from '../Classes/abstracts/Plugin.js';
 
 export default function (
  this: Client,

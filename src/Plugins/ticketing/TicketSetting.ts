@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { Ticket, Prisma } from '@ayako/database';
+
 import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
 import type { DataBaseTables } from '../../Types/prisma.js';

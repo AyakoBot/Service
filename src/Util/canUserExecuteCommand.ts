@@ -1,8 +1,8 @@
+import { RequestHandlerError } from '@ayako/api';
 import { getGuildPerms } from '@ayako/utility';
 import { ApplicationCommandPermissionType, PermissionFlagsBits } from '@discordjs/core';
 
 import type Client from '../Classes/Client.js';
-import { RequestHandlerError } from '@ayako/api';
 
 export default async function (
  this: Client,

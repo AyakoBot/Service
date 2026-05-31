@@ -1,4 +1,5 @@
 import type { APIMessageComponentInteraction } from 'discord-api-types/v10';
+
 import type Client from '../../../Classes/Client.js';
 import showCommandError from '../../../Util/showCommandError.js';
 import { BaseTicketErrors } from '../Classes/Enums.js';

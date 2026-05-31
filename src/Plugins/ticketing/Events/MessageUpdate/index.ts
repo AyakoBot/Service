@@ -1,4 +1,5 @@
 import { type GatewayDispatchEvents } from 'discord-api-types/v10';
+
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import type TicketPlugin from '../../Plugin.js';
 import MessageCreate from '../MessageCreate/index.js';

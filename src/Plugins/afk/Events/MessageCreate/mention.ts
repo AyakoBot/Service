@@ -1,7 +1,7 @@
 import { getPathFromError, type RMessage } from '@ayako/utility';
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
-
 import { MessageFlags } from 'discord-api-types/v10';
+
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';

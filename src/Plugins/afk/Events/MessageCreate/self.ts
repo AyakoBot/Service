@@ -1,5 +1,6 @@
 import { getPathFromError, type RMessage } from '@ayako/utility';
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
+import { MessageFlags } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
@@ -8,7 +9,6 @@ import AFKState from '../../AFKState.js';
 import type AFKPlugin from '../../Plugin.js';
 
 import { deleteNick } from './util.js';
-import { MessageFlags } from 'discord-api-types/v10';
 
 export default async function (
  this: AFKPlugin,

@@ -1,6 +1,7 @@
 import { RequestHandlerError } from '@ayako/api';
 import type { RMessage, RUser } from '@ayako/utility';
 import type { APIMessage } from 'discord-api-types/v10';
+
 import type Client from '../Classes/Client.js';
 
 /**
@@ -30,7 +31,6 @@ export default async function (
    before: messages.at(-1)?.id ?? filter.before,
   };
 
-  // eslint-disable-next-line no-await-in-loop
   const msgs = await (filter.isDm
    ? api.channels.getDirectMessages(channelId, query, debugInfo)
    : api.channels.getMessages(channelId, query, debugInfo));

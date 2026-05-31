@@ -1,4 +1,5 @@
 import type Client from '../../../Classes/Client.js';
+
 import getTicketClassBySettingsType from './getTicketClassBySettingsType.js';
 
 export default async function (this: Client, ticketId: string) {

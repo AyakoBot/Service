@@ -1,17 +1,20 @@
+import { inspect } from 'node:util';
+
 import { RequestHandlerError } from '@ayako/api';
 import { TicketState } from '@ayako/database';
 import { LogLevel, type RMessage } from '@ayako/utility';
 import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
-import { inspect } from 'node:util';
-import type Client from '../../../Classes/Client.js';
+
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
-import type TicketPlugin from '../Plugin.js';
-import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
-import { BaseTicketErrors, ChannelTicketErrors } from './Enums.js';
-import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
-import ChannelTicket from './ChannelTicket.js';
-import emotes from '../../../Classes/Emotes.js';
+import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
+import emotes from '../../../Classes/Emotes.js';
+import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
+import type TicketPlugin from '../Plugin.js';
+
+import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
+import ChannelTicket from './ChannelTicket.js';
+import { BaseTicketErrors, ChannelTicketErrors } from './Enums.js';
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -204,6 +207,7 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const settings = await this.db.ticketSetting.findUnique({
    where: { id: dbOpts.settingsId },
+   // eslint-disable-next-line @typescript-eslint/naming-convention
    include: { Ticket: { where: { user: dbOpts.userId } } },
   });
   if (!settings) throw new Error(BaseTicketErrors.create_SettingsNotFound);

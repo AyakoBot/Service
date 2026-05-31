@@ -1,8 +1,10 @@
 import type { API } from '@ayako/api';
 import { LogLevel, type RChannel, type RThread } from '@ayako/utility';
 import type { APIChannel } from 'discord-api-types/v10';
+
 import type Client from '../../../Classes/Client.js';
 import type TicketPlugin from '../Plugin.js';
+
 import ChannelTicket from './ChannelTicket.js';
 import { DMTicketMixin } from './DMTicket.js';
 import { DMTicketErrors } from './Enums.js';

@@ -2,6 +2,7 @@ import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ay
 
 import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
+
 import CustomClientsPlugin from './Plugin.js';
 
 export default class CustomClient extends DBEntry<'customClient'> {

@@ -1,10 +1,13 @@
-import { API, RequestHandlerError } from '@ayako/api';
+import type { API } from '@ayako/api';
+import { RequestHandlerError } from '@ayako/api';
 import { TicketType } from '@ayako/database';
 import { LogLevel, type RChannel, type RThread } from '@ayako/utility';
 import { ChannelType } from 'discord-api-types/v10';
+
 import type Client from '../../../Classes/Client.js';
 import getUser from '../../../Util/getUser.js';
 import TicketPlugin from '../Plugin.js';
+
 import ChannelTicket from './ChannelTicket.js';
 import { ThreadTicketErrors } from './Enums.js';
 

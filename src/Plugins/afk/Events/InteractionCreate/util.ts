@@ -1,10 +1,10 @@
+import { RequestHandlerError } from '@ayako/api';
 import { FilterType, type AfkState } from '@ayako/database';
 import { AutoModerationActionType, AutoModerationRuleEventType } from '@discordjs/core';
 
 import { filtered_content as filterContent } from '../../../../../rust/rust.js';
 import getUser from '../../../../Util/getUser.js';
 import type AFKPlugin from '../../Plugin.js';
-import { RequestHandlerError } from '@ayako/api';
 
 export const getCensoredContent = async function (
  this: AFKPlugin,

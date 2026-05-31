@@ -1,8 +1,8 @@
+import { API as CustomAPI } from '@ayako/api';
 import { Cache, logger as Logger } from '@ayako/utility';
 import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 
-import { API as CustomAPI } from '@ayako/api';
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 import type Plugin from './abstracts/Plugin.js';
@@ -74,6 +74,7 @@ export default class Client {
     this.user = app;
    })
    .catch((err) => {
+    // eslint-disable-next-line no-console
     console.error(`Failed to fetch application info during client initialization: ${err}`);
    });
 
@@ -113,5 +114,6 @@ export default class Client {
    this.cache,
    'this should never appear in logs',
   );
+
  getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
 }

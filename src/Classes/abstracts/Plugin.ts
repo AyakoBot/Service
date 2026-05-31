@@ -1,3 +1,5 @@
+import { inspect } from 'node:util';
+
 import type { RequestHandlerError, RequestHandlerErrorType } from '@ayako/api';
 import { ScopedLogger } from '@ayako/utility';
 import {
@@ -7,7 +9,7 @@ import {
 } from '@discordjs/builders';
 import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
-import { inspect } from 'node:util';
+
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';

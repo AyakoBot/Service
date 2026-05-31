@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
+import { inspect } from 'node:util';
+
 import { getPathFromError, logger } from '@ayako/utility';
 import { config } from 'dotenv';
 import 'longjohn';
 import { scheduleJob } from 'node-schedule';
-import { inspect } from 'node:util';
 import { install } from 'source-map-support';
 
 config({

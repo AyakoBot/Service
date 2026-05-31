@@ -1,4 +1,5 @@
 import type { Prisma, TicketSetting } from '@ayako/database';
+
 import DBEntry, { deleteMany, findMany, findUnique } from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
 import type { DataBaseTables, FindManyArgs, FindUniqueArgs } from '../../Types/prisma.js';
