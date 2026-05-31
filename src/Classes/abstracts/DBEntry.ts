@@ -54,7 +54,7 @@ export default abstract class DBEntry<const T extends TableName> {
    .then((r) => r);
  }
 
- update(data: UpdateData<T> & FindUniqueArgs<T>): Promise<DataBaseTables[T]> {
+ update(data: UpdateData<T>): Promise<DataBaseTables[T]> {
   logger.debug('[DBEntry] Updating', this.tableName, 'entry');
   return this.delegate()
    .update({ ...this.identity, data })
