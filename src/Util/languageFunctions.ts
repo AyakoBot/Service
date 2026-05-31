@@ -1,35 +1,37 @@
 import type {
- RAutomod,
- RChannel,
- RCommand,
- REmoji,
- REvent,
- RGuild,
- RGuildCommand,
- RIntegration,
- RInvite,
- RMessage,
- RRole,
- RStageInstance,
- RSticker,
- RThread,
- RUser,
- RWebhook,
+    RAutomod,
+    RChannel,
+    RCommand,
+    REmoji,
+    REvent,
+    RGuild,
+    RGuildCommand,
+    RIntegration,
+    RInvite,
+    RMessage,
+    RRole,
+    RStageInstance,
+    RSticker,
+    RThread,
+    RUser,
+    RWebhook,
 } from '@ayako/utility';
 import type {
- APIApplication,
- APIChannel,
- APIGuildForumTag,
- APIGuildIntegrationApplication,
- APIInviteGuild,
- APIMessageReference,
- APIPartialGuild,
- APIUser,
+    APIApplication,
+    APIChannel,
+    APIGuildForumTag,
+    APIGuildIntegrationApplication,
+    APIInviteGuild,
+    APIMessageReference,
+    APIPartialGuild,
+    APIUser,
 } from 'discord-api-types/v10';
+
 import type { RAuditLog } from '../../../Utility/dist/CacheClasses/auditlog.js';
 import type { BaseLang } from '../Classes/abstracts/Plugin.js';
 import constants from '../Classes/Constants.js';
 import emotes from '../Classes/Emotes.js';
+
 import stp from './stp.js';
 import { makeInlineCode } from './util.js';
 
@@ -54,17 +56,17 @@ export default (t: BaseLang) => ({
    | null,
   type?: string,
  ) =>
-  channel
+  (channel
    ? `**${'type' in channel && channel.type ? t.channelTypes[channel.type]() : (type ?? t.t.Channel())} <#${channel.id}> / ${makeInlineCode(
       `${channel.name}`,
      )} / ${makeInlineCode(channel.id || '-')}**\n`
-   : `**${t.channelTypes.unknownChannel()}**\n`,
+   : `**${t.channelTypes.unknownChannel()}**\n`),
  getUser: (user: RUser | APIUser | null) =>
-  user
+  (user
    ? `**${user?.bot ? t.t.Bot() : t.t.User()} <@${user?.id}> / ${makeInlineCode(
       user ? constants.formatters.user(user) : t.t.Unknown(),
      )} / ${makeInlineCode(user?.id)}**\n`
-   : `**${t.t.User()} ${t.t.Unknown()}**\n`,
+   : `**${t.t.User()} ${t.t.Unknown()}**\n`),
  getAutoModerationRule: (rule: RAutomod) =>
   `**${t.t.AutoModRule()} ${makeInlineCode(rule.name)} / ${makeInlineCode(rule.id)}**\n`,
  getMessage: (msg: RMessage | APIMessageReference) =>
