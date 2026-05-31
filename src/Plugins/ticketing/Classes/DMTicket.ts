@@ -8,20 +8,25 @@ import {
  type APIMessageComponentInteraction,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
+
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
+import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import TicketPlugin from '../Plugin.js';
+
 import BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
 import DmToThreadTicket from './DmToThreadTicket.js';
 import { DMTicketErrors } from './Enums.js';
-import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 
+/* eslint-disable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any */
 type AbstractCtor<T = {}> = new (...args: any[]) => T;
+/* eslint-enable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line func-style, @typescript-eslint/naming-convention
 export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBase) {
  abstract class DMTicket extends Base {
   static async findTicketByDMChannelId(client: Client, channelId: string) {
@@ -389,7 +394,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    if (!(await this.startsWithPrefix(msg.content))) {
     await this.forwardToTicketChannel(msg);
     return BaseTicket.prototype.messageSent.call(this, msg);
-   } else await this.cloneToDm(msg);
+   }
+   await this.cloneToDm(msg);
 
    return super.messageSent(msg);
   }
