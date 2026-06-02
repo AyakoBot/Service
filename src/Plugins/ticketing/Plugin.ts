@@ -7,17 +7,23 @@ import Plugin, { idSelector, SettingsCategory } from '../../Classes/abstracts/Pl
 import type Client from '../../Classes/Client.js';
 import { EditorType } from '../settings/Plugin.js';
 
+import channelDelete from './Events/ChannelDelete/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
 import messageDelete from './Events/MessageDelete/index.js';
 import messageUpdate from './Events/MessageUpdate/index.js';
+import threadDelete from './Events/ThreadDelete/index.js';
+import threadUpdate from './Events/ThreadUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate
  | GatewayDispatchEvents.MessageCreate
  | GatewayDispatchEvents.MessageUpdate
- | GatewayDispatchEvents.MessageDelete;
+ | GatewayDispatchEvents.MessageDelete
+ | GatewayDispatchEvents.ThreadUpdate
+ | GatewayDispatchEvents.ChannelDelete
+ | GatewayDispatchEvents.ThreadDelete;
 type APILanguage = typeof en;
 
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
@@ -80,6 +86,30 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
 
    interactionCreate.call(this, data);
   },
+  THREAD_UPDATE: (data) => {
+   if (!this.client.debugGuilds.includes(data.guild_id || '')) {
+    return; // TODO: remove
+   }
+   if (!this.isEnabled()) return;
+
+   threadUpdate.call(this, data);
+  },
+  CHANNEL_DELETE: (data) => {
+   if (!this.client.debugGuilds.includes(data.guild_id || '')) {
+    return; // TODO: remove
+   }
+   if (!this.isEnabled()) return;
+
+   channelDelete.call(this, data);
+  },
+  THREAD_DELETE: (data) => {
+   if (!this.client.debugGuilds.includes(data.guild_id || '')) {
+    return; // TODO: remove
+   }
+   if (!this.isEnabled()) return;
+
+   threadDelete.call(this, data);
+  },
  } as Plugin<Events, APILanguage>['eventHandlers'];
  /* eslint-enable @typescript-eslint/naming-convention */
 
@@ -113,15 +143,21 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   denyRoles: EditorType.Roles,
   denyUsers: EditorType.Users,
   logChannels: EditorType.Channels,
+  transcriptChannels: EditorType.Channels,
   mentionRoles: EditorType.Roles,
   mentionUsers: EditorType.Users,
   staffRoles: EditorType.Roles,
   staffUsers: EditorType.Users,
   sendMessagePrefixes: EditorType.String,
   type: EditorType.TicketType,
-  appliedTags: EditorType.Strings,
+  createTags: EditorType.Strings,
+  claimTags: EditorType.Strings,
+  closeTags: EditorType.Strings,
+  tagClaimer: EditorType.Boolean,
   logMode: EditorType.TicketLogMode,
   allowCreatorClose: EditorType.Boolean,
+  staffThreads: EditorType.Boolean,
+  staffThreadsChannel: EditorType.Channel,
 
   guild: EditorType.GuildId,
   id: EditorType.Id,

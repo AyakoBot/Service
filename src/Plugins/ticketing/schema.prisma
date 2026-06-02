@@ -19,7 +19,14 @@ model TicketSetting {
  logMode     TicketLogMode @default(Channel)
  // Text Channel or Forum Channel
  logChannels String[]      @db.VarChar
- appliedTags String[]      @db.VarChar
+ // Forum tags applied to the log/staff post at each lifecycle step. A later step replaces the
+ // previous step's tags; tagClaimer adds a per-claimer username tag that is never removed.
+ createTags String[] @db.VarChar
+ claimTags  String[] @db.VarChar
+ closeTags  String[] @db.VarChar
+ tagClaimer Boolean  @default(false)
+ // If set, transcripts are also posted here (directly) when a ticket is deleted
+ transcriptChannels String[] @db.VarChar
 
  // Only if type is dmToChannel or Channel
  archiveCategory String? @db.VarChar
@@ -35,6 +42,11 @@ model TicketSetting {
 
  // Only need on Thread & Channel
  allowCreatorClose Boolean @default(false)
+
+ // Only on Channel & Thread (ignored on DM types). A private staff-only discussion thread per ticket.
+ staffThreads Boolean @default(false)
+ // Required when staffThreads is on AND type is Thread. Text or Forum channel hosting the staff thread.
+ staffThreadsChannel String? @db.VarChar
 
  mentionRoles String[] @db.VarChar
  mentionUsers String[] @db.VarChar
@@ -69,6 +81,7 @@ enum TicketState {
  closed
  claimed
  prepared
+ deleted
 }
 
 enum TicketType {
