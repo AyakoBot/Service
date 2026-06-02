@@ -500,6 +500,8 @@
   "stageInstance": "Stage-Instance",
   "auditLog": "Audit-Log",
   "Reason": "Reason",
+  "Transcript": "Transcript",
+  "Internal": "Internal",
   "No": "No",
   "Yes": "Yes",
   "duration": "Duration",

@@ -59,7 +59,7 @@ export const cloneMessageIntoContainer = function (
        .setStyle(ButtonStyle.Secondary)
        .setDisabled(true)
        .setCustomId(contextButton.context)
-       .setLabel('‎'),
+       .setLabel('​'),
      ),
    );
 
