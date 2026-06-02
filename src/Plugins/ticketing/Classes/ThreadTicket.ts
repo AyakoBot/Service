@@ -158,4 +158,14 @@ export default class ThreadTicket extends ChannelTicket {
 
   return modify;
  }
+
+ async staffThreadParentId(): Promise<string | null> {
+  const ticket = await this.getTicket();
+  if (!ticket.settings.staffThreads || !ticket.settings.staffThreadsChannel) return null;
+  return ticket.settings.staffThreadsChannel;
+ }
+
+ staffThreadType(): ChannelType.PublicThread | ChannelType.PrivateThread {
+  return ChannelType.PublicThread;
+ }
 }

@@ -4,6 +4,7 @@ import {
  InteractionType,
  type APIApplicationCommandInteraction,
  type APIMessageComponentInteraction,
+ type APIModalSubmitInteraction,
  type GatewayDispatchEvents,
 } from 'discord-api-types/v10';
 
@@ -12,6 +13,7 @@ import type TicketPlugin from '../../Plugin.js';
 
 import claim from './claim.js';
 import close from './close.js';
+import closeReason from './closeReason.js';
 import create from './create.js';
 import del from './delete.js';
 import leave from './leave.js';
@@ -28,6 +30,9 @@ export default async function (
   case InteractionType.MessageComponent:
    if (cmd.data.component_type !== ComponentType.Button) return;
    button.call(this, cmd);
+   break;
+  case InteractionType.ModalSubmit:
+   modal.call(this, cmd);
    break;
  }
 }
@@ -74,6 +79,20 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
   // TODO: remove
   case 'tickets/setup': {
    setup.call(this, cmd as never);
+   break;
+  }
+
+  default:
+   break;
+ }
+};
+
+const modal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction) {
+ const [fileCall, ...args] = cmd.data.custom_id.split('_');
+
+ switch (fileCall) {
+  case 'tickets/closeReason': {
+   closeReason.call(this, cmd, args);
    break;
   }
 

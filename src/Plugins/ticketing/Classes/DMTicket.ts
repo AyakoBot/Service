@@ -6,6 +6,7 @@ import {
  ButtonStyle,
  type APIMessage,
  type APIMessageComponentInteraction,
+ type APIModalSubmitInteraction,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
 
@@ -14,7 +15,6 @@ import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
-import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import TicketPlugin from '../Plugin.js';
 
 import BaseTicket from './BaseTicket.js';
@@ -52,7 +52,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async replyMessage(
-   cmd: APIMessageComponentInteraction,
+   cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
    payload: MessagePayload,
    errorCode: (typeof DMTicketErrors)[keyof typeof DMTicketErrors],
   ) {
@@ -117,6 +117,10 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
   async grantChannelAccess() {
    return;
+  }
+
+  async staffThreadParentId(): Promise<string | null> {
+   return null;
   }
 
   async pinMessage(message: APIMessage) {
@@ -332,8 +336,10 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    });
   }
 
-  async *close(data: { userId: string }) {
+  async *close(data: { userId: string; cmd: APIModalSubmitInteraction; reason?: string }) {
    const superClose = yield* super.close(data);
+
+   if (data.reason) await this.sendCloseReasonDm(data.reason);
 
    const initialMessage = await this.editInitialMessage(this.getLeaveUpdatePayload());
    if (initialMessage) await this.unpinMessage();
@@ -341,6 +347,19 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    await this.setDbEntryLeft();
 
    return superClose;
+  }
+
+  async sendCloseReasonDm(reason: string) {
+   const ticket = await this.getTicket();
+   if (!ticket.dm) return;
+
+   const t = await this.plugin.t(ticket.settings.guild);
+   await this.forwardToDmChannel(
+    new MessagePayload(this.client, {
+     origin: DMTicket.name,
+     reason: 'Sending close reason to DM',
+    }).setContent(t.closedReasonDm({ reason })),
+   );
   }
 
   async editInitialMessage(payload: MessagePayload) {
@@ -381,14 +400,17 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    return constants.formatters.msgURL(ticket.settings.guild, ticket.dm, ticket.starterDm);
   }
 
-  async messageSent(msg: RMessage) {
+  async messageSent(msg: RMessage, internal: boolean = false) {
+   if (internal) return super.messageSent(msg, true);
+
    const ticket = await this.getTicket();
 
    if (ticket.dm === msg.channel_id) return super.messageSent(msg);
 
    if (ticket.channel === msg.channel_id) {
     await this.cloneToDm(msg);
-    return super.messageSent(msg);
+    await this.react(msg);
+    return BaseTicket.prototype.messageSent.call(this, msg);
    }
 
    if (!(await this.startsWithPrefix(msg.content))) {
@@ -404,8 +426,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
 
-   const container = this.createMessageContainer(`${emotes.tools.name} | ${t.SupportTeam()}`);
-   cloneMessageIntoContainer.call(container, msg);
+   const container = this.buildMirrorContainer(msg, `${emotes.tools.name} | ${t.SupportTeam()}`);
 
    this.forwardToDmChannel(
     new MessagePayload(this.client, {

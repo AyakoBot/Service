@@ -3,18 +3,45 @@ import { inspect } from 'node:util';
 import { RequestHandlerError } from '@ayako/api';
 import { TicketState } from '@ayako/database';
 import { LogLevel, type RMessage } from '@ayako/utility';
-import { ButtonStyle, ComponentType, MessageFlags } from 'discord-api-types/v10';
+import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
+import {
+ ButtonStyle,
+ ComponentType,
+ MessageFlags,
+ type APIMessageTopLevelComponent,
+} from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
+import fetchMessages from '../../../Util/fetchMessages.js';
 import type TicketPlugin from '../Plugin.js';
 
 import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
 import ChannelTicket from './ChannelTicket.js';
 import { BaseTicketErrors, ChannelTicketErrors } from './Enums.js';
+
+export interface MirrorRef {
+ channelId: string;
+ messageId: string;
+ isDm: boolean;
+}
+
+const mirrorButtonMatches = (components: unknown, customId: string): boolean => {
+ if (!Array.isArray(components)) return false;
+
+ return components.some((c) => {
+  if (!c || typeof c !== 'object') return false;
+
+  const comp = c as Record<string, unknown>;
+  if (comp.type === ComponentType.Button && comp.custom_id === customId) return true;
+  if (mirrorButtonMatches(comp.components, customId)) return true;
+
+  return mirrorButtonMatches(comp.accessory ? [comp.accessory] : null, customId);
+ });
+};
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -101,7 +128,7 @@ export default class BaseTicket extends BaseTicketLogger {
   return hasStaffRole;
  }
 
- async *close({ userId }: { userId: string }) {
+ async *close({ userId, reason }: { userId: string; reason?: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) throw new Error(BaseTicketErrors.close_TicketAlreadyClosed);
 
@@ -118,7 +145,7 @@ export default class BaseTicket extends BaseTicketLogger {
   });
 
   this.dbTicket = newTicket;
-  this.handleBaseLog({ type: LogType.TicketClosed, data: { userId } });
+  this.handleBaseLog({ type: LogType.TicketClosed, data: { userId, reason } });
 
   return this;
  }
@@ -133,11 +160,21 @@ export default class BaseTicket extends BaseTicketLogger {
   if (!canDelete) throw new Error(BaseTicketErrors.delete_OnlyStaffCanDelete);
 
   this.plugin.logger.logLocation(LogLevel.debug);
+  await this.markDeleted();
+
   yield;
 
   this.handleBaseLog({ type: LogType.TicketDeleted, data: { userId } });
 
   return true;
+ }
+
+ async markDeleted() {
+  this.dbTicket = await this.db.ticket.update({
+   where: { id: this.id },
+   data: { state: TicketState.deleted },
+   include: { settings: true },
+  });
  }
 
  async *create(
@@ -226,19 +263,67 @@ export default class BaseTicket extends BaseTicketLogger {
   return this.dbTicket;
  }
 
- /**
-  * mentionUser is true in TicketType Channel and Thread
-  * showPrefixes is true in TicketType DM
-  */
- async getInitPayload(mentionUser: boolean, showPrefixes: boolean) {
+ async getInitPayload(mentionUser: boolean, staffThreadId?: string | null) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
+  const components: APIMessageTopLevelComponent[] = [];
+
+  const mentionLine = [
+   mentionUser ? `<@${ticket.user}>` : '',
+   ticket.settings.mentionRoles.map((r) => `<@&${r}>`).join(' '),
+   ticket.settings.mentionUsers.map((u) => `<@${u}>`).join(' '),
+  ]
+   .filter((s) => s.length)
+   .join('\n');
+  if (mentionLine) components.push(new TextDisplayBuilder().setContent(mentionLine).toJSON());
+
   // TODO: set custom embed
-  const initPayload = new MessagePayload(this.client, {
-   origin: BaseTicket.name,
-   reason: 'Creating initial ticket message',
-  }).setContent('This will be a custom embed');
+
+  if (staffThreadId) {
+   components.push(
+    new TextDisplayBuilder()
+     .setContent(`-# ${t.staffThreadMention({ channel: `<#${staffThreadId}>` })}`)
+     .toJSON(),
+   );
+  }
+
+  if (ticket.settings.sendMessagePrefixes.length) {
+   components.push(
+    this.buildReplyPrefixContainer(t.replyWith(), ticket.settings.sendMessagePrefixes),
+   );
+  }
+
+  components.push(
+   {
+    type: ComponentType.ActionRow,
+    components: [
+     {
+      type: ComponentType.Button,
+      custom_id: `info/user_${ticket.user}`,
+      label: t.userInfo(),
+      style: ButtonStyle.Secondary,
+     },
+    ],
+   },
+   {
+    type: ComponentType.ActionRow,
+    components: [
+     {
+      type: ComponentType.Button,
+      custom_id: `tickets/close_${ticket.id}`,
+      label: t.closeTicket(),
+      style: ButtonStyle.Danger,
+     },
+     {
+      type: ComponentType.Button,
+      custom_id: `tickets/claim_${ticket.id}`,
+      label: t.claimTicket(),
+      style: ButtonStyle.Success,
+     },
+    ],
+   },
+  );
 
   return new MessagePayload(this.client, {
    origin: BaseTicket.name,
@@ -246,54 +331,8 @@ export default class BaseTicket extends BaseTicketLogger {
   })
    .setAllowedMentionsUsers([...ticket.settings.mentionUsers, ticket.user])
    .setAllowedMentionsRoles(ticket.settings.mentionRoles)
-   .setContent(
-    `${
-     mentionUser ? `<@${ticket.user}>` : ''
-    }\n${ticket.settings.mentionRoles.map((r) => `<@&${r}>`).join(' ')}\n${ticket.settings.mentionUsers
-     .map((u) => `<@${u}>`)
-     .join(' ')}`,
-   )
-   .setEmbeds([
-    initPayload.embeds?.[0] || null,
-    ...(ticket.settings.sendMessagePrefixes.length && showPrefixes
-     ? [
-        {
-         author: { name: t.replyWith() },
-         description: ticket.settings.sendMessagePrefixes.map((p) => `\`${p}\``).join(', '),
-        },
-       ]
-     : []),
-   ])
-   .setComponents([
-    {
-     type: ComponentType.ActionRow,
-     components: [
-      {
-       type: ComponentType.Button,
-       custom_id: `info/user_${ticket.user}`,
-       label: t.userInfo(),
-       style: ButtonStyle.Secondary,
-      },
-     ],
-    },
-    {
-     type: ComponentType.ActionRow,
-     components: [
-      {
-       type: ComponentType.Button,
-       custom_id: `tickets/close_${ticket.id}`,
-       label: t.closeTicket(),
-       style: ButtonStyle.Danger,
-      },
-      {
-       type: ComponentType.Button,
-       custom_id: `tickets/claim_${ticket.id}`,
-       label: t.claimTicket(),
-       style: ButtonStyle.Success,
-      },
-     ],
-    },
-   ]);
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents(components);
  }
 
  async sendMessage(payload: MessagePayload) {
@@ -325,11 +364,12 @@ export default class BaseTicket extends BaseTicketLogger {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const user = await this.getUser(msg.author_id);
+  const name = user?.username || t.base.t.unknownUser();
 
-  const container = this.createMessageContainer(
-   `${constants.formatters.getEmote(emotes.Member)} ${user?.username || t.base.t.unknownUser()}`,
+  const container = this.buildMirrorContainer(
+   msg,
+   `${constants.formatters.getEmote(emotes.Member)} ${name}`,
   );
-  cloneMessageIntoContainer.call(container, msg);
 
   this.sendMessage(
    new MessagePayload(this.client, {
@@ -339,5 +379,139 @@ export default class BaseTicket extends BaseTicketLogger {
     .setComponents([container.toJSON()])
     .setFlags(MessageFlags.IsComponentsV2),
   );
+ }
+
+ buildMirrorContainer(msg: RMessage, authorName: string) {
+  const container = new ContainerBuilder();
+  cloneMessageIntoContainer.call(container, msg, { authorName, context: msg.id });
+  return container;
+ }
+
+ async findMirror(originalId: string): Promise<MirrorRef | null> {
+  const ticket = await this.getTicket();
+
+  const channelHit = await this.scanForMirror(
+   ticket.channel,
+   ticket.settings.guild,
+   false,
+   originalId,
+  );
+  if (channelHit) return { channelId: ticket.channel, messageId: channelHit, isDm: false };
+
+  if (ticket.dm) {
+   const dmHit = await this.scanForMirror(
+    ticket.dm,
+    ticket.settings.guild,
+    true,
+    originalId,
+    ticket.starterDm,
+   );
+   if (dmHit) return { channelId: ticket.dm, messageId: dmHit, isDm: true };
+  }
+
+  return null;
+ }
+
+ async scanForMirror(
+  channelId: string,
+  guildId: string,
+  isDm: boolean,
+  originalId: string,
+  after?: string | null,
+ ): Promise<string | null> {
+  const matches = (m: { components?: unknown }) => mirrorButtonMatches(m.components, originalId);
+
+  const cached = await this.client.cache.messages.getAll(isDm ? '@me' : guildId, channelId);
+  const cachedHit = cached.find(matches);
+  if (cachedHit) return cachedHit.id;
+
+  const fetched = await fetchMessages.call(
+   this.client,
+   channelId,
+   guildId,
+   { amount: 500, isDm, after: after || undefined, abortWhen: matches },
+   { origin: BaseTicket.name, reason: 'Locating mirrored message' },
+  );
+  const hit = fetched.find(matches);
+  return hit?.id || null;
+ }
+
+ async editMirror(mirror: MirrorRef, msg: RMessage) {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+
+  let authorName: string;
+  if (mirror.isDm) {
+   authorName = `${emotes.tools.name} | ${t.SupportTeam()}`;
+  } else {
+   const user = await this.getUser(msg.author_id);
+   const name = user?.username || t.base.t.unknownUser();
+   authorName = `${constants.formatters.getEmote(emotes.Member)} ${name}`;
+  }
+
+  const payload = new MessagePayload(this.client, {
+   origin: BaseTicket.name,
+   reason: 'Editing mirrored message',
+  })
+   .setComponents([this.buildMirrorContainer(msg, authorName).toJSON()])
+   .setFlags(MessageFlags.IsComponentsV2);
+
+  if (mirror.isDm) await payload.editDM(mirror.channelId, mirror.messageId);
+  else await payload.edit(mirror.channelId, mirror.messageId);
+ }
+
+ async deleteMirror(mirror: MirrorRef) {
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const debugInfo = { origin: BaseTicket.name, reason: 'Deleting mirrored message' };
+  const { channelId, messageId } = mirror;
+
+  if (mirror.isDm) await api.channels.deleteDirectMessage(channelId, messageId, debugInfo);
+  else await api.channels.deleteMessage(channelId, messageId, debugInfo);
+ }
+
+ async propagateEdit(msg: RMessage) {
+  const mirror = await this.findMirror(msg.id);
+  if (mirror) await this.editMirror(mirror, msg);
+  this.messageEdited(msg, false, !!mirror);
+ }
+
+ async propagateDelete(originalId: string) {
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const times = await this.client.cache.messages.getTimes(originalId);
+  const cached = times.length
+   ? await this.client.cache.messages.getAt(Math.max(...times), originalId)
+   : null;
+
+  if (cached && cached.author_id === api.botId) return;
+
+  const mirror = await this.findMirror(originalId);
+  if (mirror) await this.deleteMirror(mirror);
+
+  this.messageDeleted(cached, false, !!mirror);
+ }
+
+ async react(msg: RMessage) {
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const opts = { origin: BaseTicket.name, reason: 'Marking message forwarded to the user' };
+  const main = constants.formatters.getEmoteIdentifier(emotes.tickWithBackground);
+
+  if (msg.channel_id === ticket.dm) {
+   const res = await api.channels.addDirectMessageReaction(msg.channel_id, msg.id, main, opts);
+   if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.react.name);
+   return;
+  }
+
+  const alt = constants.formatters.getEmoteIdentifier({ name: '✅' });
+  const res = await api.channels.addMessageReaction(
+   ticket.settings.guild,
+   msg.channel_id,
+   msg.id,
+   { main, alt },
+   opts,
+  );
+  if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.react.name);
  }
 }

@@ -1,6 +1,7 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
+import { TextDisplayBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
  ChannelType,
@@ -11,6 +12,7 @@ import {
  type APIActionRowComponent,
  type APIButtonComponentWithCustomId,
  type APIMessageComponentInteraction,
+ type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
@@ -45,6 +47,7 @@ export default class ChannelTicket extends BaseTicket {
   const deletePayload = await this.getDeletePayload();
   await this.replyMessage(data.cmd, deletePayload, ChannelTicketErrors.delete_CantUpdateMessage);
 
+  await this.archiveStaffThread();
   await this.deleteChannel();
   await superDel.next();
 
@@ -69,7 +72,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async replyMessage(
-  cmd: APIMessageComponentInteraction,
+  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
   payload: MessagePayload,
   errorCode: (typeof ChannelTicketErrors)[keyof typeof ChannelTicketErrors],
  ) {
@@ -96,10 +99,10 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  // eslint-disable-next-line require-yield
- async *close(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+ async *close(data: { userId: string; cmd: APIModalSubmitInteraction; reason?: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
-  const superClose = super.close({ userId: data.userId });
+  const superClose = super.close({ userId: data.userId, reason: data.reason });
   await superClose.next();
 
   const closeInitPayload = await this.getCloseInitPayload(data.cmd);
@@ -111,15 +114,17 @@ export default class ChannelTicket extends BaseTicket {
   const api = await this.client.getAPI(ticket.settings.guild);
   await this.closeChannel(api, channel);
   await this.revokeChannelAccess(api, channel);
+  await this.lockStaffThread();
+  await this.applyLifecycleTags(ticket.settings.closeTags);
 
-  const closeReplyPayload = await this.getCloseReplyPayload();
+  const closeReplyPayload = await this.getCloseReplyPayload(data.reason);
   await this.replyMessage(data.cmd, closeReplyPayload, ChannelTicketErrors.close_CantReplyMessage);
 
   await superClose.next();
   return this;
  }
 
- async getCloseReplyPayload() {
+ async getCloseReplyPayload(reason?: string) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
@@ -144,6 +149,7 @@ export default class ChannelTicket extends BaseTicket {
      author: { name: `${emotes.tools.name} | ${t.SupportTeam()}` },
      description: t.hasClosedThread(),
      color: Colors.Danger,
+     ...(reason ? { fields: [{ name: t.base.t.Reason(), value: reason }] } : {}),
     },
    ])
    .setComponents([deleteBtn]);
@@ -209,8 +215,10 @@ export default class ChannelTicket extends BaseTicket {
   return modify;
  }
 
- async updateInitCloseMessage(cmd: APIMessageComponentInteraction, payload: MessagePayload) {
-  const modify = await payload.edit(cmd.channel.id, cmd.message.id);
+ async updateInitCloseMessage(cmd: APIModalSubmitInteraction, payload: MessagePayload) {
+  if (!cmd.message) return null;
+
+  const modify = await payload.edit(cmd.message.channel_id, cmd.message.id);
   if (!modify || modify instanceof RequestHandlerError) {
    throw new Error(ChannelTicketErrors.close_CantEditInitMessage, { cause: modify });
   }
@@ -218,27 +226,30 @@ export default class ChannelTicket extends BaseTicket {
   return modify;
  }
 
- async getCloseInitPayload(cmd: APIMessageComponentInteraction) {
+ async getCloseInitPayload(cmd: APIModalSubmitInteraction) {
   return new MessagePayload(this.client, {
    origin: ChannelTicket.name,
    reason: 'Updating close message',
-  }).setComponents(
-   cmd.message.components?.map((row) => {
-    if (row.type !== ComponentType.ActionRow) return row;
+  })
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents(
+    cmd.message?.components?.map((row) => {
+     if (row.type !== ComponentType.ActionRow) return row;
 
-    return {
-     type: ComponentType.ActionRow as const,
-     components: row.components.map((btn) => ({
-      ...btn,
-      disabled:
-       'custom_id' in btn &&
-       (btn.custom_id?.startsWith('tickets/close_') || btn.custom_id?.startsWith('tickets/claim_'))
-        ? true
-        : btn.disabled,
-     })),
-    };
-   }) ?? [],
-  );
+     return {
+      type: ComponentType.ActionRow as const,
+      components: row.components.map((btn) => ({
+       ...btn,
+       disabled:
+        'custom_id' in btn &&
+        (btn.custom_id?.startsWith('tickets/close_') ||
+         btn.custom_id?.startsWith('tickets/claim_'))
+         ? true
+         : btn.disabled,
+      })),
+     };
+    }) ?? [],
+   );
  }
 
  // eslint-disable-next-line require-yield
@@ -255,6 +266,11 @@ export default class ChannelTicket extends BaseTicket {
    .then((r) => (r instanceof RequestHandlerError ? null : r));
 
   await this.claimChannel(api, channel.id, ticket.settings.guild, user?.username || channel.name);
+  await this.addClaimerToStaffThread(data.userId);
+  await this.applyLifecycleTags(
+   ticket.settings.claimTags,
+   ticket.settings.tagClaimer ? user?.username || null : null,
+  );
   const claimPayload = await this.getClaimPayload(data.cmd);
   await this.updateInitClaimMessage(data.cmd, claimPayload);
 
@@ -283,25 +299,29 @@ export default class ChannelTicket extends BaseTicket {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
+  const components =
+   cmd.message.components?.map((row) => {
+    if (row.type !== ComponentType.ActionRow) return row;
+
+    return {
+     type: ComponentType.ActionRow as const,
+     components: row.components.map((btn) => ({
+      ...btn,
+      disabled:
+       'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
+     })),
+    };
+   }) ?? [];
+
   return new MessagePayload(this.client, {
    origin: ChannelTicket.name,
    reason: 'Updating claim message',
   })
-   .setContent(`${t.claimedBy()}: <@${ticket.user}>`)
-   .setComponents(
-    cmd.message.components?.map((row) => {
-     if (row.type !== ComponentType.ActionRow) return row;
-
-     return {
-      type: ComponentType.ActionRow as const,
-      components: row.components.map((btn) => ({
-       ...btn,
-       disabled:
-        'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
-      })),
-     };
-    }) ?? [],
-   );
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents([
+    new TextDisplayBuilder().setContent(`${t.claimedBy()}: <@${ticket.user}>`).toJSON(),
+    ...components,
+   ]);
  }
 
  async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
@@ -344,8 +364,10 @@ export default class ChannelTicket extends BaseTicket {
 
    await this.grantChannelAccess(api, channel.id, createOpts.userId);
 
-   const initPayload = await this.getInitPayload(true, false);
+   const initPayload = await this.getInitPayload(true);
    const initMessage = await this.sendMessage(initPayload);
+
+   await this.createStaffThread(initMessage.id);
 
    const replyPayload = await this.getCreateReplyPayload(channel.id, initMessage.id);
    await this.replyMessage(
@@ -425,13 +447,126 @@ export default class ChannelTicket extends BaseTicket {
   return modify;
  }
 
- async messageSent(msg: RMessage) {
+ async messageSent(msg: RMessage, internal: boolean = false) {
   const ticket = await this.getTicket();
 
-  if (msg.channel_id === ticket.channel) return super.messageSent(msg, true);
+  if (internal || msg.channel_id === ticket.channel) return super.messageSent(msg, true);
 
   await this.forwardToTicketChannel(msg);
 
   return super.messageSent(msg);
+ }
+
+ async staffThreadParentId(): Promise<string | null> {
+  const ticket = await this.getTicket();
+  if (!ticket.settings.staffThreads) return null;
+  return ticket.channel;
+ }
+
+ staffThreadType(): ChannelType.PublicThread | ChannelType.PrivateThread {
+  return ChannelType.PrivateThread;
+ }
+
+ async findStaffThread(): Promise<RThread | null> {
+  const parentId = await this.staffThreadParentId();
+  if (!parentId) return null;
+
+  const ticket = await this.getTicket();
+  const threads = await this.client.cache.threads.getAll(ticket.settings.guild, parentId);
+  return threads?.find((th) => th.name === `staff-${this.id}`) || null;
+ }
+
+ async getStaffThreadId(): Promise<string | null> {
+  return (await this.findStaffThread())?.id || null;
+ }
+
+ async getStaffIntroPayload() {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+
+  return new MessagePayload(this.client, {
+   origin: ChannelTicket.name,
+   reason: 'Creating staff thread intro message',
+  }).setEmbeds([
+   { author: { name: t.ticketSystem() }, description: t.staffIntro(), color: Colors.Ephemeral },
+  ]);
+ }
+
+ async createStaffThread(initMessageId: string): Promise<void> {
+  const parentId = await this.staffThreadParentId();
+  if (!parentId) return;
+
+  this.plugin.logger.logLocation(LogLevel.debug);
+
+  const intro = await this.getStaffIntroPayload();
+  const thread = await this.createNamedThread(
+   parentId,
+   `staff-${this.id}`,
+   this.staffThreadType(),
+   intro,
+  );
+  if (!thread) return;
+
+  await this.editInitWithStaffMention(initMessageId, thread.id);
+ }
+
+ async editInitWithStaffMention(initMessageId: string, staffThreadId: string) {
+  const ticket = await this.getTicket();
+
+  const payload = await this.getInitPayload(true, staffThreadId);
+  const modify = await payload.edit(ticket.channel, initMessageId);
+  if (modify instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(modify, this.editInitWithStaffMention.name);
+  }
+ }
+
+ async addClaimerToStaffThread(userId: string) {
+  const thread = await this.findStaffThread();
+  if (!thread) return;
+
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const res = await api.threads.addMember(thread.id, userId, {
+   origin: ChannelTicket.name,
+   reason: 'Adding claimer to staff thread',
+  });
+
+  if (res instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(res, this.addClaimerToStaffThread.name);
+  }
+ }
+
+ async lockStaffThread() {
+  const thread = await this.findStaffThread();
+  if (!thread) return;
+
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const res = await api.channels.edit(
+   thread.id,
+   { locked: true },
+   { origin: ChannelTicket.name, reason: 'Locking staff thread on close' },
+  );
+
+  if (res instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(res, this.lockStaffThread.name);
+  }
+ }
+
+ async archiveStaffThread() {
+  const thread = await this.findStaffThread();
+  if (!thread) return;
+
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+  const res = await api.channels.edit(
+   thread.id,
+   { archived: true },
+   { origin: ChannelTicket.name, reason: 'Archiving staff thread on delete' },
+  );
+
+  if (res instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(res, this.archiveStaffThread.name);
+  }
  }
 }

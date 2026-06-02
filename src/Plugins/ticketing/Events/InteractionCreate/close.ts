@@ -1,44 +1,42 @@
-import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
+import { RequestHandlerError } from '@ayako/api';
+import { LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
+import { TextInputStyle, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
-import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
-import getTicketClassById from '../../Util/getTicketClassById.js';
-import handleTicketError from '../../Util/handleTicketError.js';
 
 export default async function (
  this: TicketPlugin,
  cmd: APIMessageComponentInteraction,
  args: string[],
 ) {
- if (!cmd.guild || !cmd.guild_id) return;
+ if (!cmd.guild_id) return;
 
- const ticket = await getTicketClassById.call(this.client, args[0]).catch((e: Error) => e);
- const userId = cmd.user?.id || cmd.member?.user.id;
+ const t = await this.t(cmd.guild_id);
 
- if (!userId) {
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: new Error(BaseTicketErrors.userNotFound, { cause: userId }),
-   cmd,
-  });
-  return;
+ const modal = new ModalBuilder()
+  .setCustomId(`tickets/closeReason_${args[0]}`)
+  .setTitle(t.closeModalTitle())
+  .addLabelComponents(
+   new LabelBuilder()
+    .setLabel(t.closeReasonLabel())
+    .setTextInputComponent(
+     new TextInputBuilder()
+      .setCustomId('reason')
+      .setStyle(TextInputStyle.Paragraph)
+      .setRequired(false),
+    ),
+  );
+
+ const api = await this.client.getAPI(cmd.guild_id);
+ const res = await api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
+  origin: 'tickets/close',
+  reason: 'Prompting for ticket closing reason',
+ });
+
+ if (res instanceof RequestHandlerError) {
+  this.nonFatalError(
+   new Error('Failed to open the closing-reason modal', { cause: res }),
+   'tickets/close',
+  );
  }
-
- if (ticket instanceof Error || ticket === null) {
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: ticket || new Error(BaseTicketErrors.ticketNotFound, { cause: args[0] }),
-   cmd,
-  });
-  return;
- }
-
- const close = ticket.close({ cmd, userId });
- close.next().catch((e: Error) =>
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: e,
-   cmd,
-  }),
- );
 }

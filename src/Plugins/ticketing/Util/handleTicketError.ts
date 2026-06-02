@@ -1,4 +1,7 @@
-import type { APIMessageComponentInteraction } from 'discord-api-types/v10';
+import type {
+ APIMessageComponentInteraction,
+ APIModalSubmitInteraction,
+} from 'discord-api-types/v10';
 
 import type Client from '../../../Classes/Client.js';
 import showCommandError from '../../../Util/showCommandError.js';
@@ -7,7 +10,15 @@ import TicketPlugin from '../Plugin.js';
 
 export default async function (
  this: Client,
- { guildId, error, cmd }: { guildId: string; error: Error; cmd: APIMessageComponentInteraction },
+ {
+  guildId,
+  error,
+  cmd,
+ }: {
+  guildId: string;
+  error: Error;
+  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction;
+ },
 ) {
  const plugin = this.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
  const t = await plugin.t(guildId);

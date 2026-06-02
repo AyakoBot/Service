@@ -19,16 +19,17 @@ import {
  SeparatorSpacingSize,
  type GatewayMessageDeleteDispatchData,
 } from 'discord-api-types/v10';
+
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import type Database from '../../../Classes/Database.js';
 import { Colors } from '../../../Types/index.js';
 import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
-import fetchMessages from '../../../Util/fetchMessages.js';
 import getUser from '../../../Util/getUser.js';
 import languageFunctions from '../../../Util/languageFunctions.js';
 import type TicketPlugin from '../Plugin.js';
+
 import { BaseTicketLoggerErrors } from './Enums.js';
 
 export enum LogType {
@@ -37,25 +38,39 @@ export enum LogType {
  TicketClosed = 'ticketClosed',
  TicketLeft = 'ticketLeft',
  TicketDeleted = 'ticketDeleted',
+ TicketDeletedUnusual = 'ticketDeletedUnusual',
  MessageSent = 'messageSent',
  MessageEdited = 'messageEdited',
  MessageDeleted = 'messageDeleted',
+ MessageInternal = 'messageInternal',
 }
 
 export interface LogOpts<T extends LogType> {
  type: T;
- data: T extends LogType.MessageSent | LogType.MessageEdited | LogType.MessageDeleted
+ data: T extends
+  | LogType.MessageSent
+  | LogType.MessageEdited
+  | LogType.MessageDeleted
+  | LogType.MessageInternal
   ? MessageLogData
-  : DefaultLogData;
+  : T extends LogType.TicketClosed
+    ? ClosedLogData
+    : DefaultLogData;
 }
 
 interface DefaultLogData {
  userId: string;
 }
 
+interface ClosedLogData {
+ userId: string;
+ reason?: string;
+}
+
 interface MessageLogData {
  userId: string;
  message: GatewayMessageDeleteDispatchData | RMessage | null;
+ forwarded?: boolean;
 }
 
 export default abstract class BaseTicketLogger {
@@ -89,12 +104,6 @@ export default abstract class BaseTicketLogger {
  };
 
  async getUser(userId: string) {
-  if (!this.client) {
-   throw new Error(
-    '[BaseTicketLogger] getUser called without client — receiver is ' + this?.constructor?.name,
-   );
-  }
-
   const user = await getUser.call(this.client, userId);
   if (user instanceof RequestHandlerError) {
    this.plugin.logger.logLocation(LogLevel.warn);
@@ -165,18 +174,22 @@ export default abstract class BaseTicketLogger {
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  payload.setEmbeds([
-   new EmbedBuilder()
-    .setAuthor({ name: t.logs.authorClosed() })
-    .setColor(Colors.Base)
-    .setDescription(
-     t.logs.descClosed({
-      user: lF.getUser(await this.getUser(logOpts.data.userId)),
-      channel: lF.getChannel(channel),
-      ticket: lF.getChannel(ticketChannel),
-     }),
-    ),
-  ]);
+  const embed = new EmbedBuilder()
+   .setAuthor({ name: t.logs.authorClosed() })
+   .setColor(Colors.Base)
+   .setDescription(
+    t.logs.descClosed({
+     user: lF.getUser(await this.getUser(logOpts.data.userId)),
+     channel: lF.getChannel(channel),
+     ticket: lF.getChannel(ticketChannel),
+    }),
+   );
+
+  if (logOpts.data.reason) {
+   embed.addFields({ name: t.base.t.Reason(), value: logOpts.data.reason });
+  }
+
+  payload.setEmbeds([embed]);
  }
 
  async ticketLeftLog(
@@ -213,7 +226,7 @@ export default abstract class BaseTicketLogger {
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  const transcript = ticketChannel ? await this.getTranscript(ticketChannel) : null;
+  const transcript = await this.getTranscript(ticket.channel, ticket.settings.guild);
 
   payload.setEmbeds([
    new EmbedBuilder()
@@ -228,7 +241,26 @@ export default abstract class BaseTicketLogger {
     ),
   ]);
 
-  if (transcript) payload.setFiles([txtFileWriter(transcript)]);
+  if (transcript) payload.setFiles([txtFileWriter(transcript, t.base.t.Transcript())]);
+ }
+
+ async ticketDeletedUnusualLog(
+  payload: MessagePayload,
+  _logOpts: LogOpts<LogType.TicketDeletedUnusual>,
+ ) {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+
+  const transcript = await this.getTranscript(ticket.channel, ticket.settings.guild);
+
+  payload.setEmbeds([
+   new EmbedBuilder()
+    .setAuthor({ name: t.logs.authorDeletedUnusual() })
+    .setColor(Colors.Danger)
+    .setDescription(t.logs.descDeletedUnusual({ channel: `<#${ticket.channel}>` })),
+  ]);
+
+  if (transcript) payload.setFiles([txtFileWriter(transcript, t.base.t.Transcript())]);
  }
 
  async messageSentLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageSent>) {
@@ -253,14 +285,14 @@ export default abstract class BaseTicketLogger {
   payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
  }
 
- async messageEditedLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageEdited>) {
+ async messageInternalLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageInternal>) {
   const { message } = logOpts.data;
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
   const container = this.createMessageContainer(
-   t.logs.authorMessageEditedForwarded({
+   t.logs.authorMessageInternal({
     user: lF.getUser(await this.getUser(logOpts.data.userId)),
     url: constants.formatters.msgURL(
      message?.guild_id || '@me',
@@ -270,38 +302,63 @@ export default abstract class BaseTicketLogger {
    }),
   );
 
-  container.setAccentColor(Colors.Base);
+  container.setAccentColor(Colors.Ephemeral);
   cloneMessageIntoContainer.call(container, message);
   payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
  }
 
- async messageDeletedLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageDeleted>) {
-  const { message } = logOpts.data;
+ async messageEditedLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageEdited>) {
+  const { message, forwarded } = logOpts.data;
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  const container = this.createMessageContainer(
-   t.logs.authorMessageDeletedForwarded({
-    user: lF.getUser(await this.getUser(logOpts.data.userId)),
-    url: constants.formatters.msgURL(
-     message?.guild_id || '@me',
-     message?.channel_id || '',
-     message?.id || '',
-    ),
-   }),
-  );
+  const authorFn = forwarded ? t.logs.authorMessageEditedForwarded : t.logs.authorMessageEdited;
+  const authorString = authorFn({
+   user: lF.getUser(await this.getUser(logOpts.data.userId)),
+   url: constants.formatters.msgURL(
+    message?.guild_id || '@me',
+    message?.channel_id || '',
+    message?.id || '',
+   ),
+  });
 
-  container.setAccentColor(Colors.Success);
-  cloneMessageIntoContainer.call(container, message);
-  payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
+  payload
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents(this.buildLogComponents(authorString, Colors.Base, message));
+ }
+
+ async messageDeletedLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageDeleted>) {
+  const { message, forwarded } = logOpts.data;
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+  const lF = languageFunctions(t.base);
+
+  const authorFn = forwarded ? t.logs.authorMessageDeletedForwarded : t.logs.authorMessageDeleted;
+  const authorString = authorFn({
+   user: lF.getUser(await this.getUser(logOpts.data.userId)),
+   url: constants.formatters.msgURL(
+    message?.guild_id || '@me',
+    message?.channel_id || '',
+    message?.id || '',
+   ),
+  });
+
+  payload
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents(this.buildLogComponents(authorString, Colors.Success, message));
  }
 
  async handleBaseLog<T extends LogType>(logOpts: LogOpts<T>) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
   const ticket = await this.getTicket();
-  if (!ticket.settings.logChannels.length) {
+  const transcriptChannels =
+   logOpts.type === LogType.TicketDeleted || logOpts.type === LogType.TicketDeletedUnusual
+    ? ticket.settings.transcriptChannels
+    : [];
+
+  if (!ticket.settings.logChannels.length && !transcriptChannels.length) {
    this.plugin.logger.logLocation(LogLevel.silly);
    return;
   }
@@ -366,6 +423,9 @@ export default abstract class BaseTicketLogger {
      ticketChannel,
     );
     break;
+   case LogType.TicketDeletedUnusual:
+    await this.ticketDeletedUnusualLog(payload, logOpts as LogOpts<LogType.TicketDeletedUnusual>);
+    break;
    case LogType.MessageSent:
     await this.messageSentLog(payload, logOpts as LogOpts<LogType.MessageSent>);
     break;
@@ -374,6 +434,9 @@ export default abstract class BaseTicketLogger {
     break;
    case LogType.MessageDeleted:
     await this.messageDeletedLog(payload, logOpts as LogOpts<LogType.MessageDeleted>);
+    break;
+   case LogType.MessageInternal:
+    await this.messageInternalLog(payload, logOpts as LogOpts<LogType.MessageInternal>);
     break;
 
    default: {
@@ -387,13 +450,10 @@ export default abstract class BaseTicketLogger {
 
   this.plugin.logger.logLocation(LogLevel.debug);
 
+  const targets = [...new Set([...logChannels.map((c) => c.id), ...transcriptChannels])];
+
   payload
-   .setSendTo(
-    [...new Set(logChannels.map((c) => c.id))].map((c) => ({
-     channel: logChannels.find((lc) => lc.id === c)!.id,
-     guildId: ticket.settings.guild,
-    })),
-   )
+   .setSendTo(targets.map((channel) => ({ channel, guildId: ticket.settings.guild })))
    .send();
 
   return true;
@@ -450,124 +510,270 @@ export default abstract class BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
-
   const t = await this.plugin.t(ticket.settings.guild);
+  const hasPrefixes = !!ticket.settings.sendMessagePrefixes.length;
 
-  // TODO: replace with actual payload
   const payload = new MessagePayload(this.client, {
    origin: BaseTicketLogger.name,
-   reason: 'Creating log thread message 1',
+   reason: 'Creating log thread message',
   })
-   .setContent('This is a temporary placeholder')
-   .setEmbeds([
-    {
-     author: { name: t.ticketSystem() },
-     description: ticket.settings.sendMessagePrefixes.length
-      ? t.logs.logExplain()
-      : t.logs.logExplainAll(),
-     color: Colors.Ephemeral,
-     fields: ticket.settings.sendMessagePrefixes.length
-      ? [
-         {
-          name: t.replyWith(),
-          value: ticket.settings.sendMessagePrefixes.map((p) => `\`${p}\``).join(', '),
-         },
-        ]
-      : [],
-    },
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents([
+    new ContainerBuilder()
+     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+       `**${t.ticketSystem()}**\n${hasPrefixes ? t.logs.logExplain() : t.logs.logExplainAll()}`,
+      ),
+     )
+     .toJSON(),
+    ...(hasPrefixes
+     ? [this.buildReplyPrefixContainer(t.replyWith(), ticket.settings.sendMessagePrefixes)]
+     : []),
    ]);
 
+  return this.createNamedThread(channelId, `log-${ticket.id}`, ChannelType.PublicThread, payload);
+ }
+
+ buildReplyPrefixContainer(label: string, prefixes: string[]) {
+  return new ContainerBuilder()
+   .addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+     `**${label}**\n${prefixes.map((p) => `\`${p}\``).join(', ')}`,
+    ),
+   )
+   .toJSON();
+ }
+
+ async createNamedThread(
+  channelId: string,
+  name: string,
+  threadType: ChannelType.PublicThread | ChannelType.PrivateThread,
+  payload: MessagePayload,
+ ): Promise<RThread | null> {
+  this.plugin.logger.logLocation(LogLevel.debug);
+
+  const ticket = await this.getTicket();
   const channel = await this.client.cache.channels.get(channelId);
   if (!channel) return null;
 
   const api = await this.client.getAPI(ticket.settings.guild);
 
   if (ChannelType.GuildForum === channel.type || ChannelType.GuildMedia === channel.type) {
-   const appliedTags = ticket.settings.appliedTags.map((name) => [
-    channel.available_tags.find((at) => at.name === name)?.id,
-    name,
-   ]);
-
-   const missingTags = appliedTags.filter(([id]) => !id);
-   const existingTags = appliedTags.map(([id]) => id).filter((id): id is string => !!id);
-   const missingTagEdit = missingTags.length
-    ? await api.channels.edit(
-       channelId,
-       {
-        available_tags: [
-         ...channel.available_tags,
-         ...missingTags
-          .map(([, name]) => ({ name }))
-          .filter((n): n is { name: string } => !!n.name),
-        ],
-       },
-       { origin: BaseTicketLogger.name, reason: 'Creating missing tags' },
-      )
-    : true;
+   const idByName = await this.ensureForumTags(channel, ticket.settings.createTags);
+   const appliedTags = ticket.settings.createTags
+    .map((tagName) => idByName.get(tagName.slice(0, 20)))
+    .filter((id): id is string => !!id)
+    .slice(0, 5);
 
    return api.channels
     .createForumThread(
      channelId,
-     {
-      name: `log-${ticket.id}`,
-      message: payload.getAPIPayload(),
-      applied_tags:
-       missingTagEdit instanceof RequestHandlerError
-        ? existingTags
-        : [...existingTags, ...missingTags.map(([id]) => id).filter((id): id is string => !!id)],
-     },
-     { origin: BaseTicketLogger.name, reason: 'Creating log thread' },
+     { name, message: payload.getAPIPayload(), applied_tags: appliedTags },
+     { origin: BaseTicketLogger.name, reason: 'Creating named thread' },
     )
     .then((r) => (r instanceof RequestHandlerError ? null : r));
   }
 
   return api.channels
-   .createThread(
-    channelId,
-    { name: `log-${ticket.id}`, type: ChannelType.PublicThread },
-    undefined,
-    {
-     origin: BaseTicketLogger.name,
-     reason: 'Creating log thread',
-    },
-   )
+   .createThread(channelId, { name, type: threadType }, undefined, {
+    origin: BaseTicketLogger.name,
+    reason: 'Creating named thread',
+   })
    .then((thread) => {
     if (thread instanceof RequestHandlerError) return null;
 
     api.channels.createMessage(thread.id, payload.getAPIPayload(), {
      origin: BaseTicketLogger.name,
-     reason: 'Creating log thread message 2',
+     reason: 'Creating named thread message',
     });
 
     return thread;
    });
  }
 
+ async ensureForumTags(forum: RChannel, tagNames: string[]): Promise<Map<string, string>> {
+  if (forum.type !== ChannelType.GuildForum && forum.type !== ChannelType.GuildMedia) {
+   return new Map();
+  }
+
+  const trunc = (s: string) => s.slice(0, 20);
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+
+  const current = forum.available_tags;
+  const byName = new Map(current.map((at) => [at.name, at]));
+
+  const room = Math.max(0, 20 - current.length);
+  const toCreate = [...new Set(tagNames.map(trunc))]
+   .filter((n) => n.length && !byName.has(n))
+   .slice(0, room);
+
+  const allNames = [...current.map((at) => at.name), ...toCreate];
+  const priority = [
+   ...new Set(
+    [...ticket.settings.createTags, ...ticket.settings.claimTags, ...ticket.settings.closeTags].map(
+     trunc,
+    ),
+   ),
+  ].filter((n) => allNames.includes(n));
+  const prioritySet = new Set(priority);
+  const rest = allNames.filter((n) => !prioritySet.has(n));
+
+  const desired = [...priority, ...rest].map((name) => byName.get(name) ?? { name });
+
+  let availableTags = current;
+  const currentNames = current.map((at) => at.name);
+  const desiredNames = desired.map((entry) => entry.name);
+  const changed =
+   desiredNames.length !== currentNames.length ||
+   desiredNames.some((name, i) => name !== currentNames[i]);
+
+  if (changed) {
+   const edited = await api.channels.edit(
+    forum.id,
+    { available_tags: desired },
+    { origin: BaseTicketLogger.name, reason: 'Ensuring and ordering forum tags' },
+   );
+   if (edited && !(edited instanceof RequestHandlerError) && 'available_tags' in edited) {
+    availableTags = edited.available_tags;
+   }
+  }
+
+  return new Map(availableTags.map((at) => [at.name, at.id]));
+ }
+
+ async retagForumPost(
+  forum: RChannel,
+  postId: string,
+  stepTagNames: string[],
+  extraTagNames: string[],
+ ) {
+  const trunc = (s: string) => s.slice(0, 20);
+  const ticket = await this.getTicket();
+  const api = await this.client.getAPI(ticket.settings.guild);
+
+  const post = await this.client.cache.threads.get(postId);
+  const currentApplied = post?.applied_tags ?? [];
+
+  const idByName = await this.ensureForumTags(forum, [...stepTagNames, ...extraTagNames]);
+  if (!idByName.size) return;
+
+  const resolve = (names: string[]) =>
+   names.map((n) => idByName.get(trunc(n))).filter((id): id is string => !!id);
+
+  const stepIds = resolve(stepTagNames);
+  const extraIds = resolve(extraTagNames);
+
+  const managedNames = new Set(
+   [
+    ...ticket.settings.createTags,
+    ...ticket.settings.claimTags,
+    ...ticket.settings.closeTags,
+   ].map(trunc),
+  );
+  const managedIds = new Set(
+   [...idByName.entries()].filter(([name]) => managedNames.has(name)).map(([, id]) => id),
+  );
+
+  const preserved = currentApplied.filter((id) => !managedIds.has(id));
+  const newApplied = [...new Set([...stepIds, ...extraIds, ...preserved])].slice(0, 5);
+
+  const res = await api.channels.edit(
+   postId,
+   { applied_tags: newApplied },
+   { origin: BaseTicketLogger.name, reason: 'Retagging ticket forum post' },
+  );
+  if (res instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(res, this.retagForumPost.name);
+  }
+ }
+
+ isForumChannel(channel: RChannel | null | undefined): channel is RChannel {
+  return (
+   !!channel &&
+   (channel.type === ChannelType.GuildForum || channel.type === ChannelType.GuildMedia)
+  );
+ }
+
+ async getForumLogTargets(): Promise<{ forum: RChannel; postId: string }[]> {
+  const ticket = await this.getTicket();
+
+  const resolved = await Promise.all(
+   ticket.settings.logChannels.map(
+    async (channelId): Promise<{ forum: RChannel; postId: string } | null> => {
+     const channel = await this.client.cache.channels.get(channelId);
+     if (!this.isForumChannel(channel)) return null;
+
+     const post = await this.getLogThread(channelId);
+     return post ? { forum: channel, postId: post.id } : null;
+    },
+   ),
+  );
+
+  return resolved.filter((t): t is { forum: RChannel; postId: string } => !!t);
+ }
+
+ async getForumStaffTarget(): Promise<{ forum: RChannel; postId: string } | null> {
+  const postId = await this.getStaffThreadId();
+  if (!postId) return null;
+
+  const post = await this.client.cache.threads.get(postId);
+  if (!post?.parent_id) return null;
+
+  const forum = await this.client.cache.channels.get(post.parent_id);
+  if (!this.isForumChannel(forum)) return null;
+
+  return { forum, postId };
+ }
+
+ async applyLifecycleTags(stepTagNames: string[], claimerName?: string | null) {
+  const extra = claimerName ? [claimerName] : [];
+
+  const logTargets = await this.getForumLogTargets();
+  const staffTarget = await this.getForumStaffTarget();
+  const targets = staffTarget ? [...logTargets, staffTarget] : logTargets;
+
+  await Promise.all(
+   targets.map((target) => this.retagForumPost(target.forum, target.postId, stepTagNames, extra)),
+  );
+ }
+
+ async getStaffThreadId(): Promise<string | null> {
+  return null;
+ }
+
  removeSendMessagePrefixes(content: string, prefixes: string[]) {
   return content.replace(new RegExp(`^(${prefixes.join('|')})`), '').trim();
  }
 
- async getTranscript(channel: RChannel | RThread) {
+ async getTranscript(channelId: string, guildId: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
-  const messages = await fetchMessages.call(
-   this.client,
-   channel.id,
-   channel.guild_id,
-   { amount: 1000 },
-   { origin: BaseTicketLogger.name, reason: 'Fetching messages for transcript' },
+
+  const messages = await this.client.cache.messages.getAll(guildId, channelId);
+  const t = await this.plugin.t(guildId);
+
+  const staffThreadId = await this.getStaffThreadId();
+  const staffMessages = staffThreadId
+   ? await this.client.cache.messages.getAll(guildId, staffThreadId)
+   : [];
+
+  const tagged = [
+   ...messages.map((m) => ({ m, internal: false })),
+   ...staffMessages.map((m) => ({ m, internal: true })),
+  ].sort((a, b) => (BigInt(a.m.id) < BigInt(b.m.id) ? -1 : 1));
+
+  const lines = await Promise.all(
+   tagged.map(async ({ m, internal }) => {
+    const prefix = internal ? `[${t.base.t.Internal()}] ` : '';
+    if (m.embeds?.[0]?.author?.name && m.embeds[0].description) {
+     return `${prefix}${m.embeds[0].author.name}: ${m.embeds[0].description}`;
+    }
+    const user = await this.client.cache.users.get(m.author_id);
+    return `${prefix}${user?.username || t.base.t.Unknown()}: ${m.content}`;
+   }),
   );
 
-  const t = await this.plugin.t(channel.guild_id);
-
-  return messages
-   .map((m, i) => {
-    if (m.embeds[0]?.author?.name && m.embeds[0]?.description) {
-     return `${m.embeds[0]?.author?.name}: ${m.embeds[0]?.description}${i === 0 ? '\n' : ''}`;
-    }
-    return `${'user' in m ? m.user?.username : t.base.t.Unknown()}: ${m.content}`;
-   })
-   .reverse()
-   .join('\n');
+  return lines.join('\n');
  }
 
  createMessageContainer(authorName: string) {
@@ -578,24 +784,44 @@ export default abstract class BaseTicketLogger {
    );
  }
 
- messageSent(msg: RMessage, internal: boolean = false) {
-  // TODO: handle internal
-  this.handleBaseLog({ type: LogType.MessageSent, data: { userId: msg.author_id, message: msg } });
+ buildLogComponents(
+  authorString: string,
+  accentColor: number,
+  message: GatewayMessageDeleteDispatchData | RMessage | null,
+ ) {
+  const header = new ContainerBuilder()
+   .addTextDisplayComponents(new TextDisplayBuilder().setContent(authorString))
+   .setAccentColor(accentColor);
+
+  const components = [header.toJSON()];
+
+  if (message && 'content' in message) {
+   const clone = new ContainerBuilder().setAccentColor(accentColor);
+   cloneMessageIntoContainer.call(clone, message);
+   components.push(clone.toJSON());
+  }
+
+  return components;
  }
 
- messageEdited(msg: RMessage, internal: boolean = false) {
-  // TODO: handle internal
+ messageSent(msg: RMessage, internal: boolean = false) {
   this.handleBaseLog({
-   type: LogType.MessageEdited,
+   type: internal ? LogType.MessageInternal : LogType.MessageSent,
    data: { userId: msg.author_id, message: msg },
   });
  }
 
- messageDeleted(msg: RMessage, internal: boolean = false) {
-  // TODO: handle internal
+ messageEdited(msg: RMessage, internal: boolean = false, forwarded: boolean = false) {
   this.handleBaseLog({
-   type: LogType.MessageDeleted,
-   data: { userId: msg.author_id, message: msg },
+   type: internal ? LogType.MessageInternal : LogType.MessageEdited,
+   data: { userId: msg.author_id, message: msg, forwarded },
+  });
+ }
+
+ messageDeleted(msg: RMessage | null, internal: boolean = false, forwarded: boolean = false) {
+  this.handleBaseLog({
+   type: internal ? LogType.MessageInternal : LogType.MessageDeleted,
+   data: { userId: msg?.author_id || '', message: msg, forwarded },
   });
  }
 }

@@ -14,6 +14,11 @@
  "openDMs": "Failed to send DM. Please open your DMs in the Servers Privacy Settings.",
  "cantCreateChannel": "Couldn't create a Ticket-Channel",
  "closeTicket": "Close Ticket",
+ "closeModalTitle": "Close Ticket",
+ "closeReasonLabel": "Reason (optional)",
+ "closedReasonDm": "Your ticket has been closed.\n**Reason:** {{reason}}",
+ "staffIntro": "Private staff-only discussion for this Ticket. Nothing here is relayed to the Ticket creator, but every message is logged internally and added to the transcript.",
+ "staffThreadMention": "Staff discussion: {{channel}}",
  "blocked": "You are blocked from creating Tickets",
  "messageFailedDeliver": "Failed to deliver the Message. Recipient might have closed their DMs",
  "leaveTicket": "Leave Ticket",
@@ -50,6 +55,7 @@
  "logs": {
   "logExplain": "Use a prefix to reply to the ticket creator. Messages without a prefix are staff-only.",
   "logExplainAll": "All messages here are sent to the ticket creator. Add reply prefixes in settings to change this.",
+  "nameGuard": "I rely on this thread's name to route ticket messages, so I reverted the rename. You can rename it freely once the ticket is deleted — use the delete button that appears after closing the ticket.",
   "authorCreate": "Ticket Created",
   "descCreate": "> -# {{user}}> -# has created the Ticket\n> -# {{ticket}}> in\n> -# {{channel}}",
   "authorClosed": "Ticket Closed",
@@ -58,12 +64,16 @@
   "descLeft": "> -# {{user}}> -# has left the Ticket\n> -# {{ticket}}> from\n> -# {{channel}}",
   "authorDeleted": "Ticket Deleted",
   "descDeleted": "> -# {{user}}> -# has deleted the Ticket\n> -# {{ticket}}> from\n> -# {{channel}}",
+  "authorDeletedUnusual": "Unusual Ticket Deletion",
+  "descDeletedUnusual": "> -# The ticket channel {{channel}} was deleted outside the bot.\n> -# A transcript was salvaged from the message cache.",
   "authorClaimed": "Ticket Claimed",
   "descClaimed": "> -# {{user}}> -# has claimed the Ticket\n> -# {{ticket}}> from\n> -# {{channel}}",
   "authorMessageSentForwarded": "> -# [Message]({{url}}) sent by\n> -# {{user}}> -# forwarded",
   "authorMessageDeletedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# deleted and delete forwarded",
   "authorMessageEditedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited and edit forwarded",
-  "transcript": "Transcript"
+  "authorMessageDeleted": "> -# [Message]({{url}}) by\n> -# {{user}}> -# deleted",
+  "authorMessageEdited": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited",
+  "authorMessageInternal": "> -# [Message]({{url}}) by\n> -# {{user}}> -# internal note"
  },
  "errors": {
   "threadNotFound": "Couldn't find the Ticket-Thread",
