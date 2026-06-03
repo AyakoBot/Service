@@ -4,6 +4,7 @@ import { LogLevel, type RMessage } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
+ MessageFlags,
  type APIMessage,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
@@ -405,11 +406,20 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
    const ticket = await this.getTicket();
 
-   if (ticket.dm === msg.channel_id) return super.messageSent(msg);
+   if (ticket.dm === msg.channel_id) {
+    await super.messageSent(msg);
+    await this.react(msg);
+    return;
+   }
 
    if (ticket.channel === msg.channel_id) {
-    await this.cloneToDm(msg);
-    await this.react(msg);
+    const { sendMessagePrefixes } = ticket.settings;
+    const relay = !sendMessagePrefixes.length || (await this.startsWithPrefix(msg.content));
+    if (!relay) return BaseTicket.prototype.messageSent.call(this, msg, true);
+
+    msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
+    const sent = await this.cloneToDm(msg);
+    if (sent) await this.react(msg);
     return BaseTicket.prototype.messageSent.call(this, msg);
    }
 
@@ -428,12 +438,19 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
 
    const container = this.buildMirrorContainer(msg, `${emotes.tools.name} | ${t.SupportTeam()}`);
 
-   this.forwardToDmChannel(
+   const sent = await this.forwardToDmChannel(
     new MessagePayload(this.client, {
      origin: DMTicket.name,
      reason: 'Forwarding message from ticket channel to DM',
-    }).setComponents([container.toJSON()]),
-   );
+    })
+     .setComponents([container.toJSON()])
+     .setFlags(MessageFlags.IsComponentsV2),
+   ).catch((error: Error) => {
+    this.plugin.nonFatalError(error, this.cloneToDm.name);
+    return null;
+   });
+
+   return !!sent;
   }
  }
 

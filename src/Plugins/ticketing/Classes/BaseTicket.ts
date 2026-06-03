@@ -499,7 +499,8 @@ export default class BaseTicket extends BaseTicketLogger {
   const main = constants.formatters.getEmoteIdentifier(emotes.tickWithBackground);
 
   if (msg.channel_id === ticket.dm) {
-   const res = await api.channels.addDirectMessageReaction(msg.channel_id, msg.id, main, opts);
+   const dmEmote = constants.formatters.getEmoteIdentifier({ name: '✅' });
+   const res = await api.channels.addDirectMessageReaction(msg.channel_id, msg.id, dmEmote, opts);
    if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.react.name);
    return;
   }
