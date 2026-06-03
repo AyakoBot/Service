@@ -1,4 +1,4 @@
-import type { GatewayDispatchEvents } from 'discord-api-types/v10';
+import { MessageType, type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import type TicketPlugin from '../../Plugin.js';
@@ -14,6 +14,7 @@ export default async function (
  msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
 ) {
  if (msg.author.bot) return;
+ if (msg.type !== MessageType.Default && msg.type !== MessageType.Reply) return;
 
  const rMsg = this.client.cache.messages.apiToR(msg, msg.guild_id || '@me');
 

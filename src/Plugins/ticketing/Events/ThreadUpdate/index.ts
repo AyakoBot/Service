@@ -12,16 +12,18 @@ export default async function (
  const newName = thread.name;
  if (!newName) return;
 
- const times = await this.client.cache.threads.getTimes(thread.id);
- if (times.length < 2) return;
+ const current = await this.client.cache.threads.get(thread.id);
+ const history = await this.client.cache.threads.getAllTimes(thread.id);
+ const cachedNames = [current?.name, ...history.map((h) => h?.name)].filter(
+  (n): n is string => !!n,
+ );
 
- const sorted = [...times].sort((a, b) => a - b);
- const oldThread = await this.client.cache.threads.getAt(sorted[sorted.length - 2], thread.id);
- const oldName = oldThread?.name;
- if (!oldName || oldName === newName) return;
- if (!oldName.startsWith('log-') && !oldName.startsWith('staff-')) return;
+ const canonical = cachedNames.find(
+  (n) => n !== newName && (n.startsWith('log-') || n.startsWith('staff-')),
+ );
+ if (!canonical) return;
 
- const ticketId = oldName.slice(oldName.indexOf('-') + 1);
+ const ticketId = canonical.slice(canonical.indexOf('-') + 1);
  if (!ticketId) return;
 
  const dbTicket = await this.client.db.client.ticket.findUnique({
@@ -34,7 +36,7 @@ export default async function (
 
  await api.channels.edit(
   thread.id,
-  { name: oldName },
+  { name: canonical },
   { origin: 'TicketLogNameGuard', reason: 'Reverting log thread rename' },
  );
 

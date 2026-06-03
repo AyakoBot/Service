@@ -371,14 +371,14 @@ export default class BaseTicket extends BaseTicketLogger {
    `${constants.formatters.getEmote(emotes.Member)} ${name}`,
   );
 
-  this.sendMessage(
+  await this.sendMessage(
    new MessagePayload(this.client, {
     origin: ChannelTicket.name,
     reason: 'Logging sent message',
    })
     .setComponents([container.toJSON()])
     .setFlags(MessageFlags.IsComponentsV2),
-  );
+  ).catch((error: Error) => this.plugin.nonFatalError(error, this.forwardToTicketChannel.name));
  }
 
  buildMirrorContainer(msg: RMessage, authorName: string) {
@@ -499,8 +499,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const main = constants.formatters.getEmoteIdentifier(emotes.tickWithBackground);
 
   if (msg.channel_id === ticket.dm) {
-   const dmEmote = constants.formatters.getEmoteIdentifier({ name: '✅' });
-   const res = await api.channels.addDirectMessageReaction(msg.channel_id, msg.id, dmEmote, opts);
+   const res = await api.channels.addDirectMessageReaction(msg.channel_id, msg.id, main, opts);
    if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.react.name);
    return;
   }
