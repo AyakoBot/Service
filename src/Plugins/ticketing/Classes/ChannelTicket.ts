@@ -227,29 +227,34 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async getCloseInitPayload(cmd: APIModalSubmitInteraction) {
-  return new MessagePayload(this.client, {
+  const isV2 =
+   ((cmd.message?.flags ?? 0) & MessageFlags.IsComponentsV2) === MessageFlags.IsComponentsV2;
+
+  const payload = new MessagePayload(this.client, {
    origin: ChannelTicket.name,
    reason: 'Updating close message',
-  })
-   .setFlags(MessageFlags.IsComponentsV2)
-   .setComponents(
-    cmd.message?.components?.map((row) => {
-     if (row.type !== ComponentType.ActionRow) return row;
+  }).setComponents(
+   cmd.message?.components?.map((row) => {
+    if (row.type !== ComponentType.ActionRow) return row;
 
-     return {
-      type: ComponentType.ActionRow as const,
-      components: row.components.map((btn) => ({
-       ...btn,
-       disabled:
-        'custom_id' in btn &&
-        (btn.custom_id?.startsWith('tickets/close_') ||
-         btn.custom_id?.startsWith('tickets/claim_'))
-         ? true
-         : btn.disabled,
-      })),
-     };
-    }) ?? [],
-   );
+    return {
+     type: ComponentType.ActionRow as const,
+     components: row.components.map((btn) => ({
+      ...btn,
+      disabled:
+       'custom_id' in btn &&
+       (btn.custom_id?.startsWith('tickets/close_') ||
+        btn.custom_id?.startsWith('tickets/claim_'))
+        ? true
+        : btn.disabled,
+     })),
+    };
+   }) ?? [],
+  );
+
+  if (isV2) payload.setFlags(MessageFlags.IsComponentsV2);
+
+  return payload;
  }
 
  // eslint-disable-next-line require-yield
@@ -299,6 +304,9 @@ export default class ChannelTicket extends BaseTicket {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
+  const isV2 =
+   ((cmd.message.flags ?? 0) & MessageFlags.IsComponentsV2) === MessageFlags.IsComponentsV2;
+
   const components =
    cmd.message.components?.map((row) => {
     if (row.type !== ComponentType.ActionRow) return row;
@@ -313,15 +321,21 @@ export default class ChannelTicket extends BaseTicket {
     };
    }) ?? [];
 
-  return new MessagePayload(this.client, {
+  const claimedBy = `${t.claimedBy()}: <@${ticket.user}>`;
+  const payload = new MessagePayload(this.client, {
    origin: ChannelTicket.name,
    reason: 'Updating claim message',
-  })
-   .setFlags(MessageFlags.IsComponentsV2)
-   .setComponents([
-    new TextDisplayBuilder().setContent(`${t.claimedBy()}: <@${ticket.user}>`).toJSON(),
-    ...components,
-   ]);
+  });
+
+  if (isV2) {
+   payload
+    .setFlags(MessageFlags.IsComponentsV2)
+    .setComponents([new TextDisplayBuilder().setContent(claimedBy).toJSON(), ...components]);
+  } else {
+   payload.setContent(claimedBy).setComponents(components);
+  }
+
+  return payload;
  }
 
  async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
