@@ -325,7 +325,10 @@ export default class BaseTicket extends BaseTicketLogger {
    origin: BaseTicket.name,
    reason: 'Creating ticket message',
   })
-   .setAllowedMentionsUsers([...ticket.settings.mentionUsers, ticket.user])
+   .setAllowedMentionsUsers([
+    ...ticket.settings.mentionUsers,
+    ...(mentionUser ? [ticket.user] : []),
+   ])
    .setAllowedMentionsRoles(ticket.settings.mentionRoles)
    .setFlags(MessageFlags.IsComponentsV2)
    .setComponents(components);
@@ -381,11 +384,15 @@ export default class BaseTicket extends BaseTicketLogger {
   ).catch((error: Error) => this.plugin.nonFatalError(error, this.forwardToTicketChannel.name));
  }
 
- buildMirrorContainer(msg: RMessage, authorName: string) {
+ buildMirrorContainer(
+  msg: RMessage,
+  authorName: string,
+  type: TicketContextType = TicketContextType.Forwarded,
+ ) {
   const container = new ContainerBuilder();
   cloneMessageIntoContainer.call(container, msg, {
    authorName,
-   context: encodeContext(TicketContextType.Forwarded, msg.author_id, msg.id),
+   context: encodeContext(type, msg.author_id, msg.id),
   });
   return container;
  }

@@ -221,6 +221,10 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    this.plugin.nonFatalError(unpin, this.unpinMessage.name);
   }
 
+  async getInitPayload(_mentionUser: boolean, staffThreadId?: string | null) {
+   return super.getInitPayload(false, staffThreadId);
+  }
+
   async getInitDmPayload() {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
@@ -420,12 +424,37 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    const ticket = await this.getTicket();
    const { sendMessagePrefixes } = ticket.settings;
    const relay = !sendMessagePrefixes.length || (await this.startsWithPrefix(msg.content));
-   if (!relay) return BaseTicket.prototype.messageSent.call(this, msg, true);
+   if (!relay) {
+    if (msg.channel_id !== ticket.channel) await this.mirrorInternalToChannel(msg);
+    return BaseTicket.prototype.messageSent.call(this, msg, true);
+   }
 
    msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
    const sent = await this.cloneToDm(msg);
    if (sent) await this.react(msg);
    return BaseTicket.prototype.messageSent.call(this, msg);
+  }
+
+  async mirrorInternalToChannel(msg: RMessage) {
+   const ticket = await this.getTicket();
+   const t = await this.plugin.t(ticket.settings.guild);
+   const user = await this.getUser(msg.author_id);
+   const name = user?.username || t.base.t.unknownUser();
+
+   const container = this.buildMirrorContainer(
+    msg,
+    `${t.base.t.Internal()} • ${name}`,
+    TicketContextType.Internal,
+   );
+
+   await this.sendMessage(
+    new MessagePayload(this.client, {
+     origin: DMTicket.name,
+     reason: 'Mirroring internal note to ticket channel',
+    })
+     .setComponents([container.toJSON()])
+     .setFlags(MessageFlags.IsComponentsV2),
+   ).catch((error: Error) => this.plugin.nonFatalError(error, this.mirrorInternalToChannel.name));
   }
 
   async cloneToDm(msg: RMessage) {
