@@ -1,4 +1,5 @@
 import { TicketLogMode, TicketType } from '@ayako/database';
+import type { TicketSetting } from '@ayako/database';
 import { LogLevel } from '@ayako/utility';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
@@ -149,7 +150,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  settingsSchema = {
   table: 'ticketSetting',
   rowKey: 'id',
-  rowLabel: (t: TicketTranslator, row) => t.settings.systemLabel({ id: String(row.id) }),
+  rowLabel: (t: TicketTranslator, row: TicketSetting) =>
+   t.settings.systemLabel({ id: String(row.id) }),
   groups: [
    {
     id: 'general',
@@ -197,5 +199,5 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
   ],
- } as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<TicketSetting, TicketTranslator> as SettingsSchemaDef;
 }

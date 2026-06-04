@@ -99,9 +99,9 @@ export default async function (
  const group = schema.groups.find((g) => g.id === id.groupId);
  if (!group) return;
 
- const row = (await this.client.db.client.ticketSetting.findFirst({
+ const row = await this.client.db.client.ticketSetting.findFirst({
   where: { id: id.rowId, guild: cmd.guild_id },
- })) as unknown as Record<string, unknown> | null;
+ });
  if (!row) return;
 
  const t = await this.t(cmd.guild_id);
@@ -135,7 +135,7 @@ export default async function (
   }
  }
 
- const merged = { ...row, ...data };
+ const merged: Record<string, unknown> = { ...row, ...data };
  if (merged.active === true) {
   const missing = fields.find(
    (field) =>

@@ -41,12 +41,7 @@ export const openFromCommand = async function (
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
 
- const container = buildNavigator(
-  settingName,
-  schema,
-  String(row.id),
-  row as unknown as Record<string, unknown>,
- );
+ const container = buildNavigator(settingName, schema, String(row.id), row);
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Settings navigator' })
   .setComponents([container.toJSON() as APIMessageTopLevelComponent])
@@ -71,12 +66,7 @@ export const reRender = async function (
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
 
- const container = buildNavigator(
-  id.settingName,
-  schema,
-  id.rowId,
-  row as unknown as Record<string, unknown>,
- );
+ const container = buildNavigator(id.settingName, schema, id.rowId, row);
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Settings navigator re-render' })
   .setComponents([container.toJSON() as APIMessageTopLevelComponent])

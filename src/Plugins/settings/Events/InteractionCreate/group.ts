@@ -28,13 +28,7 @@ export default async function (
  });
  if (!row) return;
 
- const modal = buildGroupModal(
-  id.settingName,
-  schema,
-  group,
-  id.rowId,
-  row as unknown as Record<string, unknown>,
- );
+ const modal = buildGroupModal(id.settingName, schema, group, id.rowId, row);
 
  const api = await this.client.getAPI(cmd.guild_id);
  const res = await api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
