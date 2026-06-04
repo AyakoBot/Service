@@ -136,7 +136,7 @@ export default class ChannelTicket extends BaseTicket {
   const t = await this.plugin.t(ticket.settings.guild);
 
   const container = new ContainerBuilder()
-   .setAccentColor(Colors.Danger)
+   .setAccentColor(Colors.Warning)
    .addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(

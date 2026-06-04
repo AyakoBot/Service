@@ -6,4 +6,6 @@ export enum Colors {
  Ephemeral = 0x2b2d31,
  Loading = 0xffff00,
  Base = 0xb0ff00,
+ Info = 0x5865f2,
+ Warning = 0xffa500,
 }

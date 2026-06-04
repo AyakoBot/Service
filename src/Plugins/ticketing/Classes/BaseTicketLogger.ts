@@ -162,7 +162,7 @@ export default abstract class BaseTicketLogger {
   payload.setEmbeds([
    new EmbedBuilder()
     .setAuthor({ name: t.logs.authorClaimed() })
-    .setColor(Colors.Base)
+    .setColor(Colors.Info)
     .setDescription(
      t.logs.descClaimed({
       user: lF.getUser(await this.getUser(logOpts.data.userId)),
@@ -185,7 +185,7 @@ export default abstract class BaseTicketLogger {
 
   const embed = new EmbedBuilder()
    .setAuthor({ name: t.logs.authorClosed() })
-   .setColor(Colors.Base)
+   .setColor(Colors.Warning)
    .setDescription(
     t.logs.descClosed({
      user: lF.getUser(await this.getUser(logOpts.data.userId)),
@@ -214,7 +214,7 @@ export default abstract class BaseTicketLogger {
   payload.setEmbeds([
    new EmbedBuilder()
     .setAuthor({ name: t.logs.authorLeft() })
-    .setColor(Colors.Base)
+    .setColor(Colors.Warning)
     .setDescription(
      t.logs.descLeft({
       user: lF.getUser(await this.getUser(logOpts.data.userId)),
@@ -240,7 +240,7 @@ export default abstract class BaseTicketLogger {
   payload.setEmbeds([
    new EmbedBuilder()
     .setAuthor({ name: t.logs.authorDeleted() })
-    .setColor(Colors.Base)
+    .setColor(Colors.Danger)
     .setDescription(
      t.logs.descDeleted({
       user: lF.getUser(await this.getUser(logOpts.data.userId)),
@@ -353,7 +353,7 @@ export default abstract class BaseTicketLogger {
    ),
   });
 
-  const container = this.createMessageContainer(authorName).setAccentColor(Colors.Base);
+  const container = this.createMessageContainer(authorName).setAccentColor(Colors.Loading);
   cloneMessageIntoContainer.call(container, message);
 
   payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
@@ -377,7 +377,7 @@ export default abstract class BaseTicketLogger {
    ),
   });
 
-  const container = this.createMessageContainer(authorName).setAccentColor(Colors.Success);
+  const container = this.createMessageContainer(authorName).setAccentColor(Colors.Danger);
   cloneMessageIntoContainer.call(container, message);
 
   payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);

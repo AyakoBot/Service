@@ -20,6 +20,7 @@ import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
+import { Colors } from '../../../Types/index.js';
 import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import fetchMessages from '../../../Util/fetchMessages.js';
 import type TicketPlugin from '../Plugin.js';
@@ -38,6 +39,13 @@ export interface MirrorRef {
  messageId: string;
  isDm: boolean;
 }
+
+const stateAccents: Partial<Record<TicketContextType, Colors>> = {
+ [TicketContextType.Created]: Colors.Success,
+ [TicketContextType.Claimed]: Colors.Info,
+ [TicketContextType.Closed]: Colors.Warning,
+ [TicketContextType.Left]: Colors.Warning,
+};
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -394,7 +402,11 @@ export default class BaseTicket extends BaseTicketLogger {
  }
 
  async sendStateChange(type: TicketContextType, actorId: string, text: string) {
-  const container = new ContainerBuilder().addSectionComponents(
+  const container = new ContainerBuilder();
+  const accent = stateAccents[type];
+  if (accent !== undefined) container.setAccentColor(accent);
+
+  container.addSectionComponents(
    new SectionBuilder()
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
     .setButtonAccessory(

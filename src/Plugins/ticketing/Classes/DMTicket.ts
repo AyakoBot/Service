@@ -91,7 +91,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    return new MessagePayload(this.client, {
     origin: DmToChannelTicket.name,
     reason: 'Generating leave confirmation payload',
-   }).setEmbeds([new EmbedBuilder().setDescription(t.leaveSure()).setColor(Colors.Danger)]);
+   }).setEmbeds([new EmbedBuilder().setDescription(t.leaveSure()).setColor(Colors.Warning)]);
   }
 
   async leave(cmd: APIMessageComponentInteraction) {
@@ -197,7 +197,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
       name: user?.username || t.base.t.unknownUser(),
       iconURL: user ? user.avatar_url || '' : '',
      })
-     .setColor(Colors.Danger)
+     .setColor(Colors.Warning)
      .setDescription(
       `${constants.formatters.getEmote(emotes.crossWithBackground)}: ${t.leftTicket()}`,
      ),
@@ -288,7 +288,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     {
      author: { name: `${emotes.tools.name} | ${t.SupportTeam()}` },
      description: t.hasClosedThreadRelay(),
-     color: Colors.Danger,
+     color: Colors.Warning,
      ...(reason ? { fields: [{ name: t.base.t.Reason(), value: reason }] } : {}),
     },
    ]);
