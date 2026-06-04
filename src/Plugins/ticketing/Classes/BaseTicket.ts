@@ -384,15 +384,11 @@ export default class BaseTicket extends BaseTicketLogger {
   ).catch((error: Error) => this.plugin.nonFatalError(error, this.forwardToTicketChannel.name));
  }
 
- buildMirrorContainer(
-  msg: RMessage,
-  authorName: string,
-  type: TicketContextType = TicketContextType.Forwarded,
- ) {
+ buildMirrorContainer(msg: RMessage, authorName: string) {
   const container = new ContainerBuilder();
   cloneMessageIntoContainer.call(container, msg, {
    authorName,
-   context: encodeContext(type, msg.author_id, msg.id),
+   context: encodeContext(TicketContextType.Forwarded, msg.author_id, msg.id),
   });
   return container;
  }

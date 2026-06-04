@@ -436,16 +436,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   }
 
   async mirrorInternalToChannel(msg: RMessage) {
-   const ticket = await this.getTicket();
-   const t = await this.plugin.t(ticket.settings.guild);
-   const user = await this.getUser(msg.author_id);
-   const name = user?.username || t.base.t.unknownUser();
-
-   const container = this.buildMirrorContainer(
-    msg,
-    `${t.base.t.Internal()} • ${name}`,
-    TicketContextType.Internal,
-   );
+   const container = await this.buildInternalNoteContainer(msg, msg.author_id, true);
 
    await this.sendMessage(
     new MessagePayload(this.client, {

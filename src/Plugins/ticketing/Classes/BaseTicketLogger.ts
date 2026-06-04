@@ -30,6 +30,7 @@ import getUser from '../../../Util/getUser.js';
 import languageFunctions from '../../../Util/languageFunctions.js';
 import type TicketPlugin from '../Plugin.js';
 import {
+ encodeContext,
  extractBody,
  findContext,
  hasActionButton,
@@ -294,25 +295,44 @@ export default abstract class BaseTicketLogger {
  }
 
  async messageInternalLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageInternal>) {
-  const { message } = logOpts.data;
+  const container = await this.buildInternalNoteContainer(
+   logOpts.data.message,
+   logOpts.data.userId,
+   false,
+  );
+  payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
+ }
+
+ async buildInternalNoteContainer(
+  message: GatewayMessageDeleteDispatchData | RMessage | null,
+  userId: string,
+  withContext: boolean,
+ ) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  const container = this.createMessageContainer(
-   t.logs.authorMessageInternal({
-    user: lF.getUser(await this.getUser(logOpts.data.userId)),
-    url: constants.formatters.msgURL(
-     message?.guild_id || '@me',
-     message?.channel_id || '',
-     message?.id || '',
-    ),
-   }),
+  const authorName = t.logs.authorMessageInternal({
+   user: lF.getUser(await this.getUser(userId)),
+   url: constants.formatters.msgURL(
+    message?.guild_id || '@me',
+    message?.channel_id || '',
+    message?.id || '',
+   ),
+  });
+
+  const context = withContext
+   ? encodeContext(TicketContextType.Internal, userId, message?.id || '0')
+   : undefined;
+
+  const container = new ContainerBuilder();
+  cloneMessageIntoContainer.call(
+   container,
+   message,
+   context ? { authorName, rawAuthor: true, context } : { authorName, rawAuthor: true },
   );
 
-  container.setAccentColor(Colors.Ephemeral);
-  cloneMessageIntoContainer.call(container, message);
-  payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
+  return container;
  }
 
  async messageEditedLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageEdited>) {

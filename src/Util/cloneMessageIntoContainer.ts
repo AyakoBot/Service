@@ -19,9 +19,9 @@ import {
 import constants from '../Classes/Constants.js';
 
 type ContextButton =
- | { authorName: string; button: ButtonBuilder; context?: never }
- | { authorName: string; button?: never; context: string }
- | { authorName: string; button?: never; context?: never };
+ | { authorName: string; button: ButtonBuilder; context?: never; rawAuthor?: boolean }
+ | { authorName: string; button?: never; context: string; rawAuthor?: boolean }
+ | { authorName: string; button?: never; context?: never; rawAuthor?: boolean };
 
 const addSeparator = function (this: ContainerBuilder) {
  this.addSeparatorComponents(
@@ -29,8 +29,8 @@ const addSeparator = function (this: ContainerBuilder) {
  );
 };
 
-const getAuthorNameComponent = function (authorName: string) {
- return new TextDisplayBuilder().setContent(`-# ${authorName}`);
+const getAuthorNameComponent = function (authorName: string, raw: boolean = false) {
+ return new TextDisplayBuilder().setContent(raw ? authorName : `-# ${authorName}`);
 };
 
 export const cloneMessageIntoContainer = function (
@@ -42,7 +42,9 @@ export const cloneMessageIntoContainer = function (
   case !!(contextButton?.authorName && contextButton?.button): {
    this.addSectionComponents(
     new SectionBuilder()
-     .addTextDisplayComponents(getAuthorNameComponent(contextButton.authorName))
+     .addTextDisplayComponents(
+      getAuthorNameComponent(contextButton.authorName, contextButton.rawAuthor),
+     )
      .setButtonAccessory(contextButton.button),
    );
 
@@ -53,7 +55,9 @@ export const cloneMessageIntoContainer = function (
   case !!(contextButton?.authorName && contextButton?.context): {
    this.addSectionComponents(
     new SectionBuilder()
-     .addTextDisplayComponents(getAuthorNameComponent(contextButton.authorName))
+     .addTextDisplayComponents(
+      getAuthorNameComponent(contextButton.authorName, contextButton.rawAuthor),
+     )
      .setButtonAccessory(
       new ButtonBuilder()
        .setStyle(ButtonStyle.Secondary)
@@ -68,7 +72,9 @@ export const cloneMessageIntoContainer = function (
   }
 
   case !!contextButton?.authorName: {
-   this.addTextDisplayComponents(getAuthorNameComponent(contextButton.authorName));
+   this.addTextDisplayComponents(
+    getAuthorNameComponent(contextButton.authorName, contextButton.rawAuthor),
+   );
 
    addSeparator.call(this);
    break;

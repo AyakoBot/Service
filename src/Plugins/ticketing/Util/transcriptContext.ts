@@ -84,7 +84,7 @@ export const extractBody = (components: unknown): string => {
   if (component.type !== ComponentType.TextDisplay || typeof component.content !== 'string') return;
 
   const text = component.content.trim();
-  if (text && !text.startsWith('-#')) parts.push(text);
+  if (text && !/^(> )?-#/.test(text)) parts.push(text);
  });
 
  return parts.join('\n');
