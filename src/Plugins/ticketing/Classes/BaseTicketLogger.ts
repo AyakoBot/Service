@@ -579,13 +579,23 @@ export default abstract class BaseTicketLogger {
     origin: BaseTicketLogger.name,
     reason: 'Creating named thread',
    })
-   .then((thread) => {
+   .then(async (thread) => {
     if (thread instanceof RequestHandlerError) return null;
 
-    api.channels.createMessage(thread.id, payload.getAPIPayload(), {
+    const msg = await api.channels.createMessage(thread.id, payload.getAPIPayload(), {
      origin: BaseTicketLogger.name,
      reason: 'Creating named thread message',
     });
+
+    if (msg && !(msg instanceof RequestHandlerError)) {
+     const pin = await api.channels.pinMessage(thread.id, msg.id, {
+      origin: BaseTicketLogger.name,
+      reason: 'Pinning thread intro message',
+     });
+     if (pin instanceof RequestHandlerError) {
+      this.plugin.nonFatalError(pin, this.createNamedThread.name);
+     }
+    }
 
     return thread;
    });
