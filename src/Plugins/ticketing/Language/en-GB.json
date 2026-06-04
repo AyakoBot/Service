@@ -68,10 +68,10 @@
   "authorClaimed": "Ticket Claimed",
   "descClaimed": "> -# {{user}}> -# has claimed the Ticket\n> -# {{ticket}}> from\n> -# {{channel}}",
   "authorMessageSentForwarded": "> -# [Message]({{url}}) sent by\n> -# {{user}}> -# forwarded",
-  "authorMessageDeletedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# deleted and delete forwarded",
-  "authorMessageEditedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited and edit forwarded",
-  "authorMessageDeleted": "> -# [Message]({{url}}) by\n> -# {{user}}> -# deleted",
-  "authorMessageEdited": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited",
+  "authorMessageDeletedForwarded": "> -# [Forwarded message]({{url}}) by\n> -# {{user}}> -# deleted",
+  "authorMessageEditedForwarded": "> -# [Forwarded message]({{url}}) by\n> -# {{user}}> -# edited",
+  "authorMessageDeletedInternal": "> -# [Internal note]({{url}}) by\n> -# {{user}}> -# deleted",
+  "authorMessageEditedInternal": "> -# [Internal note]({{url}}) by\n> -# {{user}}> -# edited",
   "authorMessageInternal": "> -# [Internal note]({{url}}) by\n> -# {{user}}"
  },
  "errors": {

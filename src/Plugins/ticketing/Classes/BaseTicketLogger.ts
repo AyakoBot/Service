@@ -341,8 +341,10 @@ export default abstract class BaseTicketLogger {
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  const authorFn = forwarded ? t.logs.authorMessageEditedForwarded : t.logs.authorMessageEdited;
-  const authorString = authorFn({
+  const authorFn = forwarded
+   ? t.logs.authorMessageEditedForwarded
+   : t.logs.authorMessageEditedInternal;
+  const authorName = authorFn({
    user: lF.getUser(await this.getUser(logOpts.data.userId)),
    url: constants.formatters.msgURL(
     message?.guild_id || '@me',
@@ -351,9 +353,10 @@ export default abstract class BaseTicketLogger {
    ),
   });
 
-  payload
-   .setFlags(MessageFlags.IsComponentsV2)
-   .setComponents(this.buildLogComponents(authorString, Colors.Base, message));
+  const container = this.createMessageContainer(authorName).setAccentColor(Colors.Base);
+  cloneMessageIntoContainer.call(container, message);
+
+  payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
  }
 
  async messageDeletedLog(payload: MessagePayload, logOpts: LogOpts<LogType.MessageDeleted>) {
@@ -362,8 +365,10 @@ export default abstract class BaseTicketLogger {
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  const authorFn = forwarded ? t.logs.authorMessageDeletedForwarded : t.logs.authorMessageDeleted;
-  const authorString = authorFn({
+  const authorFn = forwarded
+   ? t.logs.authorMessageDeletedForwarded
+   : t.logs.authorMessageDeletedInternal;
+  const authorName = authorFn({
    user: lF.getUser(await this.getUser(logOpts.data.userId)),
    url: constants.formatters.msgURL(
     message?.guild_id || '@me',
@@ -372,9 +377,10 @@ export default abstract class BaseTicketLogger {
    ),
   });
 
-  payload
-   .setFlags(MessageFlags.IsComponentsV2)
-   .setComponents(this.buildLogComponents(authorString, Colors.Success, message));
+  const container = this.createMessageContainer(authorName).setAccentColor(Colors.Success);
+  cloneMessageIntoContainer.call(container, message);
+
+  payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
  }
 
  async handleBaseLog<T extends LogType>(logOpts: LogOpts<T>) {
@@ -868,26 +874,6 @@ export default abstract class BaseTicketLogger {
    .addSeparatorComponents(
     new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
    );
- }
-
- buildLogComponents(
-  authorString: string,
-  accentColor: number,
-  message: GatewayMessageDeleteDispatchData | RMessage | null,
- ) {
-  const header = new ContainerBuilder()
-   .addTextDisplayComponents(new TextDisplayBuilder().setContent(authorString))
-   .setAccentColor(accentColor);
-
-  const components = [header.toJSON()];
-
-  if (message && 'content' in message) {
-   const clone = new ContainerBuilder().setAccentColor(accentColor);
-   cloneMessageIntoContainer.call(clone, message);
-   components.push(clone.toJSON());
-  }
-
-  return components;
  }
 
  messageSent(msg: RMessage, internal: boolean = false) {
