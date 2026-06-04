@@ -22,6 +22,7 @@ import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
+import { encodeContext, TicketContextType } from '../Util/transcriptContext.js';
 
 import BaseTicket from './BaseTicket.js';
 import { ChannelTicketErrors } from './Enums.js';
@@ -117,14 +118,14 @@ export default class ChannelTicket extends BaseTicket {
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
 
-  const closeReplyPayload = await this.getCloseReplyPayload(data.reason);
+  const closeReplyPayload = await this.getCloseReplyPayload(data.reason, data.userId);
   await this.replyMessage(data.cmd, closeReplyPayload, ChannelTicketErrors.close_CantReplyMessage);
 
   await superClose.next();
   return this;
  }
 
- async getCloseReplyPayload(reason?: string) {
+ async getCloseReplyPayload(reason?: string, closerId?: string) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
@@ -137,6 +138,17 @@ export default class ChannelTicket extends BaseTicket {
      custom_id: `tickets/delete_${ticket.id}`,
      label: t.base.t.Delete(),
     },
+    ...(closerId
+     ? [
+        {
+         type: ComponentType.Button as const,
+         style: ButtonStyle.Secondary as const,
+         custom_id: encodeContext(TicketContextType.Closed, closerId, String(ticket.id)),
+         label: '​',
+         disabled: true,
+        },
+       ]
+     : []),
    ],
   };
 
@@ -278,6 +290,13 @@ export default class ChannelTicket extends BaseTicket {
   );
   const claimPayload = await this.getClaimPayload(data.cmd, data.userId);
   await this.updateInitClaimMessage(data.cmd, claimPayload);
+
+  const t = await this.plugin.t(ticket.settings.guild);
+  await this.sendStateChange(
+   TicketContextType.Claimed,
+   data.userId,
+   `-# ${t.claimedBy()}: <@${data.userId}>`,
+  );
 
   await superClaim.next();
 

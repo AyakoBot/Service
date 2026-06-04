@@ -29,8 +29,16 @@ import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContain
 import getUser from '../../../Util/getUser.js';
 import languageFunctions from '../../../Util/languageFunctions.js';
 import type TicketPlugin from '../Plugin.js';
+import {
+ extractBody,
+ findContext,
+ hasActionButton,
+ TicketContextType,
+} from '../Util/transcriptContext.js';
 
 import { BaseTicketLoggerErrors } from './Enums.js';
+
+type Translator = Awaited<ReturnType<TicketPlugin['t']>>;
 
 export enum LogType {
  TicketCreated = 'ticketCreated',
@@ -759,8 +767,9 @@ export default abstract class BaseTicketLogger {
  async getTranscript(channelId: string, guildId: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
 
-  const messages = await this.client.cache.messages.getAll(guildId, channelId);
+  const ticket = await this.getTicket();
   const t = await this.plugin.t(guildId);
+  const messages = await this.client.cache.messages.getAll(guildId, channelId);
 
   const staffThreadId = await this.getStaffThreadId();
   const staffMessages = staffThreadId
@@ -772,18 +781,63 @@ export default abstract class BaseTicketLogger {
    ...staffMessages.map((m) => ({ m, internal: true })),
   ].sort((a, b) => (BigInt(a.m.id) < BigInt(b.m.id) ? -1 : 1));
 
-  const lines = await Promise.all(
-   tagged.map(async ({ m, internal }) => {
-    const prefix = internal ? `[${t.base.t.Internal()}] ` : '';
-    if (m.embeds?.[0]?.author?.name && m.embeds[0].description) {
-     return `${prefix}${m.embeds[0].author.name}: ${m.embeds[0].description}`;
-    }
-    const user = await this.client.cache.users.get(m.author_id);
-    return `${prefix}${user?.username || t.base.t.Unknown()}: ${m.content}`;
-   }),
+  const creator = await this.client.cache.users.get(ticket.user);
+  const created = `[${t.base.t.Created()}] ${creator?.username || t.base.t.Unknown()}`;
+
+  const rendered = await Promise.all(
+   tagged.map(({ m, internal }) => this.transcriptLine(m, internal, t)),
   );
 
-  return lines.join('\n');
+  return [created, ...rendered.filter((line): line is string => !!line)].join('\n');
+ }
+
+ async transcriptLine(m: RMessage, internal: boolean, t: Translator): Promise<string | null> {
+  const prefix = internal ? `[${t.base.t.Internal()}] ` : '';
+  const context = findContext(m.components);
+
+  if (context) {
+   const actor = await this.client.cache.users.get(context.actorId);
+   const name = actor?.username || t.base.t.Unknown();
+   const label = this.transcriptLabel(context.type, t);
+   const body = extractBody(m.components) || this.embedReason(m, t);
+
+   return body ? `${prefix}[${label}] ${name}: ${body}` : `${prefix}[${label}] ${name}`;
+  }
+
+  if (hasActionButton(m.components, ['tickets/', 'info/'])) return null;
+
+  if (m.embeds?.[0]?.author?.name && m.embeds[0].description) {
+   return `${prefix}${m.embeds[0].author.name}: ${m.embeds[0].description}`;
+  }
+
+  if (m.content) {
+   const user = await this.client.cache.users.get(m.author_id);
+   return `${prefix}${user?.username || t.base.t.Unknown()}: ${m.content}`;
+  }
+
+  return null;
+ }
+
+ transcriptLabel(type: TicketContextType, t: Translator): string {
+  switch (type) {
+   case TicketContextType.Created:
+    return t.base.t.Created();
+   case TicketContextType.Forwarded:
+    return t.base.t.Forwarded();
+   case TicketContextType.Internal:
+    return t.base.t.Internal();
+   case TicketContextType.Claimed:
+    return t.base.t.Claimed();
+   case TicketContextType.Closed:
+    return t.base.t.Closed();
+   default:
+    return type;
+  }
+ }
+
+ embedReason(m: RMessage, t: Translator): string {
+  const field = m.embeds?.[0]?.fields?.find((f) => f.name === t.base.t.Reason());
+  return field?.value || '';
  }
 
  createMessageContainer(authorName: string) {

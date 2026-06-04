@@ -3,7 +3,12 @@ import { inspect } from 'node:util';
 import { RequestHandlerError } from '@ayako/api';
 import { TicketState } from '@ayako/database';
 import { LogLevel, type RMessage } from '@ayako/utility';
-import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
+import {
+ ButtonBuilder,
+ ContainerBuilder,
+ SectionBuilder,
+ TextDisplayBuilder,
+} from '@discordjs/builders';
 import {
  ButtonStyle,
  ComponentType,
@@ -18,6 +23,11 @@ import emotes from '../../../Classes/Emotes.js';
 import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import fetchMessages from '../../../Util/fetchMessages.js';
 import type TicketPlugin from '../Plugin.js';
+import {
+ encodeContext,
+ findMessageButtonRef,
+ TicketContextType,
+} from '../Util/transcriptContext.js';
 
 import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
 import ChannelTicket from './ChannelTicket.js';
@@ -28,20 +38,6 @@ export interface MirrorRef {
  messageId: string;
  isDm: boolean;
 }
-
-const mirrorButtonMatches = (components: unknown, customId: string): boolean => {
- if (!Array.isArray(components)) return false;
-
- return components.some((c) => {
-  if (!c || typeof c !== 'object') return false;
-
-  const comp = c as Record<string, unknown>;
-  if (comp.type === ComponentType.Button && comp.custom_id === customId) return true;
-  if (mirrorButtonMatches(comp.components, customId)) return true;
-
-  return mirrorButtonMatches(comp.accessory ? [comp.accessory] : null, customId);
- });
-};
 
 export default class BaseTicket extends BaseTicketLogger {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
@@ -383,8 +379,36 @@ export default class BaseTicket extends BaseTicketLogger {
 
  buildMirrorContainer(msg: RMessage, authorName: string) {
   const container = new ContainerBuilder();
-  cloneMessageIntoContainer.call(container, msg, { authorName, context: msg.id });
+  cloneMessageIntoContainer.call(container, msg, {
+   authorName,
+   context: encodeContext(TicketContextType.Forwarded, msg.author_id, msg.id),
+  });
   return container;
+ }
+
+ async sendStateChange(type: TicketContextType, actorId: string, text: string) {
+  const container = new ContainerBuilder().addSectionComponents(
+   new SectionBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
+    .setButtonAccessory(
+     new ButtonBuilder()
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(true)
+      .setCustomId(encodeContext(type, actorId, this.id))
+      .setLabel('​'),
+    ),
+  );
+
+  return this.sendMessage(
+   new MessagePayload(this.client, {
+    origin: BaseTicket.name,
+    reason: 'Posting ticket state change',
+   })
+    .setAllowedMentionsUsers([])
+    .setAllowedMentionsRoles([])
+    .setComponents([container.toJSON()])
+    .setFlags(MessageFlags.IsComponentsV2),
+  );
  }
 
  async findMirror(originalId: string): Promise<MirrorRef | null> {
@@ -419,7 +443,7 @@ export default class BaseTicket extends BaseTicketLogger {
   originalId: string,
   after?: string | null,
  ): Promise<string | null> {
-  const matches = (m: { components?: unknown }) => mirrorButtonMatches(m.components, originalId);
+  const matches = (m: { components?: unknown }) => findMessageButtonRef(m.components, originalId);
 
   const cached = await this.client.cache.messages.getAll(isDm ? '@me' : guildId, channelId);
   const cachedHit = cached.find(matches);
