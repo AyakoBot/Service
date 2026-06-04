@@ -1,11 +1,21 @@
-import type { TicketSetting } from '@ayako/database';
+import { TicketLogMode, TicketType } from '@ayako/database';
 import { LogLevel } from '@ayako/utility';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
 
-import Plugin, { idSelector, SettingsCategory } from '../../Classes/abstracts/Plugin.js';
+import Plugin, {
+ idSelector,
+ SettingsCategory,
+ type BaseLang,
+} from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
+import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
+import {
+ assertSchemaValid,
+ FieldArity,
+ type SettingsSchemaDef,
+} from '../settings/SettingsSchema.js';
 
 import channelDelete from './Events/ChannelDelete/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
@@ -25,6 +35,7 @@ type Events =
  | GatewayDispatchEvents.ChannelDelete
  | GatewayDispatchEvents.ThreadDelete;
 type APILanguage = typeof en;
+type TicketTranslator = TranslatorType<APILanguage> & { base: BaseLang };
 
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
  name = 'Ticketing';
@@ -117,6 +128,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   super(client);
 
   this.logger.setLevel(LogLevel.silly);
+  assertSchemaValid(this.settingsSchema);
  }
 
  getCommands = () => ({
@@ -134,32 +146,56 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   ],
  });
 
- settingsEditorTypes: Record<keyof TicketSetting, EditorType> = {
-  active: EditorType.Boolean,
-  archiveCategory: EditorType.Category,
-  archiveDuration: EditorType.Duration,
-  category: EditorType.Category,
-  channel: EditorType.Channel,
-  denyRoles: EditorType.Roles,
-  denyUsers: EditorType.Users,
-  logChannels: EditorType.Channels,
-  transcriptChannels: EditorType.Channels,
-  mentionRoles: EditorType.Roles,
-  mentionUsers: EditorType.Users,
-  staffRoles: EditorType.Roles,
-  staffUsers: EditorType.Users,
-  sendMessagePrefixes: EditorType.String,
-  type: EditorType.TicketType,
-  createTags: EditorType.Strings,
-  claimTags: EditorType.Strings,
-  closeTags: EditorType.Strings,
-  tagClaimer: EditorType.Boolean,
-  logMode: EditorType.TicketLogMode,
-  allowCreatorClose: EditorType.Boolean,
-  staffThreads: EditorType.Boolean,
-  staffThreadsChannel: EditorType.Channel,
-
-  guild: EditorType.GuildId,
-  id: EditorType.Id,
- };
+ settingsSchema = {
+  table: 'ticketSetting',
+  rowKey: 'id',
+  rowLabel: (t: TicketTranslator, row) => t.settings.systemLabel({ id: String(row.id) }),
+  groups: [
+   {
+    id: 'general',
+    label: (t: TicketTranslator) => t.settings.groups.general(),
+    fields: [
+     {
+      column: 'active',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.base.t.Active(),
+     },
+     {
+      column: 'type',
+      editor: EditorType.TicketType,
+      label: (t: TicketTranslator) => t.settings.fields.type(),
+      arity: FieldArity.Single,
+      required: true,
+      options: [
+       { value: TicketType.Channel, label: (t: TicketTranslator) => t.base.t.Channel() },
+       { value: TicketType.Thread, label: (t: TicketTranslator) => t.base.t.Thread() },
+       {
+        value: TicketType.dmToChannel,
+        label: (t: TicketTranslator) => t.settings.options.dmToChannel(),
+       },
+       {
+        value: TicketType.dmToThread,
+        label: (t: TicketTranslator) => t.settings.options.dmToThread(),
+       },
+      ],
+     },
+     {
+      column: 'logMode',
+      editor: EditorType.TicketLogMode,
+      label: (t: TicketTranslator) => t.settings.fields.logMode(),
+      arity: FieldArity.Single,
+      options: [
+       { value: TicketLogMode.Channel, label: (t: TicketTranslator) => t.base.t.Channel() },
+       { value: TicketLogMode.Thread, label: (t: TicketTranslator) => t.base.t.Thread() },
+      ],
+     },
+     {
+      column: 'allowCreatorClose',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.allowCreatorClose(),
+     },
+    ],
+   },
+  ],
+ } as SettingsSchemaDef;
 }

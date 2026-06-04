@@ -11,6 +11,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import type SettingsPlugin from '../../Plugin.js';
 import { buildNavigator } from '../../Util/buildNavigator.js';
 import type { SettingsId } from '../../Util/customId.js';
+import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
 
 const settingName = 'ticketing';
@@ -38,9 +39,11 @@ export const openFromCommand = async function (
   return;
  }
 
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+
  const container = buildNavigator(
   settingName,
-  resolved.schema,
+  schema,
   String(row.id),
   row as unknown as Record<string, unknown>,
  );
@@ -66,9 +69,11 @@ export const reRender = async function (
  });
  if (!row) return;
 
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+
  const container = buildNavigator(
   id.settingName,
-  resolved.schema,
+  schema,
   id.rowId,
   row as unknown as Record<string, unknown>,
  );

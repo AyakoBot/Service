@@ -11,7 +11,7 @@ import type { GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
 
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
-import type { SettingsSchema } from '../../Plugins/settings/SettingsSchema.js';
+import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
@@ -69,7 +69,7 @@ export default abstract class Plugin<
  private enabled: boolean = true;
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
- settingsSchema?: SettingsSchema;
+ settingsSchema?: SettingsSchemaDef;
  logger = new ScopedLogger();
 
  constructor(client: Client) {

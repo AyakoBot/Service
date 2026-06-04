@@ -14,6 +14,7 @@ import { FieldArity, type SettingsField, type SettingsGroup } from '../../Settin
 import { buildGroupModal } from '../../Util/buildGroupModal.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { findModalValue } from '../../Util/findModalValue.js';
+import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { ComponentKind, resolveComponentKind } from '../../Util/resolveComponentKind.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
 
@@ -93,7 +94,9 @@ export default async function (
  const resolved = resolveSchema(this.client, id.settingName);
  if (!resolved) return;
 
- const group = resolved.schema.groups.find((g) => g.id === id.groupId);
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+
+ const group = schema.groups.find((g) => g.id === id.groupId);
  if (!group) return;
 
  const row = (await this.client.db.client.ticketSetting.findFirst({
@@ -122,7 +125,7 @@ export default async function (
     ...group,
     fields: group.fields.map((f) => (f.column === field.column ? offending : f)),
    };
-   const modal = buildGroupModal(id.settingName, resolved.schema, patchedGroup, id.rowId, row);
+   const modal = buildGroupModal(id.settingName, schema, patchedGroup, id.rowId, row);
    const api = await this.client.getAPI(cmd.guild_id);
    await api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
     origin: this.name,

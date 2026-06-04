@@ -5,6 +5,7 @@ import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupModal } from '../../Util/buildGroupModal.js';
 import type { SettingsId } from '../../Util/customId.js';
+import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
 
 export default async function (
@@ -17,7 +18,9 @@ export default async function (
  const resolved = resolveSchema(this.client, id.settingName);
  if (!resolved) return;
 
- const group = resolved.schema.groups.find((g) => g.id === id.groupId);
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+
+ const group = schema.groups.find((g) => g.id === id.groupId);
  if (!group) return;
 
  const row = await this.client.db.client.ticketSetting.findFirst({
@@ -27,7 +30,7 @@ export default async function (
 
  const modal = buildGroupModal(
   id.settingName,
-  resolved.schema,
+  schema,
   group,
   id.rowId,
   row as unknown as Record<string, unknown>,

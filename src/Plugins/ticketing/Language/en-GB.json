@@ -52,6 +52,21 @@
  "couldntDeleteDm": "Couldn't delete the DM Channel",
  "couldntSendDm": "Couldn't send a DM to the user",
  "couldntEditDm": "Couldn't edit the DM to the user",
+ "settings": {
+  "systemLabel": "Ticket system {{id}}",
+  "groups": {
+   "general": "General"
+  },
+  "fields": {
+   "type": "Ticket type",
+   "logMode": "Log mode",
+   "allowCreatorClose": "Allow creator to close"
+  },
+  "options": {
+   "dmToChannel": "DM to Channel",
+   "dmToThread": "DM to Thread"
+  }
+ },
  "logs": {
   "logExplain": "Use a prefix to reply to the ticket creator. Messages without a prefix are staff-only.",
   "logExplainAll": "All messages here are sent to the ticket creator. Add reply prefixes in settings to change this.",

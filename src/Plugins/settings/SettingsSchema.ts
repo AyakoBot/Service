@@ -1,6 +1,10 @@
+import type { BaseLang, BaseLanguage } from '../../Classes/abstracts/Plugin.js';
 import type { TableName } from '../../Types/prisma.js';
+import type { TranslatorType } from '../../Util/translator.js';
 
 import type { EditorType } from './EditorType.js';
+
+export type DefaultTranslator = TranslatorType<BaseLanguage> & { base: BaseLang };
 
 export enum FieldArity {
  Single = 'single',
@@ -40,7 +44,37 @@ export interface SettingsSchema<Row = Record<string, unknown>> {
  groups: SettingsGroup<Row>[];
 }
 
-export const assertSchemaValid = (schema: SettingsSchema): void => {
+export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTranslator> {
+ column: keyof Row & string;
+ editor: EditorType;
+ label: (t: T) => string;
+ description?: (t: T) => string;
+ arity?: FieldArity;
+ options?:
+  | { label: (t: T) => string; value: string }[]
+  | (() => Promise<{ label: string; value: string }[]>);
+ required?: boolean;
+ secret?: boolean;
+ showIf?: (row: Row) => ShowIfResult;
+ validate?: (value: unknown, row: Row) => ShowIfResult;
+}
+
+export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTranslator> {
+ id: string;
+ label: (t: T) => string;
+ description?: (t: T) => string;
+ showIf?: (row: Row) => ShowIfResult;
+ fields: SettingsFieldDef<Row, T>[];
+}
+
+export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTranslator> {
+ table: TableName;
+ rowKey: keyof Row & string;
+ rowLabel: (t: T, row: Row) => string;
+ groups: SettingsGroupDef<Row, T>[];
+}
+
+export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
  schema.groups.forEach((group) => {
   if (group.fields.length > 5) {
    throw new Error(
