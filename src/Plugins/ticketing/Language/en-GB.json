@@ -16,7 +16,6 @@
  "closeTicket": "Close Ticket",
  "closeModalTitle": "Close Ticket",
  "closeReasonLabel": "Reason (optional)",
- "closedReasonDm": "Your ticket has been closed.\n**Reason:** {{reason}}",
  "staffIntro": "Private staff-only discussion for this Ticket. Nothing here is relayed to the Ticket creator, but every message is logged internally and added to the transcript.",
  "staffThreadMention": "Staff discussion: {{channel}}",
  "blocked": "You are blocked from creating Tickets",

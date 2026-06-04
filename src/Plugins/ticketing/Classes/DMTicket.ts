@@ -268,7 +268,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    return unpin;
   }
 
-  async getCloseDmPayload() {
+  async getCloseDmPayload(reason?: string) {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
 
@@ -280,6 +280,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
      author: { name: `${emotes.tools.name} | ${t.SupportTeam()}` },
      description: t.hasClosedThreadRelay(),
      color: Colors.Danger,
+     ...(reason ? { fields: [{ name: t.base.t.Reason(), value: reason }] } : {}),
     },
    ]);
   }
@@ -340,7 +341,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
   async *close(data: { userId: string; cmd: APIModalSubmitInteraction; reason?: string }) {
    const superClose = yield* super.close(data);
 
-   if (data.reason) await this.sendCloseReasonDm(data.reason);
+   await this.forwardToDmChannel(await this.getCloseDmPayload(data.reason));
 
    const initialMessage = await this.editInitialMessage(this.getLeaveUpdatePayload());
    if (initialMessage) await this.unpinMessage();
@@ -348,19 +349,6 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    await this.setDbEntryLeft();
 
    return superClose;
-  }
-
-  async sendCloseReasonDm(reason: string) {
-   const ticket = await this.getTicket();
-   if (!ticket.dm) return;
-
-   const t = await this.plugin.t(ticket.settings.guild);
-   await this.forwardToDmChannel(
-    new MessagePayload(this.client, {
-     origin: DMTicket.name,
-     reason: 'Sending close reason to DM',
-    }).setContent(t.closedReasonDm({ reason })),
-   );
   }
 
   async editInitialMessage(payload: MessagePayload) {

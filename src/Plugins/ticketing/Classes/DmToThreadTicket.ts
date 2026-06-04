@@ -44,8 +44,6 @@ export default class DmToThreadTicket extends DMTicketMixin(ThreadTicket) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
   const superClose = await super.closeChannel(api, channel);
-  const closeDmPayload = await this.getCloseDmPayload();
-  await this.forwardToDmChannel(closeDmPayload);
   await this.unpinStartMessage();
 
   return superClose;
