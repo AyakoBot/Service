@@ -356,6 +356,10 @@ export default class BaseTicket extends BaseTicketLogger {
   );
  }
 
+ async staffReply(msg: RMessage) {
+  return this.messageSent(msg, true);
+ }
+
  async forwardToTicketChannel(msg: RMessage) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);

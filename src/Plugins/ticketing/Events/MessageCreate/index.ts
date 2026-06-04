@@ -25,7 +25,7 @@ export default async function (
  if (channelTicket) await channelTicket.messageSent(rMsg);
 
  const logTicket = await resolveTicketByLogThread.call(this.client, msg.channel_id);
- if (logTicket) logTicket.messageSent(rMsg, true);
+ if (logTicket) await logTicket.staffReply(rMsg);
 
  const staffTicket = await resolveTicketByStaffThread.call(this.client, msg.channel_id);
  if (staffTicket) staffTicket.messageSent(rMsg, true);

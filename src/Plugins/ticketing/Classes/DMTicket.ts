@@ -405,16 +405,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     return;
    }
 
-   if (ticket.channel === msg.channel_id) {
-    const { sendMessagePrefixes } = ticket.settings;
-    const relay = !sendMessagePrefixes.length || (await this.startsWithPrefix(msg.content));
-    if (!relay) return BaseTicket.prototype.messageSent.call(this, msg, true);
-
-    msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
-    const sent = await this.cloneToDm(msg);
-    if (sent) await this.react(msg);
-    return BaseTicket.prototype.messageSent.call(this, msg);
-   }
+   if (ticket.channel === msg.channel_id) return this.staffReply(msg);
 
    if (!(await this.startsWithPrefix(msg.content))) {
     await this.forwardToTicketChannel(msg);
@@ -423,6 +414,18 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    await this.cloneToDm(msg);
 
    return super.messageSent(msg);
+  }
+
+  async staffReply(msg: RMessage) {
+   const ticket = await this.getTicket();
+   const { sendMessagePrefixes } = ticket.settings;
+   const relay = !sendMessagePrefixes.length || (await this.startsWithPrefix(msg.content));
+   if (!relay) return BaseTicket.prototype.messageSent.call(this, msg, true);
+
+   msg.content = this.removeSendMessagePrefixes(msg.content, sendMessagePrefixes);
+   const sent = await this.cloneToDm(msg);
+   if (sent) await this.react(msg);
+   return BaseTicket.prototype.messageSent.call(this, msg);
   }
 
   async cloneToDm(msg: RMessage) {
