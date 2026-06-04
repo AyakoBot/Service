@@ -76,12 +76,6 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
    break;
   }
 
-  // TODO: remove
-  case 'tickets/setup': {
-   setup.call(this, cmd as never);
-   break;
-  }
-
   default:
    break;
  }

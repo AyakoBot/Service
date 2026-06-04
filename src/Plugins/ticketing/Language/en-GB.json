@@ -9,6 +9,7 @@
  "editTitle": "To edit the Message",
  "editSteps": "1. Copy the Message URL of the \"Start Ticket\" Message\n2. Enter the `/embed-builder create` Command and press `Start Over`\n3. Create your desired Embed\n4. Once done, press the `Edit` Button and paste the Message Link into the shown Text field",
  "startTicket": "Start Ticket",
+ "setupCreated": "Created a new Ticket-System. Run `/settings` to configure it before enabling it.",
  "notActive": "Ticketing-System not found or not disabled",
  "startChatting": "Please explain why you opened this Ticket. The Ticket-Team will reply shortly.\n-# Every following message will be relayed to the Support-Team until the Ticket is closed or you left it",
  "openDMs": "Failed to send DM. Please open your DMs in the Servers Privacy Settings.",
