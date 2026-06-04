@@ -393,7 +393,7 @@ export default abstract class BaseTicketLogger {
 
   const logChannels = await this.getLogChannels().then((r) => r.filter((c) => !!c));
 
-  const channel = await this.client.cache.channels.get(ticket.channel);
+  const channel = await this.client.cache.channels.get(ticket.settings.channel || '');
   const ticketChannel =
    (await this.client.cache.channels.get(ticket.channel)) ||
    (await this.client.cache.threads.get(ticket.channel));
