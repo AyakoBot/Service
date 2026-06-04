@@ -1,1 +1,9 @@
-{}
+{
+ "navigator": {
+  "manageGuildRequired": "You need the `Manage Server` Permission to edit Settings.",
+  "noSystemConfigured": "No System is configured yet. Run the setup Command first.",
+  "saved": "Settings saved.",
+  "validationFailed": "{{field}}: {{reason}}",
+  "requiredMissing": "Cannot activate: the required Field `{{field}}` is not set."
+ }
+}
