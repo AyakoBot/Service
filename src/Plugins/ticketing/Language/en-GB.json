@@ -73,7 +73,7 @@
   "authorMessageEditedForwarded": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited and edit forwarded",
   "authorMessageDeleted": "> -# [Message]({{url}}) by\n> -# {{user}}> -# deleted",
   "authorMessageEdited": "> -# [Message]({{url}}) by\n> -# {{user}}> -# edited",
-  "authorMessageInternal": "> -# [Internal note]({{url}}) by\n> -# {{user}}>"
+  "authorMessageInternal": "> -# [Internal note]({{url}}) by\n> -# {{user}}"
  },
  "errors": {
   "threadNotFound": "Couldn't find the Ticket-Thread",
