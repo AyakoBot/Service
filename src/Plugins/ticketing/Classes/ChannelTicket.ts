@@ -1,7 +1,14 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
-import { TextDisplayBuilder } from '@discordjs/builders';
+import {
+ ActionRowBuilder,
+ ButtonBuilder,
+ ContainerBuilder,
+ SectionBuilder,
+ SeparatorBuilder,
+ TextDisplayBuilder,
+} from '@discordjs/builders';
 import {
  ButtonStyle,
  ChannelType,
@@ -9,8 +16,7 @@ import {
  MessageFlags,
  OverwriteType,
  PermissionFlagsBits,
- type APIActionRowComponent,
- type APIButtonComponentWithCustomId,
+ SeparatorSpacingSize,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
@@ -129,42 +135,45 @@ export default class ChannelTicket extends BaseTicket {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
-  const deleteBtn: APIActionRowComponent<APIButtonComponentWithCustomId> = {
-   type: ComponentType.ActionRow,
-   components: [
-    {
-     type: ComponentType.Button,
-     style: ButtonStyle.Danger,
-     custom_id: `tickets/delete_${ticket.id}`,
-     label: t.base.t.Delete(),
-    },
-    ...(closerId
-     ? [
-        {
-         type: ComponentType.Button as const,
-         style: ButtonStyle.Secondary as const,
-         custom_id: encodeContext(TicketContextType.Closed, closerId, String(ticket.id)),
-         label: '​',
-         disabled: true,
-        },
-       ]
-     : []),
-   ],
-  };
+  const container = new ContainerBuilder()
+   .setAccentColor(Colors.Danger)
+   .addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+       `-# ${emotes.tools.name} | ${t.SupportTeam()} • ${t.hasClosedThread()}`,
+      ),
+     )
+     .setButtonAccessory(
+      new ButtonBuilder()
+       .setStyle(ButtonStyle.Secondary)
+       .setDisabled(true)
+       .setCustomId(encodeContext(TicketContextType.Closed, closerId || '0', String(ticket.id)))
+       .setLabel('​'),
+     ),
+   );
+
+  if (reason) container.addTextDisplayComponents(new TextDisplayBuilder().setContent(reason));
+
+  container
+   .addSeparatorComponents(
+    new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+   )
+   .addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+     new ButtonBuilder()
+      .setStyle(ButtonStyle.Danger)
+      .setCustomId(`tickets/delete_${ticket.id}`)
+      .setLabel(t.base.t.Delete()),
+    ),
+   );
 
   return new MessagePayload(this.client, {
    origin: ChannelTicket.name,
    reason: 'Closing ticket',
   })
-   .setEmbeds([
-    {
-     author: { name: `${emotes.tools.name} | ${t.SupportTeam()}` },
-     description: t.hasClosedThread(),
-     color: Colors.Danger,
-     ...(reason ? { fields: [{ name: t.base.t.Reason(), value: reason }] } : {}),
-    },
-   ])
-   .setComponents([deleteBtn]);
+   .setComponents([container.toJSON()])
+   .setFlags(MessageFlags.IsComponentsV2);
  }
 
  async revokeChannelAccess(api: API, channel: RChannel | RThread) {

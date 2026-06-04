@@ -830,6 +830,8 @@ export default abstract class BaseTicketLogger {
     return t.base.t.Claimed();
    case TicketContextType.Closed:
     return t.base.t.Closed();
+   case TicketContextType.Left:
+    return t.base.t.Left();
    default:
     return type;
   }

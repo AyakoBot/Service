@@ -17,6 +17,7 @@ import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
+import { TicketContextType } from '../Util/transcriptContext.js';
 
 import BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
@@ -149,8 +150,12 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    await this.handleBaseLog({ type: LogType.TicketLeft, data: { userId: ticket.user } });
    await this.unpinMessage();
 
-   const leftPayload = await this.getLeavePayload();
-   await this.sendMessage(leftPayload);
+   const t = await this.plugin.t(ticket.settings.guild);
+   await this.sendStateChange(
+    TicketContextType.Left,
+    ticket.user,
+    `-# ${constants.formatters.getEmote(emotes.crossWithBackground)} ${t.leftTicket()}`,
+   );
    await this.updateMessage(cmd, this.getLeaveUpdatePayload());
 
    await this.setDbEntryLeft();
