@@ -276,7 +276,7 @@ export default class ChannelTicket extends BaseTicket {
    ticket.settings.claimTags,
    ticket.settings.tagClaimer ? user?.username || null : null,
   );
-  const claimPayload = await this.getClaimPayload(data.cmd);
+  const claimPayload = await this.getClaimPayload(data.cmd, data.userId);
   await this.updateInitClaimMessage(data.cmd, claimPayload);
 
   await superClaim.next();
@@ -300,42 +300,60 @@ export default class ChannelTicket extends BaseTicket {
   return modify;
  }
 
- async getClaimPayload(cmd: APIMessageComponentInteraction) {
+ async getClaimPayload(cmd: APIMessageComponentInteraction, claimerId: string) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
   const isV2 =
    ((cmd.message.flags ?? 0) & MessageFlags.IsComponentsV2) === MessageFlags.IsComponentsV2;
 
-  const components =
-   cmd.message.components?.map((row) => {
-    if (row.type !== ComponentType.ActionRow) return row;
-
-    return {
-     type: ComponentType.ActionRow as const,
-     components: row.components.map((btn) => ({
-      ...btn,
-      disabled:
-       'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
-     })),
-    };
-   }) ?? [];
-
-  const claimedBy = `${t.claimedBy()}: <@${ticket.user}>`;
+  const claimedBy = `${t.claimedBy()}: <@${claimerId}>`;
   const payload = new MessagePayload(this.client, {
    origin: ChannelTicket.name,
    reason: 'Updating claim message',
-  });
+  })
+   .setAllowedMentionsUsers([claimerId])
+   .setAllowedMentionsRoles([]);
 
-  if (isV2) {
-   payload
-    .setFlags(MessageFlags.IsComponentsV2)
-    .setComponents([new TextDisplayBuilder().setContent(claimedBy).toJSON(), ...components]);
-  } else {
-   payload.setContent(claimedBy).setComponents(components);
+  if (!isV2) {
+   return payload.setContent(claimedBy).setComponents(
+    cmd.message.components?.map((row) => {
+     if (row.type !== ComponentType.ActionRow) return row;
+
+     return {
+      type: ComponentType.ActionRow as const,
+      components: row.components.map((btn) => ({
+       ...btn,
+       disabled:
+        'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
+      })),
+     };
+    }) ?? [],
+   );
   }
 
-  return payload;
+  let replaced = false;
+  const components = (cmd.message.components ?? []).map((c) => {
+   if (c.type === ComponentType.TextDisplay && !replaced && /<@&?\d+>/.test(c.content)) {
+    replaced = true;
+    return new TextDisplayBuilder().setContent(claimedBy).toJSON();
+   }
+
+   if (c.type !== ComponentType.ActionRow) return c;
+
+   return {
+    type: ComponentType.ActionRow as const,
+    components: c.components.map((btn) => ({
+     ...btn,
+     disabled:
+      'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
+    })),
+   };
+  });
+
+  if (!replaced) components.unshift(new TextDisplayBuilder().setContent(claimedBy).toJSON());
+
+  return payload.setFlags(MessageFlags.IsComponentsV2).setComponents(components);
  }
 
  async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
@@ -380,6 +398,12 @@ export default class ChannelTicket extends BaseTicket {
 
    const initPayload = await this.getInitPayload(true);
    const initMessage = await this.sendMessage(initPayload);
+
+   const pin = await api.channels.pinMessage(channel.id, initMessage.id, {
+    origin: ChannelTicket.name,
+    reason: 'Pinning initial ticket message',
+   });
+   if (pin instanceof RequestHandlerError) this.plugin.nonFatalError(pin, this.create.name);
 
    await this.createStaffThread(initMessage.id);
 
