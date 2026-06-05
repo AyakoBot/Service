@@ -21,7 +21,17 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
  /* eslint-enable @typescript-eslint/naming-convention */
 
  eventHandlers = {
-  [GatewayDispatchEvents.InteractionCreate]: (data) => interactionCreate.call(this, data),
+  [GatewayDispatchEvents.InteractionCreate]: (data) => {
+   if (
+    !data.guild_id
+     ? !this.client.debugUsers.includes(data.user?.id || '')
+     : !this.client.debugGuilds.includes(data.guild_id || '')
+   ) {
+    return; // TODO: remove
+   }
+
+   interactionCreate.call(this, data);
+  },
  } as Plugin<Events, APILanguage>['eventHandlers'];
 
  constructor(client: Client) {

@@ -1,5 +1,7 @@
 
 import {
+ ApplicationCommandOptionType,
+ ApplicationCommandType,
  MessageFlags,
  type APIApplicationCommandInteraction,
  type APIMessageComponentInteraction,
@@ -14,7 +16,15 @@ import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
 
-const settingName = 'ticketing';
+const extractSettingName = (cmd: APIApplicationCommandInteraction): string | undefined => {
+ if (cmd.data.type !== ApplicationCommandType.ChatInput) return undefined;
+
+ const top = cmd.data.options?.[0];
+ if (!top) return undefined;
+ if (top.type === ApplicationCommandOptionType.SubcommandGroup) return top.options?.[0]?.name;
+ if (top.type === ApplicationCommandOptionType.Subcommand) return top.name;
+ return undefined;
+};
 
 export const openFromCommand = async function (
  this: SettingsPlugin,
@@ -22,10 +32,13 @@ export const openFromCommand = async function (
 ) {
  if (!cmd.guild_id) return;
 
- const t = await this.t(cmd.guild_id);
+ const settingName = extractSettingName(cmd);
+ if (!settingName) return;
 
  const resolved = resolveSchema(this.client, settingName);
  if (!resolved) return;
+
+ const t = await this.t(cmd.guild_id);
 
  const row = await this.client.db.client.ticketSetting.findFirst({
   where: { guild: cmd.guild_id },
