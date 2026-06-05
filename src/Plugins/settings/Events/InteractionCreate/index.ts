@@ -1,6 +1,7 @@
 import {
     InteractionType,
     MessageFlags,
+    type APIApplicationCommandAutocompleteInteraction,
     type APIApplicationCommandInteraction,
     type APIInteraction,
     type APIMessageComponentInteraction,
@@ -14,6 +15,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { hasManageGuild } from '../../Util/authorizeSettings.js';
 import { parseSettingsId, SettingsAction } from '../../Util/customId.js';
 
+import autocomplete from './autocomplete.js';
 import create from './create.js';
 import group from './group.js';
 import { openFromCommand, reRender } from './navigator.js';
@@ -43,6 +45,9 @@ export default async function (
    openFromCommand.call(this, command);
    break;
   }
+  case InteractionType.ApplicationCommandAutocomplete:
+   autocomplete.call(this, cmd as APIApplicationCommandAutocompleteInteraction);
+   break;
   case InteractionType.MessageComponent: {
    const component = cmd as APIMessageComponentInteraction;
    const id = parseSettingsId(component.data.custom_id);

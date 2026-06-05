@@ -1,4 +1,3 @@
-import { RequestHandlerError } from '@ayako/api';
 import {
  ComponentType,
  MessageFlags,
@@ -158,18 +157,6 @@ export default async function (
   where: { id: id.rowId, guild: cmd.guild_id },
   data: data as UpdateData<'ticketSetting'>,
  });
-
- const confirm = await new MessagePayload(this.client, {
-  origin: this.name,
-  reason: 'Settings saved',
- })
-  .setContent(t.navigator.saved())
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
-
- if (confirm instanceof RequestHandlerError) {
-  this.nonFatalError(new Error('Failed to confirm settings save', { cause: confirm }), 'save');
- }
 
  reRender.call(this, cmd, id);
 }
