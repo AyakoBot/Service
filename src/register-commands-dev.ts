@@ -50,16 +50,16 @@ for (const guildId of client.debugGuilds) {
     logger.log(`[register-dev] Deleted ${command.name} from ${guildId}`);
    }
   }
- }
+ } else {
+  for (const command of body) {
+   await api.applicationCommands.createGuildCommand(guildId, command, {
+    origin: 'register-commands-dev',
+    reason: 'Publishing dev guild commands',
+   });
+  }
 
- for (const command of body) {
-  await api.applicationCommands.createGuildCommand(guildId, command, {
-   origin: 'register-commands-dev',
-   reason: 'Publishing dev guild commands',
-  });
+  logger.log(`[register-dev] Pushed ${body.length} commands to ${guildId}`);
  }
-
- logger.log(`[register-dev] Pushed ${body.length} commands to ${guildId}`);
 }
 
 process.exit(0);
