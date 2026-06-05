@@ -15,6 +15,7 @@ import { buildNavigator } from '../../Util/buildNavigator.js';
 import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import { resolveChrome } from '../../Util/resolveChrome.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
 
 const extractSettingName = (cmd: APIApplicationCommandInteraction): string | undefined => {
@@ -69,7 +70,8 @@ export const openFromCommand = async function (
   });
 
   if (row) {
-   const container = buildNavigator(settingName, schema, String(row.id), row);
+   const chrome = await resolveChrome.call(this, cmd.guild_id);
+   const container = buildNavigator(settingName, schema, String(row.id), row, chrome);
 
    new MessagePayload(this.client, { origin: this.name, reason: 'Settings navigator' })
     .setComponents([container.toJSON() as APIMessageTopLevelComponent])
@@ -104,19 +106,44 @@ export const reRender = async function (
  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
  id: SettingsId,
 ) {
- if (!cmd.guild_id || !id.rowId) return;
+ if (!cmd.guild_id) return;
 
  const resolved = resolveSchema(this.client, id.settingName);
  if (!resolved) return;
+
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+
+ if (!id.rowId) {
+  const t = await this.t(cmd.guild_id);
+
+  const rows = await this.client.db.client.ticketSetting.findMany({
+   where: { guild: cmd.guild_id },
+  });
+
+  const overview = buildOverview(
+   t.navigator.overviewTitle(),
+   t.navigator.create(),
+   t.base.t.Edit(),
+   t.navigator.overviewEmpty(),
+   id.settingName,
+   schema,
+   rows,
+  );
+
+  new MessagePayload(this.client, { origin: this.name, reason: 'Settings overview re-render' })
+   .setComponents([overview.toJSON() as APIMessageTopLevelComponent])
+   .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
+   .update(cmd);
+  return;
+ }
 
  const row = await this.client.db.client.ticketSetting.findFirst({
   where: { id: id.rowId, guild: cmd.guild_id },
  });
  if (!row) return;
 
- const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
-
- const container = buildNavigator(id.settingName, schema, id.rowId, row);
+ const chrome = await resolveChrome.call(this, cmd.guild_id);
+ const container = buildNavigator(id.settingName, schema, id.rowId, row, chrome);
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Settings navigator re-render' })
   .setComponents([container.toJSON() as APIMessageTopLevelComponent])

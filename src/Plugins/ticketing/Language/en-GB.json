@@ -55,12 +55,43 @@
  "settings": {
   "systemLabel": "Ticket system {{id}}",
   "groups": {
-   "general": "General"
+   "general": "General",
+   "channels": "Channels",
+   "staff": "Staff",
+   "notifications": "Notifications",
+   "dm": "DM Relay",
+   "forum": "Forum Tags"
   },
   "fields": {
    "type": "Ticket type",
    "logMode": "Log mode",
-   "allowCreatorClose": "Allow creator to close"
+   "allowCreatorClose": "Allow creator to close",
+   "category": "Ticket category",
+   "channel": "Thread host channel",
+   "archiveCategory": "Archive category",
+   "archiveDuration": "Archive duration (minutes)",
+   "logChannels": "Log channels",
+   "staffRoles": "Staff roles",
+   "staffUsers": "Staff users",
+   "staffThreads": "Staff discussion threads",
+   "staffThreadsChannel": "Staff thread host channel",
+   "mentionRoles": "Mention roles",
+   "mentionUsers": "Mention users",
+   "denyRoles": "Blocked roles",
+   "denyUsers": "Blocked users",
+   "sendMessagePrefixes": "Reply prefixes",
+   "createTags": "Create tags",
+   "claimTags": "Claim tags",
+   "closeTags": "Close tags",
+   "tagClaimer": "Tag claimer name",
+   "transcriptChannels": "Transcript channels"
+  },
+  "reasons": {
+   "channelTypeOnly": "Channel-based tickets only",
+   "threadTypeOnly": "Thread-based tickets only",
+   "dmOnly": "DM tickets only",
+   "nonDmOnly": "Non-DM tickets only",
+   "staffThreadsOff": "Enable staff discussion threads first"
   },
   "options": {
    "dmToChannel": "DM to Channel",

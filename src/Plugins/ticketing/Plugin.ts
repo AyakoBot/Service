@@ -198,6 +198,167 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      },
     ],
    },
+   {
+    id: 'channels',
+    label: (t: TicketTranslator) => t.settings.groups.channels(),
+    fields: [
+     {
+      column: 'category',
+      editor: EditorType.Category,
+      label: (t: TicketTranslator) => t.settings.fields.category(),
+      showIf: (row) => ({
+       ok: [TicketType.Channel, TicketType.dmToChannel].includes(row.type),
+       reason: en.settings.reasons.channelTypeOnly,
+      }),
+     },
+     {
+      column: 'channel',
+      editor: EditorType.Channel,
+      label: (t: TicketTranslator) => t.settings.fields.channel(),
+      showIf: (row) => ({
+       ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
+       reason: en.settings.reasons.threadTypeOnly,
+      }),
+     },
+     {
+      column: 'archiveCategory',
+      editor: EditorType.Category,
+      label: (t: TicketTranslator) => t.settings.fields.archiveCategory(),
+      showIf: (row) => ({
+       ok: [TicketType.Channel, TicketType.dmToChannel].includes(row.type),
+       reason: en.settings.reasons.channelTypeOnly,
+      }),
+     },
+     {
+      column: 'archiveDuration',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.archiveDuration(),
+     },
+     {
+      column: 'logChannels',
+      editor: EditorType.Channels,
+      label: (t: TicketTranslator) => t.settings.fields.logChannels(),
+      arity: FieldArity.Multi,
+     },
+    ],
+   },
+   {
+    id: 'staff',
+    label: (t: TicketTranslator) => t.settings.groups.staff(),
+    fields: [
+     {
+      column: 'staffRoles',
+      editor: EditorType.Roles,
+      label: (t: TicketTranslator) => t.settings.fields.staffRoles(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'staffUsers',
+      editor: EditorType.Users,
+      label: (t: TicketTranslator) => t.settings.fields.staffUsers(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'staffThreads',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.staffThreads(),
+      showIf: (row) => ({
+       ok: [TicketType.Channel, TicketType.Thread].includes(row.type),
+       reason: en.settings.reasons.nonDmOnly,
+      }),
+     },
+     {
+      column: 'staffThreadsChannel',
+      editor: EditorType.Channel,
+      label: (t: TicketTranslator) => t.settings.fields.staffThreadsChannel(),
+      showIf: (row) => ({
+       ok: Boolean(row.staffThreads),
+       reason: en.settings.reasons.staffThreadsOff,
+      }),
+     },
+    ],
+   },
+   {
+    id: 'notifications',
+    label: (t: TicketTranslator) => t.settings.groups.notifications(),
+    fields: [
+     {
+      column: 'mentionRoles',
+      editor: EditorType.Roles,
+      label: (t: TicketTranslator) => t.settings.fields.mentionRoles(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'mentionUsers',
+      editor: EditorType.Users,
+      label: (t: TicketTranslator) => t.settings.fields.mentionUsers(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'denyRoles',
+      editor: EditorType.Roles,
+      label: (t: TicketTranslator) => t.settings.fields.denyRoles(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'denyUsers',
+      editor: EditorType.Users,
+      label: (t: TicketTranslator) => t.settings.fields.denyUsers(),
+      arity: FieldArity.Multi,
+     },
+    ],
+   },
+   {
+    id: 'dm',
+    label: (t: TicketTranslator) => t.settings.groups.dm(),
+    showIf: (row) => ({
+     ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
+     reason: en.settings.reasons.dmOnly,
+    }),
+    fields: [
+     {
+      column: 'sendMessagePrefixes',
+      editor: EditorType.Strings,
+      label: (t: TicketTranslator) => t.settings.fields.sendMessagePrefixes(),
+      arity: FieldArity.Multi,
+     },
+    ],
+   },
+   {
+    id: 'forum',
+    label: (t: TicketTranslator) => t.settings.groups.forum(),
+    fields: [
+     {
+      column: 'createTags',
+      editor: EditorType.Strings,
+      label: (t: TicketTranslator) => t.settings.fields.createTags(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'claimTags',
+      editor: EditorType.Strings,
+      label: (t: TicketTranslator) => t.settings.fields.claimTags(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'closeTags',
+      editor: EditorType.Strings,
+      label: (t: TicketTranslator) => t.settings.fields.closeTags(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'tagClaimer',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.tagClaimer(),
+     },
+     {
+      column: 'transcriptChannels',
+      editor: EditorType.Channels,
+      label: (t: TicketTranslator) => t.settings.fields.transcriptChannels(),
+      arity: FieldArity.Multi,
+     },
+    ],
+   },
   ],
  } satisfies SettingsSchemaDef<TicketSetting, TicketTranslator> as SettingsSchemaDef;
 }

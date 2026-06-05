@@ -1,6 +1,18 @@
-import { CheckboxBuilder, LabelBuilder, RadioGroupBuilder, TextInputBuilder } from '@discordjs/builders';
-import { TextInputStyle } from 'discord-api-types/v10';
+import {
+ ChannelSelectMenuBuilder,
+ CheckboxBuilder,
+ CheckboxGroupBuilder,
+ LabelBuilder,
+ MentionableSelectMenuBuilder,
+ RadioGroupBuilder,
+ RoleSelectMenuBuilder,
+ StringSelectMenuBuilder,
+ TextInputBuilder,
+ UserSelectMenuBuilder,
+} from '@discordjs/builders';
+import { ChannelType, TextInputStyle } from 'discord-api-types/v10';
 
+import { EditorType } from '../EditorType.js';
 import { FieldArity } from '../SettingsSchema.js';
 import type { SettingsField } from '../SettingsSchema.js';
 
@@ -8,6 +20,66 @@ import { ComponentKind, resolveComponentKind } from './resolveComponentKind.js';
 
 const asOptions = (field: SettingsField): { label: string; value: string }[] =>
  (Array.isArray(field.options) ? field.options : []);
+
+const toIds = (value: unknown): string[] => {
+ if (Array.isArray(value)) return value.map((entry) => String(entry)).filter((id) => id.length > 0);
+ if (value === undefined || value === null || value === '') return [];
+ return [String(value)];
+};
+
+const renderEntity = (field: SettingsField, value: unknown, customId: string): LabelBuilder => {
+ const label = new LabelBuilder().setLabel(field.label);
+ if (field.description) label.setDescription(field.description);
+
+ const maxValues = field.arity === FieldArity.Multi ? 25 : 1;
+ const ids = toIds(value);
+
+ switch (field.editor) {
+  case EditorType.Role:
+  case EditorType.Roles:
+   return label.setRoleSelectMenuComponent(
+    new RoleSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(maxValues)
+     .setDefaultRoles(ids),
+   );
+  case EditorType.User:
+  case EditorType.Users:
+   return label.setUserSelectMenuComponent(
+    new UserSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(maxValues)
+     .setDefaultUsers(ids),
+   );
+  case EditorType.Mention:
+  case EditorType.Mentions:
+   return label.setMentionableSelectMenuComponent(
+    new MentionableSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(maxValues),
+   );
+  case EditorType.Category:
+   return label.setChannelSelectMenuComponent(
+    new ChannelSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(maxValues)
+     .setChannelTypes(ChannelType.GuildCategory)
+     .setDefaultChannels(ids),
+   );
+  default:
+   return label.setChannelSelectMenuComponent(
+    new ChannelSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(maxValues)
+     .setDefaultChannels(ids),
+   );
+ }
+};
 
 export const renderField = (field: SettingsField, row: Record<string, unknown>): LabelBuilder => {
  const value = row[field.column];
@@ -29,6 +101,16 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
      .setCustomId(customId)
      .setOptions(asOptions(field).map((o) => ({ ...o, default: o.value === String(value) }))),
    );
+  case ComponentKind.Entity:
+   return renderEntity(field, value, customId);
+  case ComponentKind.TextMulti:
+   return label.setTextInputComponent(
+    new TextInputBuilder()
+     .setCustomId(customId)
+     .setStyle(TextInputStyle.Paragraph)
+     .setRequired(Boolean(field.required))
+     .setValue(Array.isArray(value) ? value.join('\n') : ''),
+   );
   case ComponentKind.Text:
    return label.setTextInputComponent(
     new TextInputBuilder()
@@ -36,6 +118,47 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
      .setStyle(TextInputStyle.Short)
      .setRequired(Boolean(field.required))
      .setValue(value === undefined || value === null ? '' : String(value)),
+   );
+  case ComponentKind.SecretText:
+   return label.setTextInputComponent(
+    new TextInputBuilder()
+     .setCustomId(customId)
+     .setStyle(TextInputStyle.Short)
+     .setRequired(false)
+     .setPlaceholder('Leave blank to keep current')
+     .setValue(''),
+   );
+  case ComponentKind.CheckboxGroup:
+   return label.setCheckboxGroupComponent(
+    new CheckboxGroupBuilder()
+     .setCustomId(customId)
+     .setOptions(
+      asOptions(field).map((o) => ({
+       ...o,
+       default: Array.isArray(value) && value.includes(o.value),
+      })),
+     ),
+   );
+  case ComponentKind.Select1:
+   return label.setStringSelectMenuComponent(
+    new StringSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(1)
+     .setOptions(asOptions(field).map((o) => ({ ...o, default: String(value) === o.value }))),
+   );
+  case ComponentKind.SelectN:
+   return label.setStringSelectMenuComponent(
+    new StringSelectMenuBuilder()
+     .setCustomId(customId)
+     .setMinValues(0)
+     .setMaxValues(Math.max(1, asOptions(field).length))
+     .setOptions(
+      asOptions(field).map((o) => ({
+       ...o,
+       default: Array.isArray(value) && value.includes(o.value),
+      })),
+     ),
    );
   default:
    throw new Error(

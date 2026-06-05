@@ -53,6 +53,25 @@ const readRadio = (
  return undefined;
 };
 
+const readSelect = (
+ components: readonly SubmitComponent[],
+ customId: string,
+): string[] | undefined => {
+ const comp = findSubmitComponent(components, customId);
+ if (
+  comp &&
+  (comp.type === ComponentType.StringSelect ||
+   comp.type === ComponentType.UserSelect ||
+   comp.type === ComponentType.RoleSelect ||
+   comp.type === ComponentType.MentionableSelect ||
+   comp.type === ComponentType.ChannelSelect ||
+   comp.type === ComponentType.CheckboxGroup)
+ ) {
+  return comp.values;
+ }
+ return undefined;
+};
+
 const readField = (cmd: APIModalSubmitInteraction, field: SettingsField): unknown => {
  const optionCount = Array.isArray(field.options) ? field.options.length : 0;
  const kind = resolveComponentKind(field.editor, field.arity ?? FieldArity.Single, optionCount);
@@ -63,6 +82,11 @@ const readField = (cmd: APIModalSubmitInteraction, field: SettingsField): unknow
    return readCheckbox(components, field.column);
   case ComponentKind.Radio:
    return readRadio(components, field.column);
+  case ComponentKind.Entity: {
+   const values = readSelect(components, field.column) ?? [];
+   if (field.arity === FieldArity.Multi) return values;
+   return values[0];
+  }
   case ComponentKind.TextMulti: {
    const raw = findModalValue(components, field.column);
    if (raw === undefined) return undefined;
@@ -70,6 +94,16 @@ const readField = (cmd: APIModalSubmitInteraction, field: SettingsField): unknow
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
+  }
+  case ComponentKind.CheckboxGroup:
+   return readSelect(components, field.column) ?? [];
+  case ComponentKind.Select1:
+   return readSelect(components, field.column)?.[0];
+  case ComponentKind.SelectN:
+   return readSelect(components, field.column) ?? [];
+  case ComponentKind.SecretText: {
+   const raw = findModalValue(components, field.column);
+   return raw === undefined || raw === '' ? undefined : raw;
   }
   default: {
    const raw = findModalValue(components, field.column);

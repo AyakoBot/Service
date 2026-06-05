@@ -9,6 +9,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { buildNavigator } from '../../Util/buildNavigator.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import { resolveChrome } from '../../Util/resolveChrome.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
 
 export default async function (
@@ -45,7 +46,8 @@ export default async function (
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
 
- const container = buildNavigator(id.settingName, schema, String(created.id), created);
+ const chrome = await resolveChrome.call(this, cmd.guild_id);
+ const container = buildNavigator(id.settingName, schema, String(created.id), created, chrome);
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Settings create navigator' })
   .setComponents([container.toJSON() as APIMessageTopLevelComponent])

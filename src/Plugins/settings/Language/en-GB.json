@@ -6,6 +6,12 @@
   "overviewEmpty": "No Systems yet — create one to get started.",
   "saved": "Settings saved.",
   "validationFailed": "{{field}}: {{reason}}",
-  "requiredMissing": "Cannot activate: the required Field `{{field}}` is not set."
+  "requiredMissing": "Cannot activate: the required Field `{{field}}` is not set.",
+  "back": "Back",
+  "pause": "Pause",
+  "resume": "Resume",
+  "incomplete": "⚠",
+  "activateBlocked": "Set {{field}} before activating.",
+  "deleteBlocked": "Close its {{count}} open ticket(s) first."
  }
 }

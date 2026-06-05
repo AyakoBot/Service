@@ -19,6 +19,7 @@ import autocomplete from './autocomplete.js';
 import create from './create.js';
 import group from './group.js';
 import { openFromCommand, reRender } from './navigator.js';
+import { del, pause } from './rowActions.js';
 import save from './save.js';
 
 const authorize = async function (this: SettingsPlugin, cmd: APIInteraction): Promise<boolean> {
@@ -59,6 +60,8 @@ export default async function (
     reRender.call(this, component, id);
    }
    if (id.action === SettingsAction.Create) create.call(this, component, id);
+   if (id.action === SettingsAction.Pause) pause.call(this, component, id);
+   if (id.action === SettingsAction.Delete) del.call(this, component, id);
    break;
   }
   case InteractionType.ModalSubmit: {
