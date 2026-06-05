@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import { logger } from '@ayako/utility';
 import { config } from 'dotenv';
 
@@ -23,11 +24,40 @@ client.registerPlugin(pluginEval);
 
 const body = buildCommandBody(client);
 
-const api = client.getBaseAPI();
-await api.applicationCommands.bulkOverwriteGlobalCommands(body, {
- origin: 'register-commands',
- reason: 'Publishing global commands',
-});
+const delNames = process.argv
+ .find((arg) => arg.startsWith('--del='))
+ ?.slice('--del='.length)
+ .split(',')
+ .map((name) => name.trim())
+ .filter((name) => name.length > 0);
 
-logger.log(`[register] Published ${body.length} global commands`);
+const api = client.getBaseAPI();
+
+if (delNames?.length) {
+ const existing = await api.applicationCommands.getGlobalCommands(undefined, {
+  origin: 'register-commands',
+  reason: 'Listing global commands to delete',
+ });
+
+ if (!(existing instanceof RequestHandlerError)) {
+  for (const command of existing) {
+   if (!delNames.includes(command.name)) continue;
+
+   await api.applicationCommands.deleteGlobalCommand(command.id, {
+    origin: 'register-commands',
+    reason: 'Deleting global command',
+   });
+   logger.log(`[register] Deleted global command ${command.name}`);
+  }
+ }
+}
+
+for (const command of body) {
+ await api.applicationCommands.createGlobalCommand(command, {
+  origin: 'register-commands',
+  reason: 'Publishing global commands',
+ });
+}
+
+logger.log(`[register] Pushed ${body.length} global commands`);
 process.exit(0);
