@@ -14,6 +14,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { hasManageGuild } from '../../Util/authorizeSettings.js';
 import { parseSettingsId, SettingsAction } from '../../Util/customId.js';
 
+import create from './create.js';
 import group from './group.js';
 import { openFromCommand, reRender } from './navigator.js';
 import save from './save.js';
@@ -52,6 +53,7 @@ export default async function (
    if (id.action === SettingsAction.Nav || id.action === SettingsAction.SysSelect) {
     reRender.call(this, component, id);
    }
+   if (id.action === SettingsAction.Create) create.call(this, component, id);
    break;
   }
   case InteractionType.ModalSubmit: {
