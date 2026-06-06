@@ -211,15 +211,11 @@ class Emotes {
   link: 'https://cdn.discordapp.com/emojis/1155173739894427880.png',
  };
 
- back = { name: '⬅' };
-
- forth = { name: '➡' };
-
- info = { name: 'ℹ' };
-
- warning = { name: '⚠', link: 'https://cdn.ayakobot.com/Ayako_Assets/Warning.png' };
-
- tools = { name: '🛠️' };
+ back = { name: '⬅', id: null };
+ forth = { name: '➡', id: null };
+ info = { name: 'ℹ', id: null };
+ warning = { name: '⚠', link: 'https://cdn.ayakobot.com/Ayako_Assets/Warning.png', id: null };
+ tools = { name: '🛠️', id: null };
 
  settings = {
   name: 'Settings',
@@ -330,9 +326,9 @@ class Emotes {
   { name: '60s', id: '1167722187420074034', animated: true },
  ];
 
- lock = { name: '🔒' };
+ lock = { name: '🔒', id: null, animated: false };
 
- unlock = { name: '🔓' };
+ unlock = { name: '🔓', id: null, animated: false };
 
  ban = {
   name: 'AuditLogBan',
@@ -460,9 +456,8 @@ class Emotes {
   link: 'https://cdn.discordapp.com/emojis/1155171562933211267.png',
  };
 
- refresh = { name: '🔃' };
-
- question = { name: '❓' };
+ refresh = { name: '🔃', id: null, animated: false };
+ question = { name: '❓', id: null, animated: false };
 
  Message = {
   name: 'Message',
@@ -526,6 +521,19 @@ class Emotes {
   id: '1155171841128796210',
   link: 'https://cdn.discordapp.com/emojis/1155171841128796210.png',
  };
+
+ Emoji = { name: 'Emoji', id: '1512873140957609984', animated: false };
+ Command = { name: 'Command', id: '1512873995924406319', animated: false };
+ AutoMod = { name: 'AutoMod', id: '1512874601993211964', animated: false };
+
+ timer = { name: '⏲️', id: null, animated: false };
+ number = { name: '🔢', id: null, animated: false };
+ hammer = { name: '🔨', id: null, animated: false };
+ shop = { name: '🛍️', id: null, animated: false };
+ brain = { name: '🧠', id: null, animated: false };
+ calendar = { name: '📅', id: null, animated: false };
+ ticket = { name: '🎫', id: null, animated: false };
+ log = { name: '📜', id: null, animated: false };
 }
 
 const emotes = new Emotes();

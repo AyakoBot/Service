@@ -1,12 +1,13 @@
 import {
-    InteractionType,
-    MessageFlags,
-    type APIApplicationCommandAutocompleteInteraction,
-    type APIApplicationCommandInteraction,
-    type APIInteraction,
-    type APIMessageComponentInteraction,
-    type APIModalSubmitInteraction,
-    type GatewayDispatchEvents,
+ InteractionType,
+ MessageFlags,
+ type APIApplicationCommandAutocompleteInteraction,
+ type APIApplicationCommandInteraction,
+ type APIInteraction,
+ type APIMessageComponentInteraction,
+ type APIMessageComponentSelectMenuInteraction,
+ type APIModalSubmitInteraction,
+ type GatewayDispatchEvents,
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
@@ -17,10 +18,14 @@ import { parseSettingsId, SettingsAction } from '../../Util/customId.js';
 
 import autocomplete from './autocomplete.js';
 import create from './create.js';
-import group from './group.js';
+import fieldModal from './fieldModal.js';
+import fieldSave from './fieldSave.js';
+import groupNav from './groupNav.js';
 import { openFromCommand, reRender } from './navigator.js';
-import { del, pause } from './rowActions.js';
-import save from './save.js';
+import { del } from './rowActions.js';
+import setField from './setField.js';
+import toggleField from './toggleField.js';
+import toggleUnavail from './toggleUnavail.js';
 
 const authorize = async function (this: SettingsPlugin, cmd: APIInteraction): Promise<boolean> {
  if (!cmd.guild_id) return false;
@@ -55,12 +60,15 @@ export default async function (
    if (!id) return;
    if (!(await authorize.call(this, component))) return;
 
-   if (id.action === SettingsAction.Group) group.call(this, component, id);
-   if (id.action === SettingsAction.Nav || id.action === SettingsAction.SysSelect) {
-    reRender.call(this, component, id);
+   if (id.action === SettingsAction.GroupNav) groupNav.call(this, component, id);
+   if (id.action === SettingsAction.SetField) {
+    setField.call(this, component as APIMessageComponentSelectMenuInteraction, id);
    }
+   if (id.action === SettingsAction.ToggleField) toggleField.call(this, component, id);
+   if (id.action === SettingsAction.FieldModal) fieldModal.call(this, component, id);
+   if (id.action === SettingsAction.ToggleUnavail) toggleUnavail.call(this, component, id);
+   if (id.action === SettingsAction.Nav) reRender.call(this, component, id);
    if (id.action === SettingsAction.Create) create.call(this, component, id);
-   if (id.action === SettingsAction.Pause) pause.call(this, component, id);
    if (id.action === SettingsAction.Delete) del.call(this, component, id);
    break;
   }
@@ -70,7 +78,7 @@ export default async function (
    if (!id) return;
    if (!(await authorize.call(this, modal))) return;
 
-   if (id.action === SettingsAction.Save) save.call(this, modal, id);
+   if (id.action === SettingsAction.FieldSave) fieldSave.call(this, modal, id);
    break;
   }
   default:

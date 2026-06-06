@@ -25,6 +25,7 @@ export interface SettingsField<Row = Record<string, unknown>> {
  options?: { label: string; value: string }[] | (() => Promise<{ label: string; value: string }[]>);
  required?: boolean;
  secret?: boolean;
+ headerToggle?: boolean;
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
 }
@@ -40,6 +41,7 @@ export interface SettingsGroup<Row = Record<string, unknown>> {
 export interface SettingsSchema<Row = Record<string, unknown>> {
  table: TableName;
  rowKey: keyof Row & string;
+ multiRow: boolean;
  rowLabel: (row: Row) => string;
  groups: SettingsGroup<Row>[];
 }
@@ -55,6 +57,7 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
   | (() => Promise<{ label: string; value: string }[]>);
  required?: boolean;
  secret?: boolean;
+ headerToggle?: boolean;
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
 }
@@ -70,6 +73,7 @@ export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTran
 export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  table: TableName;
  rowKey: keyof Row & string;
+ multiRow: boolean;
  rowLabel: (t: T, row: Row) => string;
  groups: SettingsGroupDef<Row, T>[];
 }

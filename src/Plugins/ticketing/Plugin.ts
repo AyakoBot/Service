@@ -1,5 +1,5 @@
-import { TicketLogMode, TicketType } from '@ayako/database';
 import type { TicketSetting } from '@ayako/database';
+import { TicketLogMode, TicketType } from '@ayako/database';
 import { LogLevel } from '@ayako/utility';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
@@ -10,6 +10,7 @@ import Plugin, {
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
+import emotes from '../../Classes/Emotes.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -38,10 +39,27 @@ type Events =
 type APILanguage = typeof en;
 type TicketTranslator = TranslatorType<APILanguage> & { base: BaseLang };
 
+export enum TicketGroups {
+ General = 'general',
+ Channels = 'channels',
+ Staff = 'staff',
+ Notifications = 'notifications',
+ Dm = 'dm',
+ Forum = 'forum',
+}
+
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
  name = 'Ticketing';
  settingName = 'ticketing';
  tableName = 'TicketSetting';
+
+ groupEmotes = {
+  [TicketGroups.Channels]: emotes.channelTypes[0],
+  [TicketGroups.Staff]: emotes.Member,
+  [TicketGroups.Notifications]: emotes.info,
+  [TicketGroups.Dm]: emotes.Message,
+  [TicketGroups.Forum]: emotes.channelTypes[15],
+ };
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -150,22 +168,25 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  settingsSchema = {
   table: 'ticketSetting',
   rowKey: 'id',
+  multiRow: true,
   rowLabel: (t: TicketTranslator, row: TicketSetting) =>
    t.settings.systemLabel({ id: String(row.id) }),
   groups: [
    {
-    id: 'general',
+    id: TicketGroups.General,
     label: (t: TicketTranslator) => t.settings.groups.general(),
     fields: [
      {
       column: 'active',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.base.t.Active(),
+      headerToggle: true,
      },
      {
       column: 'type',
       editor: EditorType.TicketType,
       label: (t: TicketTranslator) => t.settings.fields.type(),
+      description: (t: TicketTranslator) => t.settings.descriptions.type(),
       arity: FieldArity.Single,
       required: true,
       options: [
@@ -185,6 +206,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'logMode',
       editor: EditorType.TicketLogMode,
       label: (t: TicketTranslator) => t.settings.fields.logMode(),
+      description: (t: TicketTranslator) => t.settings.descriptions.logMode(),
       arity: FieldArity.Single,
       options: [
        { value: TicketLogMode.Channel, label: (t: TicketTranslator) => t.base.t.Channel() },
@@ -195,17 +217,19 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'allowCreatorClose',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.allowCreatorClose(),
+      description: (t: TicketTranslator) => t.settings.descriptions.allowCreatorClose(),
      },
     ],
    },
    {
-    id: 'channels',
+    id: TicketGroups.Channels,
     label: (t: TicketTranslator) => t.settings.groups.channels(),
     fields: [
      {
       column: 'category',
       editor: EditorType.Category,
       label: (t: TicketTranslator) => t.settings.fields.category(),
+      description: (t: TicketTranslator) => t.settings.descriptions.category(),
       showIf: (row) => ({
        ok: [TicketType.Channel, TicketType.dmToChannel].includes(row.type),
        reason: en.settings.reasons.channelTypeOnly,
@@ -215,6 +239,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'channel',
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.channel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.channel(),
       showIf: (row) => ({
        ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
        reason: en.settings.reasons.threadTypeOnly,
@@ -224,6 +249,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'archiveCategory',
       editor: EditorType.Category,
       label: (t: TicketTranslator) => t.settings.fields.archiveCategory(),
+      description: (t: TicketTranslator) => t.settings.descriptions.archiveCategory(),
       showIf: (row) => ({
        ok: [TicketType.Channel, TicketType.dmToChannel].includes(row.type),
        reason: en.settings.reasons.channelTypeOnly,
@@ -233,35 +259,48 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'archiveDuration',
       editor: EditorType.Duration,
       label: (t: TicketTranslator) => t.settings.fields.archiveDuration(),
+      description: (t: TicketTranslator) => t.settings.descriptions.archiveDuration(),
+      arity: FieldArity.Single,
+      options: [
+       { value: '3600000', label: (t: TicketTranslator) => t.settings.durations['1h']() },
+       { value: '43200000', label: (t: TicketTranslator) => t.settings.durations['12h']() },
+       { value: '86400000', label: (t: TicketTranslator) => t.settings.durations['24h']() },
+       { value: '259200000', label: (t: TicketTranslator) => t.settings.durations['3d']() },
+       { value: '604800000', label: (t: TicketTranslator) => t.settings.durations['1w']() },
+      ],
      },
      {
       column: 'logChannels',
       editor: EditorType.Channels,
       label: (t: TicketTranslator) => t.settings.fields.logChannels(),
+      description: (t: TicketTranslator) => t.settings.descriptions.logChannels(),
       arity: FieldArity.Multi,
      },
     ],
    },
    {
-    id: 'staff',
+    id: TicketGroups.Staff,
     label: (t: TicketTranslator) => t.settings.groups.staff(),
     fields: [
      {
       column: 'staffRoles',
       editor: EditorType.Roles,
       label: (t: TicketTranslator) => t.settings.fields.staffRoles(),
+      description: (t: TicketTranslator) => t.settings.descriptions.staffRoles(),
       arity: FieldArity.Multi,
      },
      {
       column: 'staffUsers',
       editor: EditorType.Users,
       label: (t: TicketTranslator) => t.settings.fields.staffUsers(),
+      description: (t: TicketTranslator) => t.settings.descriptions.staffUsers(),
       arity: FieldArity.Multi,
      },
      {
       column: 'staffThreads',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.staffThreads(),
+      description: (t: TicketTranslator) => t.settings.descriptions.staffThreads(),
       showIf: (row) => ({
        ok: [TicketType.Channel, TicketType.Thread].includes(row.type),
        reason: en.settings.reasons.nonDmOnly,
@@ -271,6 +310,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'staffThreadsChannel',
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.staffThreadsChannel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.staffThreadsChannel(),
       showIf: (row) => ({
        ok: Boolean(row.staffThreads),
        reason: en.settings.reasons.staffThreadsOff,
@@ -279,37 +319,41 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
    {
-    id: 'notifications',
+    id: TicketGroups.Notifications,
     label: (t: TicketTranslator) => t.settings.groups.notifications(),
     fields: [
      {
       column: 'mentionRoles',
       editor: EditorType.Roles,
       label: (t: TicketTranslator) => t.settings.fields.mentionRoles(),
+      description: (t: TicketTranslator) => t.settings.descriptions.mentionRoles(),
       arity: FieldArity.Multi,
      },
      {
       column: 'mentionUsers',
       editor: EditorType.Users,
       label: (t: TicketTranslator) => t.settings.fields.mentionUsers(),
+      description: (t: TicketTranslator) => t.settings.descriptions.mentionUsers(),
       arity: FieldArity.Multi,
      },
      {
       column: 'denyRoles',
       editor: EditorType.Roles,
       label: (t: TicketTranslator) => t.settings.fields.denyRoles(),
+      description: (t: TicketTranslator) => t.settings.descriptions.denyRoles(),
       arity: FieldArity.Multi,
      },
      {
       column: 'denyUsers',
       editor: EditorType.Users,
       label: (t: TicketTranslator) => t.settings.fields.denyUsers(),
+      description: (t: TicketTranslator) => t.settings.descriptions.denyUsers(),
       arity: FieldArity.Multi,
      },
     ],
    },
    {
-    id: 'dm',
+    id: TicketGroups.Dm,
     label: (t: TicketTranslator) => t.settings.groups.dm(),
     showIf: (row) => ({
      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
@@ -320,41 +364,47 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       column: 'sendMessagePrefixes',
       editor: EditorType.Strings,
       label: (t: TicketTranslator) => t.settings.fields.sendMessagePrefixes(),
+      description: (t: TicketTranslator) => t.settings.descriptions.sendMessagePrefixes(),
       arity: FieldArity.Multi,
      },
     ],
    },
    {
-    id: 'forum',
+    id: TicketGroups.Forum,
     label: (t: TicketTranslator) => t.settings.groups.forum(),
     fields: [
      {
       column: 'createTags',
       editor: EditorType.Strings,
       label: (t: TicketTranslator) => t.settings.fields.createTags(),
+      description: (t: TicketTranslator) => t.settings.descriptions.createTags(),
       arity: FieldArity.Multi,
      },
      {
       column: 'claimTags',
       editor: EditorType.Strings,
       label: (t: TicketTranslator) => t.settings.fields.claimTags(),
+      description: (t: TicketTranslator) => t.settings.descriptions.claimTags(),
       arity: FieldArity.Multi,
      },
      {
       column: 'closeTags',
       editor: EditorType.Strings,
       label: (t: TicketTranslator) => t.settings.fields.closeTags(),
+      description: (t: TicketTranslator) => t.settings.descriptions.closeTags(),
       arity: FieldArity.Multi,
      },
      {
       column: 'tagClaimer',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.tagClaimer(),
+      description: (t: TicketTranslator) => t.settings.descriptions.tagClaimer(),
      },
      {
       column: 'transcriptChannels',
       editor: EditorType.Channels,
       label: (t: TicketTranslator) => t.settings.fields.transcriptChannels(),
+      description: (t: TicketTranslator) => t.settings.descriptions.transcriptChannels(),
       arity: FieldArity.Multi,
      },
     ],

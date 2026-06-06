@@ -11,6 +11,7 @@ test('passes a schema whose groups each have <= 5 fields', () => {
   assertSchemaValid({
    table: 'ticketSetting',
    rowKey: 'id',
+   multiRow: true,
    rowLabel: () => 'x',
    groups: [{ id: 'g', label: () => 'G', fields: [field('a'), field('b')] }],
   }),
@@ -23,6 +24,7 @@ test('throws when a group exceeds 5 fields', () => {
    assertSchemaValid({
     table: 'ticketSetting',
     rowKey: 'id',
+    multiRow: true,
     rowLabel: () => 'x',
     groups: [{ id: 'g', label: () => 'G', fields: ['a', 'b', 'c', 'd', 'e', 'f'].map(field) }],
    }),

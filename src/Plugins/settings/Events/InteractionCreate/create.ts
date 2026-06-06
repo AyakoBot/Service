@@ -1,16 +1,12 @@
-import {
- MessageFlags,
- type APIMessageComponentInteraction,
- type APIMessageTopLevelComponent,
-} from 'discord-api-types/v10';
+import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
-import { buildNavigator } from '../../Util/buildNavigator.js';
 import type { SettingsId } from '../../Util/customId.js';
-import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { resolveChrome } from '../../Util/resolveChrome.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
+import { tableClient } from '../../Util/tableClient.js';
+
+import { renderPage } from './renderPage.js';
 
 export default async function (
  this: SettingsPlugin,
@@ -21,10 +17,11 @@ export default async function (
 
  const resolved = resolveSchema(this.client, id.settingName);
  if (!resolved) return;
+ if (!resolved.schema.multiRow) return;
 
  const t = await this.t(cmd.guild_id);
 
- const created = await this.client.db.client.ticketSetting
+ const created = await tableClient(this.client, resolved.schema.table)
   .create({
    data: {
     id: String(Date.now()),
@@ -44,13 +41,11 @@ export default async function (
   return;
  }
 
- const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
-
- const chrome = await resolveChrome.call(this, cmd.guild_id);
- const container = buildNavigator(id.settingName, schema, String(created.id), created, chrome);
-
- new MessagePayload(this.client, { origin: this.name, reason: 'Settings create navigator' })
-  .setComponents([container.toJSON() as APIMessageTopLevelComponent])
-  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
-  .update(cmd);
+ await renderPage.call(this, {
+  settingName: id.settingName,
+  rowId: String(created.id),
+  hideUnavail: false,
+  cmd,
+  respond: 'update',
+ });
 }

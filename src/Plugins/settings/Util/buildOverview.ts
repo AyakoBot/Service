@@ -6,9 +6,11 @@ import {
 } from '@discordjs/builders';
 import { ButtonStyle } from 'discord-api-types/v10';
 
+import emotes from '../../../Classes/Emotes.js';
 import type { SettingsSchema } from '../SettingsSchema.js';
 
 import { encodeSettingsId, SettingsAction } from './customId.js';
+import { buttonEmoji } from './settingsEmotes.js';
 
 export const buildOverview = (
  title: string,
@@ -34,6 +36,7 @@ export const buildOverview = (
       new ButtonBuilder()
        .setStyle(ButtonStyle.Secondary)
        .setLabel(editLabel)
+       .setEmoji(buttonEmoji(emotes.edit))
        .setCustomId(
         encodeSettingsId({
          action: SettingsAction.Nav,
@@ -59,6 +62,7 @@ export const buildOverview = (
     new ButtonBuilder()
      .setStyle(ButtonStyle.Success)
      .setLabel(createLabel)
+     .setEmoji(buttonEmoji(emotes.plus))
      .setCustomId(encodeSettingsId({ action: SettingsAction.Create, settingName })),
    ),
  );

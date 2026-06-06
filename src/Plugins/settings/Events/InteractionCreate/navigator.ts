@@ -1,4 +1,3 @@
-
 import {
  ApplicationCommandOptionType,
  ApplicationCommandType,
@@ -11,12 +10,13 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
-import { buildNavigator } from '../../Util/buildNavigator.js';
 import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { resolveChrome } from '../../Util/resolveChrome.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
+import { tableClient } from '../../Util/tableClient.js';
+
+import { renderPage } from './renderPage.js';
 
 const extractSettingName = (cmd: APIApplicationCommandInteraction): string | undefined => {
  if (cmd.data.type !== ApplicationCommandType.ChatInput) return undefined;
@@ -47,41 +47,21 @@ const extractId = (cmd: APIApplicationCommandInteraction): string | undefined =>
  return option.value;
 };
 
-export const openFromCommand = async function (
+const sendOverview = async function (
  this: SettingsPlugin,
- cmd: APIApplicationCommandInteraction,
+ cmd: APIApplicationCommandInteraction | APIMessageComponentInteraction | APIModalSubmitInteraction,
+ settingName: string,
+ respond: 'reply' | 'update',
 ) {
  if (!cmd.guild_id) return;
-
- const settingName = extractSettingName(cmd);
- if (!settingName) return;
 
  const resolved = resolveSchema(this.client, settingName);
  if (!resolved) return;
 
- const t = await this.t(cmd.guild_id);
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+ const t = await this.t(cmd.guild_id);
 
- const requestedId = extractId(cmd);
-
- if (requestedId) {
-  const row = await this.client.db.client.ticketSetting.findFirst({
-   where: { id: requestedId, guild: cmd.guild_id },
-  });
-
-  if (row) {
-   const chrome = await resolveChrome.call(this, cmd.guild_id);
-   const container = buildNavigator(settingName, schema, String(row.id), row, chrome);
-
-   new MessagePayload(this.client, { origin: this.name, reason: 'Settings navigator' })
-    .setComponents([container.toJSON() as APIMessageTopLevelComponent])
-    .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
-    .reply(cmd);
-   return;
-  }
- }
-
- const rows = await this.client.db.client.ticketSetting.findMany({
+ const rows = await tableClient(this.client, resolved.schema.table).findMany({
   where: { guild: cmd.guild_id },
  });
 
@@ -95,10 +75,67 @@ export const openFromCommand = async function (
   rows,
  );
 
- new MessagePayload(this.client, { origin: this.name, reason: 'Settings overview' })
+ const payload = new MessagePayload(this.client, { origin: this.name, reason: 'Settings overview' })
   .setComponents([overview.toJSON() as APIMessageTopLevelComponent])
-  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
-  .reply(cmd);
+  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral);
+
+ if (respond === 'reply') payload.reply(cmd);
+ else payload.update(cmd);
+};
+
+export const openFromCommand = async function (
+ this: SettingsPlugin,
+ cmd: APIApplicationCommandInteraction,
+) {
+ if (!cmd.guild_id) return;
+
+ const settingName = extractSettingName(cmd);
+ if (!settingName) return;
+
+ const resolved = resolveSchema(this.client, settingName);
+ if (!resolved) return;
+
+ if (resolved.schema.multiRow) {
+  const requestedId = extractId(cmd);
+
+  if (requestedId) {
+   const row = await tableClient(this.client, resolved.schema.table).findFirst({
+    where: { id: requestedId, guild: cmd.guild_id },
+   });
+
+   if (row) {
+    await renderPage.call(this, {
+     settingName,
+     rowId: String(row.id),
+     hideUnavail: false,
+     cmd,
+     respond: 'reply',
+    });
+    return;
+   }
+  }
+
+  await sendOverview.call(this, cmd, settingName, 'reply');
+  return;
+ }
+
+ const delegate = tableClient(this.client, resolved.schema.table);
+ const row =
+  (await delegate.findFirst({ where: { guild: cmd.guild_id } })) ??
+  (await delegate.create({ data: { id: cmd.guild_id, guild: cmd.guild_id } }));
+
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+ const [firstGroup] = schema.groups;
+ if (!firstGroup) return;
+
+ await renderPage.call(this, {
+  settingName,
+  rowId: String(row[schema.rowKey]),
+  groupId: firstGroup.id,
+  hideUnavail: false,
+  cmd,
+  respond: 'reply',
+ });
 };
 
 export const reRender = async function (
@@ -108,45 +145,17 @@ export const reRender = async function (
 ) {
  if (!cmd.guild_id) return;
 
- const resolved = resolveSchema(this.client, id.settingName);
- if (!resolved) return;
-
- const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
-
  if (!id.rowId) {
-  const t = await this.t(cmd.guild_id);
-
-  const rows = await this.client.db.client.ticketSetting.findMany({
-   where: { guild: cmd.guild_id },
-  });
-
-  const overview = buildOverview(
-   t.navigator.overviewTitle(),
-   t.navigator.create(),
-   t.base.t.Edit(),
-   t.navigator.overviewEmpty(),
-   id.settingName,
-   schema,
-   rows,
-  );
-
-  new MessagePayload(this.client, { origin: this.name, reason: 'Settings overview re-render' })
-   .setComponents([overview.toJSON() as APIMessageTopLevelComponent])
-   .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
-   .update(cmd);
+  await sendOverview.call(this, cmd, id.settingName, 'update');
   return;
  }
 
- const row = await this.client.db.client.ticketSetting.findFirst({
-  where: { id: id.rowId, guild: cmd.guild_id },
+ await renderPage.call(this, {
+  settingName: id.settingName,
+  rowId: id.rowId,
+  groupId: id.groupId,
+  hideUnavail: Boolean(id.hideUnavail),
+  cmd,
+  respond: 'update',
  });
- if (!row) return;
-
- const chrome = await resolveChrome.call(this, cmd.guild_id);
- const container = buildNavigator(id.settingName, schema, id.rowId, row, chrome);
-
- new MessagePayload(this.client, { origin: this.name, reason: 'Settings navigator re-render' })
-  .setComponents([container.toJSON() as APIMessageTopLevelComponent])
-  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
-  .update(cmd);
 };

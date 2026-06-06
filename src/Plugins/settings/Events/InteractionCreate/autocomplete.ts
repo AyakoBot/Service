@@ -8,6 +8,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { hasManageGuild } from '../../Util/authorizeSettings.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { resolveSchema } from '../../Util/resolveSchema.js';
+import { tableClient } from '../../Util/tableClient.js';
 
 export default async function (
  this: SettingsPlugin,
@@ -30,8 +31,7 @@ export default async function (
  }
 
  const top = cmd.data.options?.[0];
- const sub =
-  top?.type === ApplicationCommandOptionType.SubcommandGroup ? top.options?.[0] : top;
+ const sub = top?.type === ApplicationCommandOptionType.SubcommandGroup ? top.options?.[0] : top;
  if (!sub || sub.type !== ApplicationCommandOptionType.Subcommand) {
   await respond([]);
   return;
@@ -48,15 +48,14 @@ export default async function (
   idOption?.type === ApplicationCommandOptionType.String ? idOption.value.toLowerCase() : '';
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
- const rows = await this.client.db.client.ticketSetting.findMany({
+ const rows = await tableClient(this.client, resolved.schema.table).findMany({
   where: { guild: cmd.guild_id },
  });
 
  const choices = rows
   .map((row) => ({ name: schema.rowLabel(row), value: String(row.id) }))
   .filter(
-   (choice) =>
-    !query || choice.name.toLowerCase().includes(query) || choice.value.includes(query),
+   (choice) => !query || choice.name.toLowerCase().includes(query) || choice.value.includes(query),
   )
   .slice(0, 25);
 

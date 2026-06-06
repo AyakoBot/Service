@@ -1,8 +1,4 @@
-import type {
- DefaultTranslator,
- SettingsSchema,
- SettingsSchemaDef,
-} from '../SettingsSchema.js';
+import type { DefaultTranslator, SettingsSchema, SettingsSchemaDef } from '../SettingsSchema.js';
 
 export const globalSchemaTranslator = (
  t: DefaultTranslator,
@@ -10,6 +6,7 @@ export const globalSchemaTranslator = (
 ): SettingsSchema => ({
  table: def.table,
  rowKey: def.rowKey,
+ multiRow: def.multiRow,
  rowLabel: (row) => def.rowLabel(t, row),
  groups: def.groups.map((g) => ({
   id: g.id,
@@ -27,6 +24,7 @@ export const globalSchemaTranslator = (
     : f.options,
    required: f.required,
    secret: f.secret,
+   headerToggle: f.headerToggle,
    showIf: f.showIf,
    validate: f.validate,
   })),

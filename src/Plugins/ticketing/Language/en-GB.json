@@ -86,6 +86,37 @@
    "tagClaimer": "Tag claimer name",
    "transcriptChannels": "Transcript channels"
   },
+  "descriptions": {
+   "type": "Type of configuration to apply to tickets",
+   "logMode": "Whether logs are posted to a channel or grouped into a thread",
+   "allowCreatorClose": "Let the ticket creator close their own ticket",
+   "category": "The category ticket-channels will be created under",
+   "channel": "The channel ticket-threads will be created in",
+   "archiveCategory": "The category closed ticket-channels are moved to",
+   "archiveDuration": "Inactivity duration after which a ticket auto-closes; a reminder is sent at half-time",
+   "logChannels": "Channels that receive ticket log messages",
+   "staffRoles": "Roles treated as ticket staff",
+   "staffUsers": "Users treated as ticket staff",
+   "staffThreads": "Open a private staff-only discussion thread per ticket",
+   "staffThreadsChannel": "The channel staff discussion threads are created in",
+   "mentionRoles": "Roles pinged when a ticket is opened",
+   "mentionUsers": "Users pinged when a ticket is opened",
+   "denyRoles": "Roles blocked from creating tickets",
+   "denyUsers": "Users blocked from creating tickets",
+   "sendMessagePrefixes": "Prefixes staff use to relay a reply to the ticket creator",
+   "createTags": "Forum tags applied when a ticket is created",
+   "claimTags": "Forum tags applied when a ticket is claimed",
+   "closeTags": "Forum tags applied when a ticket is closed",
+   "tagClaimer": "Rename the ticket post to include the claiming staff member",
+   "transcriptChannels": "Channels that receive ticket transcripts"
+  },
+  "durations": {
+   "1h": "1 hour",
+   "12h": "12 hours",
+   "24h": "24 hours",
+   "3d": "3 days",
+   "1w": "1 week"
+  },
   "reasons": {
    "channelTypeOnly": "Channel-based tickets only",
    "threadTypeOnly": "Thread-based tickets only",

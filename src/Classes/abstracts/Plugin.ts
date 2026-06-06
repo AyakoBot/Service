@@ -7,14 +7,16 @@ import {
  type SlashCommandOptionsOnlyBuilder,
  type SlashCommandSubcommandBuilder,
 } from '@discordjs/builders';
-import type { GatewayDispatchEvents } from '@discordjs/core';
+import type { APIPartialEmoji, ChannelType, GatewayDispatchEvents } from '@discordjs/core';
 import merge from 'lodash.merge';
 
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
+import { EditorType } from '../../Plugins/settings/EditorType.js';
 import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
+import emotes from '../Emotes.js';
 
 export type BaseLang = TranslatorType<typeof baseLang>;
 
@@ -69,8 +71,59 @@ export default abstract class Plugin<
  private enabled: boolean = true;
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
+ groupEmotes?: Record<string, APIPartialEmoji>;
  settingsSchema?: SettingsSchemaDef;
  logger = new ScopedLogger();
+
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ private editorEmotes: Record<EditorType, any> = {
+  [EditorType.Channel]: (channelType: ChannelType) =>
+   emotes.channelTypes[channelType as keyof typeof emotes.channelTypes] || emotes.channelTypes[0],
+  [EditorType.Channels]: (channelType: ChannelType) =>
+   this.editorEmotes[EditorType.Channel](channelType),
+  [EditorType.Role]: emotes.Role,
+  [EditorType.Roles]: emotes.Role,
+  [EditorType.User]: emotes.Member,
+  [EditorType.Users]: emotes.Member,
+  [EditorType.Mention]: undefined,
+  [EditorType.Mentions]: undefined,
+  [EditorType.Boolean]: (value: boolean) => (value ? emotes.enabled : emotes.disabled),
+  [EditorType.Duration]: emotes.timer,
+  [EditorType.String]: undefined,
+  [EditorType.Language]: undefined,
+  [EditorType.Number]: emotes.number,
+  [EditorType.Punishment]: emotes.hammer,
+  [EditorType.AntiRaidPunishment]: emotes.hammer,
+  [EditorType.Embed]: emotes.Message,
+  [EditorType.Token]: emotes.lock,
+  [EditorType.BotToken]: emotes.lock,
+  [EditorType.Message]: emotes.Message,
+  [EditorType.ShopType]: emotes.shop,
+  [EditorType.FormulaType]: emotes.brain,
+  [EditorType.Emote]: emotes.Emoji,
+  [EditorType.Emotes]: emotes.Emoji,
+  [EditorType.Command]: emotes.Command,
+  [EditorType.AutoModRules]: emotes.AutoMod,
+  [EditorType.SettingLink]: emotes.settings,
+  [EditorType.AutoPunishment]: emotes.hammer,
+  [EditorType.LvlUpMode]: undefined,
+  [EditorType.Strings]: undefined,
+  [EditorType.QuestionType]: emotes.question,
+  [EditorType.Category]: emotes.channelTypes[4],
+  [EditorType.Voice]: emotes.channelTypes[2],
+  [EditorType.Permission]: emotes.settings,
+  [EditorType.RoleMode]: emotes.Role,
+  [EditorType.Commands]: emotes.Command,
+  [EditorType.Questions]: emotes.question,
+  [EditorType.Position]: emotes.number,
+  [EditorType.ThreadAutoArchiveDuration]: emotes.timer,
+  [EditorType.WeekendsType]: emotes.calendar,
+  [EditorType.TicketType]: emotes.ticket,
+  [EditorType.TicketLogMode]: emotes.log,
+
+  [EditorType.GuildId]: undefined,
+  [EditorType.Id]: undefined,
+ };
 
  constructor(client: Client) {
   this.client = client;
@@ -142,4 +195,25 @@ export default abstract class Plugin<
  nonFatalError = (error: Error | RequestHandlerError<RequestHandlerErrorType>, context: string) => {
   this.logger.error(`[Plugin:${this.name}] Non-fatal error in ${context}:`, inspect(error));
  };
+
+ getEmoteForGroup(groupId: string): APIPartialEmoji {
+  if (!this.groupEmotes || !this.groupEmotes[groupId]) return emotes.settings;
+  return this.groupEmotes[groupId];
+ }
+
+ getEmoteForEditor<
+  K extends EditorType,
+  T extends K extends EditorType.Channels | EditorType.Channel
+   ? ChannelType
+   : K extends EditorType.Boolean
+     ? boolean
+     : unknown,
+ >(editor: K, value: T): APIPartialEmoji {
+  if (!this.editorEmotes || !this.editorEmotes[editor]) return emotes.settings;
+
+  const fn = this.editorEmotes[editor];
+
+  if (typeof fn === 'function') return fn(value as never);
+  return fn;
+ }
 }
