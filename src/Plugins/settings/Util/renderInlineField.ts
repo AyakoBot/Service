@@ -194,11 +194,11 @@ export const renderInlineField = (
     ? ''
     : Array.isArray(value)
       ? value.length
-        ? `\n> ${value.map((entry) => String(entry)).join(', ')}`
+        ? `\n> ${value.map((entry) => `\`${String(entry)}\``).join(', ')}`
         : ''
       : value === undefined || value === null || value === ''
         ? ''
-        : `\n> ${String(value)}`;
+        : `\n> \`${String(value)}\``;
    container.addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(
