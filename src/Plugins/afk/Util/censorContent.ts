@@ -1,15 +1,12 @@
-import { RequestHandlerError } from '@ayako/api';
-import { FilterType, type AfkState } from '@ayako/database';
+import { FilterType } from '@ayako/database';
 import { AutoModerationActionType, AutoModerationRuleEventType } from '@discordjs/core';
 
-import { filtered_content as filterContent } from '../../../../../rust/rust.js';
-import getUser from '../../../../Util/getUser.js';
-import type AFKPlugin from '../../Plugin.js';
+import { filtered_content as filterContent } from '../../../../rust/rust.js';
+import type AFKPlugin from '../Plugin.js';
 
-export const getCensoredContent = async function (
+const getApplicableRules = async function (
  this: AFKPlugin,
  guildId: string,
- rawContent: string,
  channelId: string,
  roleIds: string[],
 ) {
@@ -20,7 +17,7 @@ export const getCensoredContent = async function (
   ? await this.client.cache.channels.get(guild.rules_channel_id)
   : null;
 
- const rules = autoModerationRules
+ return autoModerationRules
   .filter((r) => r.event_type === AutoModerationRuleEventType.MessageSend)
   .filter((r) => {
    if (!r.exempt_channels.length) return true;
@@ -53,9 +50,15 @@ export const getCensoredContent = async function (
    if (r.exempt_roles.includes(guildId)) return false;
    return true;
   });
+};
 
- if (!rules.length) return rawContent;
+type ApplicableRule = Awaited<ReturnType<typeof getApplicableRules>>[number];
 
+const applyPresetKeywords = async function (
+ this: AFKPlugin,
+ input: string,
+ rules: ApplicableRule[],
+) {
  const presetRule = rules.find(
   (r) =>
    r.trigger_metadata.presets?.length &&
@@ -79,11 +82,17 @@ export const getCensoredContent = async function (
     })
   : [];
 
- let content = String(rawContent);
+ let content = input;
 
  presetKeywords?.forEach((p) => {
   content = content.replace(new RegExp(p.keyword, 'g'), '[...]');
  });
+
+ return content;
+};
+
+const applyRules = (input: string, rules: ApplicableRule[]): string => {
+ let content = input;
 
  rules.forEach((r) => {
   if (!r.enabled) return;
@@ -123,33 +132,16 @@ export const getCensoredContent = async function (
  return content;
 };
 
-export const setNick = async function (this: AFKPlugin, userId: string, guildId: string) {
- const member = await this.client.cache.members.get(guildId, userId);
- if (!member) return undefined;
-
- const user = member.nick
-  ? { username: '', global_name: '' }
-  : await getUser.call(this.client, userId);
- if (user instanceof RequestHandlerError || !user) return undefined;
-
- (await this.client.getAPI(guildId)).guilds.editMember(
-  guildId,
-  userId,
-  {
-   nick: member.nick ? `${member.nick} [AFK]` : `${user.global_name || user.username} [AFK]`,
-  },
-  { origin: this.name, reason: 'Reflect AFK status in nickname' },
- );
-};
-
-export const getContent = async function (
+export const getCensoredContent = async function (
  this: AFKPlugin,
  guildId: string,
- afk: AfkState | null,
- userId: string,
+ rawContent: string,
+ channelId: string,
+ roleIds: string[],
 ) {
- const t = await this.t(guildId);
+ const rules = await getApplicableRules.call(this, guildId, channelId, roleIds);
+ if (!rules.length) return rawContent;
 
- if (!afk) return t.t.set({ user: await this.client.cache.users.get(userId) });
- return t.t.updated({ user: await this.client.cache.users.get(userId) });
+ const content = await applyPresetKeywords.call(this, String(rawContent), rules);
+ return applyRules(content, rules);
 };

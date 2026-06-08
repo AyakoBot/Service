@@ -13,6 +13,7 @@ import Plugin from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 
+import { AfkCommand } from './Enums.js';
 import InteractionCreate from './Events/InteractionCreate/index.js';
 import MessageCreate from './Events/MessageCreate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
@@ -62,7 +63,7 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
  getCommands = () => ({
   commands: [
    new SlashCommandBuilder()
-    .setName('afk')
+    .setName(AfkCommand.Afk)
     .setDescription('Set your AFK Status')
     .setContexts([InteractionContextType.Guild])
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
@@ -78,7 +79,7 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
     category: null,
     commands: [
      new SlashCommandSubcommandBuilder()
-      .setName('afk')
+      .setName(AfkCommand.Afk)
       .setDescription('Make adjustments to the AFK-Command and what can be set as AFK-Status'),
     ],
    },

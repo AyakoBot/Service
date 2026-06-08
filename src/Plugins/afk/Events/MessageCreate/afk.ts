@@ -1,12 +1,12 @@
 import type { RMessage } from '@ayako/utility';
-import { EmbedBuilder } from '@discordjs/builders';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import { Colors } from '../../../../Types/index.js';
 import canUserExecuteCommand from '../../../../Util/canUserExecuteCommand.js';
 import AFKState from '../../AFKState.js';
+import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
-import { getCensoredContent, getContent } from '../InteractionCreate/util.js';
+import { buildReasonEmbeds, getContent } from '../../Util/afkStatus.js';
+import { setNick } from '../../Util/nick.js';
 
 export default async function (
  this: AFKPlugin,
@@ -14,12 +14,12 @@ export default async function (
  commandName: string | null,
  prefix: string | undefined,
 ) {
- if (commandName !== 'afk') return;
+ if (commandName !== AfkCommand.Afk) return;
  if (!msg.guild_id) return;
 
  const canRunCommand = await canUserExecuteCommand.call(
   this.client,
-  'afk',
+  AfkCommand.Afk,
   msg.guild_id,
   msg.author_id,
   msg.channel_id,
@@ -56,17 +56,7 @@ export default async function (
   .setSendTo([{ channel: msg.channel_id, guildId: msg.guild_id }])
   .setContent(await getContent.call(this, msg.guild_id, afk, msg.author_id))
   .setEmbeds(
-   reason
-    ? [
-       new EmbedBuilder()
-        .setColor(Colors.Loading)
-        .setDescription(
-         await getCensoredContent
-          .call(this, msg.guild_id, reason, msg.channel_id, member?.roles ?? [])
-          .then((r) => `-# ${r}`),
-        ),
-      ]
-    : [],
+   await buildReasonEmbeds.call(this, msg.guild_id, reason, msg.channel_id, member?.roles ?? []),
   )
   .send();
 
@@ -79,6 +69,8 @@ export default async function (
   },
   { since: Date.now(), reason },
  );
+
+ setNick.call(this, msg.author_id, msg.guild_id);
 
  (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(msg.channel_id, msg.id, {
   origin: this.name,

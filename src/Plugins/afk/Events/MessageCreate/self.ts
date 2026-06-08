@@ -6,9 +6,9 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
 import AFKState from '../../AFKState.js';
+import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
-
-import { deleteNick } from './util.js';
+import { deleteNick } from '../../Util/nick.js';
 
 export default async function (
  this: AFKPlugin,
@@ -16,7 +16,7 @@ export default async function (
  commandName: string | null,
  t: Awaited<ReturnType<AFKPlugin['t']>>,
 ) {
- if (commandName === 'afk') return;
+ if (commandName === AfkCommand.Afk) return;
 
  const afkBase = new AFKState(this.client, msg.author_id, msg.guild_id);
  const afk = await afkBase.get();

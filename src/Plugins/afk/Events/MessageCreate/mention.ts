@@ -6,6 +6,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
 import AFKState from '../../AFKState.js';
+import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
 
 export default async function (
@@ -14,7 +15,7 @@ export default async function (
  commandName: string | null,
  t: Awaited<ReturnType<AFKPlugin['t']>>,
 ) {
- if (commandName === 'unafk') return;
+ if (commandName === AfkCommand.Unafk) return;
  if (!msg.mention_users?.length) return;
  if (msg.mention_users.length > 10) return;
 
