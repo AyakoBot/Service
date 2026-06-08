@@ -18,6 +18,13 @@ import type { SettingsField } from '../SettingsSchema.js';
 
 import { ComponentKind, resolveComponentKind } from './resolveComponentKind.js';
 
+const labelDescLimit = 100;
+
+const clampDescription = (description: string): string =>
+ (description.length > labelDescLimit
+  ? `${description.slice(0, labelDescLimit - 1)}…`
+  : description);
+
 const asOptions = (field: SettingsField): { label: string; value: string }[] =>
  (Array.isArray(field.options) ? field.options : []);
 
@@ -29,7 +36,7 @@ const toIds = (value: unknown): string[] => {
 
 const renderEntity = (field: SettingsField, value: unknown, customId: string): LabelBuilder => {
  const label = new LabelBuilder().setLabel(field.label);
- if (field.description) label.setDescription(field.description);
+ if (field.description) label.setDescription(clampDescription(field.description));
 
  const maxValues = field.arity === FieldArity.Multi ? 25 : 1;
  const ids = toIds(value);
@@ -88,7 +95,7 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
  const customId = field.column;
 
  const label = new LabelBuilder().setLabel(field.label);
- if (field.description) label.setDescription(field.description);
+ if (field.description) label.setDescription(clampDescription(field.description));
 
  switch (kind) {
   case ComponentKind.CheckboxBool:
