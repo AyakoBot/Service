@@ -71,7 +71,9 @@ export interface SettingsSchema<Row = Record<string, unknown>> {
  rowKey: keyof Row & string;
  multiRow: boolean;
  title?: string;
+ overviewDescription?: string;
  rowLabel: (row: Row) => string;
+ rowSummary?: (row: Row) => string;
  groups: SettingsGroup<Row>[];
 }
 
@@ -106,7 +108,9 @@ export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTra
  rowKey: keyof Row & string;
  multiRow: boolean;
  title?: (t: T) => string;
+ overviewDescription?: (t: T) => string;
  rowLabel: (t: T, row: Row) => string;
+ rowSummary?: (t: T, row: Row) => string;
  canDelete?: RowGuard<Row>;
  groups: SettingsGroupDef<Row, T>[];
 }

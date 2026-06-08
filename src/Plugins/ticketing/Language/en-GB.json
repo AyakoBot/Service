@@ -184,6 +184,10 @@
   "systemLabel": "Ticket system {{id}}",
   "configTitle": "Ticket Configuration",
   "deleteBlocked": "Close its {{count}} open ticket(s) first.",
+  "overviewDescription": "Each ticket system is its own setup — channels, staff, panels, and rules. Pick one to edit, or create another for a different kind of ticket.",
+  "systemSummary": "{{type}} · {{status}} · {{panel}}",
+  "panelIn": "panel in {{channel}}",
+  "noPanel": "no panel",
   "groups": {
    "general": "General",
    "channels": "Channels",

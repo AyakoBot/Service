@@ -63,15 +63,16 @@ const sendOverview = async function (
   where: { guild: cmd.guild_id },
  });
 
- const overview = buildOverview(
-  t.navigator.overviewTitle(),
-  t.navigator.create(),
-  t.base.t.Edit(),
-  t.navigator.overviewEmpty(),
+ const overview = buildOverview({
+  title: schema.title ?? t.navigator.overviewTitle(),
+  description: schema.overviewDescription,
+  createLabel: t.navigator.create(),
+  editLabel: t.base.t.Edit(),
+  emptyText: t.navigator.overviewEmpty(),
   settingName,
   schema,
   rows,
- );
+ });
 
  const payload = new MessagePayload(this.client, { origin: this.name, reason: 'Settings overview' })
   .setComponents([overview.toJSON() as APIMessageTopLevelComponent])

@@ -3,33 +3,39 @@ import type { DefaultTranslator, SettingsSchema, SettingsSchemaDef } from '../Se
 export const globalSchemaTranslator = (
  t: DefaultTranslator,
  def: SettingsSchemaDef,
-): SettingsSchema => ({
- table: def.table,
- rowKey: def.rowKey,
- multiRow: def.multiRow,
- title: def.title?.(t),
- rowLabel: (row) => def.rowLabel(t, row),
- groups: def.groups.map((g) => ({
-  id: g.id,
-  label: g.label(t),
-  description: g.description?.(t),
-  emote: g.emote,
-  showIf: g.showIf,
-  fields: g.fields.map((f) => ({
-   column: f.column,
-   editor: f.editor,
-   label: f.label(t),
-   description: f.description?.(t),
-   arity: f.arity,
-   options: Array.isArray(f.options)
-    ? f.options.map((o) => ({ value: o.value, label: o.label(t) }))
-    : f.options,
-   required: f.required,
-   secret: f.secret,
-   headerToggle: f.headerToggle,
-   showIf: f.showIf,
-   validate: f.validate,
-   transform: f.transform,
+): SettingsSchema => {
+ const { rowSummary } = def;
+
+ return {
+  table: def.table,
+  rowKey: def.rowKey,
+  multiRow: def.multiRow,
+  title: def.title?.(t),
+  overviewDescription: def.overviewDescription?.(t),
+  rowLabel: (row) => def.rowLabel(t, row),
+  rowSummary: rowSummary ? (row) => rowSummary(t, row) : undefined,
+  groups: def.groups.map((g) => ({
+   id: g.id,
+   label: g.label(t),
+   description: g.description?.(t),
+   emote: g.emote,
+   showIf: g.showIf,
+   fields: g.fields.map((f) => ({
+    column: f.column,
+    editor: f.editor,
+    label: f.label(t),
+    description: f.description?.(t),
+    arity: f.arity,
+    options: Array.isArray(f.options)
+     ? f.options.map((o) => ({ value: o.value, label: o.label(t) }))
+     : f.options,
+    required: f.required,
+    secret: f.secret,
+    headerToggle: f.headerToggle,
+    showIf: f.showIf,
+    validate: f.validate,
+    transform: f.transform,
+   })),
   })),
- })),
-});
+ };
+};

@@ -209,6 +209,20 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   title: (t: TicketTranslator) => t.settings.configTitle(),
   rowLabel: (t: TicketTranslator, row: TicketSetting) =>
    t.settings.systemLabel({ id: String(row.id) }),
+  overviewDescription: (t: TicketTranslator) => t.settings.overviewDescription(),
+  rowSummary: (t: TicketTranslator, row: TicketSetting) => {
+   const typeLabels: Record<TicketType, string> = {
+    [TicketType.Channel]: t.base.t.Channel(),
+    [TicketType.Thread]: t.base.t.Thread(),
+    [TicketType.dmToChannel]: t.settings.options.dmToChannel(),
+    [TicketType.dmToThread]: t.settings.options.dmToThread(),
+   };
+   const status = row.active ? t.base.t.Active() : t.base.t.Disabled();
+   const panel = row.panelChannel
+    ? t.settings.panelIn({ channel: `<#${row.panelChannel}>` })
+    : t.settings.noPanel();
+   return t.settings.systemSummary({ type: typeLabels[row.type], status, panel });
+  },
   canDelete: async (row, ctx) => {
    const open = await ctx.client.db.client.ticket.findMany({
     where: {
