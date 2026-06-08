@@ -15,82 +15,64 @@ model TicketSetting {
  guild  String  @db.VarChar
  active Boolean @default(false)
 
- // Decides whether to create threads in text-channels that support log creation
  logMode     TicketLogMode @default(Channel)
- // Text Channel or Forum Channel
  logChannels String[]      @db.VarChar
- // Forum tags applied to the log/staff post at each lifecycle step. A later step replaces the
- // previous step's tags; tagClaimer adds a per-claimer username tag that is never removed.
+
  createTags String[] @db.VarChar
  claimTags  String[] @db.VarChar
  closeTags  String[] @db.VarChar
  tagClaimer Boolean  @default(false)
- // If set, transcripts are also posted here (directly) when a ticket is deleted
+
  transcriptChannels String[] @db.VarChar
 
- // Only if type is dmToChannel or Channel
  archiveCategory String? @db.VarChar
  archiveDuration Decimal @default(60) @db.Decimal
 
- // Only need on dmToThread & Thread
  type                TicketType @default(Thread)
  channel             String?    @db.VarChar
- // Only need on dmToChannel & Channel
  category            String?    @db.VarChar
- // Only need on dmToThread & dmToChannel
  sendMessagePrefixes String[]   @db.Text
 
- // Only need on Thread & Channel
  allowCreatorClose Boolean @default(false)
 
- // Only on Channel & Thread (ignored on DM types). A private staff-only discussion thread per ticket.
- staffThreads Boolean @default(false)
- // Required when staffThreads is on AND type is Thread. Text or Forum channel hosting the staff thread.
+ staffThreads        Boolean @default(false)
  staffThreadsChannel String? @db.VarChar
 
  mentionRoles String[] @db.VarChar
  mentionUsers String[] @db.VarChar
- staffRoles String[] @db.VarChar
- staffUsers String[] @db.VarChar
+ staffRoles   String[] @db.VarChar
+ staffUsers   String[] @db.VarChar
 
  denyUsers String[] @db.VarChar
  denyRoles String[] @db.VarChar
 
- // Whether tickets may also be opened through a mirrored DM conversation
  dmEnabled Boolean @default(false)
 
- // Panel intake message: channel/message ids, custom embed payload and the open-button label
  panelChannel     String? @db.VarChar
  panelMessage     String? @db.VarChar
  panelEmbed       Json?
  panelButtonLabel String? @db.VarChar
 
- // Reminder & inactivity thresholds in seconds (0 disables the respective timer)
- remindUnclaimedAfter Decimal @default(0) @db.Decimal
- remindUnclaimedEvery Decimal @default(0) @db.Decimal
- remindStaleAfter     Decimal @default(0) @db.Decimal
- remindStaleEvery     Decimal @default(0) @db.Decimal
- inactivityWarnAfter  Decimal @default(0) @db.Decimal
- inactivityCloseAfter Decimal @default(0) @db.Decimal
- // Targets pinged when a reminder fires
+ remindUnclaimedAfter Decimal @default(0) @db.Decimal // 0 = disabled
+ remindUnclaimedEvery Decimal @default(0) @db.Decimal // 0 = disabled
+ remindStaleAfter     Decimal @default(0) @db.Decimal // 0 = disabled
+ remindStaleEvery     Decimal @default(0) @db.Decimal // 0 = disabled
+ inactivityWarnAfter  Decimal @default(0) @db.Decimal // 0 = disabled
+ inactivityCloseAfter Decimal @default(0) @db.Decimal // 0 = disabled
+
  remindRoles String[] @db.VarChar
  remindUsers String[] @db.VarChar
 
- // Per-plugin bot token (AES-256-GCM ciphertext, enc:v1: prefix; null falls back to the main bot)
  botToken String? @db.VarChar
 
- // Whether escalation tiers spread tickets across separate spaces or one unified forum
  placementMode TicketPlacementMode @default(SeparateSpaces)
  forumChannel  String?             @db.VarChar
 
- // Whether staff may take an already-claimed ticket
  allowTakeClaim Boolean  @default(false)
- // Per-tier staff roles (index = tier rank)
  staffTierRoles String[] @db.VarChar
 
- // Open-ticket caps (0 = unlimited)
- ticketLimitTotal Int @default(0)
- ticketLimitKind  Int @default(0)
+ ticketLimitTotal Int @default(0) // 0 = unlimited
+ ticketLimitKind  Int @default(0) // 0 = unlimited
 
  Ticket Ticket[]
  tiers  TicketTier[]
@@ -108,19 +90,16 @@ model Ticket {
  settingsId Decimal     @db.Decimal
  state      TicketState @default(opened)
 
- // Pinned status surface message edited in place across the lifecycle
  surfaceMessage String? @db.VarChar
- // Current claimer and when the claim happened
+
  claimer   String?   @db.VarChar
  claimedAt DateTime?
- // Escalation priority shown on the surface
- priority TicketPriority @default(None)
- // Last human message timestamp, drives inactivity
- lastMessageAt DateTime?
- // Armed reminder fire time (epoch-ms)
- remindAt Decimal? @db.Decimal
 
- // Escalation tier this ticket currently sits in
+ priority      TicketPriority @default(None)
+ lastMessageAt DateTime?
+ remindAt      Decimal?       @db.Decimal
+
+ // Escalation tier
  tierId Decimal?    @db.Decimal
  tier   TicketTier? @relation(fields: [tierId], references: [id])
 
@@ -132,10 +111,10 @@ model Ticket {
 }
 
 model TicketPanel {
- id      Decimal @id @db.Decimal
- guild   String  @db.VarChar
- channel String? @db.VarChar
- message String? @db.VarChar
+ id      Decimal   @id @db.Decimal
+ guild   String    @db.VarChar
+ channel String?   @db.VarChar
+ message String?   @db.VarChar
  embed   Json?
  kinds   Decimal[]
 
