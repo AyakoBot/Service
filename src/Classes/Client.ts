@@ -107,6 +107,7 @@ export default class Client {
  };
 
  getAPI = async (_guildId: string) => this.getBaseAPI();
+ getCustomAPI = async (_guildId: string): Promise<CustomAPI | null> => null;
  getBaseAPI = () =>
   new CustomAPI(
    (this.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', ''),
