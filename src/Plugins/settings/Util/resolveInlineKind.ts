@@ -8,7 +8,7 @@ export enum InlineKind {
  ModalText = 'modaltext',
 }
 
-const ENTITY = new Set<EditorType>([
+const entity = new Set<EditorType>([
  EditorType.Channel,
  EditorType.Channels,
  EditorType.Category,
@@ -22,7 +22,7 @@ const ENTITY = new Set<EditorType>([
 
 export const resolveInlineKind = (field: SettingsField): InlineKind => {
  if (field.editor === EditorType.Boolean) return InlineKind.Toggle;
- if (ENTITY.has(field.editor)) return InlineKind.Entity;
+ if (entity.has(field.editor)) return InlineKind.Entity;
  if (Array.isArray(field.options) && field.options.length > 0) return InlineKind.Select;
  return InlineKind.ModalText;
 };
