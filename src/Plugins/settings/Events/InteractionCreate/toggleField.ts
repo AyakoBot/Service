@@ -3,8 +3,6 @@ import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { resolveSchema } from '../../Util/resolveSchema.js';
-import { tableClient } from '../../Util/tableClient.js';
 
 import { followUpWarning } from './followUpWarning.js';
 import { reRender } from './navigator.js';
@@ -22,7 +20,7 @@ export default async function (
 ) {
  if (!cmd.guild_id || !id.rowId || !id.groupId || !id.column) return;
 
- const resolved = resolveSchema(this.client, id.settingName);
+ const resolved = this.resolveSchema(id.settingName);
  if (!resolved) return;
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
@@ -30,7 +28,7 @@ export default async function (
  const field = group?.fields.find((f) => f.column === id.column);
  if (!field) return;
 
- const row = await tableClient(this.client, resolved.schema.table).findFirst({
+ const row = await this.tableClient(resolved.schema.table).findFirst({
   where: { id: id.rowId, guild: cmd.guild_id },
  });
  if (!row) return;
@@ -50,7 +48,7 @@ export default async function (
   }
  }
 
- await tableClient(this.client, resolved.schema.table).updateMany({
+ await this.tableClient(resolved.schema.table).updateMany({
   where: { id: id.rowId, guild: cmd.guild_id },
   data: { [field.column]: next },
  });

@@ -7,11 +7,13 @@ export const globalSchemaTranslator = (
  table: def.table,
  rowKey: def.rowKey,
  multiRow: def.multiRow,
+ title: def.title?.(t),
  rowLabel: (row) => def.rowLabel(t, row),
  groups: def.groups.map((g) => ({
   id: g.id,
   label: g.label(t),
   description: g.description?.(t),
+  emote: g.emote,
   showIf: g.showIf,
   fields: g.fields.map((f) => ({
    column: f.column,
@@ -27,6 +29,7 @@ export const globalSchemaTranslator = (
    headerToggle: f.headerToggle,
    showIf: f.showIf,
    validate: f.validate,
+   transform: f.transform,
   })),
  })),
 });

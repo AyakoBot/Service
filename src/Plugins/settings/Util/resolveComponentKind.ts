@@ -13,7 +13,7 @@ export enum ComponentKind {
  SelectN = 'select-n',
 }
 
-const ENTITY = new Set<EditorType>([
+const entity = new Set<EditorType>([
  EditorType.Channel,
  EditorType.Channels,
  EditorType.Category,
@@ -25,13 +25,13 @@ const ENTITY = new Set<EditorType>([
  EditorType.Mentions,
 ]);
 
-const TEXT_SINGLE = new Set<EditorType>([
+const textSingle = new Set<EditorType>([
  EditorType.String,
  EditorType.Number,
  EditorType.Duration,
 ]);
 
-const SECRET = new Set<EditorType>([EditorType.Token, EditorType.BotToken]);
+const secret = new Set<EditorType>([EditorType.Token, EditorType.BotToken]);
 
 export const resolveComponentKind = (
  editor: EditorType,
@@ -39,10 +39,10 @@ export const resolveComponentKind = (
  optionCount: number,
 ): ComponentKind => {
  if (editor === EditorType.Boolean) return ComponentKind.CheckboxBool;
- if (SECRET.has(editor)) return ComponentKind.SecretText;
- if (ENTITY.has(editor)) return ComponentKind.Entity;
+ if (secret.has(editor)) return ComponentKind.SecretText;
+ if (entity.has(editor)) return ComponentKind.Entity;
  if (editor === EditorType.Strings) return ComponentKind.TextMulti;
- if (TEXT_SINGLE.has(editor)) return ComponentKind.Text;
+ if (textSingle.has(editor)) return ComponentKind.Text;
 
  if (arity === FieldArity.Multi) {
   return optionCount <= 5 ? ComponentKind.CheckboxGroup : ComponentKind.SelectN;

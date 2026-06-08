@@ -7,7 +7,7 @@
   "saved": "Settings saved.",
   "validationFailed": "{{field}}: {{reason}}",
   "requiredMissing": "Cannot activate: the required Field `{{field}}` is not set.",
-  "configTitle": "Ticket Configuration",
+  "configTitle": "Configuration",
   "enabled": "Enabled",
   "disabled": "Disabled",
   "change": "Change",
@@ -17,7 +17,6 @@
   "numberLabel": "Number",
   "back": "Back to overview",
   "incomplete": "⚠",
-  "activateBlocked": "Set {{field}} before activating.",
-  "deleteBlocked": "Close its {{count}} open ticket(s) first."
+  "activateBlocked": "Set {{field}} before activating."
  }
 }

@@ -1,11 +1,8 @@
-import { TicketState } from '@ayako/database';
 import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
-import { resolveSchema } from '../../Util/resolveSchema.js';
-import { tableClient } from '../../Util/tableClient.js';
 
 import { reRender } from './navigator.js';
 
@@ -16,32 +13,31 @@ export const del = async function (
 ) {
  if (!cmd.guild_id || !id.rowId) return;
 
- const resolved = resolveSchema(this.client, id.settingName);
+ const resolved = this.resolveSchema(id.settingName);
  if (!resolved) return;
  if (!resolved.schema.multiRow) return;
 
- const row = await tableClient(this.client, resolved.schema.table).findFirst({
+ const row = await this.tableClient(resolved.schema.table).findFirst({
   where: { id: id.rowId, guild: cmd.guild_id },
  });
  if (!row) return;
 
- const open = await this.client.db.client.ticket.findMany({
-  where: {
-   settingsId: id.rowId,
-   state: { in: [TicketState.opened, TicketState.claimed] },
-  },
+ const guard = await resolved.schema.canDelete?.(row, {
+  client: this.client,
+  plugin: resolved.plugin,
+  guildId: cmd.guild_id,
  });
 
- if (open.length) {
+ if (guard && !guard.ok) {
   const t = await this.t(cmd.guild_id);
   new MessagePayload(this.client, { origin: this.name, reason: 'Settings delete blocked' })
-   .setContent(t.navigator.deleteBlocked({ count: String(open.length) }))
+   .setContent(guard.reason ?? t.base.errors.unknownError())
    .setFlags(MessageFlags.Ephemeral)
    .reply(cmd);
   return;
  }
 
- await tableClient(this.client, resolved.schema.table).deleteMany({
+ await this.tableClient(resolved.schema.table).deleteMany({
   where: { id: id.rowId, guild: cmd.guild_id },
  });
 

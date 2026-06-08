@@ -15,7 +15,7 @@ import type { SettingsGroup, SettingsSchema } from '../SettingsSchema.js';
 
 import { encodeSettingsId, SettingsAction } from './customId.js';
 import { renderInlineField } from './renderInlineField.js';
-import { buttonEmoji, textEmote, type EmoteProvider } from './settingsEmotes.js';
+import { buttonEmoji, textEmote } from './settingsEmotes.js';
 
 type SettingsTranslator = Awaited<ReturnType<SettingsPlugin['t']>>;
 
@@ -34,7 +34,6 @@ export interface BuildGroupPageArgs {
  row: Record<string, unknown>;
  hideUnavail: boolean;
  t: SettingsTranslator;
- plugin: EmoteProvider;
 }
 
 const isUnset = (value: unknown): boolean =>
@@ -54,12 +53,11 @@ export const buildGroupPage = ({
  row,
  hideUnavail,
  t,
- plugin,
 }: BuildGroupPageArgs): TopLevelBuilder[] => {
  const idFor = (action: SettingsAction, groupId?: string, column?: string): string =>
   encodeSettingsId({ action, settingName, rowId, groupId, column, hideUnavail });
 
- const headerText = `# ${textEmote(emotes.settings)} ${t.navigator.configTitle()}\n-# ${t.navigator.numberLabel()} #${rowId}`;
+ const headerText = `# ${textEmote(emotes.settings)} ${schema.title ?? t.navigator.configTitle()}\n-# ${t.navigator.numberLabel()} #${rowId}`;
 
  const header: TopLevelBuilder = schema.multiRow
   ? new SectionBuilder()
@@ -76,7 +74,7 @@ export const buildGroupPage = ({
  const container = new ContainerBuilder();
 
  const toggleField = group.fields.find((field) => field.headerToggle);
- const groupHeading = `## ${textEmote(plugin.getEmoteForGroup(group.id))} ${group.label}`;
+ const groupHeading = `## ${textEmote(group.emote ?? emotes.settings)} ${group.label}`;
 
  if (toggleField) {
   const on = Boolean(row[toggleField.column]);
@@ -107,7 +105,6 @@ export const buildGroupPage = ({
     container,
     field,
     row,
-    plugin,
     (action, column) => idFor(action, group.id, column),
     {
      enabled: t.navigator.enabled(),
@@ -151,7 +148,7 @@ export const buildGroupPage = ({
     new ButtonBuilder()
      .setStyle(current ? ButtonStyle.Primary : ButtonStyle.Secondary)
      .setLabel(incomplete ? `${g.label} ${emotes.warning.name}` : g.label)
-     .setEmoji(buttonEmoji(plugin.getEmoteForGroup(g.id)))
+     .setEmoji(buttonEmoji(g.emote ?? emotes.settings))
      .setDisabled(current)
      .setCustomId(
       encodeSettingsId({
@@ -179,7 +176,7 @@ export const buildGroupPage = ({
      value: g.id,
      default: g.id === group.id,
      description: g.description,
-     emoji: buttonEmoji(plugin.getEmoteForGroup(g.id)),
+     emoji: buttonEmoji(g.emote ?? emotes.settings),
     })),
    );
   page.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select));

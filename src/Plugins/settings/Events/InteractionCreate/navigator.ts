@@ -13,8 +13,6 @@ import type SettingsPlugin from '../../Plugin.js';
 import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { resolveSchema } from '../../Util/resolveSchema.js';
-import { tableClient } from '../../Util/tableClient.js';
 
 import { renderPage } from './renderPage.js';
 
@@ -55,13 +53,13 @@ const sendOverview = async function (
 ) {
  if (!cmd.guild_id) return;
 
- const resolved = resolveSchema(this.client, settingName);
+ const resolved = this.resolveSchema(settingName);
  if (!resolved) return;
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
  const t = await this.t(cmd.guild_id);
 
- const rows = await tableClient(this.client, resolved.schema.table).findMany({
+ const rows = await this.tableClient(resolved.schema.table).findMany({
   where: { guild: cmd.guild_id },
  });
 
@@ -92,14 +90,14 @@ export const openFromCommand = async function (
  const settingName = extractSettingName(cmd);
  if (!settingName) return;
 
- const resolved = resolveSchema(this.client, settingName);
+ const resolved = this.resolveSchema(settingName);
  if (!resolved) return;
 
  if (resolved.schema.multiRow) {
   const requestedId = extractId(cmd);
 
   if (requestedId) {
-   const row = await tableClient(this.client, resolved.schema.table).findFirst({
+   const row = await this.tableClient(resolved.schema.table).findFirst({
     where: { id: requestedId, guild: cmd.guild_id },
    });
 
@@ -119,7 +117,7 @@ export const openFromCommand = async function (
   return;
  }
 
- const delegate = tableClient(this.client, resolved.schema.table);
+ const delegate = this.tableClient(resolved.schema.table);
  const row =
   (await delegate.findFirst({ where: { guild: cmd.guild_id } })) ??
   (await delegate.create({ data: { id: cmd.guild_id, guild: cmd.guild_id } }));

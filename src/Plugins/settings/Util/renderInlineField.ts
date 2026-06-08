@@ -17,8 +17,9 @@ import { EditorType } from '../EditorType.js';
 import { FieldArity, type SettingsField, type ShowIfResult } from '../SettingsSchema.js';
 
 import { SettingsAction } from './customId.js';
+import editorEmotes from './editorEmotes.js';
 import { InlineKind, resolveInlineKind } from './resolveInlineKind.js';
-import { buttonEmoji, textEmote, type EmoteProvider } from './settingsEmotes.js';
+import { buttonEmoji, textEmote } from './settingsEmotes.js';
 
 export interface InlineFieldChrome {
  enabled: string;
@@ -106,7 +107,6 @@ export const renderInlineField = (
  container: ContainerBuilder,
  field: SettingsField,
  row: Record<string, unknown>,
- plugin: EmoteProvider,
  customIdFor: (action: SettingsAction, column: string) => string,
  chrome: InlineFieldChrome,
  visible: ShowIfResult,
@@ -166,7 +166,7 @@ export const renderInlineField = (
     customIdFor(SettingsAction.SetField, field.column),
     disabled,
    );
-   const icon = textEmote(plugin.getEmoteForEditor(field.editor, ChannelType.GuildText));
+   const icon = textEmote(editorEmotes.forEditor(field.editor, ChannelType.GuildText));
    container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(withReason(heading(field, icon), visible)),
    );

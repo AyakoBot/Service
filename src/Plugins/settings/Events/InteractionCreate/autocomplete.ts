@@ -7,8 +7,6 @@ import {
 import type SettingsPlugin from '../../Plugin.js';
 import { hasManageGuild } from '../../Util/authorizeSettings.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { resolveSchema } from '../../Util/resolveSchema.js';
-import { tableClient } from '../../Util/tableClient.js';
 
 export default async function (
  this: SettingsPlugin,
@@ -37,7 +35,7 @@ export default async function (
   return;
  }
 
- const resolved = resolveSchema(this.client, sub.name);
+ const resolved = this.resolveSchema(sub.name);
  if (!resolved) {
   await respond([]);
   return;
@@ -48,7 +46,7 @@ export default async function (
   idOption?.type === ApplicationCommandOptionType.String ? idOption.value.toLowerCase() : '';
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
- const rows = await tableClient(this.client, resolved.schema.table).findMany({
+ const rows = await this.tableClient(resolved.schema.table).findMany({
   where: { guild: cmd.guild_id },
  });
 

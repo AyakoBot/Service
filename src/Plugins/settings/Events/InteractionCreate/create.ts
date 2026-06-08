@@ -3,8 +3,6 @@ import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-t
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
-import { resolveSchema } from '../../Util/resolveSchema.js';
-import { tableClient } from '../../Util/tableClient.js';
 
 import { renderPage } from './renderPage.js';
 
@@ -15,13 +13,13 @@ export default async function (
 ) {
  if (!cmd.guild_id) return;
 
- const resolved = resolveSchema(this.client, id.settingName);
+ const resolved = this.resolveSchema(id.settingName);
  if (!resolved) return;
  if (!resolved.schema.multiRow) return;
 
  const t = await this.t(cmd.guild_id);
 
- const created = await tableClient(this.client, resolved.schema.table)
+ const created = await this.tableClient(resolved.schema.table)
   .create({
    data: {
     id: String(Date.now()),

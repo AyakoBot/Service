@@ -8,8 +8,6 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupPage } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { resolveSchema } from '../../Util/resolveSchema.js';
-import { tableClient } from '../../Util/tableClient.js';
 
 export interface RenderPageArgs {
  settingName: string;
@@ -24,14 +22,14 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  const { settingName, rowId, groupId, hideUnavail, cmd, respond } = args;
  if (!cmd.guild_id) return;
 
- const resolved = resolveSchema(this.client, settingName);
+ const resolved = this.resolveSchema(settingName);
  if (!resolved) return;
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
  const group = schema.groups.find((g) => g.id === groupId) ?? schema.groups[0];
  if (!group) return;
 
- const row = await tableClient(this.client, resolved.schema.table).findFirst({
+ const row = await this.tableClient(resolved.schema.table).findFirst({
   where: { id: rowId, guild: cmd.guild_id },
  });
  if (!row) return;
@@ -45,7 +43,6 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
   row,
   hideUnavail,
   t,
-  plugin: resolved.plugin,
  });
 
  const payload = new MessagePayload(this.client, {

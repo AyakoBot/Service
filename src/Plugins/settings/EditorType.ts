@@ -41,6 +41,10 @@ export enum EditorType {
  WeekendsType = 'weekends-type',
  TicketType = 'ticketing-type',
  TicketLogMode = 'ticket-log-mode',
+ TicketPanelKinds = 'ticket-panel-kinds',
+ RoleLabelMap = 'role-label-map',
+ TicketPlacementMode = 'ticket-placement-mode',
+ TicketTiers = 'ticket-tiers',
 
  GuildId = 'guild-id',
  Id = 'id',
