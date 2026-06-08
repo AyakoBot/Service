@@ -55,7 +55,45 @@ model TicketSetting {
 
  denyUsers String[] @db.VarChar
  denyRoles String[] @db.VarChar
- Ticket    Ticket[]
+
+ // Whether tickets may also be opened through a mirrored DM conversation
+ dmEnabled Boolean @default(false)
+
+ // Panel intake message: channel/message ids, custom embed payload and the open-button label
+ panelChannel     String? @db.VarChar
+ panelMessage     String? @db.VarChar
+ panelEmbed       Json?
+ panelButtonLabel String? @db.VarChar
+
+ // Reminder & inactivity thresholds in seconds (0 disables the respective timer)
+ remindUnclaimedAfter Decimal @default(0) @db.Decimal
+ remindUnclaimedEvery Decimal @default(0) @db.Decimal
+ remindStaleAfter     Decimal @default(0) @db.Decimal
+ remindStaleEvery     Decimal @default(0) @db.Decimal
+ inactivityWarnAfter  Decimal @default(0) @db.Decimal
+ inactivityCloseAfter Decimal @default(0) @db.Decimal
+ // Targets pinged when a reminder fires
+ remindRoles String[] @db.VarChar
+ remindUsers String[] @db.VarChar
+
+ // Per-plugin bot token (AES-256-GCM ciphertext, enc:v1: prefix; null falls back to the main bot)
+ botToken String? @db.VarChar
+
+ // Whether escalation tiers spread tickets across separate spaces or one unified forum
+ placementMode TicketPlacementMode @default(SeparateSpaces)
+ forumChannel  String?             @db.VarChar
+
+ // Whether staff may take an already-claimed ticket
+ allowTakeClaim Boolean  @default(false)
+ // Per-tier staff roles (index = tier rank)
+ staffTierRoles String[] @db.VarChar
+
+ // Open-ticket caps (0 = unlimited)
+ ticketLimitTotal Int @default(0)
+ ticketLimitKind  Int @default(0)
+
+ Ticket Ticket[]
+ tiers  TicketTier[]
 
  @@index(guild)
  @@index(type)
@@ -70,10 +108,74 @@ model Ticket {
  settingsId Decimal     @db.Decimal
  state      TicketState @default(opened)
 
+ // Pinned status surface message edited in place across the lifecycle
+ surfaceMessage String? @db.VarChar
+ // Current claimer and when the claim happened
+ claimer   String?   @db.VarChar
+ claimedAt DateTime?
+ // Escalation priority shown on the surface
+ priority TicketPriority @default(None)
+ // Last human message timestamp, drives inactivity
+ lastMessageAt DateTime?
+ // Armed reminder fire time (epoch-ms)
+ remindAt Decimal? @db.Decimal
+
+ // Escalation tier this ticket currently sits in
+ tierId Decimal?    @db.Decimal
+ tier   TicketTier? @relation(fields: [tierId], references: [id])
+
  settings TicketSetting @relation(fields: [settingsId], references: [id])
 
  @@index(dm)
  @@index(channel)
+ @@index(tierId)
+}
+
+model TicketPanel {
+ id      Decimal @id @db.Decimal
+ guild   String  @db.VarChar
+ channel String? @db.VarChar
+ message String? @db.VarChar
+ embed   Json?
+ kinds   Decimal[]
+
+ @@index(guild)
+}
+
+model Snippets {
+ id        Decimal  @id @db.Decimal
+ guild     String   @db.VarChar
+ name      String   @db.VarChar
+ userText  String?  @db.Text
+ staffText String?  @db.Text
+ kinds     String[] @db.VarChar
+
+ @@unique([guild, name])
+ @@index(guild)
+}
+
+model TicketRoleMap {
+ guild         String   @id @db.VarChar
+ roleMapRoles  String[] @db.VarChar
+ roleMapLabels String[] @db.Text
+
+ @@index(guild)
+}
+
+model TicketTier {
+ id              Decimal       @id @db.Decimal
+ settingsId      Decimal       @db.Decimal
+ name            String        @db.VarChar
+ rank            Int
+ claimRoles      String[]      @db.VarChar
+ category        String?       @db.VarChar
+ channel         String?       @db.VarChar
+ reminderSeconds Decimal       @default(0) @db.Decimal
+ settings        TicketSetting @relation(fields: [settingsId], references: [id])
+ Ticket          Ticket[]
+
+ @@unique([settingsId, rank])
+ @@index(settingsId)
 }
 
 enum TicketState {
@@ -94,4 +196,17 @@ enum TicketType {
 enum TicketLogMode {
  Channel
  Thread
+}
+
+enum TicketPriority {
+ None
+ Low
+ Medium
+ High
+ Urgent
+}
+
+enum TicketPlacementMode {
+ SeparateSpaces
+ UnifiedForum
 }

@@ -3,6 +3,7 @@ import { type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type { ExtractPayload } from '../../../../Types/gateway.js';
+import { TicketThreadPrefix } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
 
 export default async function (
@@ -19,7 +20,9 @@ export default async function (
  );
 
  const canonical = cachedNames.find(
-  (n) => n !== newName && (n.startsWith('log-') || n.startsWith('staff-')),
+  (n) =>
+   n !== newName &&
+   (n.startsWith(TicketThreadPrefix.Log) || n.startsWith(TicketThreadPrefix.Staff)),
  );
  if (!canonical) return;
 
@@ -32,7 +35,7 @@ export default async function (
  });
  if (!dbTicket || dbTicket.state === TicketState.deleted) return;
 
- const api = await this.client.getAPI(dbTicket.settings.guild);
+ const api = await this.getAPI(dbTicket.settings.guild, dbTicket.settings.botToken);
 
  await api.channels.edit(
   thread.id,

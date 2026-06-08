@@ -6,8 +6,10 @@ export enum TicketContextType {
  Forwarded = 'forwarded',
  Internal = 'internal',
  Claimed = 'claimed',
+ Unclaimed = 'unclaimed',
  Closed = 'closed',
  Left = 'left',
+ Escalated = 'escalated',
 }
 
 export interface TicketContext {
@@ -16,7 +18,7 @@ export interface TicketContext {
  refId: string;
 }
 
-const TYPES = new Set<string>(Object.values(TicketContextType));
+const types = new Set<string>(Object.values(TicketContextType));
 
 export const encodeContext = (type: TicketContextType, actorId: string, refId: string = '0') =>
  `tickctx_${type}_${actorId || '0'}_${refId || '0'}`;
@@ -25,7 +27,7 @@ export const decodeContext = (customId?: string | null): TicketContext | null =>
  if (!customId || !customId.startsWith('tickctx_')) return null;
 
  const [, type, actorId, refId] = customId.split('_');
- if (!type || !TYPES.has(type)) return null;
+ if (!type || !types.has(type)) return null;
 
  return { type: type as TicketContextType, actorId: actorId || '', refId: refId || '' };
 };

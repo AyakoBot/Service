@@ -1,6 +1,7 @@
 import { ChannelType } from 'discord-api-types/v10';
 
 import type Client from '../../../Classes/Client.js';
+import { TicketThreadPrefix } from '../Classes/Enums.js';
 
 import getTicketClassBySettingsType from './getTicketClassBySettingsType.js';
 
@@ -27,7 +28,7 @@ export const resolveTicketByChannel = async function (this: Client, channelId: s
 const resolveTicketByThreadPrefix = async function (
  this: Client,
  channelId: string,
- prefix: 'log-' | 'staff-',
+ prefix: TicketThreadPrefix,
 ) {
  const threadOrChannel =
   (await this.cache.channels.get(channelId)) || (await this.cache.threads.get(channelId));
@@ -54,9 +55,9 @@ const resolveTicketByThreadPrefix = async function (
 };
 
 export const resolveTicketByLogThread = function (this: Client, channelId: string) {
- return resolveTicketByThreadPrefix.call(this, channelId, 'log-');
+ return resolveTicketByThreadPrefix.call(this, channelId, TicketThreadPrefix.Log);
 };
 
 export const resolveTicketByStaffThread = function (this: Client, channelId: string) {
- return resolveTicketByThreadPrefix.call(this, channelId, 'staff-');
+ return resolveTicketByThreadPrefix.call(this, channelId, TicketThreadPrefix.Staff);
 };

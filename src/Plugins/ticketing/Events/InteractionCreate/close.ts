@@ -2,7 +2,9 @@ import { RequestHandlerError } from '@ayako/api';
 import { LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
 import { TextInputStyle, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
+import { TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
+import getTicketClassById from '../../Util/getTicketClassById.js';
 
 export default async function (
  this: TicketPlugin,
@@ -14,7 +16,7 @@ export default async function (
  const t = await this.t(cmd.guild_id);
 
  const modal = new ModalBuilder()
-  .setCustomId(`tickets/closeReason_${args[0]}`)
+  .setCustomId(this.getRoute(TicketRoute.CloseReason, args[0]))
   .setTitle(t.closeModalTitle())
   .addLabelComponents(
    new LabelBuilder()
@@ -27,9 +29,12 @@ export default async function (
     ),
   );
 
- const api = await this.client.getAPI(cmd.guild_id);
+ const ticket = await getTicketClassById.call(this.client, args[0]).catch(() => null);
+ const overrideCipher = ticket ? (await ticket.getTicket()).settings.botToken : null;
+
+ const api = await this.getAPI(cmd.guild_id, overrideCipher);
  const res = await api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
-  origin: 'tickets/close',
+  origin: this.name,
   reason: 'Prompting for ticket closing reason',
  });
 

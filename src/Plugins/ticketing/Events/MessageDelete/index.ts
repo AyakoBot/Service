@@ -15,7 +15,8 @@ export default async function (
 ) {
  const staffTicket = await resolveTicketByStaffThread.call(this.client, msg.channel_id);
  if (staffTicket) {
-  const api = await this.client.getAPI(msg.guild_id || '');
+  const staffSettings = (await staffTicket.getTicket()).settings;
+  const api = await this.getAPI(staffSettings.guild, staffSettings.botToken);
   const times = await this.client.cache.messages.getTimes(msg.id);
   const cached = times.length
    ? await this.client.cache.messages.getAt(Math.max(...times), msg.id)

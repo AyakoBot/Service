@@ -1,22 +1,13 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
+import { TicketPlacementMode } from '@ayako/database';
+import type { TicketTier } from '@ayako/database';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
- ActionRowBuilder,
- ButtonBuilder,
- ContainerBuilder,
- SectionBuilder,
- SeparatorBuilder,
- TextDisplayBuilder,
-} from '@discordjs/builders';
-import {
- ButtonStyle,
  ChannelType,
- ComponentType,
  MessageFlags,
  OverwriteType,
  PermissionFlagsBits,
- SeparatorSpacingSize,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
@@ -24,11 +15,10 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
-import { encodeContext, TicketContextType } from '../Util/transcriptContext.js';
+import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 
 import BaseTicket from './BaseTicket.js';
 import { ChannelTicketErrors } from './Enums.js';
@@ -65,7 +55,7 @@ export default class ChannelTicket extends BaseTicket {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   const res = await api.channels.delete(ticket.channel, {
    origin: ChannelTicket.name,
    reason: 'Ticket deleted',
@@ -112,68 +102,42 @@ export default class ChannelTicket extends BaseTicket {
   const superClose = super.close({ userId: data.userId, reason: data.reason });
   await superClose.next();
 
-  const closeInitPayload = await this.getCloseInitPayload(data.cmd);
-  await this.updateInitCloseMessage(data.cmd, closeInitPayload);
-
   const ticket = await this.getTicket();
   const channel = await this.getChannel(ticket.channel);
 
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   await this.closeChannel(api, channel);
   await this.revokeChannelAccess(api, channel);
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
 
-  const closeReplyPayload = await this.getCloseReplyPayload(data.reason, data.userId);
-  await this.replyMessage(data.cmd, closeReplyPayload, ChannelTicketErrors.close_CantReplyMessage);
-
   await superClose.next();
+
+  await this.refreshSurface();
+  await this.ackEphemeral(data.cmd, (t) => t.hasClosedThread());
+
   return this;
  }
 
- async getCloseReplyPayload(reason?: string, closerId?: string) {
+ async autoClose({ reason }: { reason?: string }) {
+  this.plugin.logger.logLocation(LogLevel.silly);
+  if (await this.isClosed()) return this;
+
   const ticket = await this.getTicket();
-  const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  await this.markClosed(api.botId, reason);
 
-  const container = new ContainerBuilder()
-   .setAccentColor(Colors.Warning)
-   .addSectionComponents(
-    new SectionBuilder()
-     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-       `-# ${emotes.tools.name} | ${t.SupportTeam()} • ${t.hasClosedThread()}`,
-      ),
-     )
-     .setButtonAccessory(
-      new ButtonBuilder()
-       .setStyle(ButtonStyle.Secondary)
-       .setDisabled(true)
-       .setCustomId(encodeContext(TicketContextType.Closed, closerId || '0', String(ticket.id)))
-       .setLabel('​'),
-     ),
-   );
+  const channel = await this.getChannel(ticket.channel);
 
-  if (reason) container.addTextDisplayComponents(new TextDisplayBuilder().setContent(reason));
+  await this.closeChannel(api, channel);
+  await this.revokeChannelAccess(api, channel);
+  await this.lockStaffThread();
+  await this.applyLifecycleTags(ticket.settings.closeTags);
 
-  container
-   .addSeparatorComponents(
-    new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
-   )
-   .addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-     new ButtonBuilder()
-      .setStyle(ButtonStyle.Danger)
-      .setCustomId(`tickets/delete_${ticket.id}`)
-      .setLabel(t.base.t.Delete()),
-    ),
-   );
+  await this.postAutoCloseNotice(api.botId, reason);
+  await this.refreshSurface();
 
-  return new MessagePayload(this.client, {
-   origin: ChannelTicket.name,
-   reason: 'Closing ticket',
-  })
-   .setComponents([container.toJSON()])
-   .setFlags(MessageFlags.IsComponentsV2);
+  return this;
  }
 
  async revokeChannelAccess(api: API, channel: RChannel | RThread) {
@@ -236,55 +200,13 @@ export default class ChannelTicket extends BaseTicket {
   return modify;
  }
 
- async updateInitCloseMessage(cmd: APIModalSubmitInteraction, payload: MessagePayload) {
-  if (!cmd.message) return null;
-
-  const modify = await payload.edit(cmd.message.channel_id, cmd.message.id);
-  if (!modify || modify instanceof RequestHandlerError) {
-   throw new Error(ChannelTicketErrors.close_CantEditInitMessage, { cause: modify });
-  }
-
-  return modify;
- }
-
- async getCloseInitPayload(cmd: APIModalSubmitInteraction) {
-  const isV2 =
-   ((cmd.message?.flags ?? 0) & MessageFlags.IsComponentsV2) === MessageFlags.IsComponentsV2;
-
-  const payload = new MessagePayload(this.client, {
-   origin: ChannelTicket.name,
-   reason: 'Updating close message',
-  }).setComponents(
-   cmd.message?.components?.map((row) => {
-    if (row.type !== ComponentType.ActionRow) return row;
-
-    return {
-     type: ComponentType.ActionRow as const,
-     components: row.components.map((btn) => ({
-      ...btn,
-      disabled:
-       'custom_id' in btn &&
-       (btn.custom_id?.startsWith('tickets/close_') ||
-        btn.custom_id?.startsWith('tickets/claim_'))
-        ? true
-        : btn.disabled,
-     })),
-    };
-   }) ?? [],
-  );
-
-  if (isV2) payload.setFlags(MessageFlags.IsComponentsV2);
-
-  return payload;
- }
-
  // eslint-disable-next-line require-yield
  async *claim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superClaim = super.claim({ userId: data.userId });
   await superClaim.next();
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
   const channel = await this.getChannel(ticket.channel);
   const user = await getUser
@@ -297,19 +219,139 @@ export default class ChannelTicket extends BaseTicket {
    ticket.settings.claimTags,
    ticket.settings.tagClaimer ? user?.username || null : null,
   );
-  const claimPayload = await this.getClaimPayload(data.cmd, data.userId);
-  await this.updateInitClaimMessage(data.cmd, claimPayload);
-
-  const t = await this.plugin.t(ticket.settings.guild);
-  await this.sendStateChange(
-   TicketContextType.Claimed,
-   data.userId,
-   `-# ${t.claimedBy()}: <@${data.userId}>`,
-  );
 
   await superClaim.next();
 
+  await this.refreshSurface();
+
+  const claimerLabel = await resolveStaffLabel.call(
+   this.client,
+   ticket.settings.guild,
+   data.userId,
+   `<@${data.userId}>`,
+  );
+  await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel }));
+
   return this;
+ }
+
+ async ackEphemeral(
+  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+  content: (t: Awaited<ReturnType<TicketPlugin['t']>>) => string,
+ ) {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+
+  const payload = new MessagePayload(this.client, {
+   origin: ChannelTicket.name,
+   reason: 'Acknowledging ticket lifecycle interaction',
+  })
+   .setAllowedMentionsUsers([])
+   .setAllowedMentionsRoles([])
+   .setContent(content(t))
+   .setFlags(MessageFlags.Ephemeral);
+
+  await this.replyMessage(cmd, payload, ChannelTicketErrors.cantSendMessage);
+ }
+
+ // eslint-disable-next-line require-yield
+ async *unclaim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+  this.plugin.logger.logLocation(LogLevel.silly);
+  const superUnclaim = super.unclaim({ userId: data.userId });
+  await superUnclaim.next();
+  await superUnclaim.next();
+
+  await this.refreshSurface();
+  await this.ackEphemeral(data.cmd, (t) => t.unclaimTicket());
+
+  return this;
+ }
+
+ // eslint-disable-next-line require-yield
+ async *take(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+  this.plugin.logger.logLocation(LogLevel.silly);
+  const superTake = super.take({ userId: data.userId });
+  await superTake.next();
+  await superTake.next();
+
+  await this.addClaimerToStaffThread(data.userId);
+  await this.refreshSurface();
+
+  const claimerLabel = await resolveStaffLabel.call(
+   this.client,
+   (await this.getTicket()).settings.guild,
+   data.userId,
+   `<@${data.userId}>`,
+  );
+  await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel }));
+
+  return this;
+ }
+
+ // eslint-disable-next-line require-yield
+ async *escalate(data: {
+  userId: string;
+  cmd: APIMessageComponentInteraction;
+  targetTierId: string;
+ }) {
+  this.plugin.logger.logLocation(LogLevel.silly);
+  const superEscalate = super.escalate({ userId: data.userId, targetTierId: data.targetTierId });
+  await superEscalate.next();
+
+  const ticket = await this.getTicket();
+  const target = await this.getTier(data.targetTierId);
+
+  if (ticket.settings.placementMode === TicketPlacementMode.UnifiedForum) {
+   await this.retagForTier(target);
+   await superEscalate.next({ channelId: ticket.channel });
+  } else {
+   await this.moveToTierSpace(target);
+   await superEscalate.next({ channelId: ticket.channel });
+  }
+
+  await this.refreshSurface();
+  await this.ackEphemeral(data.cmd, (t) => t.escalatedTo({ tier: target?.name || '' }));
+
+  return this;
+ }
+
+ async moveToTierSpace(target: TicketTier | null) {
+  if (!target?.category) return;
+  this.plugin.logger.logLocation(LogLevel.debug);
+
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const category = await this.getChannel(target.category).catch(() => null);
+
+  const modify = await api.channels.edit(
+   ticket.channel,
+   {
+    parent_id: target.category,
+    permission_overwrites:
+     category && 'permission_overwrites' in category
+      ? category.permission_overwrites?.map((o) => ({
+         id: o.id,
+         type: o.type,
+         allow: String(o.allow),
+         deny: String(o.deny),
+        }))
+      : undefined,
+   },
+   { origin: ChannelTicket.name, reason: 'Moving ticket to escalation tier category' },
+  );
+
+  if (modify instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(modify, this.moveToTierSpace.name);
+  }
+ }
+
+ async retagForTier(target: TicketTier | null) {
+  if (!target) return;
+  const ticket = await this.getTicket();
+  const forum = await this.client.cache.channels.get(ticket.settings.forumChannel || '');
+  if (!this.isForumChannel(forum)) return;
+
+  await this.retagForumPost(forum, ticket.channel, [target.name], []);
  }
 
  async getChannel(id: string): Promise<RChannel | RThread> {
@@ -317,71 +359,6 @@ export default class ChannelTicket extends BaseTicket {
   if (!channel) throw new Error(ChannelTicketErrors.channelNotFound);
 
   return channel;
- }
-
- async updateInitClaimMessage(cmd: APIMessageComponentInteraction, payload: MessagePayload) {
-  const modify = await payload.update(cmd);
-  if (modify && modify instanceof RequestHandlerError) {
-   throw new Error(ChannelTicketErrors.claim_CantEditMessage, { cause: modify });
-  }
-
-  return modify;
- }
-
- async getClaimPayload(cmd: APIMessageComponentInteraction, claimerId: string) {
-  const ticket = await this.getTicket();
-  const t = await this.plugin.t(ticket.settings.guild);
-
-  const isV2 =
-   ((cmd.message.flags ?? 0) & MessageFlags.IsComponentsV2) === MessageFlags.IsComponentsV2;
-
-  const claimedBy = `${t.claimedBy()}: <@${claimerId}>`;
-  const payload = new MessagePayload(this.client, {
-   origin: ChannelTicket.name,
-   reason: 'Updating claim message',
-  })
-   .setAllowedMentionsUsers([claimerId])
-   .setAllowedMentionsRoles([]);
-
-  if (!isV2) {
-   return payload.setContent(claimedBy).setComponents(
-    cmd.message.components?.map((row) => {
-     if (row.type !== ComponentType.ActionRow) return row;
-
-     return {
-      type: ComponentType.ActionRow as const,
-      components: row.components.map((btn) => ({
-       ...btn,
-       disabled:
-        'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
-      })),
-     };
-    }) ?? [],
-   );
-  }
-
-  let replaced = false;
-  const components = (cmd.message.components ?? []).map((c) => {
-   if (c.type === ComponentType.TextDisplay && !replaced && /<@&?\d+>/.test(c.content)) {
-    replaced = true;
-    return new TextDisplayBuilder().setContent(claimedBy).toJSON();
-   }
-
-   if (c.type !== ComponentType.ActionRow) return c;
-
-   return {
-    type: ComponentType.ActionRow as const,
-    components: c.components.map((btn) => ({
-     ...btn,
-     disabled:
-      'custom_id' in btn && btn.custom_id?.startsWith('tickets/claim_') ? true : btn.disabled,
-    })),
-   };
-  });
-
-  if (!replaced) components.unshift(new TextDisplayBuilder().setContent(claimedBy).toJSON());
-
-  return payload.setFlags(MessageFlags.IsComponentsV2).setComponents(components);
  }
 
  async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
@@ -417,7 +394,7 @@ export default class ChannelTicket extends BaseTicket {
 
   try {
    const ticketSettings = await this.getTicketSettings(dbOpts.settingsId);
-   const api = await this.client.getAPI(ticketSettings.guild);
+   const api = await this.plugin.getAPI(ticketSettings.guild, ticketSettings.botToken);
    const channel = await this.createChannel(api, createOpts.username, dbOpts.settingsId);
 
    await superCreate.next({ channelId: channel.id });
@@ -432,6 +409,9 @@ export default class ChannelTicket extends BaseTicket {
     reason: 'Pinning initial ticket message',
    });
    if (pin instanceof RequestHandlerError) this.plugin.nonFatalError(pin, this.create.name);
+
+   await this.setSurfaceMessage(initMessage.id);
+   await this.plugin.reminders.armForState(await this.getTicket());
 
    await this.createStaffThread(initMessage.id);
 
@@ -519,6 +499,7 @@ export default class ChannelTicket extends BaseTicket {
   if (internal || msg.channel_id === ticket.channel) return super.messageSent(msg, true);
 
   await this.forwardToTicketChannel(msg);
+  await this.setLastMessage();
 
   return super.messageSent(msg);
  }
@@ -591,7 +572,7 @@ export default class ChannelTicket extends BaseTicket {
   if (!thread) return;
 
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   const res = await api.threads.addMember(thread.id, userId, {
    origin: ChannelTicket.name,
    reason: 'Adding claimer to staff thread',
@@ -607,7 +588,7 @@ export default class ChannelTicket extends BaseTicket {
   if (!thread) return;
 
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   const res = await api.channels.edit(
    thread.id,
    { locked: true },
@@ -624,7 +605,7 @@ export default class ChannelTicket extends BaseTicket {
   if (!thread) return;
 
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   const res = await api.channels.edit(
    thread.id,
    { archived: true },

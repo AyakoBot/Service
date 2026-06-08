@@ -34,7 +34,7 @@ export default async function (this: TicketPlugin, cmd: APIMessageComponentInter
   return;
  }
 
- ticket.leave(cmd).catch((e: Error) =>
+ (ticket as DmToChannelTicket).leave(cmd).catch((e: Error) =>
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
    error: e,

@@ -1,7 +1,7 @@
-import type { TicketSetting } from '@ayako/database';
-import { TicketLogMode, TicketType } from '@ayako/database';
+import type { Snippets, TicketSetting } from '@ayako/database';
+import { TicketLogMode, TicketPlacementMode, TicketState, TicketType } from '@ayako/database';
 import { LogLevel } from '@ayako/utility';
-import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin, {
@@ -27,6 +27,8 @@ import messageUpdate from './Events/MessageUpdate/index.js';
 import threadDelete from './Events/ThreadDelete/index.js';
 import threadUpdate from './Events/ThreadUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
+import TicketReminders from './Reminders/TicketReminders.js';
+import { botTokenTransform } from './Util/botTokenTransform.js';
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate
@@ -45,21 +47,30 @@ export enum TicketGroups {
  Staff = 'staff',
  Notifications = 'notifications',
  Dm = 'dm',
+ Panel = 'panel',
  Forum = 'forum',
+ Reminders = 'reminders',
+ Inactivity = 'inactivity',
+ RemindTargets = 'remindTargets',
+ BotIdentity = 'botIdentity',
+ Escalation = 'escalation',
+ Limits = 'limits',
 }
+
+const reminderDurationOptions: { label: (t: TicketTranslator) => string; value: string }[] = [
+ { value: '0', label: (t: TicketTranslator) => t.settings.durations.off() },
+ { value: '900', label: (t: TicketTranslator) => t.settings.durations['15m']() },
+ { value: '3600', label: (t: TicketTranslator) => t.settings.durations['1h']() },
+ { value: '21600', label: (t: TicketTranslator) => t.settings.durations['6h']() },
+ { value: '86400', label: (t: TicketTranslator) => t.settings.durations['24h']() },
+];
 
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
  name = 'Ticketing';
  settingName = 'ticketing';
  tableName = 'TicketSetting';
 
- groupEmotes = {
-  [TicketGroups.Channels]: emotes.channelTypes[0],
-  [TicketGroups.Staff]: emotes.Member,
-  [TicketGroups.Notifications]: emotes.info,
-  [TicketGroups.Dm]: emotes.Message,
-  [TicketGroups.Forum]: emotes.channelTypes[15],
- };
+ reminders: TicketReminders;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -146,12 +157,46 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
 
+  this.pluginBotToken = process.env.TICKET_TOKEN;
+
   this.logger.setLevel(LogLevel.silly);
   assertSchemaValid(this.settingsSchema);
+
+  this.reminders = new TicketReminders(this);
+  this.client.cache.on('scheduleExpired', (key: unknown) =>
+   this.reminders.onScheduleExpired(String(key)),
+  );
+  this.reminders.reconcile().catch((e: Error) => this.nonFatalError(e, 'reconcileSchedules'));
  }
 
+ invalidateToken = async (cipher: string): Promise<void> => {
+  await this.client.db.client.ticketSetting.updateMany({
+   where: { botToken: cipher },
+   data: { botToken: null },
+  });
+ };
+
+ onGuildRemoved = async (guildId: string) => {
+  await this.client.db.client.ticketSetting.updateMany({
+   where: { guild: guildId },
+   data: { botToken: null },
+  });
+  this.invalidateGuildAPI(guildId);
+ };
+
  getCommands = () => ({
-  commands: [],
+  commands: [
+   new SlashCommandBuilder()
+    .setName('tag')
+    .setDescription('Post a saved snippet into the current ticket, or open the snippet toolkit')
+    .addStringOption((option) =>
+     option
+      .setName('tag')
+      .setDescription('The snippet to post')
+      .setRequired(false)
+      .setAutocomplete(true),
+    ),
+  ],
   settings: [
    {
     category: SettingsCategory.Automation,
@@ -169,8 +214,21 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   table: 'ticketSetting',
   rowKey: 'id',
   multiRow: true,
+  title: (t: TicketTranslator) => t.settings.configTitle(),
   rowLabel: (t: TicketTranslator, row: TicketSetting) =>
    t.settings.systemLabel({ id: String(row.id) }),
+  canDelete: async (row, ctx) => {
+   const open = await ctx.client.db.client.ticket.findMany({
+    where: {
+     settingsId: String(row.id),
+     state: { in: [TicketState.opened, TicketState.claimed] },
+    },
+   });
+   if (!open.length) return { ok: true };
+
+   const t = (await ctx.plugin.t(ctx.guildId)) as unknown as TicketTranslator;
+   return { ok: false, reason: t.settings.deleteBlocked({ count: String(open.length) }) };
+  },
   groups: [
    {
     id: TicketGroups.General,
@@ -224,6 +282,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Channels,
     label: (t: TicketTranslator) => t.settings.groups.channels(),
+    emote: emotes.channelTypes[0],
     fields: [
      {
       column: 'category',
@@ -281,6 +340,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Staff,
     label: (t: TicketTranslator) => t.settings.groups.staff(),
+    emote: emotes.Member,
     fields: [
      {
       column: 'staffRoles',
@@ -321,6 +381,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Notifications,
     label: (t: TicketTranslator) => t.settings.groups.notifications(),
+    emote: emotes.info,
     fields: [
      {
       column: 'mentionRoles',
@@ -355,6 +416,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Dm,
     label: (t: TicketTranslator) => t.settings.groups.dm(),
+    emote: emotes.Message,
     showIf: (row) => ({
      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
      reason: en.settings.reasons.dmOnly,
@@ -370,8 +432,39 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
    {
+    id: TicketGroups.Panel,
+    label: (t: TicketTranslator) => t.settings.groups.panel(),
+    emote: emotes.Message,
+    fields: [
+     {
+      column: 'dmEnabled',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.dmEnabled(),
+      description: (t: TicketTranslator) => t.settings.descriptions.dmEnabled(),
+     },
+     {
+      column: 'panelChannel',
+      editor: EditorType.Channel,
+      label: (t: TicketTranslator) => t.settings.fields.panelChannel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.panelChannel(),
+     },
+     {
+      column: 'panelButtonLabel',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.panelButtonLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.panelButtonLabel(),
+      arity: FieldArity.Single,
+      showIf: (row) => ({
+       ok: Boolean(row.panelChannel),
+       reason: en.settings.reasons.panelChannelOff,
+      }),
+     },
+    ],
+   },
+   {
     id: TicketGroups.Forum,
     label: (t: TicketTranslator) => t.settings.groups.forum(),
+    emote: emotes.channelTypes[15],
     fields: [
      {
       column: 'createTags',
@@ -409,6 +502,217 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      },
     ],
    },
+   {
+    id: TicketGroups.Reminders,
+    label: (t: TicketTranslator) => t.settings.groups.reminders(),
+    emote: emotes.timer,
+    fields: [
+     {
+      column: 'remindUnclaimedAfter',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedAfter(),
+      description: (t: TicketTranslator) => t.settings.descriptions.remindUnclaimedAfter(),
+      arity: FieldArity.Single,
+      options: reminderDurationOptions,
+     },
+     {
+      column: 'remindUnclaimedEvery',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedEvery(),
+      description: (t: TicketTranslator) => t.settings.descriptions.remindUnclaimedEvery(),
+      arity: FieldArity.Single,
+      options: reminderDurationOptions,
+     },
+     {
+      column: 'remindStaleAfter',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.remindStaleAfter(),
+      description: (t: TicketTranslator) => t.settings.descriptions.remindStaleAfter(),
+      arity: FieldArity.Single,
+      options: reminderDurationOptions,
+     },
+     {
+      column: 'remindStaleEvery',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.remindStaleEvery(),
+      description: (t: TicketTranslator) => t.settings.descriptions.remindStaleEvery(),
+      arity: FieldArity.Single,
+      options: reminderDurationOptions,
+     },
+    ],
+   },
+   {
+    id: TicketGroups.Inactivity,
+    label: (t: TicketTranslator) => t.settings.groups.inactivity(),
+    emote: emotes.timer,
+    fields: [
+     {
+      column: 'inactivityWarnAfter',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.inactivityWarnAfter(),
+      description: (t: TicketTranslator) => t.settings.descriptions.inactivityWarnAfter(),
+      arity: FieldArity.Single,
+      options: reminderDurationOptions,
+     },
+     {
+      column: 'inactivityCloseAfter',
+      editor: EditorType.Duration,
+      label: (t: TicketTranslator) => t.settings.fields.inactivityCloseAfter(),
+      description: (t: TicketTranslator) => t.settings.descriptions.inactivityCloseAfter(),
+      arity: FieldArity.Single,
+      options: reminderDurationOptions,
+     },
+    ],
+   },
+   {
+    id: TicketGroups.RemindTargets,
+    label: (t: TicketTranslator) => t.settings.groups.remindTargets(),
+    emote: emotes.Member,
+    fields: [
+     {
+      column: 'remindRoles',
+      editor: EditorType.Roles,
+      label: (t: TicketTranslator) => t.settings.fields.remindRoles(),
+      description: (t: TicketTranslator) => t.settings.descriptions.remindRoles(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'remindUsers',
+      editor: EditorType.Users,
+      label: (t: TicketTranslator) => t.settings.fields.remindUsers(),
+      description: (t: TicketTranslator) => t.settings.descriptions.remindUsers(),
+      arity: FieldArity.Multi,
+     },
+    ],
+   },
+   {
+    id: TicketGroups.BotIdentity,
+    label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
+    emote: emotes.lock,
+    fields: [
+     {
+      column: 'botToken',
+      editor: EditorType.BotToken,
+      label: (t: TicketTranslator) => t.settings.fields.botToken(),
+      description: (t: TicketTranslator) => t.settings.descriptions.botToken(),
+      arity: FieldArity.Single,
+      secret: true,
+      transform: botTokenTransform,
+     },
+    ],
+   },
+   {
+    id: TicketGroups.Escalation,
+    label: (t: TicketTranslator) => t.settings.groups.escalation(),
+    emote: emotes.tools,
+    fields: [
+     {
+      column: 'placementMode',
+      editor: EditorType.TicketPlacementMode,
+      label: (t: TicketTranslator) => t.settings.fields.placementMode(),
+      description: (t: TicketTranslator) => t.settings.descriptions.placementMode(),
+      arity: FieldArity.Single,
+      options: [
+       {
+        value: TicketPlacementMode.SeparateSpaces,
+        label: (t: TicketTranslator) => t.settings.options.separateSpaces(),
+       },
+       {
+        value: TicketPlacementMode.UnifiedForum,
+        label: (t: TicketTranslator) => t.settings.options.unifiedForum(),
+       },
+      ],
+     },
+     {
+      column: 'forumChannel',
+      editor: EditorType.Channel,
+      label: (t: TicketTranslator) => t.settings.fields.forumChannel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.forumChannel(),
+      showIf: (row) => ({
+       ok: row.placementMode === TicketPlacementMode.UnifiedForum,
+       reason: en.settings.reasons.forumModeOnly,
+      }),
+     },
+    ],
+   },
+   {
+    id: TicketGroups.Limits,
+    label: (t: TicketTranslator) => t.settings.groups.limits(),
+    emote: emotes.Member,
+    fields: [
+     {
+      column: 'allowTakeClaim',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.allowTakeClaim(),
+      description: (t: TicketTranslator) => t.settings.descriptions.allowTakeClaim(),
+     },
+     {
+      column: 'staffTierRoles',
+      editor: EditorType.Roles,
+      label: (t: TicketTranslator) => t.settings.fields.staffTierRoles(),
+      description: (t: TicketTranslator) => t.settings.descriptions.staffTierRoles(),
+      arity: FieldArity.Multi,
+      showIf: (row) => ({
+       ok: Boolean(row.allowTakeClaim),
+       reason: en.settings.reasons.takeClaimOff,
+      }),
+     },
+     {
+      column: 'ticketLimitTotal',
+      editor: EditorType.Number,
+      label: (t: TicketTranslator) => t.settings.fields.ticketLimitTotal(),
+      description: (t: TicketTranslator) => t.settings.descriptions.ticketLimitTotal(),
+      arity: FieldArity.Single,
+     },
+     {
+      column: 'ticketLimitKind',
+      editor: EditorType.Number,
+      label: (t: TicketTranslator) => t.settings.fields.ticketLimitKind(),
+      description: (t: TicketTranslator) => t.settings.descriptions.ticketLimitKind(),
+      arity: FieldArity.Single,
+     },
+    ],
+   },
   ],
  } satisfies SettingsSchemaDef<TicketSetting, TicketTranslator> as SettingsSchemaDef;
+
+ snippetsSchema = {
+  table: 'snippets',
+  rowKey: 'name',
+  multiRow: true,
+  rowLabel: (t: TicketTranslator, row: Snippets) => row.name || t.tag.toolkitHeader(),
+  groups: [
+   {
+    id: 'snippet',
+    label: (t: TicketTranslator) => t.tag.toolkitHeader(),
+    fields: [
+     {
+      column: 'name',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.base.t.name(),
+      arity: FieldArity.Single,
+      required: true,
+     },
+     {
+      column: 'userText',
+      editor: EditorType.Message,
+      label: (t: TicketTranslator) => t.tag.fields.userText(),
+      arity: FieldArity.Single,
+     },
+     {
+      column: 'staffText',
+      editor: EditorType.Message,
+      label: (t: TicketTranslator) => t.tag.fields.staffText(),
+      arity: FieldArity.Single,
+     },
+     {
+      column: 'kinds',
+      editor: EditorType.Strings,
+      label: (t: TicketTranslator) => t.tag.fields.kinds(),
+      arity: FieldArity.Multi,
+     },
+    ],
+   },
+  ],
+ } satisfies SettingsSchemaDef<Snippets, TicketTranslator> as SettingsSchemaDef;
 }

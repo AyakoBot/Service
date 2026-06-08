@@ -1,5 +1,5 @@
 import { RequestHandlerError } from '@ayako/api';
-import { TicketLogMode, type Ticket, type TicketSetting } from '@ayako/database';
+import { TicketLogMode, type Prisma, type Ticket, type TicketSetting } from '@ayako/database';
 import {
  LogLevel,
  txtFileWriter,
@@ -97,12 +97,12 @@ export default abstract class BaseTicketLogger {
   this.plugin = plugin;
  }
 
- getTicket = async () => {
+ getTicket = async (): Promise<Prisma.TicketGetPayload<{ include: { settings: true } }>> => {
   if (this.dbTicket) return this.dbTicket;
   return this.refreshDbTicket();
  };
 
- refreshDbTicket = async () => {
+ refreshDbTicket = async (): Promise<Prisma.TicketGetPayload<{ include: { settings: true } }>> => {
   this.plugin.logger.logLocation(LogLevel.silly);
   this.dbTicket = await this.db.ticket.findUnique({
    where: { id: this.id },
@@ -486,9 +486,7 @@ export default abstract class BaseTicketLogger {
 
   const targets = [...new Set([...logChannels.map((c) => c.id), ...transcriptChannels])];
 
-  payload
-   .setSendTo(targets.map((channel) => ({ channel, guildId: ticket.settings.guild })))
-   .send();
+  payload.setSendTo(targets.map((channel) => ({ channel, guildId: ticket.settings.guild }))).send();
 
   return true;
  }
@@ -590,7 +588,7 @@ export default abstract class BaseTicketLogger {
   const channel = await this.client.cache.channels.get(channelId);
   if (!channel) return null;
 
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
   if (ChannelType.GuildForum === channel.type || ChannelType.GuildMedia === channel.type) {
    const idByName = await this.ensureForumTags(channel, ticket.settings.createTags);
@@ -642,7 +640,7 @@ export default abstract class BaseTicketLogger {
 
   const trunc = (s: string) => s.slice(0, 20);
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
   const current = forum.available_tags;
   const byName = new Map(current.map((at) => [at.name, at]));
@@ -694,7 +692,7 @@ export default abstract class BaseTicketLogger {
  ) {
   const trunc = (s: string) => s.slice(0, 20);
   const ticket = await this.getTicket();
-  const api = await this.client.getAPI(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
   const post = await this.client.cache.threads.get(postId);
   const currentApplied = post?.applied_tags ?? [];
@@ -709,11 +707,9 @@ export default abstract class BaseTicketLogger {
   const extraIds = resolve(extraTagNames);
 
   const managedNames = new Set(
-   [
-    ...ticket.settings.createTags,
-    ...ticket.settings.claimTags,
-    ...ticket.settings.closeTags,
-   ].map(trunc),
+   [...ticket.settings.createTags, ...ticket.settings.claimTags, ...ticket.settings.closeTags].map(
+    trunc,
+   ),
   );
   const managedIds = new Set(
    [...idByName.entries()].filter(([name]) => managedNames.has(name)).map(([, id]) => id),
@@ -734,8 +730,7 @@ export default abstract class BaseTicketLogger {
 
  isForumChannel(channel: RChannel | null | undefined): channel is RChannel {
   return (
-   !!channel &&
-   (channel.type === ChannelType.GuildForum || channel.type === ChannelType.GuildMedia)
+   !!channel && (channel.type === ChannelType.GuildForum || channel.type === ChannelType.GuildMedia)
   );
  }
 
@@ -854,10 +849,14 @@ export default abstract class BaseTicketLogger {
     return t.base.t.Internal();
    case TicketContextType.Claimed:
     return t.base.t.Claimed();
+   case TicketContextType.Unclaimed:
+    return t.base.t.Unclaimed();
    case TicketContextType.Closed:
     return t.base.t.Closed();
    case TicketContextType.Left:
     return t.base.t.Left();
+   case TicketContextType.Escalated:
+    return t.base.t.Escalated();
    default:
     return type;
   }

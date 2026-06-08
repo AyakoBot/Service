@@ -40,6 +40,16 @@ const getErrorMessage = function (
   case error.message === BaseTicketErrors.userNotFound:
    return t.base.errors.userNotFound();
 
+  case error.message === BaseTicketErrors.create_LimitKindReached:
+   return t.errors[BaseTicketErrors.create_LimitKindReached]({
+    count: String((error.cause as { count?: number } | undefined)?.count ?? 0),
+   });
+
+  case error.message === BaseTicketErrors.create_LimitTotalReached:
+   return t.errors[BaseTicketErrors.create_LimitTotalReached]({
+    count: String((error.cause as { count?: number } | undefined)?.count ?? 0),
+   });
+
   case Object.keys(t.errors).includes(error.message):
    return t.errors[error.message as keyof typeof t.errors]();
 
