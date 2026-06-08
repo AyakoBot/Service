@@ -57,14 +57,6 @@ export enum TicketGroups {
  Limits = 'limits',
 }
 
-const reminderDurationOptions: { label: (t: TicketTranslator) => string; value: string }[] = [
- { value: '0', label: (t: TicketTranslator) => t.settings.durations.off() },
- { value: '900', label: (t: TicketTranslator) => t.settings.durations['15m']() },
- { value: '3600', label: (t: TicketTranslator) => t.settings.durations['1h']() },
- { value: '21600', label: (t: TicketTranslator) => t.settings.durations['6h']() },
- { value: '86400', label: (t: TicketTranslator) => t.settings.durations['24h']() },
-];
-
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
  name = 'Ticketing';
  settingName = 'ticketing';
@@ -513,7 +505,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindUnclaimedAfter(),
       arity: FieldArity.Single,
-      options: reminderDurationOptions,
      },
      {
       column: 'remindUnclaimedEvery',
@@ -521,7 +512,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedEvery(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindUnclaimedEvery(),
       arity: FieldArity.Single,
-      options: reminderDurationOptions,
      },
      {
       column: 'remindStaleAfter',
@@ -529,7 +519,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.remindStaleAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindStaleAfter(),
       arity: FieldArity.Single,
-      options: reminderDurationOptions,
      },
      {
       column: 'remindStaleEvery',
@@ -537,7 +526,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.remindStaleEvery(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindStaleEvery(),
       arity: FieldArity.Single,
-      options: reminderDurationOptions,
      },
     ],
    },
@@ -552,7 +540,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.inactivityWarnAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.inactivityWarnAfter(),
       arity: FieldArity.Single,
-      options: reminderDurationOptions,
      },
      {
       column: 'inactivityCloseAfter',
@@ -560,7 +547,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.inactivityCloseAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.inactivityCloseAfter(),
       arity: FieldArity.Single,
-      options: reminderDurationOptions,
      },
     ],
    },

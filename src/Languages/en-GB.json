@@ -339,6 +339,7 @@
  },
  "errors": {
   "unknownError": "An unknown error occurred",
+  "invalidDuration": "That's not a valid duration. Try something like `2h`, `30m`, or `1h 30m`.",
   "invalidColor": "Color is not a valid HEX Code",
   "fileNotFound": "File not found or empty",
   "stickerNotFound": "The Mentioned Sticker could not be found",

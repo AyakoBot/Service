@@ -1,5 +1,6 @@
 import { type APIModalSubmitInteraction } from 'discord-api-types/v10';
 
+import { parseDurationSeconds } from '../../../../Util/durationSeconds.js';
 import { EditorType } from '../../EditorType.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsField } from '../../SettingsSchema.js';
@@ -47,7 +48,20 @@ export default async function (
  if (!row) return;
 
  const raw = findModalValue(cmd.data.components, field.column);
- const value = readValue(field, raw);
+
+ let value: unknown;
+ if (field.editor === EditorType.Duration) {
+  const seconds = parseDurationSeconds(raw ?? '');
+  if (seconds === null) {
+   const t = await this.t(cmd.guild_id);
+   await reRender.call(this, cmd, id);
+   await followUpWarning.call(this, cmd, t.base.errors.invalidDuration());
+   return;
+  }
+  value = seconds;
+ } else {
+  value = readValue(field, raw);
+ }
 
  if (field.secret && value === undefined) {
   await reRender.call(this, cmd, id);

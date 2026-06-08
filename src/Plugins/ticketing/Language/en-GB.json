@@ -131,7 +131,7 @@
   "addTitle": "Add escalation tier",
   "editTitle": "Edit escalation tier",
   "claimRoles": "Claim roles",
-  "reminderSeconds": "Unclaimed reminder (seconds)",
+  "reminderSeconds": "Unclaimed reminder",
   "reminderHint": "Ping the claim roles after a Ticket stays on this tier this long without being claimed. Use 0 to turn this off.",
   "errors": {
    "notFound": "That tier could not be found. It may have already been removed.",

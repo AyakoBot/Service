@@ -15,6 +15,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { formatDurationSeconds, parseDurationSeconds } from '../../../../Util/durationSeconds.js';
 import { TierErrors } from '../../Classes/Enums.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import TicketTierEntry, { type TierInput } from '../../Classes/TicketTierEntry.js';
@@ -23,11 +24,6 @@ import { authorizeManage } from '../../Util/authorizeManage.js';
 import { findModalValue, findModalValues } from '../../Util/findModalValue.js';
 
 import { buildTierEditor } from './tierManage.js';
-
-const parseSeconds = (value: string | undefined): number => {
- const num = Number((value || '').trim());
- return Number.isFinite(num) && num > 0 ? Math.round(num) : 0;
-};
 
 const tierModal = async function (
  this: TicketPlugin,
@@ -52,8 +48,11 @@ const tierModal = async function (
   .setCustomId('reminderSeconds')
   .setStyle(TextInputStyle.Short)
   .setRequired(false)
-  .setMaxLength(8);
- if (tier && Number(tier.reminderSeconds) > 0) reminderInput.setValue(String(tier.reminderSeconds));
+  .setPlaceholder('e.g. 30m, 2h, 1h 30m')
+  .setMaxLength(32);
+ if (tier && Number(tier.reminderSeconds) > 0) {
+  reminderInput.setValue(formatDurationSeconds(Number(tier.reminderSeconds)));
+ }
 
  const rolesSelect = new RoleSelectMenuBuilder().setCustomId('claimRoles').setMinValues(0).setMaxValues(25);
  if (tier?.claimRoles.length) rolesSelect.setDefaultRoles(tier.claimRoles);
@@ -154,12 +153,20 @@ export const tierSave = async function (
   return;
  }
 
+ const reminderSeconds = parseDurationSeconds(
+  findModalValue(cmd.data.components, 'reminderSeconds') ?? '',
+ );
+ if (reminderSeconds === null) {
+  tierWarn.call(this, cmd, t.base.errors.invalidDuration());
+  return;
+ }
+
  const input: TierInput = {
   name,
   claimRoles: findModalValues(cmd.data.components, 'claimRoles'),
   category: findModalValues(cmd.data.components, 'category')[0] ?? null,
   channel: findModalValues(cmd.data.components, 'channel')[0] ?? null,
-  reminderSeconds: parseSeconds(findModalValue(cmd.data.components, 'reminderSeconds')),
+  reminderSeconds,
  };
 
  const result = await (tierId ? entry.edit(settings, tierId, input) : entry.create(settings, input))

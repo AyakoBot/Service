@@ -12,6 +12,7 @@ import {
 } from '@discordjs/builders';
 import { ChannelType, TextInputStyle } from 'discord-api-types/v10';
 
+import { formatDurationSeconds } from '../../../Util/durationSeconds.js';
 import { EditorType } from '../EditorType.js';
 import { FieldArity } from '../SettingsSchema.js';
 import type { SettingsField } from '../SettingsSchema.js';
@@ -20,13 +21,15 @@ import { ComponentKind, resolveComponentKind } from './resolveComponentKind.js';
 
 const labelDescLimit = 100;
 
-const clampDescription = (description: string): string =>
- (description.length > labelDescLimit
-  ? `${description.slice(0, labelDescLimit - 1)}…`
-  : description);
+const clampDescription = (description: string): string => {
+ if (description.length <= labelDescLimit) return description;
+ return `${description.slice(0, labelDescLimit - 1)}…`;
+};
 
-const asOptions = (field: SettingsField): { label: string; value: string }[] =>
- (Array.isArray(field.options) ? field.options : []);
+const asOptions = (field: SettingsField): { label: string; value: string }[] => {
+ if (Array.isArray(field.options)) return field.options;
+ return [];
+};
 
 const toIds = (value: unknown): string[] => {
  if (Array.isArray(value)) return value.map((entry) => String(entry)).filter((id) => id.length > 0);
@@ -118,14 +121,20 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
      .setRequired(Boolean(field.required))
      .setValue(Array.isArray(value) ? value.join('\n') : ''),
    );
-  case ComponentKind.Text:
-   return label.setTextInputComponent(
-    new TextInputBuilder()
-     .setCustomId(customId)
-     .setStyle(TextInputStyle.Short)
-     .setRequired(Boolean(field.required))
-     .setValue(value === undefined || value === null ? '' : String(value)),
-   );
+  case ComponentKind.Text: {
+   const input = new TextInputBuilder()
+    .setCustomId(customId)
+    .setStyle(TextInputStyle.Short)
+    .setRequired(Boolean(field.required));
+
+   if (field.editor === EditorType.Duration) {
+    input.setPlaceholder('e.g. 30m, 2h, 1h 30m').setValue(formatDurationSeconds(Number(value)));
+   } else {
+    input.setValue(value === undefined || value === null ? '' : String(value));
+   }
+
+   return label.setTextInputComponent(input);
+  }
   case ComponentKind.SecretText:
    return label.setTextInputComponent(
     new TextInputBuilder()
@@ -137,14 +146,12 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
    );
   case ComponentKind.CheckboxGroup:
    return label.setCheckboxGroupComponent(
-    new CheckboxGroupBuilder()
-     .setCustomId(customId)
-     .setOptions(
-      asOptions(field).map((o) => ({
-       ...o,
-       default: Array.isArray(value) && value.includes(o.value),
-      })),
-     ),
+    new CheckboxGroupBuilder().setCustomId(customId).setOptions(
+     asOptions(field).map((o) => ({
+      ...o,
+      default: Array.isArray(value) && value.includes(o.value),
+     })),
+    ),
    );
   case ComponentKind.Select1:
    return label.setStringSelectMenuComponent(

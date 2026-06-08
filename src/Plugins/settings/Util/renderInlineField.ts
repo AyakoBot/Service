@@ -13,6 +13,7 @@ import {
 import { ButtonStyle, ChannelType } from 'discord-api-types/v10';
 
 import emotes from '../../../Classes/Emotes.js';
+import { formatDurationSeconds } from '../../../Util/durationSeconds.js';
 import { EditorType } from '../EditorType.js';
 import { FieldArity, type SettingsField, type ShowIfResult } from '../SettingsSchema.js';
 
@@ -190,15 +191,21 @@ export const renderInlineField = (
    return;
   }
   default: {
+   const durationText =
+    field.editor === EditorType.Duration ? formatDurationSeconds(Number(value)) : null;
    const preview = field.secret
     ? ''
-    : Array.isArray(value)
-      ? value.length
-        ? `\n> ${value.map((entry) => `\`${String(entry)}\``).join(', ')}`
+    : durationText !== null
+      ? durationText
+        ? `\n> \`${durationText}\``
         : ''
-      : value === undefined || value === null || value === ''
-        ? ''
-        : `\n> \`${String(value)}\``;
+      : Array.isArray(value)
+        ? value.length
+          ? `\n> ${value.map((entry) => `\`${String(entry)}\``).join(', ')}`
+          : ''
+        : value === undefined || value === null || value === ''
+          ? ''
+          : `\n> \`${String(value)}\``;
    container.addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(
