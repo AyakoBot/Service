@@ -26,6 +26,7 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
   client.getAPI = this.getApiFromGuildId;
+  client.getCustomAPI = this.getCustomApiFromGuildId;
   client.getBotIdForGuildId = this.getBotIdForGuildId;
 
   this.client.cache.on('interaction', (message) => {
@@ -40,9 +41,26 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   return ccBase.getAPIforGuildId(guildId);
  };
 
+ getCustomApiFromGuildId = async (guildId?: string) => {
+  if (!guildId) return null;
+  const ccBase = new CustomClient(this.client, guildId);
+  return ccBase.getCustomAPIforGuildId(guildId);
+ };
+
  getBotIdForGuildId = async (guildId: string) => {
   const ccBase = new CustomClient(this.client, guildId);
   return ccBase.getBotIdForGuildId(guildId);
+ };
+
+ onGuildRemoved = async (guildId: string) => {
+  await this.client.db.client.customClient.updateMany({
+   where: { guildId },
+   data: { token: null },
+  });
+
+  const ccBase = new CustomClient(this.client, guildId);
+  ccBase.apiCache.delete(guildId);
+  this.invalidateGuildAPI(guildId);
  };
 
  getCommands = () => ({

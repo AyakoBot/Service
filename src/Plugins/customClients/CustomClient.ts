@@ -2,6 +2,7 @@ import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ay
 
 import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
+import { checkToken } from '../../Util/botInGuild.js';
 
 import CustomClientsPlugin from './Plugin.js';
 
@@ -42,21 +43,35 @@ export default class CustomClient extends DBEntry<'customClient'> {
   return api;
  };
 
- getAPIforGuildId = async (guildId: string) => {
-  const base = new CustomClient(this.client, guildId);
+ getCustomAPIforGuildId = async (guildId: string): Promise<API | null> => {
   const cached = this.apiCache.get(guildId);
   if (cached) return cached;
 
+  const base = new CustomClient(this.client, guildId);
   const entry = await base.get();
-  if (!entry || !entry.token) return this.createBaseAPI(guildId);
+  if (!entry || !entry.token) return null;
 
   const api = new API(entry.token, this.plugin.logger, this.client.cache, guildId);
-  const isValid = await this.validateAPI(guildId, api);
-  if (!isValid) this.createBaseAPI(guildId);
+  const status = await checkToken(api, guildId);
 
-  this.apiCache.set(guildId, api);
-  return api;
+  if (status === 'ok') {
+   this.apiCache.set(guildId, api);
+   return api;
+  }
+
+  if (status === 'invalid') {
+   this.apiCache.delete(guildId);
+   await this.db.client.customClient.update({
+    where: { guildId },
+    data: { token: null },
+   });
+  }
+
+  return null;
  };
+
+ getAPIforGuildId = async (guildId: string) =>
+  (await this.getCustomAPIforGuildId(guildId)) ?? this.createBaseAPI(guildId);
 
  validateAPI = async (guildId: string, api?: API) => {
   const apiToValidate = api || (await this.getAPIforGuildId(guildId));
