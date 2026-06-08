@@ -21,8 +21,16 @@ export const buildOverview = (
  schema: SettingsSchema,
  rows: Record<string, unknown>[],
 ): ContainerBuilder => {
- const container = new ContainerBuilder().addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(`## ${title}`),
+ const container = new ContainerBuilder().addSectionComponents(
+  new SectionBuilder()
+   .addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ${title}`))
+   .setButtonAccessory(
+    new ButtonBuilder()
+     .setStyle(ButtonStyle.Success)
+     .setLabel(createLabel)
+     .setEmoji(buttonEmoji(emotes.plusBG))
+     .setCustomId(encodeSettingsId({ action: SettingsAction.Create, settingName })),
+   ),
  );
 
  if (rows.length === 0) {
@@ -54,18 +62,6 @@ export const buildOverview = (
    );
   }
  }
-
- container.addSectionComponents(
-  new SectionBuilder()
-   .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${createLabel}`))
-   .setButtonAccessory(
-    new ButtonBuilder()
-     .setStyle(ButtonStyle.Success)
-     .setLabel(createLabel)
-     .setEmoji(buttonEmoji(emotes.plus))
-     .setCustomId(encodeSettingsId({ action: SettingsAction.Create, settingName })),
-   ),
- );
 
  return container;
 };
