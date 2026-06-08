@@ -124,7 +124,6 @@ export const buildGroupPage = ({
     new ButtonBuilder()
      .setStyle(ButtonStyle.Secondary)
      .setLabel(hideUnavail ? t.navigator.show() : t.navigator.hide())
-     .setEmoji(buttonEmoji(emotes.invis))
      .setCustomId(
       encodeSettingsId({
        action: SettingsAction.ToggleUnavail,
