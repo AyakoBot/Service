@@ -11,6 +11,7 @@ import {
 } from '@discordjs/builders';
 import {
  ButtonStyle,
+ MessageReferenceType,
  SeparatorSpacingSize,
  StickerFormatType,
  type GatewayMessageDeleteDispatchData,
@@ -18,10 +19,17 @@ import {
 
 import constants from '../Classes/Constants.js';
 
+interface ContextBase {
+ authorName: string;
+ rawAuthor?: boolean;
+ forwardedFromLabel?: string;
+ forwardUnavailableLabel?: string;
+}
+
 type ContextButton =
- | { authorName: string; button: ButtonBuilder; context?: never; rawAuthor?: boolean }
- | { authorName: string; button?: never; context: string; rawAuthor?: boolean }
- | { authorName: string; button?: never; context?: never; rawAuthor?: boolean };
+ | (ContextBase & { button: ButtonBuilder; context?: never })
+ | (ContextBase & { button?: never; context: string })
+ | (ContextBase & { button?: never; context?: never });
 
 const addSeparator = function (this: ContainerBuilder) {
  this.addSeparatorComponents(
@@ -88,6 +96,49 @@ export const cloneMessageIntoContainer = function (
 
  if (msg.content) {
   this.addTextDisplayComponents(new TextDisplayBuilder().setContent(msg.content));
+ }
+
+ const isForward = msg.message_reference?.type === MessageReferenceType.Forward;
+ if (isForward) {
+  const snapshot = msg.message_snapshots?.[0];
+  const fromLabel = contextButton?.forwardedFromLabel;
+  if (fromLabel) {
+   this.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${fromLabel}`));
+  }
+
+  if (snapshot?.content) {
+   this.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+     snapshot.content
+      .split('\n')
+      .map((line: string) => `> ${line}`)
+      .join('\n'),
+    ),
+   );
+  }
+
+  const snapshotAttachments = snapshot?.attachments ?? [];
+  const snapshotMedia = snapshotAttachments.filter((a) => a.width && a.height);
+  if (snapshotMedia.length) {
+   this.addMediaGalleryComponents(
+    new MediaGalleryBuilder().addItems(
+     snapshotMedia.map((a) => {
+      const item = new MediaGalleryItemBuilder().setURL(a.url);
+      if (a.description) item.setDescription(a.description);
+      return item;
+     }),
+    ),
+   );
+  }
+
+  const snapshotFiles = snapshotAttachments.filter((a) => !a.width || !a.height);
+  snapshotFiles.forEach((a) => this.addFileComponents(new FileBuilder().setURL(a.url)));
+
+  if (!snapshot && contextButton?.forwardUnavailableLabel) {
+   this.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`-# ${contextButton.forwardUnavailableLabel}`),
+   );
+  }
  }
 
  const mediaAttachments = msg.attachments.filter((a) => a.width && a.height);
