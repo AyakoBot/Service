@@ -76,7 +76,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
  validateAPI = async (guildId: string, api?: API) => {
   const apiToValidate = api || (await this.getAPIforGuildId(guildId));
   const self = await apiToValidate.applications
-   .getCurrent({ origin: 'API Initialization', reason: 'Validating API token' })
+   .getCurrent({ origin: this.validateAPI.name, reason: 'Validating API token' })
    .catch(() => null);
   if (self) return true;
 
