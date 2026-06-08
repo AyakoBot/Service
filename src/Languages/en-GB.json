@@ -199,9 +199,9 @@
    "ADVANCED": "Advanced Permissions"
   },
   "error": {
-   "msg": "I'm missing Permissions to execute this Command",
+   "msg": "I'm missing permissions to run this command.",
    "needed": "Needed Permissions:",
-   "you": "You are missing Permissions to execute this Command"
+   "you": "You are missing permissions to run this command."
   },
   "perms": {
    "AddReactions": "Add Reactions",
@@ -345,9 +345,9 @@
   "cantFetch": "Can't fetch Messages in this Channel",
   "settingNotFound": "The Setting could not be found",
   "messageNotFound": "The Mentioned Message could not be found",
-  "deprecatedByDiscord": "This Function has been deprecated by Discord, it does not serve any purpose anymore.\nYou can go ahead and delete it if you wish.",
+  "deprecatedByDiscord": "Discord has removed this feature, so it no longer does anything.\nYou can delete it if you want.",
   "contactSupport": "If you see this Message and don't know what to do, contact Support [click me]",
-  "inputNoMatch": "Input did not match validation Regex",
+  "inputNoMatch": "Your input has the wrong format.",
   "punishmentNotFound": "The Mentioned Punishment could not be found",
   "invalidEmote": "Invalid Emote",
   "emoteNotFound": "The Mentioned Emote could not be found",
@@ -363,17 +363,17 @@
   "numNaN": "Not a Number",
   "guildCommand": "This Command is only available in Servers",
   "memberNotFound": "Member not found",
-  "notAvailableAPI": "This Command is not yet available due to Discord API limitations",
+  "notAvailableAPI": "This command is not available yet because of Discord limits.",
   "sendMessage": "I cannot send Messages in this Channel",
   "channelNotManageable": "I'm lacking Permissions to edit that Channel",
   "roleNotManageable": "I'm lacking Permissions to manage that Role",
   "roleNotFound": "Role not Found",
-  "notYours": "You can't interact with someone elses Messages",
+  "notYours": "You can't use someone else's messages.",
   "time": "Time ran out",
   "noGuildFound": "No Server found, please report to the Support Server",
   "noChannelFound": "No Channel found, please report to the Support Server",
   "noRoleFound": "No Role found, please report to the Support Server",
-  "noThreadCanBeCreated": "In this Channel, private Threads cannot be created",
+  "noThreadCanBeCreated": "Private threads can't be created in this channel.",
   "cantManageMember": "You can't manage this Member",
   "cantManageRole": "You can't manage this Role",
   "cantManageChannel": "I can't manage this Channel",
@@ -382,7 +382,7 @@
   "cantCreateInviteYou": "You can't create an Invite in this Channel",
   "commandNotFound": "Command not found",
   "timeInPast": "Time is in the Past",
-  "noArguments": "No or not enough Command Arguments provided"
+  "noArguments": "You did not provide enough command options."
  },
  "auditLogAction": {
   "1": "Server Update",
@@ -480,7 +480,7 @@
   "JumpToMessage": "Jump to Message",
   "Website": "Website",
   "More": "More",
-  "useDefaultRP": "Please use the Default RP-Commands (`/hug`, `/pat` etc) if enabled\n`/actions` Commands are for DMs and Servers that don't have Ayako added\n\nIf they aren't enabled, consider asking a Server Administrator to enable them via `/rp manager`",
+  "useDefaultRP": "Please use the normal RP commands (`/hug`, `/pat`, and so on) if they are enabled.\nThe `/actions` commands are for DMs and for servers that don't have Ayako added.\n\nIf they aren't enabled, ask a server admin to turn them on with `/rp manager`.",
   "guildOnly": "This Command requires me to be part of this Server",
   "welcome": "Welcome {{user.username}}#{{user.discriminator}} to {{guild.name}} <:AMayakowave:924071188957913108>",
   "defaultValuesLog": "> __Before:__\n{{oldValue}}\n\n> __After:__\n{{newValue}}",

@@ -7,15 +7,15 @@
   "set": "-# `{{user.username}}` went AFK",
   "removed": "Welcome Back!\n-# You've been AFK since {{time}}",
   "isAFK": "<@{{user}}> is AFK since {{since}}{{text}}",
-  "disabled": "-# Setting AFK is disabled on this Server.\nAsk an Administrator to re-enable it using </settings afk:{{cmdId}}>"
+  "disabled": "-# Setting AFK is turned off on this Server.\nAsk an admin to turn it back on with </settings afk:{{cmdId}}>"
  },
  "settings": {
   "name": "AFK",
-  "desc": "Manage Command-Access-Permissions via `Server Settings` > `Integrations` > `Ayako` > `afk`",
+  "desc": "Change who can use this command in `Server Settings` > `Integrations` > `Ayako` > `afk`",
   "fields": {
    "maxLetters": {
     "name": "Max. Letters/Symbols",
-    "desc": "The Amount of maximum allowed Letters/Symbols in an AFK-Status"
+    "desc": "The most letters or symbols an AFK status can have."
    }
   }
  }

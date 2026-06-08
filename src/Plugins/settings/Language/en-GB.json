@@ -6,17 +6,17 @@
   "overviewEmpty": "No Systems yet — create one to get started.",
   "saved": "Settings saved.",
   "validationFailed": "{{field}}: {{reason}}",
-  "requiredMissing": "Cannot activate: the required Field `{{field}}` is not set.",
+  "requiredMissing": "Can't turn this on: the required field `{{field}}` is empty.",
   "configTitle": "Configuration",
   "enabled": "Enabled",
   "disabled": "Disabled",
   "change": "Change",
   "show": "Show unavailable",
   "hide": "Hide unavailable",
-  "unavailHint": "Greyed options don't apply to this configuration type.",
+  "unavailHint": "Greyed-out options don't work with this type of setup.",
   "numberLabel": "Number",
   "back": "Back to overview",
   "incomplete": "⚠",
-  "activateBlocked": "Set {{field}} before activating."
+  "activateBlocked": "Set {{field}} before you turn this on."
  }
 }
