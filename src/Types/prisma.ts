@@ -76,6 +76,10 @@ export interface DataBaseTables {
  // votePunish: PrismaTables.votePunish;
  ticketSetting: PrismaTables.TicketSetting;
  ticket: PrismaTables.Ticket;
+ ticketPanel: PrismaTables.TicketPanel;
+ snippets: PrismaTables.Snippets;
+ ticketRoleMap: PrismaTables.TicketRoleMap;
+ ticketTier: PrismaTables.TicketTier;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
