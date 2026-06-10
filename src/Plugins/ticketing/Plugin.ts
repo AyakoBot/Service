@@ -208,7 +208,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   multiRow: true,
   title: (t: TicketTranslator) => t.settings.configTitle(),
   rowLabel: (t: TicketTranslator, row: TicketSetting) =>
-   t.settings.systemLabel({ id: String(row.id) }),
+   row.name || t.settings.systemLabel({ id: `#${String(row.id).slice(-4)}` }),
   overviewDescription: (t: TicketTranslator) => t.settings.overviewDescription(),
   rowSummary: (t: TicketTranslator, row: TicketSetting) => {
    const typeLabels: Record<TicketType, string> = {
@@ -245,6 +245,13 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.base.t.Active(),
       headerToggle: true,
+     },
+     {
+      column: 'name',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.base.t.name(),
+      description: (t: TicketTranslator) => t.settings.descriptions.name(),
+      arity: FieldArity.Single,
      },
      {
       column: 'type',

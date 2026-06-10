@@ -246,6 +246,7 @@
    "ticketLimitKind": "Per-kind open ticket limit"
   },
   "descriptions": {
+   "name": "A short label for this system, shown in lists and summaries",
    "type": "Type of configuration to apply to tickets",
    "logMode": "Whether logs are posted to a channel or grouped into a thread",
    "allowCreatorClose": "Let the ticket creator close their own ticket",

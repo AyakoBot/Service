@@ -13,6 +13,7 @@ datasource db {
 model TicketSetting {
  id     Decimal @id @db.Decimal
  guild  String  @db.VarChar
+ name   String? @db.VarChar
  active Boolean @default(false)
 
  logMode     TicketLogMode @default(Channel)
