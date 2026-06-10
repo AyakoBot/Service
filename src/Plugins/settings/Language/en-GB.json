@@ -4,10 +4,7 @@
   "overviewTitle": "Configured Systems",
   "create": "Create new",
   "overviewEmpty": "No Systems yet — create one to get started.",
-  "saved": "Settings saved.",
   "validationFailed": "{{field}}: {{reason}}",
-  "requiredMissing": "Can't turn this on: the required field `{{field}}` is empty.",
-  "configTitle": "Configuration",
   "enabled": "Enabled",
   "disabled": "Disabled",
   "change": "Change",
@@ -17,6 +14,9 @@
   "numberLabel": "Number",
   "back": "Back to overview",
   "incomplete": "⚠",
-  "activateBlocked": "Set {{field}} before you turn this on."
+  "activateBlocked": "Set {{fields}} before you turn this on.",
+  "deleteTitle": "Delete \"{{label}}\"?",
+  "deleteWarning": "This permanently removes this configuration. It can't be undone.",
+  "confirmDelete": "Delete permanently"
  }
 }

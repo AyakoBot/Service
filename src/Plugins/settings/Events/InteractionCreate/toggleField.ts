@@ -37,13 +37,20 @@ export default async function (
 
  if (field.headerToggle && next) {
   const missing = schema.groups
+   .filter((g) => !g.showIf || g.showIf(row).ok)
    .flatMap((g) => g.fields)
-   .find((f) => f.required && isUnset(row[f.column]));
+   .filter((f) => f.required && (!f.showIf || f.showIf(row).ok) && isUnset(row[f.column]));
 
-  if (missing) {
+  if (missing.length) {
    const t = await this.t(cmd.guild_id);
    await reRender.call(this, cmd, id);
-   await followUpWarning.call(this, cmd, t.navigator.activateBlocked({ field: missing.label }));
+   await followUpWarning.call(
+    this,
+    cmd,
+    t.navigator.activateBlocked({
+     fields: missing.map((f) => `\`${f.label}\``).join(', '),
+    }),
+   );
    return;
   }
  }

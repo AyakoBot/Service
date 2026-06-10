@@ -6,7 +6,7 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
-import { buildGroupPage } from '../../Util/buildGroupPage.js';
+import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 
 export interface RenderPageArgs {
@@ -26,13 +26,15 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  if (!resolved) return;
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
- const group = schema.groups.find((g) => g.id === groupId) ?? schema.groups[0];
- if (!group) return;
 
  const row = await this.tableClient(resolved.schema.table).findFirst({
   where: { id: rowId, guild: cmd.guild_id },
  });
  if (!row) return;
+
+ const groups = visibleGroups(schema, row);
+ const group = groups.find((g) => g.id === groupId) ?? groups[0];
+ if (!group) return;
 
  const t = await this.t(cmd.guild_id);
  const page = buildGroupPage({
