@@ -48,7 +48,7 @@ export default async function (
   async () => {
    if (!m) return;
 
-   (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(m.channel_id, m.id, {
+   (await this.getAPI(msg.guild_id)).channels.deleteMessage(m.channel_id, m.id, {
     reason: t.t.removeReason(),
     origin: this.name,
    });

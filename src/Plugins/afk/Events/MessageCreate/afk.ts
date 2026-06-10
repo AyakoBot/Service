@@ -29,18 +29,16 @@ export default async function (
  );
 
  if (!canRunCommand.response) {
-  (await this.client.getAPI(msg.guild_id)).channels
-   .addMessageReaction(
-    msg.guild_id,
-    msg.channel_id,
-    msg.id,
-    { main: '❌', alt: '❌' },
-    {
-     origin: this.name,
-     reason: 'User does not have permission to execute the AFK command',
-    },
-   )
-   .catch(() => null);
+  (await this.getAPI(msg.guild_id)).channels.addMessageReaction(
+   msg.guild_id,
+   msg.channel_id,
+   msg.id,
+   { main: '❌', alt: '❌' },
+   {
+    origin: this.name,
+    reason: 'User does not have permission to execute the AFK command',
+   },
+  );
   return;
  }
 
@@ -72,7 +70,7 @@ export default async function (
 
  setNick.call(this, msg.author_id, msg.guild_id);
 
- (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(msg.channel_id, msg.id, {
+ (await this.getAPI(msg.guild_id)).channels.deleteMessage(msg.channel_id, msg.id, {
   origin: this.name,
   reason: 'Clean up the command message after setting AFK status',
  });
