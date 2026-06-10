@@ -22,7 +22,7 @@ import fieldModal from './fieldModal.js';
 import fieldSave from './fieldSave.js';
 import groupNav from './groupNav.js';
 import { openFromCommand, reRender } from './navigator.js';
-import { del } from './rowActions.js';
+import { confirmDelete, del } from './rowActions.js';
 import setField from './setField.js';
 import toggleField from './toggleField.js';
 import toggleUnavail from './toggleUnavail.js';
@@ -69,7 +69,8 @@ export default async function (
    if (id.action === SettingsAction.ToggleUnavail) toggleUnavail.call(this, component, id);
    if (id.action === SettingsAction.Nav) reRender.call(this, component, id);
    if (id.action === SettingsAction.Create) create.call(this, component, id);
-   if (id.action === SettingsAction.Delete) del.call(this, component, id);
+   if (id.action === SettingsAction.Delete) confirmDelete.call(this, component, id);
+   if (id.action === SettingsAction.DeleteConfirm) del.call(this, component, id);
    break;
   }
   case InteractionType.ModalSubmit: {
