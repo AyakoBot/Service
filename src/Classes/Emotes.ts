@@ -213,6 +213,8 @@ class Emotes {
 
  back = { name: '⬅', id: null };
  forth = { name: '➡', id: null };
+ prev = { name: '◀', id: null };
+ next = { name: '▶', id: null };
  info = { name: 'ℹ', id: null };
  warning = { name: '⚠', link: 'https://cdn.ayakobot.com/Ayako_Assets/Warning.png', id: null };
  tools = { name: '🛠️', id: null };
