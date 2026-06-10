@@ -14,7 +14,7 @@ export default async function (
 ) {
  if (!cmd.guild_id || cmd.data.name !== 'settings') return;
 
- const api = await this.client.getAPI(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
  const respond = (choices: APIApplicationCommandOptionChoice[]) =>
   api.interactions.createAutocompleteResponse(
    cmd.id,

@@ -21,7 +21,7 @@ export default async function (
  const args = msg.content.split(/\s+/g);
  args.shift();
  const code = `${args.slice(0).join(' ')}`;
- const api = await this.client.getAPI(msg.guild_id);
+ const api = await this.getAPI(msg.guild_id);
 
  try {
   let evaled =

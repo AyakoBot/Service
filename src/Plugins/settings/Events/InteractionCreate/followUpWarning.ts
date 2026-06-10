@@ -9,7 +9,7 @@ export const followUpWarning = async function (
 ) {
  if (!cmd.guild_id) return;
 
- const api = await this.client.getAPI(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
  await api.interactions.followUp(
   cmd.token,
   { content, flags: MessageFlags.Ephemeral },

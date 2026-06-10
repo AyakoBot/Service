@@ -35,7 +35,7 @@ export default async function (
   Boolean(id.hideUnavail),
  );
 
- const api = await this.client.getAPI(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
  const res = await api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Editing a settings field',
