@@ -11,7 +11,7 @@ import { ButtonStyle } from 'discord-api-types/v10';
 
 import emotes from '../../../Classes/Emotes.js';
 import type SettingsPlugin from '../Plugin.js';
-import type { SettingsGroup, SettingsSchema } from '../SettingsSchema.js';
+import type { SettingsField, SettingsGroup, SettingsSchema } from '../SettingsSchema.js';
 
 import { encodeSettingsId, SettingsAction } from './customId.js';
 import { renderInlineField } from './renderInlineField.js';
@@ -42,8 +42,21 @@ const isUnset = (value: unknown): boolean =>
  value === '' ||
  (Array.isArray(value) && value.length === 0);
 
+const isGroupAvailable = (group: SettingsGroup, row: Record<string, unknown>): boolean =>
+ !group.showIf || group.showIf(row).ok;
+
+const isFieldAvailable = (field: SettingsField, row: Record<string, unknown>): boolean =>
+ !field.showIf || field.showIf(row).ok;
+
 const groupHasUnsetRequired = (group: SettingsGroup, row: Record<string, unknown>): boolean =>
- group.fields.some((field) => field.required && isUnset(row[field.column]));
+ group.fields.some(
+  (field) => field.required && isFieldAvailable(field, row) && isUnset(row[field.column]),
+ );
+
+export const visibleGroups = (
+ schema: SettingsSchema,
+ row: Record<string, unknown>,
+): SettingsGroup[] => schema.groups.filter((group) => isGroupAvailable(group, row));
 
 export const buildGroupPage = ({
  settingName,
@@ -57,7 +70,8 @@ export const buildGroupPage = ({
  const idFor = (action: SettingsAction, groupId?: string, column?: string): string =>
   encodeSettingsId({ action, settingName, rowId, groupId, column, hideUnavail });
 
- const headerText = `# ${textEmote(emotes.settings)} ${schema.title ?? t.navigator.configTitle()}\n-# ${t.navigator.numberLabel()} #${rowId}`;
+ const summary = schema.rowSummary?.(row) ?? `${t.navigator.numberLabel()} #${rowId}`;
+ const headerText = `# ${textEmote(emotes.settings)} ${schema.rowLabel(row)}\n-# ${summary}`;
 
  const header: TopLevelBuilder = schema.multiRow
   ? new SectionBuilder()
@@ -67,14 +81,16 @@ export const buildGroupPage = ({
        .setStyle(ButtonStyle.Danger)
        .setEmoji(buttonEmoji(emotes.trash))
        .setLabel(t.base.t.Delete())
-       .setCustomId(idFor(SettingsAction.Delete)),
+       .setCustomId(idFor(SettingsAction.Delete, group.id)),
      )
   : new TextDisplayBuilder().setContent(headerText);
 
  const container = new ContainerBuilder();
 
  const toggleField = group.fields.find((field) => field.headerToggle);
- const groupHeading = `## ${textEmote(group.emote ?? emotes.settings)} ${group.label}`;
+ const groupHeading = `## ${textEmote(group.emote ?? emotes.settings)} ${group.label}${
+  group.description ? `\n-# ${group.description}` : ''
+ }`;
 
  if (toggleField) {
   const on = Boolean(row[toggleField.column]);
@@ -115,53 +131,39 @@ export const buildGroupPage = ({
    );
   });
 
- container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
-
- container.addSectionComponents(
-  new SectionBuilder()
-   .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${t.navigator.unavailHint()}`))
-   .setButtonAccessory(
-    new ButtonBuilder()
-     .setStyle(ButtonStyle.Secondary)
-     .setLabel(hideUnavail ? t.navigator.show() : t.navigator.hide())
-     .setCustomId(
-      encodeSettingsId({
-       action: SettingsAction.ToggleUnavail,
-       settingName,
-       rowId,
-       groupId: group.id,
-       hideUnavail: !hideUnavail,
-      }),
-     ),
-   ),
+ const hasUnavailable = group.fields.some(
+  (field) => !field.headerToggle && !isFieldAvailable(field, row),
  );
 
- const page: TopLevelBuilder[] = [header, container];
+ if (hasUnavailable) {
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+  container.addSectionComponents(
+   new SectionBuilder()
+    .addTextDisplayComponents(
+     new TextDisplayBuilder().setContent(`-# ${t.navigator.unavailHint()}`),
+    )
+    .setButtonAccessory(
+     new ButtonBuilder()
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel(hideUnavail ? t.navigator.show() : t.navigator.hide())
+      .setCustomId(
+       encodeSettingsId({
+        action: SettingsAction.ToggleUnavail,
+        settingName,
+        rowId,
+        groupId: group.id,
+        hideUnavail: !hideUnavail,
+       }),
+      ),
+    ),
+  );
+ }
 
- if (schema.groups.length <= 5) {
-  const row1 = new ActionRowBuilder<ButtonBuilder>();
-  schema.groups.forEach((g) => {
-   const current = g.id === group.id;
-   const incomplete = groupHasUnsetRequired(g, row);
-   row1.addComponents(
-    new ButtonBuilder()
-     .setStyle(current ? ButtonStyle.Primary : ButtonStyle.Secondary)
-     .setLabel(incomplete ? `${g.label} ${emotes.warning.name}` : g.label)
-     .setEmoji(buttonEmoji(g.emote ?? emotes.settings))
-     .setDisabled(current)
-     .setCustomId(
-      encodeSettingsId({
-       action: SettingsAction.GroupNav,
-       settingName,
-       rowId,
-       groupId: g.id,
-       hideUnavail,
-      }),
-     ),
-   );
-  });
-  page.push(row1);
- } else {
+ const page: TopLevelBuilder[] = [header, container];
+ const groups = visibleGroups(schema, row);
+ const useSelect = groups.length > 5;
+
+ if (useSelect) {
   const select = new StringSelectMenuBuilder()
    .setCustomId(
     encodeSettingsId({ action: SettingsAction.GroupNav, settingName, rowId, hideUnavail }),
@@ -170,7 +172,7 @@ export const buildGroupPage = ({
    .setMinValues(1)
    .setMaxValues(1)
    .setOptions(
-    schema.groups.map((g) => ({
+    groups.map((g) => ({
      label: groupHasUnsetRequired(g, row) ? `${g.label} ${emotes.warning.name}` : g.label,
      value: g.id,
      default: g.id === group.id,
@@ -179,18 +181,53 @@ export const buildGroupPage = ({
     })),
    );
   page.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select));
+ } else if (groups.length > 1) {
+  const row1 = new ActionRowBuilder<ButtonBuilder>();
+  groups.forEach((g) => {
+   const current = g.id === group.id;
+   const incomplete = groupHasUnsetRequired(g, row);
+   row1.addComponents(
+    new ButtonBuilder()
+     .setStyle(current ? ButtonStyle.Primary : ButtonStyle.Secondary)
+     .setLabel(incomplete ? `${g.label} ${emotes.warning.name}` : g.label)
+     .setEmoji(buttonEmoji(g.emote ?? emotes.settings))
+     .setDisabled(current)
+     .setCustomId(idFor(SettingsAction.GroupNav, g.id)),
+   );
+  });
+  page.push(row1);
  }
 
+ const navButtons: ButtonBuilder[] = [];
+
  if (schema.multiRow) {
-  page.push(
-   new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-     .setStyle(ButtonStyle.Secondary)
-     .setLabel(t.navigator.back())
-     .setEmoji(buttonEmoji(emotes.back))
-     .setCustomId(encodeSettingsId({ action: SettingsAction.Nav, settingName })),
-   ),
+  navButtons.push(
+   new ButtonBuilder()
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel(t.navigator.back())
+    .setEmoji(buttonEmoji(emotes.back))
+    .setCustomId(encodeSettingsId({ action: SettingsAction.Nav, settingName })),
   );
+ }
+
+ const index = groups.findIndex((g) => g.id === group.id);
+ if (useSelect && index !== -1) {
+  const prevGroup = groups[(index - 1 + groups.length) % groups.length];
+  const nextGroup = groups[(index + 1) % groups.length];
+  navButtons.push(
+   new ButtonBuilder()
+    .setStyle(ButtonStyle.Secondary)
+    .setEmoji(buttonEmoji(emotes.prev))
+    .setCustomId(idFor(SettingsAction.GroupNav, prevGroup.id)),
+   new ButtonBuilder()
+    .setStyle(ButtonStyle.Secondary)
+    .setEmoji(buttonEmoji(emotes.next))
+    .setCustomId(idFor(SettingsAction.GroupNav, nextGroup.id)),
+  );
+ }
+
+ if (navButtons.length) {
+  page.push(new ActionRowBuilder<ButtonBuilder>().addComponents(...navButtons));
  }
 
  return page;

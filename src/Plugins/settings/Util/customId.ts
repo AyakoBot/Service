@@ -8,6 +8,7 @@ export enum SettingsAction {
  ToggleUnavail = 'unav',
  Create = 'create',
  Delete = 'delete',
+ DeleteConfirm = 'delc',
 }
 
 export interface SettingsId {

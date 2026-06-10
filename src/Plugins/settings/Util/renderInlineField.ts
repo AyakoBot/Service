@@ -44,6 +44,11 @@ const heading = (field: SettingsField, prefix: string): string => {
  return field.description ? `${title}\n-# ${field.description}` : title;
 };
 
+const editorPrefix = (field: SettingsField, value?: unknown): string => {
+ const emote = editorEmotes.forEditor(field.editor, value);
+ return emote ? textEmote(emote) : '';
+};
+
 const withReason = (text: string, visible: ShowIfResult): string => {
  if (visible.ok) return text;
  return `${text}\n-# ${visible.reason ?? ''}`;
@@ -139,7 +144,7 @@ export const renderInlineField = (
    const multi = field.arity === FieldArity.Multi;
    const options = asOptions(field);
    container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(withReason(heading(field, ''), visible)),
+    new TextDisplayBuilder().setContent(withReason(heading(field, editorPrefix(field)), visible)),
    );
    container.addActionRowComponents(
     new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -167,9 +172,10 @@ export const renderInlineField = (
     customIdFor(SettingsAction.SetField, field.column),
     disabled,
    );
-   const icon = textEmote(editorEmotes.forEditor(field.editor, ChannelType.GuildText));
    container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(withReason(heading(field, icon), visible)),
+    new TextDisplayBuilder().setContent(
+     withReason(heading(field, editorPrefix(field, ChannelType.GuildText)), visible),
+    ),
    );
    if (select instanceof RoleSelectMenuBuilder) {
     container.addActionRowComponents(
@@ -209,7 +215,9 @@ export const renderInlineField = (
    container.addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(withReason(`${heading(field, '')}${preview}`, visible)),
+      new TextDisplayBuilder().setContent(
+       withReason(`${heading(field, editorPrefix(field))}${preview}`, visible),
+      ),
      )
      .setButtonAccessory(
       new ButtonBuilder()

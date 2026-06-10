@@ -61,9 +61,9 @@ class EditorEmotes {
   [EditorType.Id]: undefined,
  };
 
- forEditor = (editor: EditorType, value?: unknown): APIPartialEmoji => {
+ forEditor = (editor: EditorType, value?: unknown): APIPartialEmoji | null => {
   const resolver = this.resolvers[editor];
-  if (!resolver) return emotes.settings;
+  if (!resolver) return null;
   if (typeof resolver === 'function') return resolver(value as never);
   return resolver;
  };
