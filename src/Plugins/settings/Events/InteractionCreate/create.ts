@@ -24,7 +24,6 @@ export default async function (
    data: {
     id: String(Date.now()),
     guild: cmd.guild_id,
-    active: false,
    },
   })
   .catch((error: Error) => error);
