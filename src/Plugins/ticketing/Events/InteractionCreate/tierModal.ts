@@ -180,7 +180,7 @@ export const tierSave = async function (
 
  const tiers = await entry.list();
  const payload = await buildTierEditor.call(this, cmd.guild_id, settingsId, tiers, 0);
- payload.reply(cmd);
+ payload.update(cmd);
 };
 
 const translateTierError = function (

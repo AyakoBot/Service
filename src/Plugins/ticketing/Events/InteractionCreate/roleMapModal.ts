@@ -133,7 +133,7 @@ export const roleMapSave = async function (
   });
 
   const payload = await buildRoleMapEditor.call(this, cmd.guild_id, next, 0);
-  payload.reply(cmd);
+  payload.update(cmd);
   return;
  }
 
@@ -150,7 +150,7 @@ export const roleMapSave = async function (
  });
 
  const payload = await buildRoleMapEditor.call(this, cmd.guild_id, next, 0);
- payload.reply(cmd);
+ payload.update(cmd);
 };
 
 const roleMapWarn = function (

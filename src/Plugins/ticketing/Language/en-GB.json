@@ -148,10 +148,9 @@
   "kindCount": "{{count}} kind(s)",
   "post": "Post",
   "posted": "Panel posted.",
-  "postSingle": "Post single-kind panels",
-  "postedSingle": "Posted {{count}} single-kind panel(s).",
   "addTitle": "Add ticket panel",
   "editTitle": "Edit ticket panel",
+  "labelPlaceholder": "Edit a kind's button label",
   "fields": {
    "channel": "Panel channel",
    "kinds": "Ticket kinds",
@@ -162,7 +161,6 @@
    "channelRequired": "Set a channel for this panel before posting it.",
    "kindsRequired": "Pick at least one ticket kind for this panel.",
    "noKinds": "Create a ticket system first; there are no kinds to list on a panel yet.",
-   "noSingleKinds": "No active kinds have a panel channel set. Set one in `/settings` first.",
    "postFailed": "The panel could not be posted. Check the channel and the panel's kinds."
   }
  },
@@ -185,9 +183,9 @@
   "configTitle": "Ticket Configuration",
   "deleteBlocked": "Close its {{count}} open ticket(s) first.",
   "overviewDescription": "Each ticket system is its own setup - channels, staff, panels, and rules. Pick one to edit, or create another for a different kind of ticket.",
-  "systemSummary": "{{type}} · {{status}} · {{panel}}",
-  "panelIn": "panel in {{channel}}",
-  "noPanel": "no panel",
+  "systemSummary": "{{type}} · {{status}} · {{dm}}",
+  "dmOn": "DM intake on",
+  "dmOff": "DM intake off",
   "groups": {
    "general": "General",
    "channels": "Channels",
@@ -222,7 +220,6 @@
    "denyUsers": "Blocked users",
    "sendMessagePrefixes": "Reply prefixes",
    "dmEnabled": "Allow DM intake",
-   "panelChannel": "Panel channel",
    "panelButtonLabel": "Panel button label",
    "createTags": "Create tags",
    "claimTags": "Claim tags",
@@ -266,7 +263,6 @@
    "denyUsers": "Users blocked from creating tickets",
    "sendMessagePrefixes": "Staff put one of these at the start of a message to send their reply to the ticket creator.",
    "dmEnabled": "Let users open this kind by sending the bot a direct message (DM).",
-   "panelChannel": "The channel that shows this kind's own \"Start Ticket\" panel.",
    "panelButtonLabel": "The text on the panel's button (the default is \"Start Ticket\").",
    "createTags": "Forum tags applied when a ticket is created",
    "claimTags": "Forum tags applied when a ticket is claimed",
@@ -304,7 +300,6 @@
    "threadTypeOnly": "Thread-based tickets only",
    "dmOnly": "DM tickets only",
    "nonDmOnly": "Non-DM tickets only",
-   "panelChannelOff": "Set a panel channel first",
    "staffThreadsOff": "Enable staff discussion threads first",
    "forumModeOnly": "Unified-forum placement only",
    "takeClaimOff": "Enable take-claim first"

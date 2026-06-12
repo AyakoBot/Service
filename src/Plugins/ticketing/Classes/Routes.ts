@@ -46,8 +46,9 @@ export enum TicketRoute {
  PanelPost = 'tickets/panel/post',
  PanelRemove = 'tickets/panel/remove',
  PanelPage = 'tickets/panel/page',
- PanelSingle = 'tickets/panel/single',
  PanelSave = 'tickets/panel/save',
+ PanelLabel = 'tickets/panel/label',
+ PanelLabelSave = 'tickets/panel/labelsave',
  PanelPick = 'tickets/panelPick',
 
  IntakeOpen = 'tickets/intakeOpen',

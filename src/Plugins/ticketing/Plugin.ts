@@ -219,10 +219,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     [TicketType.dmToThread]: t.settings.options.dmToThread(),
    };
    const status = row.active ? t.base.t.Active() : t.base.t.Disabled();
-   const panel = row.panelChannel
-    ? t.settings.panelIn({ channel: `<#${row.panelChannel}>` })
-    : t.settings.noPanel();
-   return t.settings.systemSummary({ type: typeLabels[row.type], status, panel });
+   const dm = row.dmEnabled ? t.settings.dmOn() : t.settings.dmOff();
+   return t.settings.systemSummary({ type: typeLabels[row.type], status, dm });
   },
   canDelete: async (row, ctx) => {
    const open = await ctx.client.db.client.ticket.findMany({
@@ -290,14 +288,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.allowCreatorClose(),
       description: (t: TicketTranslator) => t.settings.descriptions.allowCreatorClose(),
-     },
-    ],
-    actions: [
-     {
-      customId: TicketRoute.Panel,
-      label: (t: TicketTranslator) => t.panel.editorTitle(),
-      description: (t: TicketTranslator) => t.settings.descriptions.panelEditor(),
-      emote: emotes.Message,
      },
     ],
    },
@@ -464,22 +454,13 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.dmEnabled(),
       description: (t: TicketTranslator) => t.settings.descriptions.dmEnabled(),
      },
+    ],
+    actions: [
      {
-      column: 'panelChannel',
-      editor: EditorType.Channel,
-      label: (t: TicketTranslator) => t.settings.fields.panelChannel(),
-      description: (t: TicketTranslator) => t.settings.descriptions.panelChannel(),
-     },
-     {
-      column: 'panelButtonLabel',
-      editor: EditorType.String,
-      label: (t: TicketTranslator) => t.settings.fields.panelButtonLabel(),
-      description: (t: TicketTranslator) => t.settings.descriptions.panelButtonLabel(),
-      arity: FieldArity.Single,
-      showIf: (row) => ({
-       ok: Boolean(row.panelChannel),
-       reason: en.settings.reasons.panelChannelOff,
-      }),
+      customId: TicketRoute.Panel,
+      label: (t: TicketTranslator) => t.panel.editorTitle(),
+      description: (t: TicketTranslator) => t.settings.descriptions.panelEditor(),
+      emote: emotes.Message,
      },
     ],
    },

@@ -4,6 +4,8 @@ import {
  ButtonBuilder,
  ContainerBuilder,
  SeparatorBuilder,
+ StringSelectMenuBuilder,
+ StringSelectMenuOptionBuilder,
  TextDisplayBuilder,
 } from '@discordjs/builders';
 import {
@@ -24,9 +26,11 @@ import { TicketRoute } from '../../Classes/Routes.js';
 import TicketPanel from '../../Classes/TicketPanel.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
-import { renderHubPanel, renderSingleKindPanel } from '../../Util/renderPanel.js';
+import { renderHubPanel } from '../../Util/renderPanel.js';
+import { systemDisplayLabel } from '../../Util/systemLabel.js';
 
 export const panelPageSize = 5;
+export const selectOptionLimit = 25;
 
 export const buildPanelEditor = async function (
  this: TicketPlugin,
@@ -106,16 +110,37 @@ export const buildPanelEditor = async function (
    .setStyle(ButtonStyle.Success)
    .setCustomId(this.getRoute(TicketRoute.PanelAdd))
    .setLabel(t.base.t.Add()),
-  new ButtonBuilder()
-   .setStyle(ButtonStyle.Secondary)
-   .setCustomId(this.getRoute(TicketRoute.PanelSingle))
-   .setLabel(t.panel.postSingle()),
  );
 
- const components: APIMessageTopLevelComponent[] = [
-  container.toJSON(),
-  nav.toJSON() as unknown as APIMessageTopLevelComponent,
- ];
+ const components: APIMessageTopLevelComponent[] = [container.toJSON()];
+
+ const kinds = await this.client.db.client.ticketSetting.findMany({
+  where: { guild: guildId },
+ });
+ if (kinds.length) {
+  const labelSelect = new StringSelectMenuBuilder()
+   .setCustomId(this.getRoute(TicketRoute.PanelLabel))
+   .setPlaceholder(t.panel.labelPlaceholder())
+   .setMinValues(1)
+   .setMaxValues(1)
+   .addOptions(
+    kinds
+     .slice(0, selectOptionLimit)
+     .map((kind) =>
+      new StringSelectMenuOptionBuilder()
+       .setLabel(systemDisplayLabel(t, kind).slice(0, 100))
+       .setDescription((kind.panelButtonLabel || t.startTicket()).slice(0, 100))
+       .setValue(String(kind.id)),
+     ),
+   );
+  components.push(
+   new ActionRowBuilder<StringSelectMenuBuilder>()
+    .addComponents(labelSelect)
+    .toJSON() as unknown as APIMessageTopLevelComponent,
+  );
+ }
+
+ components.push(nav.toJSON() as unknown as APIMessageTopLevelComponent);
 
  return new MessagePayload(this.client, { origin: this.name, reason: 'Ticket panel editor' })
   .setComponents(components)
@@ -190,32 +215,6 @@ export const panelPost = async function (
 
  const messageId = await renderHubPanel.call(this, panel);
  panelWarn.call(this, cmd, messageId ? t.panel.posted() : t.panel.errors.postFailed());
-};
-
-export const panelSingle = async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
-) {
- if (!cmd.guild_id) return;
- if (!(await authorizeManage.call(this, cmd))) return;
-
- const t = await this.t(cmd.guild_id);
- const kinds = await this.client.db.client.ticketSetting.findMany({
-  where: { guild: cmd.guild_id, active: true, panelChannel: { not: null } },
- });
-
- if (!kinds.length) {
-  panelWarn.call(this, cmd, t.panel.errors.noSingleKinds());
-  return;
- }
-
- let posted = 0;
- for (const kind of kinds) {
-  const messageId = await renderSingleKindPanel.call(this, kind);
-  if (messageId) posted += 1;
- }
-
- panelWarn.call(this, cmd, t.panel.postedSingle({ count: String(posted) }));
 };
 
 export const panelWarn = function (

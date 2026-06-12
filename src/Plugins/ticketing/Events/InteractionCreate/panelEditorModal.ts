@@ -5,9 +5,12 @@ import {
  ModalBuilder,
  StringSelectMenuBuilder,
  StringSelectMenuOptionBuilder,
+ TextInputBuilder,
 } from '@discordjs/builders';
 import {
  ChannelType,
+ ComponentType,
+ TextInputStyle,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
@@ -16,19 +19,18 @@ import { TicketRoute } from '../../Classes/Routes.js';
 import TicketPanel from '../../Classes/TicketPanel.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
-import { findModalValues } from '../../Util/findModalValue.js';
+import { findModalValue, findModalValues } from '../../Util/findModalValue.js';
+import { renderHubPanel } from '../../Util/renderPanel.js';
 import { systemDisplayLabel } from '../../Util/systemLabel.js';
 
-import { buildPanelEditor, panelWarn } from './panelEditor.js';
-
-const fieldLimit = 25;
+import { buildPanelEditor, panelWarn, selectOptionLimit } from './panelEditor.js';
 
 const kindOptions = (
  t: Awaited<ReturnType<TicketPlugin['t']>>,
  kinds: TicketSetting[],
  selected: string[],
 ) =>
- kinds.slice(0, fieldLimit).map((kind) =>
+ kinds.slice(0, selectOptionLimit).map((kind) =>
   new StringSelectMenuOptionBuilder()
    .setLabel(systemDisplayLabel(t, kind).slice(0, 100))
    .setValue(String(kind.id))
@@ -71,7 +73,7 @@ export const panelAdd = async function (this: TicketPlugin, cmd: APIMessageCompo
      new StringSelectMenuBuilder()
       .setCustomId('kinds')
       .setMinValues(1)
-      .setMaxValues(Math.min(kinds.length, fieldLimit))
+      .setMaxValues(Math.min(kinds.length, selectOptionLimit))
       .addOptions(kindOptions(t, kinds, [])),
     ),
   );
@@ -127,7 +129,7 @@ export const panelEdit = async function (
      new StringSelectMenuBuilder()
       .setCustomId('kinds')
       .setMinValues(1)
-      .setMaxValues(Math.min(kinds.length, fieldLimit))
+      .setMaxValues(Math.min(kinds.length, selectOptionLimit))
       .addOptions(kindOptions(t, kinds, selected)),
     ),
   );
@@ -137,6 +139,89 @@ export const panelEdit = async function (
   origin: this.name,
   reason: 'Opening panel edit modal',
  });
+};
+
+export const panelLabelPick = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+) {
+ if (!cmd.guild_id) return;
+ if (cmd.data.component_type !== ComponentType.StringSelect) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const t = await this.t(cmd.guild_id);
+ const [settingsId] = cmd.data.values;
+
+ const kind = await this.client.db.client.ticketSetting.findFirst({
+  where: { id: settingsId, guild: cmd.guild_id },
+ });
+ if (!kind) {
+  panelWarn.call(this, cmd, t.panel.errors.notFound());
+  return;
+ }
+
+ const modal = new ModalBuilder()
+  .setCustomId(this.getRoute(TicketRoute.PanelLabelSave, kind.id))
+  .setTitle(systemDisplayLabel(t, kind).slice(0, 45))
+  .addLabelComponents(
+   new LabelBuilder()
+    .setLabel(t.settings.fields.panelButtonLabel())
+    .setDescription(t.settings.descriptions.panelButtonLabel())
+    .setTextInputComponent(
+     new TextInputBuilder()
+      .setCustomId('label')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false)
+      .setMaxLength(80)
+      .setPlaceholder(t.startTicket())
+      .setValue(kind.panelButtonLabel ?? ''),
+    ),
+  );
+
+ const api = await this.getAPI(cmd.guild_id);
+ api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
+  origin: this.name,
+  reason: 'Opening panel button label modal',
+ });
+};
+
+export const panelLabelSave = async function (
+ this: TicketPlugin,
+ cmd: APIModalSubmitInteraction,
+ args: string[],
+) {
+ if (!cmd.guild_id) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const t = await this.t(cmd.guild_id);
+ const [settingsId] = args;
+
+ const kind = await this.client.db.client.ticketSetting.findFirst({
+  where: { id: settingsId, guild: cmd.guild_id },
+ });
+ if (!kind) {
+  panelWarn.call(this, cmd, t.panel.errors.notFound());
+  return;
+ }
+
+ const label = (findModalValue(cmd.data.components, 'label') || '').trim();
+ await this.client.db.client.ticketSetting
+  .updateMany({
+   where: { id: settingsId, guild: cmd.guild_id },
+   data: { panelButtonLabel: label || null },
+  })
+  .catch((error: Error) => this.nonFatalError(error, 'panelLabelSave'));
+
+ const panels = await TicketPanel.all(this.client, cmd.guild_id);
+ const posted = panels.filter(
+  (panel) => panel.message && panel.kinds.map((k) => String(k)).includes(settingsId),
+ );
+ for (const panel of posted) {
+  await renderHubPanel.call(this, panel);
+ }
+
+ const payload = await buildPanelEditor.call(this, cmd.guild_id, panels, 0);
+ payload.update(cmd);
 };
 
 export const panelSave = async function (
@@ -181,5 +266,5 @@ export const panelSave = async function (
 
  const panels = await TicketPanel.all(this.client, cmd.guild_id);
  const payload = await buildPanelEditor.call(this, cmd.guild_id, panels, 0);
- payload.reply(cmd);
+ payload.update(cmd);
 };

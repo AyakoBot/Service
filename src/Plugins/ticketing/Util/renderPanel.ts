@@ -26,28 +26,6 @@ const kindLabel = (settings: TicketSetting, fallback: string) =>
 const defaultEmbed = (description: string) =>
  new EmbedBuilder().setDescription(description).setColor(Colors.Info);
 
-export const buildSingleKindPayload = async function (
- this: TicketPlugin,
- settings: TicketSetting,
-) {
- const t = await this.t(settings.guild);
-
- const embed = settings.panelEmbed
-  ? (settings.panelEmbed as APIEmbed)
-  : defaultEmbed(t.initDesc()).toJSON();
-
- const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-  new ButtonBuilder()
-   .setStyle(ButtonStyle.Primary)
-   .setCustomId(this.getRoute(TicketRoute.Create, settings.id))
-   .setLabel(settings.panelButtonLabel || t.startTicket()),
- );
-
- return new MessagePayload(this.client, { origin: this.name, reason: 'Single-kind ticket panel' })
-  .setEmbeds([embed])
-  .setComponents([row.toJSON() as unknown as APIMessageTopLevelComponent]);
-};
-
 export const buildHubPayload = async function (
  this: TicketPlugin,
  panel: TicketPanelRow,
@@ -118,30 +96,6 @@ const postOrEdit = async function (
   });
 
  return sent && 'id' in sent ? sent.id : null;
-};
-
-export const renderSingleKindPanel = async function (
- this: TicketPlugin,
- settings: TicketSetting,
-): Promise<string | null> {
- if (!settings.panelChannel) return null;
-
- const payload = await buildSingleKindPayload.call(this, settings);
- const messageId = await postOrEdit.call(
-  this,
-  settings.guild,
-  settings.panelChannel,
-  settings.panelMessage,
-  payload,
- );
-
- if (messageId && messageId !== settings.panelMessage) {
-  await this.client.db.client.ticketSetting
-   .update({ where: { id: settings.id }, data: { panelMessage: messageId } })
-   .catch((error: Error) => this.nonFatalError(error, 'renderSingleKindPanel.persist'));
- }
-
- return messageId;
 };
 
 export const renderHubPanel = async function (

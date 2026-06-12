@@ -28,14 +28,14 @@ import { intakeKind } from './intakeKind.js';
 import { intakeServer } from './intakeServer.js';
 import keepOpen from './keepOpen.js';
 import leave from './leave.js';
+import { panelEditorOpen, panelPage, panelPost, panelRemove } from './panelEditor.js';
 import {
- panelEditorOpen,
- panelPage,
- panelPost,
- panelRemove,
- panelSingle,
-} from './panelEditor.js';
-import { panelAdd, panelEdit, panelSave } from './panelEditorModal.js';
+ panelAdd,
+ panelEdit,
+ panelLabelPick,
+ panelLabelSave,
+ panelSave,
+} from './panelEditorModal.js';
 import panelPick from './panelPick.js';
 import { roleMapMove, roleMapOpen, roleMapPage, roleMapRemove } from './roleMap.js';
 import { roleMapAdd, roleMapEdit, roleMapSave } from './roleMapModal.js';
@@ -239,10 +239,6 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
    panelPage.call(this, cmd, args);
    break;
   }
-  case TicketRoute.PanelSingle: {
-   panelSingle.call(this, cmd);
-   break;
-  }
   case TicketRoute.IntakeOpen: {
    intake.call(this, cmd);
    break;
@@ -264,6 +260,10 @@ const select = async function (this: TicketPlugin, cmd: APIMessageComponentInter
  switch (fileCall) {
   case TicketRoute.PanelPick: {
    panelPick.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.PanelLabel: {
+   panelLabelPick.call(this, cmd);
    break;
   }
   case TicketRoute.IntakeServer: {
@@ -306,6 +306,10 @@ const modal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction
   }
   case TicketRoute.PanelSave: {
    panelSave.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.PanelLabelSave: {
+   panelLabelSave.call(this, cmd, args);
    break;
   }
 
