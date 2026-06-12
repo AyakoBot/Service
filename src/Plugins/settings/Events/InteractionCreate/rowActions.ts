@@ -11,7 +11,7 @@ import emotes from '../../../../Classes/Emotes.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { encodeSettingsId, SettingsAction, type SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { buttonEmoji } from '../../Util/settingsEmotes.js';
+import { buttonEmoji, textEmote } from '../../Util/settingsEmotes.js';
 
 import { reRender } from './navigator.js';
 
@@ -43,7 +43,7 @@ export const confirmDelete = async function (
 
  const container = new ContainerBuilder().addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `## ${emotes.warning.name} ${t.navigator.deleteTitle({ label: schema.rowLabel(row) })}\n${
+   `## ${textEmote(emotes.warning)} ${t.navigator.deleteTitle({ label: schema.rowLabel(row) })}\n${
     blocked ? (guard?.reason ?? t.base.errors.unknownError()) : t.navigator.deleteWarning()
    }`,
   ),

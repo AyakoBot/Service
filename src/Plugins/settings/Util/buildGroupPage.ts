@@ -192,7 +192,7 @@ export const buildGroupPage = ({
    .setMaxValues(1)
    .setOptions(
     groups.map((g) => ({
-     label: groupHasUnsetRequired(g, row) ? `${g.label} ${emotes.warning.name}` : g.label,
+     label: groupHasUnsetRequired(g, row) ? `${g.label} ${t.navigator.incomplete()}` : g.label,
      value: g.id,
      default: g.id === group.id,
      description: g.description,
@@ -208,7 +208,7 @@ export const buildGroupPage = ({
    row1.addComponents(
     new ButtonBuilder()
      .setStyle(current ? ButtonStyle.Primary : ButtonStyle.Secondary)
-     .setLabel(incomplete ? `${g.label} ${emotes.warning.name}` : g.label)
+     .setLabel(incomplete ? `${g.label} ${t.navigator.incomplete()}` : g.label)
      .setEmoji(buttonEmoji(g.emote ?? emotes.settings))
      .setDisabled(current)
      .setCustomId(idFor(SettingsAction.GroupNav, g.id)),
