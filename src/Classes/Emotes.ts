@@ -190,20 +190,6 @@ class Emotes {
   link: 'https://cdn.discordapp.com/emojis/1155535552075026432.gif',
  };
 
- disabled = {
-  name: 'disabled',
-  id: '1155170690174025781',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170690174025781.png',
- };
-
- enabled = {
-  name: 'enabled',
-  id: '1155170663104004126',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170663104004126.png',
- };
-
  bot = {
   name: 'Bot',
   id: '1155173739894427880',
@@ -211,55 +197,7 @@ class Emotes {
   link: 'https://cdn.discordapp.com/emojis/1155173739894427880.png',
  };
 
- back = { name: '⬅', id: null };
  forth = { name: '➡', id: null };
- prev = { name: '◀', id: null };
- next = { name: '▶', id: null };
- info = { name: 'ℹ', id: null };
- warning = { name: '⚠', link: 'https://cdn.ayakobot.com/Ayako_Assets/Warning.png', id: null };
- tools = { name: '🛠️', id: null };
-
- settings = {
-  name: 'Settings',
-  id: '1155535411368710234',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155535411368710234.png',
- };
-
- trash = {
-  name: 'Trash',
-  id: '1155535170494005268',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155535170494005268.png',
- };
-
- plus = {
-  name: 'Plus',
-  id: '1155148994901712906',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148994901712906.png',
- };
-
- minus = {
-  name: 'Minus',
-  id: '1155148975486283847',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148975486283847.png',
- };
-
- plusBG = {
-  name: 'PlusWithBackground',
-  id: '1155148973066170469',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148973066170469.png',
- };
-
- minusBG = {
-  name: 'MinusWithBackground',
-  id: '1155148974223794256',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148974223794256.png',
- };
 
  flags = {
   en: { name: '🇺🇸 🇬🇧' },
@@ -327,8 +265,6 @@ class Emotes {
   { name: '59s', id: '1167722080805064764', animated: true },
   { name: '60s', id: '1167722187420074034', animated: true },
  ];
-
- lock = { name: '🔒', id: null, animated: false };
 
  unlock = { name: '🔓', id: null, animated: false };
 
@@ -430,13 +366,6 @@ class Emotes {
   link: 'https://cdn.discordapp.com/emojis/1155180316781187224.png',
  };
 
- edit = {
-  name: 'Edit',
-  id: '1155146925331456070',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146925331456070.png',
- };
-
  gift = {
   name: 'Gift',
   id: '1155146922861023292',
@@ -459,7 +388,6 @@ class Emotes {
  };
 
  refresh = { name: '🔃', id: null, animated: false };
- question = { name: '❓', id: null, animated: false };
 
  Message = {
   name: 'Message',
@@ -528,14 +456,41 @@ class Emotes {
  Command = { name: 'Command', id: '1512873995924406319', animated: false };
  AutoMod = { name: 'AutoMod', id: '1512874601993211964', animated: false };
 
- timer = { name: '⏲️', id: null, animated: false };
- number = { name: '🔢', id: null, animated: false };
- hammer = { name: '🔨', id: null, animated: false };
- shop = { name: '🛍️', id: null, animated: false };
- brain = { name: '🧠', id: null, animated: false };
- calendar = { name: '📅', id: null, animated: false };
- ticket = { name: '🎫', id: null, animated: false };
- log = { name: '📜', id: null, animated: false };
+ hammer = { name: 'hammer', animated: false, id: '1514954555073499156' };
+ enabled = { name: 'enabled', animated: false, id: '1514954556402962492' };
+ emoji = { name: 'emoji', animated: false, id: '1514954557917106236' };
+ warning = { name: 'warning', animated: false, id: '1514954559573987439' };
+ calendar = { name: 'calendar', animated: false, id: '1514954561067159633' };
+ brain = { name: 'brain', animated: false, id: '1514954562862317699' };
+ back = { name: 'back', animated: false, id: '1514954564187586580' };
+ automod = { name: 'automod', animated: false, id: '1514954565613523075' };
+ edit = { name: 'edit', animated: false, id: '1514954566989254706' };
+ command = { name: 'command', animated: false, id: '1514954570357280939' };
+ channelthread = { name: 'channelthread', animated: false, id: '1514954574333743104' };
+ channelstage = { name: 'channelstage', animated: false, id: '1514954577793777694' };
+ channelnews = { name: 'channelnews', animated: false, id: '1514954581891874926' };
+ channelforum = { name: 'channelforum', animated: false, id: '1514954583418601553' };
+ trash = { name: 'trash', animated: false, id: '1514954587310653590' };
+ timer = { name: 'timer', animated: false, id: '1514954591656083649' };
+ shop = { name: 'shop', animated: false, id: '1514954595057795112' };
+ role = { name: 'role', animated: false, id: '1514954599801557223' };
+ question = { name: 'question', animated: false, id: '1514954601168638046' };
+ plus = { name: 'plus', animated: false, id: '1514954604935385289' };
+ next = { name: 'next', animated: false, id: '1514954609402183840' };
+ member = { name: 'member', animated: false, id: '1514954612887519242' };
+ lock = { name: 'lock', animated: false, id: '1514954617333481564' };
+ info = { name: 'info', animated: false, id: '1514954618537250896' };
+ log = { name: 'log', animated: false, id: '1514955317748826203' };
+ message = { name: 'message', animated: false, id: '1514955335704641556' };
+ number = { name: 'number', animated: false, id: '1514955360488656967' };
+ prev = { name: 'prev', animated: false, id: '1514955400389066783' };
+ settings = { name: 'settings', animated: false, id: '1514955416642257017' };
+ ticket = { name: 'ticket', animated: false, id: '1514955446295724072' };
+ tools = { name: 'tools', animated: false, id: '1514955467506323567' };
+ channelcategory = { name: 'channelcategory', animated: false, id: '1514955483990196314' };
+ channelnewsthread = { name: 'channelnewsthread', animated: false, id: '1514955503103639634' };
+ channelvoice = { name: 'channelvoice', animated: false, id: '1514955526033903626' };
+ disabled = { name: 'disabled', animated: false, id: '1514955537878618144' };
 }
 
 const emotes = new Emotes();
