@@ -30,6 +30,7 @@ import threadUpdate from './Events/ThreadUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import TicketReminders from './Reminders/TicketReminders.js';
 import { botTokenTransform } from './Util/botTokenTransform.js';
+import { systemDisplayLabel } from './Util/systemLabel.js';
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate
@@ -208,8 +209,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   rowKey: 'id',
   multiRow: true,
   title: (t: TicketTranslator) => t.settings.configTitle(),
-  rowLabel: (t: TicketTranslator, row: TicketSetting) =>
-   row.name || t.settings.systemLabel({ id: `#${String(row.id).slice(-4)}` }),
+  rowLabel: (t: TicketTranslator, row: TicketSetting) => systemDisplayLabel(t, row),
   overviewDescription: (t: TicketTranslator) => t.settings.overviewDescription(),
   rowSummary: (t: TicketTranslator, row: TicketSetting) => {
    const typeLabels: Record<TicketType, string> = {

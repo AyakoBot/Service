@@ -17,20 +17,23 @@ import TicketPanel from '../../Classes/TicketPanel.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
 import { findModalValues } from '../../Util/findModalValue.js';
+import { systemDisplayLabel } from '../../Util/systemLabel.js';
 
 import { buildPanelEditor, panelWarn } from './panelEditor.js';
 
 const fieldLimit = 25;
 
-const kindOptions = (kinds: TicketSetting[], selected: string[]) =>
- kinds.slice(0, fieldLimit).map((kind) => {
-  const t = `Ticket system ${String(kind.id)}`;
-  const label = (kind.panelButtonLabel || t).slice(0, 100);
-  return new StringSelectMenuOptionBuilder()
-   .setLabel(label)
+const kindOptions = (
+ t: Awaited<ReturnType<TicketPlugin['t']>>,
+ kinds: TicketSetting[],
+ selected: string[],
+) =>
+ kinds.slice(0, fieldLimit).map((kind) =>
+  new StringSelectMenuOptionBuilder()
+   .setLabel(systemDisplayLabel(t, kind).slice(0, 100))
    .setValue(String(kind.id))
-   .setDefault(selected.includes(String(kind.id)));
- });
+   .setDefault(selected.includes(String(kind.id))),
+ );
 
 const guildKinds = async function (this: TicketPlugin, guildId: string): Promise<TicketSetting[]> {
  return this.client.db.client.ticketSetting.findMany({ where: { guild: guildId } });
@@ -69,7 +72,7 @@ export const panelAdd = async function (this: TicketPlugin, cmd: APIMessageCompo
       .setCustomId('kinds')
       .setMinValues(1)
       .setMaxValues(Math.min(kinds.length, fieldLimit))
-      .addOptions(kindOptions(kinds, [])),
+      .addOptions(kindOptions(t, kinds, [])),
     ),
   );
 
@@ -113,7 +116,7 @@ export const panelEdit = async function (
      new ChannelSelectMenuBuilder()
       .setCustomId('channel')
       .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
-      .setMinValues(0)
+      .setMinValues(1)
       .setMaxValues(1)
       .setDefaultChannels(panel.channel ? [panel.channel] : []),
     ),
@@ -125,7 +128,7 @@ export const panelEdit = async function (
       .setCustomId('kinds')
       .setMinValues(1)
       .setMaxValues(Math.min(kinds.length, fieldLimit))
-      .addOptions(kindOptions(kinds, selected)),
+      .addOptions(kindOptions(t, kinds, selected)),
     ),
   );
 
