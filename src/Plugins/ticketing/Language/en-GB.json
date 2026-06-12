@@ -38,7 +38,7 @@
  "takeClaim": "Take",
  "unclaimedBy": "{{user}} unclaimed this Ticket",
  "forwardedFrom": "Forwarded message",
- "forwardSourceUnavailable": "Forwarded message — source unavailable",
+ "forwardSourceUnavailable": "Forwarded message - source unavailable",
  "newAccount": "New account",
  "ticketHistory": "Ticket history",
  "ticketHistoryCounts": "Total: {{total}} · Open: {{open}} · Closed: {{closed}}",
@@ -184,7 +184,7 @@
   "systemLabel": "Ticket system {{id}}",
   "configTitle": "Ticket Configuration",
   "deleteBlocked": "Close its {{count}} open ticket(s) first.",
-  "overviewDescription": "Each ticket system is its own setup — channels, staff, panels, and rules. Pick one to edit, or create another for a different kind of ticket.",
+  "overviewDescription": "Each ticket system is its own setup - channels, staff, panels, and rules. Pick one to edit, or create another for a different kind of ticket.",
   "systemSummary": "{{type}} · {{status}} · {{panel}}",
   "panelIn": "panel in {{channel}}",
   "noPanel": "no panel",
@@ -246,6 +246,7 @@
    "ticketLimitKind": "Per-kind open ticket limit"
   },
   "descriptions": {
+   "panelEditor": "Create, edit, and post the \"Start Ticket\" panels for this server",
    "name": "A short label for this system, shown in lists and summaries",
    "type": "Type of configuration to apply to tickets",
    "logMode": "Whether logs are posted to a channel or grouped into a thread",
@@ -318,7 +319,7 @@
  "logs": {
   "logExplain": "Start your message with a reply prefix to send it to the ticket creator. Messages with no prefix stay staff-only.",
   "logExplainAll": "All messages here are sent to the ticket creator. Add reply prefixes in settings to change this.",
-  "nameGuard": "I use this thread's name to send ticket messages to the right place, so I changed the name back. You can rename it freely after the ticket is deleted — use the delete button that appears once the ticket is closed.",
+  "nameGuard": "I use this thread's name to send ticket messages to the right place, so I changed the name back. You can rename it freely after the ticket is deleted - use the delete button that appears once the ticket is closed.",
   "authorCreate": "Ticket Created",
   "descCreate": "> -# {{user}}> -# has created the Ticket\n> -# {{ticket}}> in\n> -# {{channel}}",
   "authorClosed": "Ticket Closed",

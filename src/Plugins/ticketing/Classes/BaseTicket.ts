@@ -713,7 +713,7 @@ export default class BaseTicket extends BaseTicketLogger {
    ),
   );
 
-  const claimerLine = `${t.claimedBy()}: ${ticket.claimer ? `<@${ticket.claimer}>` : '—'}`;
+  const claimerLine = `${t.claimedBy()}: ${ticket.claimer ? `<@${ticket.claimer}>` : '-'}`;
   const lastReply = this.formatRelative(ticket.lastMessageAt);
   const remind = this.formatRelative(ticket.remindAt);
   const tiers = await this.listTiers();

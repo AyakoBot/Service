@@ -39,7 +39,6 @@ import { panelAdd, panelEdit, panelSave } from './panelEditorModal.js';
 import panelPick from './panelPick.js';
 import { roleMapMove, roleMapOpen, roleMapPage, roleMapRemove } from './roleMap.js';
 import { roleMapAdd, roleMapEdit, roleMapSave } from './roleMapModal.js';
-import setup from './setup.js';
 import tag from './tag.js';
 import { tagAdd, tagDelete, tagManage, tagPage, tagSearch, tagSend } from './tagButton.js';
 import { tagAddModal, tagSearchModal } from './tagModal.js';
@@ -74,10 +73,6 @@ const command = async function (this: TicketPlugin, cmd: APIApplicationCommandIn
  if (cmd.data.type !== ApplicationCommandType.ChatInput) return;
 
  switch (cmd.data.name) {
-  case 'tickets/setup': {
-   setup.call(this, cmd);
-   break;
-  }
   case 'tag': {
    tag.call(this, cmd);
    break;

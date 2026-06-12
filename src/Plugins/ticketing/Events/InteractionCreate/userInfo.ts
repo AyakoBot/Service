@@ -22,7 +22,7 @@ const roleLineCap = 1500;
 const newAccountMS = 7 * 24 * 60 * 60 * 1000;
 
 const formatRoles = (roleIds: string[]): string => {
- if (!roleIds.length) return '—';
+ if (!roleIds.length) return '-';
 
  const mentions: string[] = [];
  let length = 0;

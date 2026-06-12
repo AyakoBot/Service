@@ -44,7 +44,7 @@ export default async function (
   .slice(0, 25)
   .map((s) => {
    const preview = (s.userText || s.staffText || '').replace(/[\n\r]+/g, ' ').trim();
-   const label = preview ? `${s.name} — ${preview}` : s.name;
+   const label = preview ? `${s.name} - ${preview}` : s.name;
    return { name: label.slice(0, 100), value: s.name };
   });
 

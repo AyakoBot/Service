@@ -19,6 +19,7 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
+import { TicketRoute } from './Classes/Routes.js';
 import channelDelete from './Events/ChannelDelete/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
@@ -289,6 +290,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.allowCreatorClose(),
       description: (t: TicketTranslator) => t.settings.descriptions.allowCreatorClose(),
+     },
+    ],
+    actions: [
+     {
+      customId: TicketRoute.Panel,
+      label: (t: TicketTranslator) => t.panel.editorTitle(),
+      description: (t: TicketTranslator) => t.settings.descriptions.panelEditor(),
+      emote: emotes.Message,
      },
     ],
    },
