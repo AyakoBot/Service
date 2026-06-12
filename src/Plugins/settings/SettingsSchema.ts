@@ -57,6 +57,14 @@ export interface SettingsField<Row = Record<string, unknown>> {
  transform?: FieldTransform;
 }
 
+export interface SettingsGroupAction {
+ customId: string;
+ label: string;
+ description?: string;
+ buttonLabel?: string;
+ emote?: APIPartialEmoji;
+}
+
 export interface SettingsGroup<Row = Record<string, unknown>> {
  id: string;
  label: string;
@@ -64,6 +72,7 @@ export interface SettingsGroup<Row = Record<string, unknown>> {
  emote?: APIPartialEmoji;
  showIf?: (row: Row) => ShowIfResult;
  fields: SettingsField<Row>[];
+ actions?: SettingsGroupAction[];
 }
 
 export interface SettingsSchema<Row = Record<string, unknown>> {
@@ -94,6 +103,14 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  transform?: FieldTransform;
 }
 
+export interface SettingsGroupActionDef<T = DefaultTranslator> {
+ customId: string;
+ label: (t: T) => string;
+ description?: (t: T) => string;
+ buttonLabel?: (t: T) => string;
+ emote?: APIPartialEmoji;
+}
+
 export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  id: string;
  label: (t: T) => string;
@@ -101,6 +118,7 @@ export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTran
  emote?: APIPartialEmoji;
  showIf?: (row: Row) => ShowIfResult;
  fields: SettingsFieldDef<Row, T>[];
+ actions?: SettingsGroupActionDef<T>[];
 }
 
 export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTranslator> {

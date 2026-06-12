@@ -131,6 +131,25 @@ export const buildGroupPage = ({
    );
   });
 
+ if (group.actions?.length) {
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+  group.actions.forEach((action) => {
+   const actionText = `### ${action.emote ? `${textEmote(action.emote)} ` : ''}${action.label}${
+    action.description ? `\n-# ${action.description}` : ''
+   }`;
+   container.addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(new TextDisplayBuilder().setContent(actionText))
+     .setButtonAccessory(
+      new ButtonBuilder()
+       .setStyle(ButtonStyle.Secondary)
+       .setLabel(action.buttonLabel ?? t.base.t.Open())
+       .setCustomId(action.customId),
+     ),
+   );
+  });
+ }
+
  const hasUnavailable = group.fields.some(
   (field) => !field.headerToggle && !isFieldAvailable(field, row),
  );

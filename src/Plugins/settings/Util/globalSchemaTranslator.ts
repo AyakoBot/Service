@@ -20,6 +20,13 @@ export const globalSchemaTranslator = (
    description: g.description?.(t),
    emote: g.emote,
    showIf: g.showIf,
+   actions: g.actions?.map((a) => ({
+    customId: a.customId,
+    label: a.label(t),
+    description: a.description?.(t),
+    buttonLabel: a.buttonLabel?.(t),
+    emote: a.emote,
+   })),
    fields: g.fields.map((f) => ({
     column: f.column,
     editor: f.editor,

@@ -3,7 +3,7 @@
   "manageGuildRequired": "You need the `Manage Server` Permission to edit Settings.",
   "overviewTitle": "Configured Systems",
   "create": "Create new",
-  "overviewEmpty": "No Systems yet — create one to get started.",
+  "overviewEmpty": "No Systems yet - create one to get started.",
   "validationFailed": "{{field}}: {{reason}}",
   "enabled": "Enabled",
   "disabled": "Disabled",
