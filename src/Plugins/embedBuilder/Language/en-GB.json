@@ -1,0 +1,110 @@
+{
+ "start": {
+  "title": "Embed Builder",
+  "desc": "Build an embed from scratch, import JSON, or continue from a saved embed.",
+  "fresh": "Start Fresh",
+  "savedPlaceholder": "Continue from a saved embed",
+  "loadSelected": "Open in builder",
+  "deleteSelected": "Delete saved embed",
+  "threadCreated": "Your builder thread is ready: {{channel}}",
+  "deletedSaved": "Saved embed \"{{name}}\" was deleted."
+ },
+ "builder": {
+  "title": "Embed Builder",
+  "desc": "Pick a property below. Some open a modal; for the others you simply type the new value as a message in this thread — emojis and mentions included.",
+  "typedHere": "Type in this thread",
+  "typedHint": "Emojis & mentions work",
+  "viaModal": "Via modal",
+  "modalHint": "Links, colors, timestamps",
+  "waitingFor": "Waiting for your next message to set: {{property}}",
+  "needsOne": "Set at least one of these before saving or sending: {{list}}",
+  "manageRequired": "Saving, sending, and editing messages requires the Manage Server permission.",
+  "placeholder": "Your embed will appear here — pick a property below to get started.",
+  "propertyPlaceholder": "Edit an embed property",
+  "fieldPropertyPlaceholder": "Edit the selected field",
+  "fieldPlaceholder": "Select or add a field",
+  "fieldNr": "Field {{nr}}",
+  "addField": "Add a field",
+  "removeField": "Remove this field",
+  "notSet": "Not set",
+  "notYourBuilder": "This builder belongs to someone else.",
+  "editMessage": "Edit Message"
+ },
+ "modals": {
+  "valueLabel": "New value",
+  "valueHint": "Leave empty to clear this property",
+  "colorPlaceholder": "#5865F2",
+  "timestampPlaceholder": "now · 1718200000 · 2026-06-13 12:00 · <t:1718200000:f>",
+  "urlPlaceholder": "https://…"
+ },
+ "save": {
+  "title": "Save embed",
+  "nameHint": "Saving under an existing name overwrites it",
+  "saved": "Saved as \"{{name}}\"."
+ },
+ "send": {
+  "placeholder": "Send to up to 25 channels",
+  "webhookPlaceholder": "Send via webhook to up to 5 channels",
+  "asWebhook": "Send as webhook…",
+  "sent": "Embed sent to {{count}} channel(s).",
+  "webhookTitle": "Webhook identity",
+  "webhookNameLabel": "Webhook username",
+  "webhookAvatarLabel": "Avatar URL",
+  "optionalHint": "Optional — leave empty to use my own identity"
+ },
+ "edit": {
+  "title": "Edit an existing message",
+  "linkLabel": "Message link",
+  "linkHint": "I can edit my own messages and my webhooks' messages",
+  "edited": "Message updated."
+ },
+ "io": {
+  "importTitle": "Import embed JSON",
+  "jsonLabel": "JSON",
+  "jsonHint": "An embed object, an array of embeds, or a full message"
+ },
+ "properties": {
+  "author-name": "Author name",
+  "author-icon": "Author icon",
+  "author-url": "Author URL",
+  "thumbnail": "Thumbnail",
+  "title": "Title",
+  "url": "Title URL",
+  "description": "Description",
+  "image": "Image",
+  "color": "Color",
+  "footer-text": "Footer text",
+  "footer-icon": "Footer icon",
+  "timestamp": "Timestamp",
+  "field-name": "Field name",
+  "field-value": "Field value",
+  "field-inline": "Field inline"
+ },
+ "settings": {
+  "configTitle": "Saved Embeds",
+  "overviewDescription": "Reusable embeds for panels, greetings, and anything else — built with the embed builder.",
+  "groups": {
+   "embed": "Saved Embed"
+  },
+  "descriptions": {
+   "name": "The name this embed is saved and referenced under",
+   "openBuilder": "Edit this embed's content in a builder thread"
+  },
+  "rowSummary": "{{state}} · {{preview}}",
+  "stateReady": "Ready",
+  "stateEmpty": "No content yet",
+  "unnamed": "Unnamed embed"
+ },
+ "errors": {
+  "invalidTimestamp": "I couldn't read that as a time. Try `now`, a unix timestamp, a date, or a `<t:…>` tag.",
+  "invalidUrl": "That's not a valid URL.",
+  "noFieldSelected": "Select a field first.",
+  "invalidJson": "That JSON couldn't be parsed into an embed.",
+  "noThread": "I couldn't create a builder thread here — use this in a regular text channel.",
+  "notFound": "Saved embed not found.",
+  "noWebhook": "I couldn't create or access a webhook in {{channel}}.",
+  "notEditable": "That message wasn't sent by me or one of my webhooks.",
+  "notALink": "That's not a message link.",
+  "manageGuildRequired": "You need the Manage Server permission to do that."
+ }
+}

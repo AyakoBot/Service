@@ -1,0 +1,20 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model CustomEmbed {
+ id    Decimal @id @db.Decimal
+ guild String  @db.VarChar
+ name  String  @default("") @db.VarChar
+ embed Json?
+
+ @@index(guild)
+}
