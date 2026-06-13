@@ -80,6 +80,7 @@ export interface DataBaseTables {
  snippets: PrismaTables.Snippets;
  ticketRoleMap: PrismaTables.TicketRoleMap;
  ticketTier: PrismaTables.TicketTier;
+ customEmbed: PrismaTables.CustomEmbed;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
