@@ -31,6 +31,13 @@ type ContextButton =
  | (ContextBase & { button?: never; context: string })
  | (ContextBase & { button?: never; context?: never });
 
+export const contextMarkerButton = (customId: string) =>
+ new ButtonBuilder()
+  .setStyle(ButtonStyle.Secondary)
+  .setDisabled(true)
+  .setCustomId(customId)
+  .setLabel(String.fromCharCode(0x200b));
+
 const addSeparator = function (this: ContainerBuilder) {
  this.addSeparatorComponents(
   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
@@ -66,13 +73,7 @@ export const cloneMessageIntoContainer = function (
      .addTextDisplayComponents(
       getAuthorNameComponent(contextButton.authorName, contextButton.rawAuthor),
      )
-     .setButtonAccessory(
-      new ButtonBuilder()
-       .setStyle(ButtonStyle.Secondary)
-       .setDisabled(true)
-       .setCustomId(contextButton.context)
-       .setLabel('​'),
-     ),
+     .setButtonAccessory(contextMarkerButton(contextButton.context)),
    );
 
    addSeparator.call(this);
