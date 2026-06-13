@@ -20,6 +20,7 @@ const { default: pluginSettings } = await import('./Plugins/settings/Plugin.js')
 const { default: pluginCustomClients } = await import('./Plugins/customClients/Plugin.js');
 const { default: pluginTicketing } = await import('./Plugins/ticketing/Plugin.js');
 const { default: pluginEval } = await import('./Plugins/eval/Plugin.js');
+const { default: pluginEmbedBuilder } = await import('./Plugins/embedBuilder/Plugin.js');
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');
@@ -59,6 +60,7 @@ client.registerPlugin(pluginSettings);
 client.registerPlugin(pluginCustomClients);
 client.registerPlugin(pluginTicketing);
 client.registerPlugin(pluginEval);
+client.registerPlugin(pluginEmbedBuilder);
 
 // TODO: remove
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
