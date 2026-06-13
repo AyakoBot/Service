@@ -8,6 +8,7 @@ import {
  ActionRowBuilder,
  ButtonBuilder,
  ContainerBuilder,
+ SectionBuilder,
  SeparatorBuilder,
  TextDisplayBuilder,
 } from '@discordjs/builders';
@@ -23,7 +24,10 @@ import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
-import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
+import {
+ cloneMessageIntoContainer,
+ contextMarkerButton,
+} from '../../../Util/cloneMessageIntoContainer.js';
 import fetchMessages from '../../../Util/fetchMessages.js';
 import type TicketPlugin from '../Plugin.js';
 import isUnderLimit from '../Util/isUnderLimit.js';
@@ -204,17 +208,16 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Ephemeral)
-   .addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(`-# ${t.unclaimedBy({ user: `<@${actorId}>` })}`),
-   )
-   .addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-     new ButtonBuilder()
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(true)
-      .setCustomId(encodeContext(TicketContextType.Unclaimed, actorId, String(ticket.id)))
-      .setLabel('​'),
-    ),
+   .addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ${t.unclaimedBy({ user: `<@${actorId}>` })}`),
+     )
+     .setButtonAccessory(
+      contextMarkerButton(
+       encodeContext(TicketContextType.Unclaimed, actorId, String(ticket.id)),
+      ),
+     ),
    );
 
   await this.sendMessage(
@@ -290,19 +293,18 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Info)
-   .addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-     `${constants.formatters.getEmote(emotes.tools)} ${t.escalatedTo({ tier: tier.name })}`,
-    ),
-   )
-   .addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-     new ButtonBuilder()
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(true)
-      .setCustomId(encodeContext(TicketContextType.Escalated, actorId, String(ticket.id)))
-      .setLabel('​'),
-    ),
+   .addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+       `${constants.formatters.getEmote(emotes.tools)} ${t.escalatedTo({ tier: tier.name })}`,
+      ),
+     )
+     .setButtonAccessory(
+      contextMarkerButton(
+       encodeContext(TicketContextType.Escalated, actorId, String(ticket.id)),
+      ),
+     ),
    );
 
   await this.sendMessage(
@@ -451,19 +453,16 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Warning)
-   .addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-     `${constants.formatters.getEmote(emotes.lock)} ${t.hasClosedThreadInactive()}`,
-    ),
-   )
-   .addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-     new ButtonBuilder()
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(true)
-      .setCustomId(encodeContext(TicketContextType.Closed, actorId, String(ticket.id)))
-      .setLabel('​'),
-    ),
+   .addSectionComponents(
+    new SectionBuilder()
+     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+       `${constants.formatters.getEmote(emotes.lock)} ${t.hasClosedThreadInactive()}`,
+      ),
+     )
+     .setButtonAccessory(
+      contextMarkerButton(encodeContext(TicketContextType.Closed, actorId, String(ticket.id))),
+     ),
    );
 
   if (reason) {
@@ -707,10 +706,14 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const container = new ContainerBuilder().setAccentColor(surfaceAccents[state]);
 
-  container.addTextDisplayComponents(
-   new TextDisplayBuilder().setContent(
-    `-# ${constants.formatters.getEmote(emotes.ticket)} ${this.kindLabel(ticket.settings.type, t)} • #${ticket.id}`,
-   ),
+  container.addSectionComponents(
+   new SectionBuilder()
+    .addTextDisplayComponents(
+     new TextDisplayBuilder().setContent(
+      `-# ${constants.formatters.getEmote(emotes.ticket)} ${this.kindLabel(ticket.settings.type, t)} • #${ticket.id}`,
+     ),
+    )
+    .setButtonAccessory(this.buildSurfaceContextButton(ticket, state)),
   );
 
   const claimerLine = `${t.claimedBy()}: ${ticket.claimer ? `<@${ticket.claimer}>` : '-'}`;
@@ -753,10 +756,6 @@ export default class BaseTicket extends BaseTicketLogger {
    new ActionRowBuilder<ButtonBuilder>().addComponents(
     this.buildSurfaceActionRow(ticket, state, t, tiers.length > 0),
    ),
-  );
-
-  container.addActionRowComponents(
-   new ActionRowBuilder<ButtonBuilder>().addComponents(this.buildSurfaceContextRow(ticket, state)),
   );
 
   components.push(container.toJSON());
@@ -855,16 +854,13 @@ export default class BaseTicket extends BaseTicketLogger {
   return buttons;
  }
 
- buildSurfaceContextRow(ticket: Awaited<ReturnType<BaseTicket['getTicket']>>, state: SurfaceState) {
-  return [
-   new ButtonBuilder()
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(true)
-    .setCustomId(
-     encodeContext(surfaceContextTypes[state], ticket.claimer || '0', String(ticket.id)),
-    )
-    .setLabel('​'),
-  ];
+ buildSurfaceContextButton(
+  ticket: Awaited<ReturnType<BaseTicket['getTicket']>>,
+  state: SurfaceState,
+ ) {
+  return contextMarkerButton(
+   encodeContext(surfaceContextTypes[state], ticket.claimer || '0', String(ticket.id)),
+  );
  }
 
  async refreshSurface() {
