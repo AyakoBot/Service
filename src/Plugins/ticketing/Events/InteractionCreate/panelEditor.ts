@@ -21,6 +21,10 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import constants from '../../../../Classes/Constants.js';
 import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
+import {
+ EmbedBuilderCommand,
+ EmbedBuilderSubcommand,
+} from '../../../embedBuilder/Classes/Commands.js';
 import { PageDirection } from '../../Classes/Enums.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import TicketPanel from '../../Classes/TicketPanel.js';
@@ -89,6 +93,14 @@ export const buildPanelEditor = async function (
 
  container.addSeparatorComponents(
   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+ );
+
+ container.addTextDisplayComponents(
+  new TextDisplayBuilder().setContent(
+   `-# ${t.panel.editHint({
+    command: `\`/${EmbedBuilderCommand.EmbedBuilder} ${EmbedBuilderSubcommand.Create}\``,
+   })}`,
+  ),
  );
 
  container.addTextDisplayComponents(
