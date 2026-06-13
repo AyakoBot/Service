@@ -144,7 +144,7 @@ export const buildGroupPage = ({
       new ButtonBuilder()
        .setStyle(ButtonStyle.Secondary)
        .setLabel(action.buttonLabel ?? t.base.t.Open())
-       .setCustomId(action.customId),
+       .setCustomId(`${action.customId}_${rowId}`),
      ),
    );
   });
