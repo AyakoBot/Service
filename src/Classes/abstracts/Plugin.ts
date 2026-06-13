@@ -6,6 +6,7 @@ import {
  SlashCommandStringOption,
  type SlashCommandOptionsOnlyBuilder,
  type SlashCommandSubcommandBuilder,
+ type SlashCommandSubcommandsOnlyBuilder,
 } from '@discordjs/builders';
 import { GatewayDispatchEvents } from '@discordjs/core';
 import type { GatewayGuildDeleteDispatchData } from 'discord-api-types/v10';
@@ -219,7 +220,7 @@ export default abstract class Plugin<
  };
 
  abstract getCommands(): {
-  commands: SlashCommandOptionsOnlyBuilder[];
+  commands: (SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder)[];
   settings: { category: SettingsCategory | null; commands: SlashCommandSubcommandBuilder[] }[];
  };
 

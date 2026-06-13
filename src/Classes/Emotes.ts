@@ -491,6 +491,19 @@ class Emotes {
  channelnewsthread = { name: 'channelnewsthread', animated: false, id: '1514955503103639634' };
  channelvoice = { name: 'channelvoice', animated: false, id: '1514955526033903626' };
  disabled = { name: 'disabled', animated: false, id: '1514955537878618144' };
+ heading = { name: 'heading', animated: false, id: '1515134188117033011' };
+ paragraph = { name: 'paragraph', animated: false, id: '1515134220572295278' };
+ author = { name: 'author', animated: false, id: '1515134240692375552' };
+ footer = { name: 'footer', animated: false, id: '1515134264189124820' };
+ image = { name: 'image', animated: false, id: '1515134279724568646' };
+ thumbnail = { name: 'thumbnail', animated: false, id: '1515134304659701840' };
+ palette = { name: 'palette', animated: false, id: '1515134330102353930' };
+ link = { name: 'link', animated: false, id: '1515134361651908731' };
+ fields = { name: 'fields', animated: false, id: '1515134386318741504' };
+ save = { name: 'save', animated: false, id: '1515134399891509372' };
+ send = { name: 'send', animated: false, id: '1515134413271466067' };
+ webhook = { name: 'webhook', animated: false, id: '1515134479147073688' };
+ json = { name: 'json', animated: false, id: '1515134500701733125' };
 }
 
 const emotes = new Emotes();
