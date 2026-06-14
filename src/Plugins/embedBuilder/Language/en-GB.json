@@ -13,7 +13,7 @@
   "title": "Embed Builder",
   "desc": "Pick a property below. Some open a modal; for the others you simply type the new value as a message in this thread - emojis and mentions included.",
   "typedHere": "Type in this thread",
-  "typedHint": "Emojis & mentions work",
+  "typedHint": "Mentions & emojis render only in Description & Field value",
   "viaModal": "Via modal",
   "modalHint": "Links, colors",
   "waitingFor": "Waiting for your next message to set: {{property}}",
@@ -27,6 +27,7 @@
   "fieldNr": "Field {{nr}}",
   "addField": "Add a field",
   "removeField": "Remove this field",
+  "backToEmbed": "Back to main embed",
   "notSet": "Not set",
   "notYourBuilder": "This builder belongs to someone else.",
   "editMessage": "Edit Message"

@@ -34,6 +34,11 @@ export const propertyPick = async function (
 
  const [value] = cmd.data.values;
 
+ if (value === FieldOption.Back) {
+  await rerender.call(this, cmd, { ...ctx.view, selectedField: null, selectedProperty: null });
+  return;
+ }
+
  if (value === FieldOption.Remove) {
   if (ctx.view.selectedField !== null) {
    ctx.view.embed.fields?.splice(ctx.view.selectedField, 1);

@@ -28,6 +28,7 @@ export enum PropertyInput {
 export enum FieldOption {
  Add = 'add',
  Remove = 'remove',
+ Back = 'back',
 }
 
 export const propertyInputs: Record<EmbedProperty, PropertyInput> = {
