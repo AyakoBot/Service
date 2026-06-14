@@ -1,4 +1,4 @@
-import { RequestHandlerError } from '@ayako/api';
+import { RequestHandlerError, type RequestHandlerErrorType } from '@ayako/api';
 import { ChannelType, type APIEmbed, type APIInteraction } from 'discord-api-types/v10';
 
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
@@ -12,7 +12,7 @@ export const openThread = async function (
  this: EmbedBuilderPlugin,
  cmd: APIInteraction,
  embed: APIEmbed,
-): Promise<string | null> {
+): Promise<string | RequestHandlerError<RequestHandlerErrorType> | null> {
  if (!cmd.guild_id || !cmd.channel || !cmd.member) return null;
 
  const api = await this.getAPI(cmd.guild_id);
@@ -34,7 +34,10 @@ export const openThread = async function (
   origin: this.name,
   reason: 'Adding builder owner to thread',
  });
- if (added instanceof RequestHandlerError) this.nonFatalError(added, 'openThread.addMember');
+ if (added instanceof RequestHandlerError) {
+  this.nonFatalError(added, 'openThread.addMember');
+  return added;
+ }
 
  const t = await this.t(cmd.guild_id);
  const payload = renderBuilder.call(this, t, {

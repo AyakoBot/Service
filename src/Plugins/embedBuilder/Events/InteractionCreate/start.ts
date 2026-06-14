@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import {
  ActionRowBuilder,
  ButtonBuilder,
@@ -123,10 +124,15 @@ export const openIntoThread = async function (
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
 
- const threadId = await openThread.call(this, cmd, embed);
- const content = threadId
-  ? `${textEmote(emotes.enabled)} ${t.start.threadCreated({ channel: `<#${threadId}>` })}`
-  : `${textEmote(emotes.warning)} ${t.errors.noThread()}`;
+ const result = await openThread.call(this, cmd, embed);
+ const failNote =
+  result instanceof RequestHandlerError
+   ? (result.errorMessage ?? t.errors.noThread())
+   : t.errors.noThread();
+ const content =
+  typeof result === 'string'
+   ? `${textEmote(emotes.enabled)} ${t.start.threadCreated({ channel: `<#${result}>` })}`
+   : `${textEmote(emotes.warning)} ${failNote}`;
 
  const payload = confirmSurface.call(this, content);
  if (respond === 'reply') payload.reply(cmd);
@@ -210,9 +216,13 @@ export const deleteSaved = async function (
   return;
  }
 
- await new CustomEmbed(this.client, cmd.guild_id, String(row.id))
-  .remove()
-  .catch((error: Error) => this.nonFatalError(error, 'deleteSaved'));
+ try {
+  await new CustomEmbed(this.client, cmd.guild_id, String(row.id)).remove();
+ } catch (error) {
+  this.nonFatalError(error as Error, 'deleteSaved');
+  ephemeralNote.call(this, cmd, (error as Error).message);
+  return;
+ }
 
  const payload = await buildStartSurface.call(this, cmd.guild_id, null);
  payload.update(cmd);

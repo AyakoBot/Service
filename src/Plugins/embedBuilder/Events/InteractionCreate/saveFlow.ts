@@ -59,9 +59,13 @@ export const saveSubmit = async function (
  const name = (findModalValue(cmd.data.components, 'name') || '').trim().slice(0, 100);
  if (!name || !isSendable(ctx.view.embed)) return;
 
- await CustomEmbed.save(this.client, cmd.guild_id, name, ctx.view.embed).catch((error: Error) =>
-  this.nonFatalError(error, 'saveSubmit'),
- );
+ try {
+  await CustomEmbed.save(this.client, cmd.guild_id, name, ctx.view.embed);
+ } catch (error) {
+  this.nonFatalError(error as Error, 'saveSubmit');
+  ephemeralNote.call(this, cmd, (error as Error).message);
+  return;
+ }
 
  ephemeralNote.call(this, cmd, t.save.saved({ name }));
 };
