@@ -32,6 +32,7 @@ import type EmbedBuilderPlugin from '../Plugin.js';
 
 import { blank, currentValue } from './applyProperty.js';
 import { buildMarkerUrl, isSendable, placeholderUrl, type BuilderMarker } from './builderState.js';
+import { cleanPreview } from './cleanPreview.js';
 
 type Translator = Awaited<ReturnType<EmbedBuilderPlugin['t']>>;
 
@@ -76,7 +77,7 @@ const previewValue = (t: Translator, view: BuilderView, property: EmbedProperty)
   return inline ? t.base.t.Yes() : t.base.t.No();
  }
 
- const value = currentValue(view.embed, property, view.selectedField)
+ const value = cleanPreview(currentValue(view.embed, property, view.selectedField))
   .replace(/\s+/g, ' ')
   .trim();
  return value ? value.slice(0, 90) : t.builder.notSet();
@@ -166,6 +167,12 @@ const propertySelectRow = function (this: EmbedBuilderPlugin, t: Translator, vie
  );
 
  if (onField) {
+  options.unshift(
+   new StringSelectMenuOptionBuilder()
+    .setLabel(t.builder.backToEmbed())
+    .setValue(FieldOption.Back)
+    .setEmoji(buttonEmoji(emotes.back)),
+  );
   options.push(
    new StringSelectMenuOptionBuilder()
     .setLabel(t.builder.removeField())
@@ -189,7 +196,7 @@ const fieldSelectRow = function (this: EmbedBuilderPlugin, t: Translator, view: 
   new StringSelectMenuOptionBuilder()
    .setLabel(t.builder.fieldNr({ nr: String(index + 1) }))
    .setValue(String(index))
-   .setDescription(field.name.replace(/\s+/g, ' ').slice(0, 90) || t.builder.notSet())
+   .setDescription(cleanPreview(field.name).replace(/\s+/g, ' ').slice(0, 90) || t.builder.notSet())
    .setEmoji(buttonEmoji(emotes.fields))
    .setDefault(index === view.selectedField),
  );
