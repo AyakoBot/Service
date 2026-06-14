@@ -30,7 +30,7 @@ import {
 import { EmbedBuilderRoute } from '../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
 
-import { currentValue } from './applyProperty.js';
+import { blank, currentValue } from './applyProperty.js';
 import { buildMarkerUrl, isSendable, placeholderUrl, type BuilderMarker } from './builderState.js';
 
 type Translator = Awaited<ReturnType<EmbedBuilderPlugin['t']>>;
@@ -145,8 +145,11 @@ const headerEmbed = function (this: EmbedBuilderPlugin, t: Translator, view: Bui
 };
 
 const wipEmbed = (t: Translator, view: BuilderView): APIEmbed => {
- if (Object.keys(view.embed).length) return view.embed;
- return { description: t.builder.placeholder(), color: Colors.Ephemeral, url: placeholderUrl() };
+ if (!Object.keys(view.embed).length) {
+  return { description: t.builder.placeholder(), color: Colors.Ephemeral, url: placeholderUrl() };
+ }
+ if (isSendable(view.embed)) return view.embed;
+ return { ...view.embed, description: blank };
 };
 
 const propertySelectRow = function (this: EmbedBuilderPlugin, t: Translator, view: BuilderView) {

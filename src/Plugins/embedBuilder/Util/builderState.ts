@@ -10,6 +10,8 @@ import {
 import { EmbedProperty } from '../Classes/Properties.js';
 import { EmbedBuilderRoute } from '../Classes/Routes.js';
 
+import { blank } from './applyProperty.js';
+
 enum MarkerParam {
  Builder = 'isEmbedBuilder',
  Exec = 'exec',
@@ -80,7 +82,9 @@ export const parseMarker = (msg: BuilderMessageLike): BuilderMarker | null => {
 export const getWipEmbed = (msg: BuilderMessageLike): APIEmbed => {
  const embed = msg.embeds?.[1];
  if (!embed || isPlaceholder(embed)) return {};
- return structuredClone(embed);
+ const clone = structuredClone(embed);
+ if (clone.description === blank) delete clone.description;
+ return clone;
 };
 
 const findSelect = (

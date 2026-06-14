@@ -6,6 +6,7 @@ import { ComponentType } from 'discord-api-types/v10';
 import { EmbedProperty } from '../Classes/Properties.js';
 import { EmbedBuilderRoute } from '../Classes/Routes.js';
 
+import { blank } from './applyProperty.js';
 import {
  buildMarkerUrl,
  getSelectedField,
@@ -52,6 +53,21 @@ test('reads the wip embed from the second embed slot', () => {
   embeds: [{ url: buildMarkerUrl({ execId: '1' }) }, { title: 'Hello' }],
  };
  assert.deepEqual(getWipEmbed(msg), { title: 'Hello' });
+});
+
+test('strips the blank preview description while keeping real content', () => {
+ const blanked: BuilderMessageLike = {
+  embeds: [
+   { url: buildMarkerUrl({ execId: '1' }) },
+   { timestamp: '2026-06-13T00:00:00.000Z', description: blank },
+  ],
+ };
+ assert.deepEqual(getWipEmbed(blanked), { timestamp: '2026-06-13T00:00:00.000Z' });
+
+ const real: BuilderMessageLike = {
+  embeds: [{ url: buildMarkerUrl({ execId: '1' }) }, { description: 'real' }],
+ };
+ assert.deepEqual(getWipEmbed(real), { description: 'real' });
 });
 
 test('reads selected field and property from select defaults', () => {
