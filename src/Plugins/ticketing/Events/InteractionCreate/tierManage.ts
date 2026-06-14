@@ -12,6 +12,7 @@ import {
  SeparatorSpacingSize,
  type APIMessageComponentInteraction,
  type APIMessageTopLevelComponent,
+ type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
@@ -164,10 +165,12 @@ export const tierMove = async function (
  const [settingsId, tierId] = args;
  const tiers = await new TicketTierEntry(this.client, settingsId)
   .move(tierId, direction)
-  .catch((error: Error) => {
-   this.nonFatalError(error, 'tierMove');
-   return [] as TicketTier[];
-  });
+  .catch((error: Error) => error);
+ if (tiers instanceof Error) {
+  this.nonFatalError(tiers, 'tierMove');
+  tierWarn.call(this, cmd, (await this.t(cmd.guild_id)).base.errors.unknownError());
+  return;
+ }
 
  const payload = await buildTierEditor.call(this, cmd.guild_id, settingsId, tiers, 0);
  payload.update(cmd);
@@ -184,11 +187,24 @@ export const tierDel = async function (
  const [settingsId, tierId] = args;
  const tiers = await new TicketTierEntry(this.client, settingsId)
   .remove(tierId)
-  .catch((error: Error) => {
-   this.nonFatalError(error, 'tierDel');
-   return [] as TicketTier[];
-  });
+  .catch((error: Error) => error);
+ if (tiers instanceof Error) {
+  this.nonFatalError(tiers, 'tierDel');
+  tierWarn.call(this, cmd, (await this.t(cmd.guild_id)).base.errors.unknownError());
+  return;
+ }
 
  const payload = await buildTierEditor.call(this, cmd.guild_id, settingsId, tiers, 0);
  payload.update(cmd);
+};
+
+export const tierWarn = function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+ content: string,
+) {
+ new MessagePayload(this.client, { origin: this.name, reason: 'Tier editor warning' })
+  .setContent(content)
+  .setFlags(MessageFlags.Ephemeral)
+  .reply(cmd);
 };

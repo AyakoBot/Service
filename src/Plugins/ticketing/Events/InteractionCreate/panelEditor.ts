@@ -196,9 +196,14 @@ export const panelRemove = async function (
  if (!cmd.guild_id) return;
  if (!(await authorizeManage.call(this, cmd))) return;
 
- await new TicketPanel(this.client, cmd.guild_id, args[0])
+ const removed = await new TicketPanel(this.client, cmd.guild_id, args[0])
   .remove()
-  .catch((error: Error) => this.nonFatalError(error, 'panelRemove'));
+  .catch((error: Error) => error);
+ if (removed instanceof Error) {
+  this.nonFatalError(removed, 'panelRemove');
+  panelWarn.call(this, cmd, (await this.t(cmd.guild_id)).base.errors.unknownError());
+  return;
+ }
 
  const panels = await TicketPanel.all(this.client, cmd.guild_id);
  const payload = await buildPanelEditor.call(this, cmd.guild_id, panels, 0);

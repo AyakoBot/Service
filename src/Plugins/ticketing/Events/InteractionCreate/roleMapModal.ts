@@ -5,20 +5,18 @@ import {
  TextInputBuilder,
 } from '@discordjs/builders';
 import {
- MessageFlags,
  TextInputStyle,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import TicketRoleMap from '../../Classes/TicketRoleMap.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
 import { findModalValue, findModalValues } from '../../Util/findModalValue.js';
 
-import { buildRoleMapEditor } from './roleMap.js';
+import { buildRoleMapEditor, roleMapWarn } from './roleMap.js';
 
 const resolveRoleName = async function (
  this: TicketPlugin,
@@ -127,10 +125,12 @@ export const roleMapSave = async function (
   }
 
   const label = rawLabel || (await resolveRoleName.call(this, entry.role)) || entry.label;
-  const next = await map.editAt(index, label).catch((error: Error) => {
-   this.nonFatalError(error, 'roleMapSave.edit');
-   return entries;
-  });
+  const next = await map.editAt(index, label).catch((error: Error) => error);
+  if (next instanceof Error) {
+   this.nonFatalError(next, 'roleMapSave.edit');
+   roleMapWarn.call(this, cmd, t.base.errors.unknownError());
+   return;
+  }
 
   const payload = await buildRoleMapEditor.call(this, cmd.guild_id, next, 0);
   payload.update(cmd);
@@ -144,22 +144,13 @@ export const roleMapSave = async function (
  }
 
  const label = rawLabel || (await resolveRoleName.call(this, role)) || role;
- const next = await map.add(role, label).catch((error: Error) => {
-  this.nonFatalError(error, 'roleMapSave.add');
-  return [];
- });
+ const next = await map.add(role, label).catch((error: Error) => error);
+ if (next instanceof Error) {
+  this.nonFatalError(next, 'roleMapSave.add');
+  roleMapWarn.call(this, cmd, t.base.errors.unknownError());
+  return;
+ }
 
  const payload = await buildRoleMapEditor.call(this, cmd.guild_id, next, 0);
  payload.update(cmd);
-};
-
-const roleMapWarn = function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
- content: string,
-) {
- new MessagePayload(this.client, { origin: this.name, reason: 'Role map editor warning' })
-  .setContent(content)
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
 };

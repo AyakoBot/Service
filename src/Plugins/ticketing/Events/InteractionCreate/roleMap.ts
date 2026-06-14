@@ -11,6 +11,7 @@ import {
  SeparatorSpacingSize,
  type APIMessageComponentInteraction,
  type APIMessageTopLevelComponent,
+ type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
@@ -158,10 +159,12 @@ export const roleMapRemove = async function (
  const index = Number(args[0]);
  const entries = await new TicketRoleMap(this.client, cmd.guild_id)
   .removeAt(index)
-  .catch((error: Error) => {
-   this.nonFatalError(error, 'roleMapRemove');
-   return [];
-  });
+  .catch((error: Error) => error);
+ if (entries instanceof Error) {
+  this.nonFatalError(entries, 'roleMapRemove');
+  roleMapWarn.call(this, cmd, (await this.t(cmd.guild_id)).base.errors.unknownError());
+  return;
+ }
 
  const payload = await buildRoleMapEditor.call(this, cmd.guild_id, entries, 0);
  payload.update(cmd);
@@ -179,11 +182,24 @@ export const roleMapMove = async function (
  const index = Number(args[0]);
  const entries = await new TicketRoleMap(this.client, cmd.guild_id)
   .move(index, direction)
-  .catch((error: Error) => {
-   this.nonFatalError(error, 'roleMapMove');
-   return [];
-  });
+  .catch((error: Error) => error);
+ if (entries instanceof Error) {
+  this.nonFatalError(entries, 'roleMapMove');
+  roleMapWarn.call(this, cmd, (await this.t(cmd.guild_id)).base.errors.unknownError());
+  return;
+ }
 
  const payload = await buildRoleMapEditor.call(this, cmd.guild_id, entries, 0);
  payload.update(cmd);
+};
+
+export const roleMapWarn = function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+ content: string,
+) {
+ new MessagePayload(this.client, { origin: this.name, reason: 'Role map editor warning' })
+  .setContent(content)
+  .setFlags(MessageFlags.Ephemeral)
+  .reply(cmd);
 };

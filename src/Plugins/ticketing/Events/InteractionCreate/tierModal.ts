@@ -8,13 +8,11 @@ import {
 } from '@discordjs/builders';
 import {
  ChannelType,
- MessageFlags,
  TextInputStyle,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { formatDurationSeconds, parseDurationSeconds } from '../../../../Util/durationSeconds.js';
 import { TierErrors } from '../../Classes/Enums.js';
 import { TicketRoute } from '../../Classes/Routes.js';
@@ -23,7 +21,7 @@ import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
 import { findModalValue, findModalValues } from '../../Util/findModalValue.js';
 
-import { buildTierEditor } from './tierManage.js';
+import { buildTierEditor, tierWarn } from './tierManage.js';
 
 const tierModal = async function (
  this: TicketPlugin,
@@ -199,15 +197,4 @@ const translateTierError = function (
    this.nonFatalError(error, 'tierSave');
    return t.tierEditor.errors.saveFailed();
  }
-};
-
-const tierWarn = function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
- content: string,
-) {
- new MessagePayload(this.client, { origin: this.name, reason: 'Tier editor warning' })
-  .setContent(content)
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
 };

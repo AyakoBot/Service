@@ -26,7 +26,7 @@ export const tagSend = async function (
  const t = await this.t(cmd.guild_id);
 
  if (!snippet || !staffId) {
-  runSnippetMissing.call(this, cmd, t.tag.errors.notFound());
+  tagWarn.call(this, cmd, t.tag.errors.notFound());
   return;
  }
 
@@ -70,9 +70,14 @@ export const tagDelete = async function (
  if (!cmd.guild_id) return;
  if (!(await authorizeManage.call(this, cmd))) return;
 
- await this.client.db.client.snippets
+ const deleted = await this.client.db.client.snippets
   .delete({ where: { id: args[0] } })
-  .catch((error: Error) => this.nonFatalError(error, 'tagDelete'));
+  .catch((error: Error) => error);
+ if (deleted instanceof Error) {
+  this.nonFatalError(deleted, 'tagDelete');
+  tagWarn.call(this, cmd, (await this.t(cmd.guild_id)).base.errors.unknownError());
+  return;
+ }
 
  const snippets = await Snippet.all(this.client, cmd.guild_id);
  const payload = await buildToolkit.call(this, cmd.guild_id, snippets, { page: 0, manage: true });
@@ -161,12 +166,12 @@ export const tagAdd = async function (
  });
 };
 
-const runSnippetMissing = function (
+const tagWarn = function (
  this: TicketPlugin,
  cmd: APIMessageComponentInteraction,
  message: string,
 ) {
- new MessagePayload(this.client, { origin: this.name, reason: 'Snippet missing' })
+ new MessagePayload(this.client, { origin: this.name, reason: 'Tag editor warning' })
   .setContent(message)
   .setFlags(MessageFlags.Ephemeral)
   .reply(cmd);

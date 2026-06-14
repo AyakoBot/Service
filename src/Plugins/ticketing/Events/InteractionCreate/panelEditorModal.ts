@@ -205,12 +205,17 @@ export const panelLabelSave = async function (
  }
 
  const label = (findModalValue(cmd.data.components, 'label') || '').trim();
- await this.client.db.client.ticketSetting
+ const updated = await this.client.db.client.ticketSetting
   .updateMany({
    where: { id: settingsId, guild: cmd.guild_id },
    data: { panelButtonLabel: label || null },
   })
-  .catch((error: Error) => this.nonFatalError(error, 'panelLabelSave'));
+  .catch((error: Error) => error);
+ if (updated instanceof Error) {
+  this.nonFatalError(updated, 'panelLabelSave');
+  panelWarn.call(this, cmd, t.base.errors.unknownError());
+  return;
+ }
 
  const panels = await TicketPanel.all(this.client, cmd.guild_id);
  const posted = panels.filter(
@@ -248,9 +253,14 @@ export const panelSave = async function (
    return;
   }
 
-  await new TicketPanel(this.client, cmd.guild_id, args[0])
+  const edited = await new TicketPanel(this.client, cmd.guild_id, args[0])
    .update({ channel, kinds })
-   .catch((error: Error) => this.nonFatalError(error, 'panelSave.edit'));
+   .catch((error: Error) => error);
+  if (edited instanceof Error) {
+   this.nonFatalError(edited, 'panelSave.edit');
+   panelWarn.call(this, cmd, t.base.errors.unknownError());
+   return;
+  }
  } else {
   const created = await TicketPanel.create(this.client, cmd.guild_id, { channel, kinds }).catch(
    (error: Error) => {
