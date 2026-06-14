@@ -34,8 +34,15 @@ export const parseColor = (value: string): number | null => {
  return parseInt(match, 16);
 };
 
+export enum TimestampToken {
+ Now = 'now',
+ Time = '@time',
+}
+
 export const parseTimestamp = (value: string): string | null => {
  const trimmed = value.trim();
+ const lower = trimmed.toLowerCase();
+ if (lower === TimestampToken.Now || lower === TimestampToken.Time) return new Date().toISOString();
  if (/^\d+$/.test(trimmed)) {
   const seconds = Number(trimmed);
   const date = new Date(seconds * 1000);

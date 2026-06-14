@@ -11,15 +11,16 @@
  },
  "builder": {
   "title": "Embed Builder",
-  "desc": "Pick a property below. Some open a modal; for the others you simply type the new value as a message in this thread — emojis and mentions included.",
+  "desc": "Pick a property below. Some open a modal; for the others you simply type the new value as a message in this thread - emojis and mentions included.",
   "typedHere": "Type in this thread",
   "typedHint": "Emojis & mentions work",
   "viaModal": "Via modal",
-  "modalHint": "Links, colors, timestamps",
+  "modalHint": "Links, colors",
   "waitingFor": "Waiting for your next message to set: {{property}}",
+  "timestampHint": "`@time` · `now` · `1718200000` · `2026-06-13 12:00` · `<t:1718200000:f>`",
   "needsOne": "Set at least one of these before saving or sending: {{list}}",
   "manageRequired": "Saving, sending, and editing messages requires the Manage Server permission.",
-  "placeholder": "Your embed will appear here — pick a property below to get started.",
+  "placeholder": "Your embed will appear here - pick a property below to get started.",
   "propertyPlaceholder": "Edit an embed property",
   "fieldPropertyPlaceholder": "Edit the selected field",
   "fieldPlaceholder": "Select or add a field",
@@ -34,7 +35,6 @@
   "valueLabel": "New value",
   "valueHint": "Leave empty to clear this property",
   "colorPlaceholder": "#5865F2",
-  "timestampPlaceholder": "now · 1718200000 · 2026-06-13 12:00 · <t:1718200000:f>",
   "urlPlaceholder": "https://…"
  },
  "save": {
@@ -50,7 +50,7 @@
   "webhookTitle": "Webhook identity",
   "webhookNameLabel": "Webhook username",
   "webhookAvatarLabel": "Avatar URL",
-  "optionalHint": "Optional — leave empty to use my own identity"
+  "optionalHint": "Optional - leave empty to use my own identity"
  },
  "edit": {
   "title": "Edit an existing message",
@@ -82,7 +82,7 @@
  },
  "settings": {
   "configTitle": "Saved Embeds",
-  "overviewDescription": "Reusable embeds for panels, greetings, and anything else — built with the embed builder.",
+  "overviewDescription": "Reusable embeds for panels, greetings, and anything else - built with the embed builder.",
   "groups": {
    "embed": "Saved Embed"
   },
@@ -96,11 +96,11 @@
   "unnamed": "Unnamed embed"
  },
  "errors": {
-  "invalidTimestamp": "I couldn't read that as a time. Try `now`, a unix timestamp, a date, or a `<t:…>` tag.",
+  "invalidTimestamp": "I couldn't read that as a time. Try `@time` or `now`, a unix timestamp, a date, or a `<t:…>` tag.",
   "invalidUrl": "That's not a valid URL.",
   "noFieldSelected": "Select a field first.",
   "invalidJson": "That JSON couldn't be parsed into an embed.",
-  "noThread": "I couldn't create a builder thread here — use this in a regular text channel.",
+  "noThread": "I couldn't create a builder thread here - use this in a regular text channel.",
   "notFound": "Saved embed not found.",
   "noWebhook": "I couldn't create or access a webhook in {{channel}}.",
   "notEditable": "That message wasn't sent by me or one of my webhooks.",

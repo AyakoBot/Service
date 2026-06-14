@@ -27,7 +27,6 @@ const inputLengths: Record<PropertyInput, number> = {
  [PropertyInput.Link]: 2048,
  [PropertyInput.Image]: 2048,
  [PropertyInput.Color]: 7,
- [PropertyInput.Timestamp]: 64,
  [PropertyInput.Toggle]: 8,
 };
 
@@ -35,8 +34,6 @@ const inputPlaceholder = (t: Translator, input: PropertyInput): string => {
  switch (input) {
   case PropertyInput.Color:
    return t.modals.colorPlaceholder();
-  case PropertyInput.Timestamp:
-   return t.modals.timestampPlaceholder();
   case PropertyInput.Link:
   case PropertyInput.Image:
    return t.modals.urlPlaceholder();

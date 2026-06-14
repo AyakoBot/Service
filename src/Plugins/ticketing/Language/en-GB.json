@@ -148,7 +148,7 @@
   "kindCount": "{{count}} kind(s)",
   "post": "Post",
   "posted": "Panel posted.",
-  "editHint": "Tip: restyle a posted panel's embed with {{command}} — open the builder and use **Edit Message** with the panel message's link.",
+  "editHint": "Tip: restyle a posted panel's embed with {{command}} - open the builder and use **Edit Message** with the panel message's link.",
   "addTitle": "Add ticket panel",
   "editTitle": "Edit ticket panel",
   "labelPlaceholder": "Edit a kind's button label",

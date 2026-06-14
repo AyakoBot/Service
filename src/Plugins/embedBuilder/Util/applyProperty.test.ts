@@ -43,6 +43,14 @@ test('parses timestamps from unix seconds and t-tags', () => {
  assert.equal(parseTimestamp('not a date'), null);
 });
 
+test('parses @time and now as the current moment', () => {
+ for (const token of ['@time', 'now', 'NOW', '@TIME', '  now  ']) {
+  const result = parseTimestamp(token);
+  assert.ok(result);
+  assert.ok(Math.abs(Date.now() - new Date(result).getTime()) < 5000);
+ }
+});
+
 test('rejects non-http urls', () => {
  const bad = applyProperty({}, EmbedProperty.Image, 'ftp://x/y.png', null);
  assert.ok(!bad.ok && bad.error === ApplyErrorCode.InvalidUrl);

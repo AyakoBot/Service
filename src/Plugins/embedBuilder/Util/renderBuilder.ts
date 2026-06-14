@@ -111,6 +111,9 @@ const headerEmbed = function (this: EmbedBuilderPlugin, t: Translator, view: Bui
     property: `**${propertyLabel(t, view.selectedProperty)}**`,
    })}`,
   );
+  if (view.selectedProperty === EmbedProperty.Timestamp) {
+   lines.push(`-# ${t.builder.timestampHint()}`);
+  }
  }
  if (!isSendable(view.embed)) {
   lines.push(`${textEmote(emotes.warning)} ${t.builder.needsOne({ list: needsOneList(t) })}`);
@@ -135,7 +138,6 @@ const headerEmbed = function (this: EmbedBuilderPlugin, t: Translator, view: Bui
      PropertyInput.Link,
      PropertyInput.Image,
      PropertyInput.Color,
-     PropertyInput.Timestamp,
     ])}\n-# ${t.builder.modalHint()}`,
     inline: true,
    },

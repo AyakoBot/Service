@@ -22,7 +22,6 @@ export enum PropertyInput {
  Link = 'link',
  Image = 'img',
  Color = 'color',
- Timestamp = 'timestamp',
  Toggle = 'toggle',
 }
 
@@ -43,7 +42,7 @@ export const propertyInputs: Record<EmbedProperty, PropertyInput> = {
  [EmbedProperty.Color]: PropertyInput.Color,
  [EmbedProperty.FooterText]: PropertyInput.Text,
  [EmbedProperty.FooterIcon]: PropertyInput.Image,
- [EmbedProperty.Timestamp]: PropertyInput.Timestamp,
+ [EmbedProperty.Timestamp]: PropertyInput.Typed,
  [EmbedProperty.FieldName]: PropertyInput.Typed,
  [EmbedProperty.FieldValue]: PropertyInput.Typed,
  [EmbedProperty.FieldInline]: PropertyInput.Toggle,
