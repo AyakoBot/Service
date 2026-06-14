@@ -3,7 +3,15 @@ import { RequestHandlerError } from '@ayako/api';
 import getUser from '../../../Util/getUser.js';
 import type AFKPlugin from '../Plugin.js';
 
-const afkNickSuffix = ' [AFK]';
+const nickLengthLimit = 32;
+const afkNickSuffixFull = ' [AFK]';
+const afkNickSuffixShort = ' AFK';
+
+const afkNickSuffixFor = (baseLength: number) => {
+ if (baseLength + afkNickSuffixFull.length <= nickLengthLimit) return afkNickSuffixFull;
+ if (baseLength + afkNickSuffixShort.length <= nickLengthLimit) return afkNickSuffixShort;
+ return undefined;
+};
 
 export const setNick = async function (this: AFKPlugin, userId: string, guildId: string) {
  const member = await this.client.cache.members.get(guildId, userId);
@@ -14,14 +22,14 @@ export const setNick = async function (this: AFKPlugin, userId: string, guildId:
   : await getUser.call(this.client, userId);
  if (user instanceof RequestHandlerError || !user) return undefined;
 
+ const base = member.nick || user.global_name || user.username;
+ const suffix = afkNickSuffixFor(base.length);
+ if (!suffix) return undefined;
+
  const res = await (await this.getAPI(guildId)).guilds.editMember(
   guildId,
   userId,
-  {
-   nick: member.nick
-    ? `${member.nick}${afkNickSuffix}`
-    : `${user.global_name || user.username}${afkNickSuffix}`,
-  },
+  { nick: `${base}${suffix}` },
   { origin: this.name, reason: 'Reflect AFK status in nickname' },
  );
 
@@ -35,12 +43,18 @@ export const deleteNick = async function (
  memberId: string,
 ) {
  const member = await this.client.cache.members.get(guildId, memberId);
- if (!member?.nick || !member.nick.endsWith(afkNickSuffix)) return;
+ if (!member?.nick) return;
+
+ const { nick } = member;
+ const suffix = [afkNickSuffixFull, afkNickSuffixShort].find(
+  (s) => nick.endsWith(s) && afkNickSuffixFor(nick.length - s.length) === s,
+ );
+ if (!suffix) return;
 
  const res = await (await this.getAPI(guildId)).guilds.editMember(
   member.guild_id,
   member.user_id,
-  { nick: member.nick.slice(0, -afkNickSuffix.length) },
+  { nick: nick.slice(0, -suffix.length) },
   { reason: t.t.removeReason(), origin: this.name },
  );
 
