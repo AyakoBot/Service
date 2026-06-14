@@ -148,7 +148,7 @@ export default abstract class Plugin<
    }
   }
 
-  return this.client.getBaseAPI();
+  return this.client.getBaseAPI(guildId);
  };
 
  registerEvents() {

@@ -106,14 +106,14 @@ export default class Client {
   return setting?.language || 'en-GB';
  };
 
- getAPI = async (_guildId: string) => this.getBaseAPI();
+ getAPI = async (guildId: string) => this.getBaseAPI(guildId);
  getCustomAPI = async (_guildId: string): Promise<CustomAPI | null> => null;
- getBaseAPI = () =>
+ getBaseAPI = (guildId = 'this should never appear in logs') =>
   new CustomAPI(
    (this.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', ''),
    this.logger,
    this.cache,
-   'this should never appear in logs',
+   guildId,
   );
 
  getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
