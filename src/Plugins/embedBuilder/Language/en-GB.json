@@ -51,7 +51,9 @@
   "webhookTitle": "Webhook identity",
   "webhookNameLabel": "Webhook username",
   "webhookAvatarLabel": "Avatar URL",
-  "optionalHint": "Optional - leave empty to use my own identity"
+  "optionalHint": "Optional - leave empty to use my own identity",
+  "webhookUrlLabel": "Existing webhook URL",
+  "webhookUrlHint": "Optional - send straight to this webhook instead of creating one"
  },
  "edit": {
   "title": "Edit an existing message",
@@ -104,6 +106,9 @@
   "noThread": "I couldn't create a builder thread here - use this in a regular text channel.",
   "notFound": "Saved embed not found.",
   "noWebhook": "I couldn't create or access a webhook in {{channel}}.",
+  "invalidWebhookUrl": "That doesn't look like a Discord webhook URL.",
+  "webhookWrongGuild": "That webhook belongs to a different server.",
+  "webhookUnreachable": "I couldn't reach that webhook - check the URL is still valid.",
   "notEditable": "That message wasn't sent by me or one of my webhooks.",
   "notALink": "That's not a message link.",
   "manageGuildRequired": "You need the Manage Server permission to do that."

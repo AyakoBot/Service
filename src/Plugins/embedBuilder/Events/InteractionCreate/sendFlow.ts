@@ -16,6 +16,7 @@ import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 import { authorizeManage, builderContext, ephemeralNote } from '../../Util/builderContext.js';
 import { isSendable } from '../../Util/builderState.js';
+import { parseWebhookUrl } from '../../Util/parseWebhookUrl.js';
 import { renderBuilder, SendMode, sendRows, type BuilderView } from '../../Util/renderBuilder.js';
 
 const messageLinkPattern = /channels\/(\d+)\/(\d+)\/(\d+)/;
@@ -124,6 +125,17 @@ export const webhookOpen = async function (
       .setRequired(false)
       .setMaxLength(1024),
     ),
+   new LabelBuilder()
+    .setLabel(t.send.webhookUrlLabel())
+    .setDescription(t.send.webhookUrlHint())
+    .setTextInputComponent(
+     new TextInputBuilder()
+      .setCustomId('url')
+      .setStyle(TextInputStyle.Short)
+      .setRequired(false)
+      .setMaxLength(200)
+      .setPlaceholder('https://discord.com/api/webhooks/…'),
+    ),
   );
 
  const api = await this.getAPI(cmd.guild_id);
@@ -131,6 +143,54 @@ export const webhookOpen = async function (
   origin: this.name,
   reason: 'Opening webhook identity modal',
  });
+};
+
+const sendToWebhookUrl = async function (
+ this: EmbedBuilderPlugin,
+ cmd: APIModalSubmitInteraction,
+ view: BuilderView,
+ url: string,
+ username: string | undefined,
+ avatarUrl: string | undefined,
+) {
+ const t = await this.t(cmd.guild_id ?? undefined);
+ const guildId = cmd.guild_id;
+ if (!guildId) return;
+
+ const parsed = parseWebhookUrl(url);
+ if (!parsed) {
+  ephemeralNote.call(this, cmd, t.errors.invalidWebhookUrl());
+  return;
+ }
+
+ const api = await this.getAPI(guildId);
+
+ const webhook = await api.webhooks.get(parsed.id, { token: parsed.token }, {
+  origin: this.name,
+  reason: 'Validating existing webhook for embed send',
+ });
+ if (webhook instanceof RequestHandlerError) {
+  ephemeralNote.call(this, cmd, t.errors.webhookUnreachable());
+  return;
+ }
+ if (webhook.guild_id !== guildId) {
+  ephemeralNote.call(this, cmd, t.errors.webhookWrongGuild());
+  return;
+ }
+
+ const executed = await api.webhooks.execute(
+  parsed.id,
+  parsed.token,
+  { embeds: [view.embed], username, avatar_url: avatarUrl },
+  { origin: this.name, reason: 'Sending built embed via existing webhook' },
+ );
+ if (executed instanceof RequestHandlerError) {
+  ephemeralNote.call(this, cmd, t.errors.webhookUnreachable());
+  return;
+ }
+
+ await restoreBuilder.call(this, cmd, view);
+ await followUpNote.call(this, cmd, t.send.sent({ count: '1' }));
 };
 
 export const webhookSubmit = async function (
@@ -143,6 +203,12 @@ export const webhookSubmit = async function (
  const t = await this.t(cmd.guild_id ?? undefined);
  const name = (findModalValue(cmd.data.components, 'name') || '').trim();
  const avatar = (findModalValue(cmd.data.components, 'avatar') || '').trim();
+ const url = (findModalValue(cmd.data.components, 'url') || '').trim();
+
+ if (url) {
+  await sendToWebhookUrl.call(this, cmd, ctx.view, url, name || undefined, avatar || undefined);
+  return;
+ }
 
  const view: BuilderView = {
   ...ctx.view,
