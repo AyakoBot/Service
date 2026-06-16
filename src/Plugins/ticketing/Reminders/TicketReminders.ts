@@ -259,10 +259,12 @@ export default class TicketReminders {
    origin: 'ticketInactivityWarn',
    reason: 'Posting ticket inactivity warning',
   })
-   .setContent(`<@${row.user}>`)
    .setAllowedMentionsUsers([row.user])
    .setFlags(MessageFlags.IsComponentsV2)
-   .setComponents([container.toJSON()]);
+   .setComponents([
+    new TextDisplayBuilder().setContent(`<@${row.user}>`).toJSON(),
+    container.toJSON(),
+   ]);
  };
 
  fireInactivityWarn = async (ticket: BaseTicket) => {

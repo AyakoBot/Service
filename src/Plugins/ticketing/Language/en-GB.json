@@ -246,6 +246,7 @@
   },
   "descriptions": {
    "panelEditor": "Create, edit, and post the \"Start Ticket\" panels for this server",
+   "tierEditor": "Add and order the escalation tiers a ticket can be escalated to",
    "name": "A short label for this system, shown in lists and summaries",
    "type": "Type of configuration to apply to tickets",
    "logMode": "Whether logs are posted to a channel or grouped into a thread",

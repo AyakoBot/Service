@@ -645,6 +645,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       }),
      },
     ],
+    actions: [
+     {
+      customId: TicketRoute.TierManage,
+      label: (t: TicketTranslator) => t.tierEditor.title(),
+      description: (t: TicketTranslator) => t.settings.descriptions.tierEditor(),
+      emote: emotes.tools,
+     },
+    ],
    },
    {
     id: TicketGroups.Limits,
