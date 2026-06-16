@@ -765,12 +765,29 @@ export default abstract class BaseTicketLogger {
   return { forum, postId };
  }
 
+ async getForumTicketTarget(): Promise<{ forum: RChannel; postId: string } | null> {
+  const ticket = await this.getTicket();
+
+  const post = await this.client.cache.threads.get(ticket.channel);
+  if (!post?.parent_id) return null;
+
+  const forum = await this.client.cache.channels.get(post.parent_id);
+  if (!this.isForumChannel(forum)) return null;
+
+  return { forum, postId: ticket.channel };
+ }
+
  async applyLifecycleTags(stepTagNames: string[], claimerName?: string | null) {
   const extra = claimerName ? [claimerName] : [];
 
   const logTargets = await this.getForumLogTargets();
   const staffTarget = await this.getForumStaffTarget();
-  const targets = staffTarget ? [...logTargets, staffTarget] : logTargets;
+  const ticketTarget = await this.getForumTicketTarget();
+  const targets = [
+   ...logTargets,
+   ...(staffTarget ? [staffTarget] : []),
+   ...(ticketTarget ? [ticketTarget] : []),
+  ];
 
   await Promise.all(
    targets.map((target) => this.retagForumPost(target.forum, target.postId, stepTagNames, extra)),
