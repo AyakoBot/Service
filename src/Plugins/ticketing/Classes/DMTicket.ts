@@ -282,8 +282,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
 
-   const fallback = `${emotes.tools.name} | ${t.SupportTeam()}`;
-   const authorName = closerId
+   const fallback = { name: t.SupportTeam(), emote: emotes.tools };
+   const author = closerId
     ? await resolveStaffLabel.call(this.client, ticket.settings.guild, closerId, fallback)
     : fallback;
 
@@ -292,7 +292,10 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
     reason: 'Generating close DM payload',
    }).setEmbeds([
     {
-     author: { name: authorName },
+     author: {
+      name: author.name,
+      icon_url: author.emote ? constants.formatters.getEmoteUrl(author.emote) : undefined,
+     },
      description: t.hasClosedThreadRelay(),
      color: Colors.Warning,
      ...(reason ? { fields: [{ name: t.base.t.Reason(), value: reason }] } : {}),
@@ -509,7 +512,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
 
-   const fallback = `${emotes.tools.name} | ${t.SupportTeam()}`;
+   const fallback = { name: t.SupportTeam(), emote: emotes.tools };
    const authorName = await resolveStaffLabel.call(
     this.client,
     ticket.settings.guild,

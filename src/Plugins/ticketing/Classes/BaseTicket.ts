@@ -1,8 +1,8 @@
 import { inspect } from 'node:util';
 
 import { RequestHandlerError } from '@ayako/api';
-import { TicketState, TicketType } from '@ayako/database';
 import type { Prisma, TicketSetting, TicketTier } from '@ayako/database';
+import { TicketState, TicketType } from '@ayako/database';
 import { LogLevel, type RMessage } from '@ayako/utility';
 import {
  ActionRowBuilder,
@@ -214,9 +214,7 @@ export default class BaseTicket extends BaseTicketLogger {
       new TextDisplayBuilder().setContent(`-# ${t.unclaimedBy({ user: `<@${actorId}>` })}`),
      )
      .setButtonAccessory(
-      contextMarkerButton(
-       encodeContext(TicketContextType.Unclaimed, actorId, String(ticket.id)),
-      ),
+      contextMarkerButton(encodeContext(TicketContextType.Unclaimed, actorId, String(ticket.id))),
      ),
    );
 
@@ -301,9 +299,7 @@ export default class BaseTicket extends BaseTicketLogger {
       ),
      )
      .setButtonAccessory(
-      contextMarkerButton(
-       encodeContext(TicketContextType.Escalated, actorId, String(ticket.id)),
-      ),
+      contextMarkerButton(encodeContext(TicketContextType.Escalated, actorId, String(ticket.id))),
      ),
    );
 
@@ -966,7 +962,7 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const container = this.buildMirrorContainer(
    msg,
-   `${constants.formatters.getEmote(emotes.member)} ${name}`,
+   { name, emote: emotes.member },
    await this.forwardLabels(),
   );
 
@@ -982,12 +978,12 @@ export default class BaseTicket extends BaseTicketLogger {
 
  buildMirrorContainer(
   msg: RMessage,
-  authorName: string,
+  author: { name: string; emote: { name: string | null; id: string | null } | undefined },
   forwardLabels?: { forwardedFromLabel: string; forwardUnavailableLabel: string },
  ) {
   const container = new ContainerBuilder();
   cloneMessageIntoContainer.call(container, msg, {
-   authorName,
+   authorName: `${author.emote ? `${constants.formatters.getEmote(author.emote)} ` : ''}${author.name}`,
    context: encodeContext(TicketContextType.Forwarded, msg.author_id, msg.id),
    ...forwardLabels,
   });
@@ -1056,25 +1052,23 @@ export default class BaseTicket extends BaseTicketLogger {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
-  let authorName: string;
+  let author: { name: string; emote: { name: string | null; id: string | null } | undefined };
   if (mirror.isDm) {
-   authorName = await resolveStaffLabel.call(
-    this.client,
-    ticket.settings.guild,
-    msg.author_id,
-    `${emotes.tools.name} | ${t.SupportTeam()}`,
-   );
+   author = await resolveStaffLabel.call(this.client, ticket.settings.guild, msg.author_id, {
+    name: t.SupportTeam(),
+    emote: emotes.tools,
+   });
   } else {
    const user = await this.getUser(msg.author_id);
    const name = user?.username || t.base.t.unknownUser();
-   authorName = `${constants.formatters.getEmote(emotes.member)} ${name}`;
+   author = { name: `${name}`, emote: emotes.member };
   }
 
   const payload = new MessagePayload(this.client, {
    origin: BaseTicket.name,
    reason: 'Editing mirrored message',
   })
-   .setComponents([this.buildMirrorContainer(msg, authorName, await this.forwardLabels()).toJSON()])
+   .setComponents([this.buildMirrorContainer(msg, author, await this.forwardLabels()).toJSON()])
    .setFlags(MessageFlags.IsComponentsV2);
 
   if (mirror.isDm) await payload.editDM(mirror.channelId, mirror.messageId);

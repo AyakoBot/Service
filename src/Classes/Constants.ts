@@ -20,7 +20,7 @@ class Constants {
   getEmote: (
    emoji:
     | REmoji
-    | { name: string | undefined; id?: string | null | undefined; animated?: boolean | null }
+    | { name: string | undefined | null; id?: string | null | undefined; animated?: boolean | null }
     | null
     | undefined,
   ) => {
@@ -40,6 +40,8 @@ class Constants {
    `<t:${String(time).slice(0, -3)}:f> (<t:${String(time).slice(0, -3)}:R>)`,
   msgURL: (g: string | undefined | null, c: string, m: string) =>
    `https://discord.com/channels/${g ?? '@me'}/${c}/${m}`,
+  getEmoteUrl: (emoji: REmoji | { id: string | null; animated: boolean | null }) =>
+   emoji.id && `https://cdn.discordapp.com/emojis/${emoji.id}.${emoji.animated ? 'gif' : 'png'}` || undefined,
  };
 }
 
