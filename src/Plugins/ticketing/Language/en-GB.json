@@ -103,7 +103,7 @@
   "fields": {
    "userText": "User text (relayed to the creator)",
    "staffText": "Staff text (internal note)",
-   "kinds": "Restrict to ticket kinds (comma-separated, optional)"
+   "kinds": "Ticket kinds (comma-separated, optional)"
   },
   "errors": {
    "noTicket": "Run this in a Ticket channel to post a snippet.",
