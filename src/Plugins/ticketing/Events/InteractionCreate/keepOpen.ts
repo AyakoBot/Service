@@ -1,7 +1,5 @@
-import { TextDisplayBuilder } from '@discordjs/builders';
-import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
+import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
 import getTicketClassById from '../../Util/getTicketClassById.js';
@@ -52,12 +50,13 @@ export default async function (
 
  await this.reminders.disarmInactivity(args[0]);
 
- const t = await this.t(cmd.guild_id);
- await new MessagePayload(this.client, {
+ const api = await this.getAPI(cmd.guild_id, row.settings.botToken);
+ await api.interactions.deferMessageUpdate(cmd.id, cmd.token, {}, {
   origin: this.name,
   reason: 'Acknowledging keep-open request',
- })
-  .setComponents([new TextDisplayBuilder().setContent(t.keptOpen()).toJSON()])
-  .setFlags(MessageFlags.IsComponentsV2)
-  .update(cmd);
+ });
+ await api.channels.deleteMessage(cmd.message.channel_id, cmd.message.id, {
+  origin: this.name,
+  reason: 'Removing inactivity warning after keep-open',
+ });
 }

@@ -72,7 +72,6 @@
  "inactivityWarn": "This Ticket has been quiet. It will close on its own {{time}} unless someone replies. Press **Keep open** to stop the auto-close.",
  "inactivityCloseReason": "Closed automatically due to inactivity.",
  "keepOpen": "Keep open",
- "keptOpen": "Auto-close cancelled. This Ticket will stay open.",
  "SupportTeam": "Ticket Team",
  "notFound": "Ticket configuration not found",
  "ticketed": "Ticket created",
