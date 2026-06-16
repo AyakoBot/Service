@@ -505,7 +505,8 @@ export default class ChannelTicket extends BaseTicket {
  async messageSent(msg: RMessage, internal: boolean = false) {
   const ticket = await this.getTicket();
 
-  if (internal || msg.channel_id === ticket.channel) return super.messageSent(msg, true);
+  if (internal) return super.messageSent(msg, true);
+  if (msg.channel_id === ticket.channel) return super.messageSent(msg);
 
   await this.forwardToTicketChannel(msg);
   await this.setLastMessage();
