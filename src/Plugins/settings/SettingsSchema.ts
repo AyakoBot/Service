@@ -151,9 +151,9 @@ export interface ResolvedSchema {
 
 export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
  schema.groups.forEach((group) => {
-  if (group.fields.length > 5) {
+  if (group.fields.length > 10) {
    throw new Error(
-    `[settings] group '${group.id}' on table '${schema.table}' has ${group.fields.length} fields; max is 5 fields per modal.`,
+    `[settings] group '${group.id}' on table '${schema.table}' has ${group.fields.length} fields; max is 10 fields per modal.`,
    );
   }
  });
