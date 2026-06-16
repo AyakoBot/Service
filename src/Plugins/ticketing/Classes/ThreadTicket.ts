@@ -19,7 +19,6 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import { Colors } from '../../../Types/index.js';
-import getUser from '../../../Util/getUser.js';
 import TicketPlugin from '../Plugin.js';
 import { threadArchiveMinutes } from '../Util/threadArchiveDuration.js';
 
@@ -57,21 +56,17 @@ export default class ThreadTicket extends ChannelTicket {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
-  let user = await getUser.call(this.client, ticket.user);
-  if (!user || user instanceof RequestHandlerError) {
-   this.plugin.nonFatalError(user || new Error(), this.deleteChannel.name);
-   user = null;
-  }
-
   const t = await this.plugin.t(ticket.settings.guild);
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
+  await this.refreshSurface();
 
   const res = await api.channels.edit(
    ticket.channel,
    {
     archived: true,
     locked: true,
-    name: `${t.archived()}-${user?.username || t.base.t.unknownUser()}`,
+    name: await this.creatorChannelName(t.archived()),
    },
    { origin: ThreadTicket.name, reason: 'Archiving ticket thread channel' },
   );

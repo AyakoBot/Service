@@ -49,6 +49,13 @@ export default class ChannelTicket extends BaseTicket {
   await this.deleteChannel();
   await superDel.next();
 
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  await api.interactions.deleteReply(data.cmd.token, '@original', {
+   origin: ChannelTicket.name,
+   reason: 'Removing prepping-delete message',
+  });
+
   return true;
  }
 

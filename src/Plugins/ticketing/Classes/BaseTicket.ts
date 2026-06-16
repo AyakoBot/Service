@@ -652,6 +652,8 @@ export default class BaseTicket extends BaseTicketLogger {
     return t.stateClosed();
    case SurfaceState.Left:
     return t.stateLeft();
+   case SurfaceState.Deleted:
+    return t.archived();
    default:
     return t.stateOpened();
   }
@@ -803,7 +805,7 @@ export default class BaseTicket extends BaseTicketLogger {
    return buttons;
   }
 
-  if (state === SurfaceState.Left) return buttons;
+  if (state === SurfaceState.Left || state === SurfaceState.Deleted) return buttons;
 
   if (state === SurfaceState.Claimed) {
    buttons.push(
