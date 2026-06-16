@@ -374,7 +374,8 @@ export default class ChannelTicket extends BaseTicket {
   }
 
   const base = name ? `${name} ${ticket.user}` : ticket.user;
-  return (statusPrefix ? `${statusPrefix}-${base}` : base).slice(0, 100);
+  const status = statusPrefix ?? (await this.plugin.t(ticket.settings.guild)).opened();
+  return `[${status}] ${base}`.slice(0, 100);
  }
 
  async claimChannel(api: API, channelId: string, guildId: string) {
