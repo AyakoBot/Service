@@ -166,7 +166,7 @@ export default class ChannelTicket extends BaseTicket {
   return !ChannelTicket.threadTypes.includes(channel.type);
  }
 
- async closeChannel(api: API, channel: RChannel | RThread) {
+ async closeChannel(api: API, _channel: RChannel | RThread) {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
@@ -178,7 +178,7 @@ export default class ChannelTicket extends BaseTicket {
   const modify = await api.channels.edit(
    ticket.channel,
    {
-    name: `${t.closed()}-${channel?.name?.replace(t.claimed(), '')}`.slice(0, 30),
+    name: await this.creatorChannelName(t.closed()),
     parent_id: archiveCategory?.id || undefined,
     permission_overwrites:
      archiveCategory?.permission_overwrites?.map((o) => ({
@@ -214,7 +214,7 @@ export default class ChannelTicket extends BaseTicket {
    .call(this.client, data.userId)
    .then((r) => (r instanceof RequestHandlerError ? null : r));
 
-  await this.claimChannel(api, channel.id, ticket.settings.guild, user?.username || channel.name);
+  await this.claimChannel(api, channel.id, ticket.settings.guild);
   await this.addClaimerToStaffThread(data.userId);
   await this.applyLifecycleTags(
    ticket.settings.claimTags,
@@ -362,13 +362,28 @@ export default class ChannelTicket extends BaseTicket {
   return channel;
  }
 
- async claimChannel(api: API, channelId: string, guildId: string, channelName: string) {
+ async creatorChannelName(statusPrefix?: string, username?: string): Promise<string> {
+  const ticket = await this.getTicket();
+
+  let name = username;
+  if (name === undefined) {
+   const creator = await getUser
+    .call(this.client, ticket.user)
+    .then((u) => (u instanceof RequestHandlerError ? null : u));
+   name = creator?.username;
+  }
+
+  const base = name ? `${name} ${ticket.user}` : ticket.user;
+  return (statusPrefix ? `${statusPrefix}-${base}` : base).slice(0, 100);
+ }
+
+ async claimChannel(api: API, channelId: string, guildId: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
   const t = await this.plugin.t(guildId);
 
   const modify = await api.channels.edit(
    channelId,
-   { name: `${t.claimed()}-${channelName}`.slice(0, 30) },
+   { name: await this.creatorChannelName(t.claimed()) },
    { origin: ChannelTicket.name, reason: 'Ticket claimed' },
   );
 
@@ -457,11 +472,12 @@ export default class ChannelTicket extends BaseTicket {
  async createChannel(api: API, username: string, settingsId: string): Promise<RChannel | RThread> {
   this.plugin.logger.logLocation(LogLevel.debug);
   const ticketSettings = await this.getTicketSettings(settingsId);
+  const name = await this.creatorChannelName(undefined, username);
 
   const channel = await api.guilds.createChannel(
    ticketSettings.guild,
    {
-    name: username,
+    name,
     type: ChannelType.GuildText,
     parent_id: ticketSettings.category,
    },

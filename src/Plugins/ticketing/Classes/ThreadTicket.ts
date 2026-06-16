@@ -99,27 +99,18 @@ export default class ThreadTicket extends ChannelTicket {
   return remove ? [remove] : [];
  }
 
- async closeChannel(api: API, channel: RChannel | RThread) {
+ async closeChannel(api: API, _channel: RChannel | RThread) {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
-  let user = await getUser.call(this.client, ticket.user);
-
-  if (!user || user instanceof RequestHandlerError) {
-   this.plugin.nonFatalError(user || new Error(), this.closeChannel.name);
-   user = null;
-  }
 
   this.revokeChannelAccess(api);
 
   const modify = await api.channels.edit(
    ticket.channel,
    {
-    name: `${t.closed()}-${user?.username || channel.name.replace(`${t.archived()}-`, '')}`.slice(
-     0,
-     30,
-    ),
+    name: await this.creatorChannelName(t.closed()),
     locked: true,
    },
    { origin: ThreadTicket.name, reason: 'Closing ticket thread channel' },
@@ -144,9 +135,10 @@ export default class ThreadTicket extends ChannelTicket {
   }
 
   const host = await this.client.cache.channels.get(ticket.settings.channel);
+  const name = await this.creatorChannelName(undefined, username);
   const thread = this.isForumChannel(host)
-   ? await this.createForumPost(api, host, username)
-   : await this.createPrivateThread(api, ticket.settings.channel, username);
+   ? await this.createForumPost(api, host, name)
+   : await this.createPrivateThread(api, ticket.settings.channel, name);
 
   if (!thread || thread instanceof RequestHandlerError) {
    throw new Error(ThreadTicketErrors.create_CantCreateChannel, { cause: thread });
@@ -256,14 +248,10 @@ export default class ThreadTicket extends ChannelTicket {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
-  const t = await this.plugin.t(ticket.settings.guild);
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
-  let user = await getUser.call(this.client, ticket.user);
-  if (!user || user instanceof RequestHandlerError) user = null;
-
   const host = await this.client.cache.channels.get(target.channel);
-  const name = `${user?.username || t.base.t.unknownUser()}`.slice(0, 100);
+  const name = await this.creatorChannelName();
   const fork = this.isForumChannel(host)
    ? await this.createForumPost(api, host, name)
    : await this.createPrivateThread(api, target.channel, name);
