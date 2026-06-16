@@ -23,7 +23,7 @@ import getUser from '../../../Util/getUser.js';
 import TicketPlugin from '../Plugin.js';
 import { threadArchiveMinutes } from '../Util/threadArchiveDuration.js';
 
-import BaseTicket from './BaseTicket.js';
+import BaseTicket, { SurfaceState } from './BaseTicket.js';
 import ChannelTicket from './ChannelTicket.js';
 import { ThreadTicketErrors } from './Enums.js';
 import { TicketRoute } from './Routes.js';
@@ -143,22 +143,57 @@ export default class ThreadTicket extends ChannelTicket {
    throw new Error(ThreadTicketErrors.threadChannelNotSet);
   }
 
-  const thread = await api.channels.createThread(
-   ticket.settings.channel,
-   {
-    name: username,
-    type: ChannelType.PrivateThread,
-    auto_archive_duration: threadArchiveMinutes[ticket.settings.archiveDuration],
-   },
-   undefined,
-   { origin: ThreadTicket.name, reason: 'Creating thread for ticket' },
-  );
+  const host = await this.client.cache.channels.get(ticket.settings.channel);
+  const thread = this.isForumChannel(host)
+   ? await this.createForumPost(api, host, username)
+   : await this.createPrivateThread(api, ticket.settings.channel, username);
 
   if (!thread || thread instanceof RequestHandlerError) {
    throw new Error(ThreadTicketErrors.create_CantCreateChannel, { cause: thread });
   }
 
   return thread;
+ }
+
+ async createPrivateThread(api: API, channelId: string, name: string) {
+  const ticket = await this.getTicket();
+
+  return api.channels.createThread(
+   channelId,
+   {
+    name,
+    type: ChannelType.PrivateThread,
+    auto_archive_duration: threadArchiveMinutes[ticket.settings.archiveDuration],
+   },
+   undefined,
+   { origin: ThreadTicket.name, reason: 'Creating thread for ticket' },
+  );
+ }
+
+ async createForumPost(api: API, forum: RChannel, name: string) {
+  const ticket = await this.getTicket();
+  const idByName = await this.ensureForumTags(forum, ticket.settings.createTags);
+  const appliedTags = ticket.settings.createTags
+   .map((tagName) => idByName.get(tagName.slice(0, 20)))
+   .filter((id): id is string => !!id)
+   .slice(0, 5);
+
+  const payload = await this.getInitPayload(true, null, SurfaceState.Opened);
+
+  return api.channels.createForumThread(
+   forum.id,
+   { name, message: payload.getAPIPayload(), applied_tags: appliedTags },
+   { origin: ThreadTicket.name, reason: 'Creating forum post for ticket' },
+  );
+ }
+
+ async postInitialSurface(api: API, channel: RChannel | RThread): Promise<string> {
+  const parent = channel.parent_id
+   ? await this.client.cache.channels.get(channel.parent_id)
+   : null;
+  if (this.isForumChannel(parent)) return channel.id;
+
+  return super.postInitialSurface(api, channel);
  }
 
  async grantChannelAccess(api: API, channelId: string, userId: string): Promise<void> {

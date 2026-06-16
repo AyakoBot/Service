@@ -402,21 +402,14 @@ export default class ChannelTicket extends BaseTicket {
 
    await this.grantChannelAccess(api, channel.id, createOpts.userId);
 
-   const initPayload = await this.getInitPayload(true);
-   const initMessage = await this.sendMessage(initPayload);
+   const surfaceId = await this.postInitialSurface(api, channel);
 
-   const pin = await api.channels.pinMessage(channel.id, initMessage.id, {
-    origin: ChannelTicket.name,
-    reason: 'Pinning initial ticket message',
-   });
-   if (pin instanceof RequestHandlerError) this.plugin.nonFatalError(pin, this.create.name);
-
-   await this.setSurfaceMessage(initMessage.id);
+   await this.setSurfaceMessage(surfaceId);
    await this.plugin.reminders.armForState(await this.getTicket());
 
-   await this.createStaffThread(initMessage.id);
+   await this.createStaffThread(surfaceId);
 
-   const replyPayload = await this.getCreateReplyPayload(channel.id, initMessage.id);
+   const replyPayload = await this.getCreateReplyPayload(channel.id, surfaceId);
    await this.replyMessage(
     createOpts.cmd,
     replyPayload,
@@ -427,6 +420,21 @@ export default class ChannelTicket extends BaseTicket {
   } finally {
    this.deletePreparedEntry();
   }
+ }
+
+ async postInitialSurface(api: API, channel: RChannel | RThread): Promise<string> {
+  const initPayload = await this.getInitPayload(true);
+  const initMessage = await this.sendMessage(initPayload);
+
+  const pin = await api.channels.pinMessage(channel.id, initMessage.id, {
+   origin: ChannelTicket.name,
+   reason: 'Pinning initial ticket message',
+  });
+  if (pin instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(pin, this.postInitialSurface.name);
+  }
+
+  return initMessage.id;
  }
 
  async getCreateReplyPayload(channelId: string, messageId: string) {

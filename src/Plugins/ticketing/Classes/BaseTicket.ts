@@ -621,8 +621,12 @@ export default class BaseTicket extends BaseTicketLogger {
   return this.dbTicket;
  }
 
- async getInitPayload(mentionUser: boolean, staffThreadId?: string | null) {
-  return this.buildStatusSurface(mentionUser, staffThreadId);
+ async getInitPayload(
+  mentionUser: boolean,
+  staffThreadId?: string | null,
+  stateOverride?: SurfaceState,
+ ) {
+  return this.buildStatusSurface(mentionUser, staffThreadId, stateOverride);
  }
 
  resolveSurfaceState(ticket: Awaited<ReturnType<BaseTicket['getTicket']>>): SurfaceState {
@@ -684,10 +688,14 @@ export default class BaseTicket extends BaseTicketLogger {
   return `<t:${Math.floor(ms / 1000)}:R>`;
  }
 
- async buildStatusSurface(mentionUser: boolean, staffThreadId?: string | null) {
+ async buildStatusSurface(
+  mentionUser: boolean,
+  staffThreadId?: string | null,
+  stateOverride?: SurfaceState,
+ ) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
-  const state = this.resolveSurfaceState(ticket);
+  const state = stateOverride ?? this.resolveSurfaceState(ticket);
 
   const components: APIMessageTopLevelComponent[] = [];
 

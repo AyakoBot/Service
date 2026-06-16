@@ -20,6 +20,7 @@ import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 
+import type { SurfaceState } from './BaseTicket.js';
 import BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
@@ -222,8 +223,12 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    this.plugin.nonFatalError(unpin, this.unpinMessage.name);
   }
 
-  async getInitPayload(_mentionUser: boolean, staffThreadId?: string | null) {
-   return super.getInitPayload(false, staffThreadId);
+  async getInitPayload(
+   _mentionUser: boolean,
+   staffThreadId?: string | null,
+   stateOverride?: SurfaceState,
+  ) {
+   return super.getInitPayload(false, staffThreadId, stateOverride);
   }
 
   async getInitDmPayload() {
