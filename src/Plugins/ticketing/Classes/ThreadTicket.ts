@@ -262,16 +262,11 @@ export default class ThreadTicket extends ChannelTicket {
   let user = await getUser.call(this.client, ticket.user);
   if (!user || user instanceof RequestHandlerError) user = null;
 
-  const fork = await api.channels.createThread(
-   target.channel,
-   {
-    name: `${user?.username || t.base.t.unknownUser()}`.slice(0, 100),
-    type: ChannelType.PrivateThread,
-    auto_archive_duration: threadArchiveMinutes[ticket.settings.archiveDuration],
-   },
-   undefined,
-   { origin: ThreadTicket.name, reason: 'Forking ticket thread for escalation' },
-  );
+  const host = await this.client.cache.channels.get(target.channel);
+  const name = `${user?.username || t.base.t.unknownUser()}`.slice(0, 100);
+  const fork = this.isForumChannel(host)
+   ? await this.createForumPost(api, host, name)
+   : await this.createPrivateThread(api, target.channel, name);
 
   if (!fork || fork instanceof RequestHandlerError) {
    this.plugin.nonFatalError(fork || new Error(), this.forkThread.name);

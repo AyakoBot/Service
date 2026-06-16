@@ -876,8 +876,18 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
-  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
+  const post = await this.client.cache.threads.get(ticket.channel);
+  const parent = post?.parent_id
+   ? await this.client.cache.channels.get(post.parent_id)
+   : null;
+  if (this.isForumChannel(parent)) {
+   await this.setSurfaceMessage(ticket.channel);
+   await this.refreshSurface();
+   return;
+  }
+
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   const payload = await this.getInitPayload(true);
   const message = await this.sendMessage(payload).catch((error: Error) => {
    this.plugin.nonFatalError(error, this.repostSurface.name);

@@ -1,4 +1,5 @@
-import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
+import { TextDisplayBuilder } from '@discordjs/builders';
+import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { BaseTicketErrors } from '../../Classes/Enums.js';
@@ -56,7 +57,7 @@ export default async function (
   origin: this.name,
   reason: 'Acknowledging keep-open request',
  })
-  .setContent(`${t.keptOpen()}`)
-  .setComponents([])
+  .setComponents([new TextDisplayBuilder().setContent(t.keptOpen()).toJSON()])
+  .setFlags(MessageFlags.IsComponentsV2)
   .update(cmd);
 }
