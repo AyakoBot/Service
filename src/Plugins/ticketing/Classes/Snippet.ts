@@ -22,7 +22,7 @@ export default class Snippet extends DBEntry<'snippets'> {
   return client.db.client.snippets.findUnique({ where: { guild_name: { guild, name } } });
  }
 
- static byId(client: Client, id: string) {
+ static async byId(client: Client, id: string): Promise<Snippets | null> {
   return client.db.client.snippets.findUnique({ where: { id } });
  }
 
