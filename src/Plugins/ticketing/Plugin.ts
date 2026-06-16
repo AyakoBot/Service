@@ -232,7 +232,18 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    if (!open.length) return { ok: true };
 
    const t = (await ctx.plugin.t(ctx.guildId)) as unknown as TicketTranslator;
-   return { ok: false, reason: t.settings.deleteBlocked({ count: String(open.length) }) };
+
+   const max = 20;
+   const shown = open.slice(0, max).map((ticket) => `- <#${ticket.channel}>`);
+   const overflow = open.length - shown.length;
+   const list = overflow
+    ? `${shown.join('\n')}\n${t.settings.deleteBlockedMore({ count: String(overflow) })}`
+    : shown.join('\n');
+
+   return {
+    ok: false,
+    reason: t.settings.deleteBlocked({ count: String(open.length), list }),
+   };
   },
   groups: [
    {
