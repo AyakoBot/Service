@@ -18,6 +18,8 @@ export enum TicketRoute {
  TagSearchModal = 'tickets/tagSearchModal',
  TagAdd = 'tickets/tagAdd',
  TagAddModal = 'tickets/tagAddModal',
+ TagEdit = 'tickets/tagEdit',
+ TagEditModal = 'tickets/tagEditModal',
  TagDelete = 'tickets/tagDelete',
  TagManage = 'tickets/tagManage',
  TagBrowse = 'tickets/tagBrowse',

@@ -22,6 +22,30 @@ export default class Snippet extends DBEntry<'snippets'> {
   return client.db.client.snippets.findUnique({ where: { guild_name: { guild, name } } });
  }
 
+ static byId(client: Client, id: string) {
+  return client.db.client.snippets.findUnique({ where: { id } });
+ }
+
+ static async update(
+  client: Client,
+  id: string,
+  data: { name: string; userText?: string | null; staffText?: string | null; kinds: string[] },
+ ): Promise<Snippets> {
+  if (!data.userText?.trim() && !data.staffText?.trim()) {
+   throw new Error(SnippetErrors.emptySnippet);
+  }
+
+  return client.db.client.snippets.update({
+   where: { id },
+   data: {
+    name: data.name,
+    userText: data.userText?.trim() || null,
+    staffText: data.staffText?.trim() || null,
+    kinds: data.kinds,
+   },
+  });
+ }
+
  static async create(
   client: Client,
   guild: string,

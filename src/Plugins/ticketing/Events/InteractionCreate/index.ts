@@ -40,8 +40,8 @@ import panelPick from './panelPick.js';
 import { roleMapMove, roleMapOpen, roleMapPage, roleMapRemove } from './roleMap.js';
 import { roleMapAdd, roleMapEdit, roleMapSave } from './roleMapModal.js';
 import tag from './tag.js';
-import { tagAdd, tagDelete, tagManage, tagPage, tagSearch, tagSend } from './tagButton.js';
-import { tagAddModal, tagSearchModal } from './tagModal.js';
+import { tagAdd, tagDelete, tagEdit, tagManage, tagPage, tagSearch, tagSend } from './tagButton.js';
+import { tagAddModal, tagEditModal, tagSearchModal } from './tagModal.js';
 import take from './take.js';
 import { tierDel, tierManageOpen, tierMove, tierPage } from './tierManage.js';
 import { tierAdd, tierEdit, tierSave } from './tierModal.js';
@@ -145,6 +145,10 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
   }
   case TicketRoute.TagAdd: {
    tagAdd.call(this, cmd);
+   break;
+  }
+  case TicketRoute.TagEdit: {
+   tagEdit.call(this, cmd, args);
    break;
   }
   case TicketRoute.TagDelete: {
@@ -294,6 +298,10 @@ const modal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction
   }
   case TicketRoute.TagAddModal: {
    tagAddModal.call(this, cmd);
+   break;
+  }
+  case TicketRoute.TagEditModal: {
+   tagEditModal.call(this, cmd, args);
    break;
   }
   case TicketRoute.RoleMapSave: {

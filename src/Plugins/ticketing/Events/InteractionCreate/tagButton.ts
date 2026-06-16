@@ -1,3 +1,4 @@
+import type { Snippets } from '@ayako/database';
 import { LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
 import {
  MessageFlags,
@@ -120,49 +121,77 @@ export const tagAdd = async function (
  if (!(await authorizeManage.call(this, cmd))) return;
 
  const t = await this.t(cmd.guild_id);
- const modal = new ModalBuilder()
-  .setCustomId(this.getRoute(TicketRoute.TagAddModal))
-  .setTitle(t.tag.addTitle())
-  .addLabelComponents(
-   new LabelBuilder()
-    .setLabel(t.base.t.name())
-    .setTextInputComponent(
-     new TextInputBuilder()
-      .setCustomId('name')
-      .setStyle(TextInputStyle.Short)
-      .setRequired(true)
-      .setMaxLength(80),
-    ),
-   new LabelBuilder()
-    .setLabel(t.tag.fields.userText())
-    .setTextInputComponent(
-     new TextInputBuilder()
-      .setCustomId('userText')
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(false),
-    ),
-   new LabelBuilder()
-    .setLabel(t.tag.fields.staffText())
-    .setTextInputComponent(
-     new TextInputBuilder()
-      .setCustomId('staffText')
-      .setStyle(TextInputStyle.Paragraph)
-      .setRequired(false),
-    ),
-   new LabelBuilder()
-    .setLabel(t.tag.fields.kinds())
-    .setTextInputComponent(
-     new TextInputBuilder()
-      .setCustomId('kinds')
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
-    ),
-  );
+ const modal = buildSnippetModal(t, this.getRoute(TicketRoute.TagAddModal));
 
  const api = await this.getAPI(cmd.guild_id);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening snippet authoring modal',
+ });
+};
+
+const buildSnippetModal = (
+ t: Awaited<ReturnType<TicketPlugin['t']>>,
+ customId: string,
+ snippet?: Snippets,
+) => {
+ const nameInput = new TextInputBuilder()
+  .setCustomId('name')
+  .setStyle(TextInputStyle.Short)
+  .setRequired(true)
+  .setMaxLength(80);
+ if (snippet) nameInput.setValue(snippet.name);
+
+ const userInput = new TextInputBuilder()
+  .setCustomId('userText')
+  .setStyle(TextInputStyle.Paragraph)
+  .setRequired(false);
+ if (snippet?.userText) userInput.setValue(snippet.userText);
+
+ const staffInput = new TextInputBuilder()
+  .setCustomId('staffText')
+  .setStyle(TextInputStyle.Paragraph)
+  .setRequired(false);
+ if (snippet?.staffText) staffInput.setValue(snippet.staffText);
+
+ const kindsInput = new TextInputBuilder()
+  .setCustomId('kinds')
+  .setStyle(TextInputStyle.Short)
+  .setRequired(false);
+ if (snippet?.kinds.length) kindsInput.setValue(snippet.kinds.join(', '));
+
+ return new ModalBuilder()
+  .setCustomId(customId)
+  .setTitle(snippet ? t.tag.editTitle() : t.tag.addTitle())
+  .addLabelComponents(
+   new LabelBuilder().setLabel(t.base.t.name()).setTextInputComponent(nameInput),
+   new LabelBuilder().setLabel(t.tag.fields.userText()).setTextInputComponent(userInput),
+   new LabelBuilder().setLabel(t.tag.fields.staffText()).setTextInputComponent(staffInput),
+   new LabelBuilder().setLabel(t.tag.fields.kinds()).setTextInputComponent(kindsInput),
+  );
+};
+
+export const tagEdit = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+ args: string[],
+) {
+ if (!cmd.guild_id) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const t = await this.t(cmd.guild_id);
+ const snippet = await Snippet.byId(this.client, args[0]);
+ if (!snippet) {
+  tagWarn.call(this, cmd, t.tag.errors.notFound());
+  return;
+ }
+
+ const modal = buildSnippetModal(t, this.getRoute(TicketRoute.TagEditModal, snippet.id), snippet);
+
+ const api = await this.getAPI(cmd.guild_id);
+ api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
+  origin: this.name,
+  reason: 'Opening snippet edit modal',
  });
 };
 

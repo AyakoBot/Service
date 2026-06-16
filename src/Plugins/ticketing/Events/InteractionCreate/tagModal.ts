@@ -64,6 +64,53 @@ export const tagAddModal = async function (this: TicketPlugin, cmd: APIModalSubm
  payload.update(cmd);
 };
 
+export const tagEditModal = async function (
+ this: TicketPlugin,
+ cmd: APIModalSubmitInteraction,
+ args: string[],
+) {
+ if (!cmd.guild_id) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const [id] = args;
+ const name = (findModalValue(cmd.data.components, 'name') || '').trim();
+ const userText = findModalValue(cmd.data.components, 'userText') || '';
+ const staffText = findModalValue(cmd.data.components, 'staffText') || '';
+ const kinds = (findModalValue(cmd.data.components, 'kinds') || '')
+  .split(',')
+  .map((k) => k.trim())
+  .filter((k) => k.length > 0);
+
+ const t = await this.t(cmd.guild_id);
+
+ if (!name) {
+  reply.call(this, cmd, t.tag.errors.nameRequired());
+  return;
+ }
+
+ const updated = await Snippet.update(this.client, id, {
+  name,
+  userText,
+  staffText,
+  kinds,
+ }).catch((error: Error) => error);
+
+ if (updated instanceof Error) {
+  reply.call(
+   this,
+   cmd,
+   updated.message === SnippetErrors.emptySnippet
+    ? t.tag.errors.emptySnippet()
+    : t.base.errors.unknownError(),
+  );
+  return;
+ }
+
+ const all = await Snippet.all(this.client, cmd.guild_id);
+ const payload = await buildToolkit.call(this, cmd.guild_id, all, { page: 0, manage: true });
+ payload.update(cmd);
+};
+
 const reply = function (this: TicketPlugin, cmd: APIModalSubmitInteraction, content: string) {
  new MessagePayload(this.client, { origin: this.name, reason: 'Snippet authoring result' })
   .setContent(content)

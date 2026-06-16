@@ -72,20 +72,32 @@ export const buildToolkit = async function (
   const body = preview(snippet);
   const label = `**${snippet.name}**${body ? `\n-# ${body}` : ''}`;
 
-  const accessory = opts.manage
-   ? new ButtonBuilder()
+  if (opts.manage) {
+   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(label));
+   container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+     new ButtonBuilder()
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId(this.getRoute(TicketRoute.TagEdit, snippet.id))
+      .setLabel(t.base.t.Edit()),
+     new ButtonBuilder()
       .setStyle(ButtonStyle.Danger)
       .setCustomId(this.getRoute(TicketRoute.TagDelete, snippet.id))
-      .setLabel(t.base.t.Delete())
-   : new ButtonBuilder()
-      .setStyle(ButtonStyle.Primary)
-      .setCustomId(this.getRoute(TicketRoute.TagSend, snippet.id))
-      .setLabel(t.tag.send());
+      .setLabel(t.base.t.Delete()),
+    ),
+   );
+   return;
+  }
 
   container.addSectionComponents(
    new SectionBuilder()
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(label))
-    .setButtonAccessory(accessory),
+    .setButtonAccessory(
+     new ButtonBuilder()
+      .setStyle(ButtonStyle.Primary)
+      .setCustomId(this.getRoute(TicketRoute.TagSend, snippet.id))
+      .setLabel(t.tag.send()),
+    ),
   );
  });
 

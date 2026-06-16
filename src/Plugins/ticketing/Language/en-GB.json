@@ -97,6 +97,7 @@
   "browse": "Browse",
   "manage": "Manage",
   "addTitle": "Save snippet",
+  "editTitle": "Edit snippet",
   "posted": "Posted snippet `{{name}}` into the Ticket.",
   "saved": "Saved snippet `{{name}}`.",
   "commandReference": "Tip: type `/tag` followed by a snippet name to post it. Run `/tag` with no name to open this toolkit.",
