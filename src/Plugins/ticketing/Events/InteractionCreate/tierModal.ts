@@ -52,21 +52,27 @@ const tierModal = async function (
   reminderInput.setValue(formatDurationSeconds(Number(tier.reminderSeconds)));
  }
 
- const rolesSelect = new RoleSelectMenuBuilder().setCustomId('claimRoles').setMinValues(0).setMaxValues(25);
+ const rolesSelect = new RoleSelectMenuBuilder()
+  .setCustomId('claimRoles')
+  .setMinValues(0)
+  .setMaxValues(25)
+  .setRequired(false);
  if (tier?.claimRoles.length) rolesSelect.setDefaultRoles(tier.claimRoles);
 
  const categorySelect = new ChannelSelectMenuBuilder()
   .setCustomId('category')
   .setChannelTypes([ChannelType.GuildCategory])
   .setMinValues(0)
-  .setMaxValues(1);
+  .setMaxValues(1)
+  .setRequired(false);
  if (tier?.category) categorySelect.setDefaultChannels([tier.category]);
 
  const channelSelect = new ChannelSelectMenuBuilder()
   .setCustomId('channel')
   .setChannelTypes([ChannelType.GuildText, ChannelType.GuildForum])
   .setMinValues(0)
-  .setMaxValues(1);
+  .setMaxValues(1)
+  .setRequired(false);
  if (tier?.channel) channelSelect.setDefaultChannels([tier.channel]);
 
  const modal = new ModalBuilder()
