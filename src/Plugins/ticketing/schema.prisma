@@ -26,8 +26,8 @@ model TicketSetting {
 
  transcriptChannels String[] @db.VarChar
 
- archiveCategory String? @db.VarChar
- archiveDuration Decimal @default(60) @db.Decimal
+ archiveCategory String?               @db.VarChar
+ archiveDuration ThreadArchiveDuration @default(OneHour)
 
  type                TicketType @default(Thread)
  channel             String?    @db.VarChar
@@ -189,4 +189,11 @@ enum TicketPriority {
 enum TicketPlacementMode {
  SeparateSpaces
  UnifiedForum
+}
+
+enum ThreadArchiveDuration {
+ OneHour
+ OneDay
+ ThreeDays
+ OneWeek
 }

@@ -21,6 +21,7 @@ import type Client from '../../../Classes/Client.js';
 import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import TicketPlugin from '../Plugin.js';
+import { threadArchiveMinutes } from '../Util/threadArchiveDuration.js';
 
 import BaseTicket from './BaseTicket.js';
 import ChannelTicket from './ChannelTicket.js';
@@ -147,7 +148,7 @@ export default class ThreadTicket extends ChannelTicket {
    {
     name: username,
     type: ChannelType.PrivateThread,
-    auto_archive_duration: Number(ticket.settings.archiveDuration),
+    auto_archive_duration: threadArchiveMinutes[ticket.settings.archiveDuration],
    },
    undefined,
    { origin: ThreadTicket.name, reason: 'Creating thread for ticket' },
@@ -231,7 +232,7 @@ export default class ThreadTicket extends ChannelTicket {
    {
     name: `${user?.username || t.base.t.unknownUser()}`.slice(0, 100),
     type: ChannelType.PrivateThread,
-    auto_archive_duration: Number(ticket.settings.archiveDuration),
+    auto_archive_duration: threadArchiveMinutes[ticket.settings.archiveDuration],
    },
    undefined,
    { origin: ThreadTicket.name, reason: 'Forking ticket thread for escalation' },

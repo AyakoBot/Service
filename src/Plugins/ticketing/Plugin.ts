@@ -1,5 +1,11 @@
 import type { Snippets, TicketSetting } from '@ayako/database';
-import { TicketLogMode, TicketPlacementMode, TicketState, TicketType } from '@ayako/database';
+import {
+ ThreadArchiveDuration,
+ TicketLogMode,
+ TicketPlacementMode,
+ TicketState,
+ TicketType,
+} from '@ayako/database';
 import { LogLevel } from '@ayako/utility';
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { type GatewayDispatchEvents } from '@discordjs/core';
@@ -339,16 +345,27 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      },
      {
       column: 'archiveDuration',
-      editor: EditorType.Duration,
+      editor: EditorType.ThreadAutoArchiveDuration,
       label: (t: TicketTranslator) => t.settings.fields.archiveDuration(),
       description: (t: TicketTranslator) => t.settings.descriptions.archiveDuration(),
       arity: FieldArity.Single,
       options: [
-       { value: '3600000', label: (t: TicketTranslator) => t.settings.durations['1h']() },
-       { value: '43200000', label: (t: TicketTranslator) => t.settings.durations['12h']() },
-       { value: '86400000', label: (t: TicketTranslator) => t.settings.durations['24h']() },
-       { value: '259200000', label: (t: TicketTranslator) => t.settings.durations['3d']() },
-       { value: '604800000', label: (t: TicketTranslator) => t.settings.durations['1w']() },
+       {
+        value: ThreadArchiveDuration.OneHour,
+        label: (t: TicketTranslator) => t.settings.durations['1h'](),
+       },
+       {
+        value: ThreadArchiveDuration.OneDay,
+        label: (t: TicketTranslator) => t.settings.durations['24h'](),
+       },
+       {
+        value: ThreadArchiveDuration.ThreeDays,
+        label: (t: TicketTranslator) => t.settings.durations['3d'](),
+       },
+       {
+        value: ThreadArchiveDuration.OneWeek,
+        label: (t: TicketTranslator) => t.settings.durations['1w'](),
+       },
       ],
      },
      {
@@ -418,20 +435,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Users,
       label: (t: TicketTranslator) => t.settings.fields.mentionUsers(),
       description: (t: TicketTranslator) => t.settings.descriptions.mentionUsers(),
-      arity: FieldArity.Multi,
-     },
-     {
-      column: 'denyRoles',
-      editor: EditorType.Roles,
-      label: (t: TicketTranslator) => t.settings.fields.denyRoles(),
-      description: (t: TicketTranslator) => t.settings.descriptions.denyRoles(),
-      arity: FieldArity.Multi,
-     },
-     {
-      column: 'denyUsers',
-      editor: EditorType.Users,
-      label: (t: TicketTranslator) => t.settings.fields.denyUsers(),
-      description: (t: TicketTranslator) => t.settings.descriptions.denyUsers(),
       arity: FieldArity.Multi,
      },
     ],
@@ -678,6 +681,20 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.ticketLimitKind(),
       description: (t: TicketTranslator) => t.settings.descriptions.ticketLimitKind(),
       arity: FieldArity.Single,
+     },
+     {
+      column: 'denyRoles',
+      editor: EditorType.Roles,
+      label: (t: TicketTranslator) => t.settings.fields.denyRoles(),
+      description: (t: TicketTranslator) => t.settings.descriptions.denyRoles(),
+      arity: FieldArity.Multi,
+     },
+     {
+      column: 'denyUsers',
+      editor: EditorType.Users,
+      label: (t: TicketTranslator) => t.settings.fields.denyUsers(),
+      description: (t: TicketTranslator) => t.settings.descriptions.denyUsers(),
+      arity: FieldArity.Multi,
      },
     ],
    },
