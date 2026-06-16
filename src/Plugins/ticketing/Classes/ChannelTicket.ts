@@ -76,7 +76,7 @@ export default class ChannelTicket extends BaseTicket {
  ) {
   const modify = await payload.reply(cmd);
 
-  if (!modify || modify instanceof RequestHandlerError) {
+  if (modify instanceof RequestHandlerError) {
    this.plugin.nonFatalError(new Error(errorCode, { cause: modify }), this.replyMessage.name);
   }
 
@@ -231,7 +231,7 @@ export default class ChannelTicket extends BaseTicket {
    data.userId,
    { name: `<@${data.userId}>`, emote: emotes.ticket },
   );
-  await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel }));
+  await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel.name }));
 
   return this;
  }
@@ -284,7 +284,7 @@ export default class ChannelTicket extends BaseTicket {
    data.userId,
    { name: `<@${data.userId}>`, emote: emotes.ticket },
   );
-  await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel }));
+  await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel.name }));
 
   return this;
  }
