@@ -259,7 +259,6 @@ export default class BaseTicket extends BaseTicketLogger {
   });
 
   await this.postEscalationMarker(userId, target);
-  await this.pingTierRoles(target);
   await this.plugin.reminders.armTierReminder(this.dbTicket, target);
 
   return this;
@@ -303,32 +302,23 @@ export default class BaseTicket extends BaseTicketLogger {
      ),
    );
 
+  if (tier.claimRoles.length) {
+   const mentions = tier.claimRoles.map((r) => `<@&${r}>`).join(' ');
+   container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`${mentions} ${t.tierPing({ tier: tier.name })}`),
+   );
+  }
+
   await this.sendMessage(
    new MessagePayload(this.client, {
     origin: BaseTicket.name,
-    reason: 'Posting escalation marker',
+    reason: 'Posting escalation announcement',
    })
     .setComponents([container.toJSON()])
-    .setFlags(MessageFlags.IsComponentsV2),
-  ).catch((error: Error) => this.plugin.nonFatalError(error, this.postEscalationMarker.name));
- }
-
- async pingTierRoles(tier: TicketTier) {
-  if (!tier.claimRoles.length) return;
-  const ticket = await this.getTicket();
-  const t = await this.plugin.t(ticket.settings.guild);
-
-  const mentions = tier.claimRoles.map((r) => `<@&${r}>`).join(' ');
-
-  await this.sendMessage(
-   new MessagePayload(this.client, {
-    origin: BaseTicket.name,
-    reason: 'Pinging escalation tier roles',
-   })
-    .setContent(`${mentions} ${t.tierPing({ tier: tier.name })}`)
+    .setFlags(MessageFlags.IsComponentsV2)
     .setAllowedMentionsRoles(tier.claimRoles)
     .setAllowedMentionsUsers([]),
-  ).catch((error: Error) => this.plugin.nonFatalError(error, this.pingTierRoles.name));
+  ).catch((error: Error) => this.plugin.nonFatalError(error, this.postEscalationMarker.name));
  }
 
  async buildEscalationPicker(userId: string): Promise<MessagePayload | null> {
