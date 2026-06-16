@@ -352,7 +352,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Staff,
     label: (t: TicketTranslator) => t.settings.groups.staff(),
-    emote: emotes.Member,
+    emote: emotes.member,
     fields: [
      {
       column: 'staffRoles',
@@ -428,7 +428,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Dm,
     label: (t: TicketTranslator) => t.settings.groups.dm(),
-    emote: emotes.Message,
+    emote: emotes.message,
     showIf: (row) => ({
      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
      reason: en.settings.reasons.dmOnly,
@@ -446,7 +446,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Panel,
     label: (t: TicketTranslator) => t.settings.groups.panel(),
-    emote: emotes.Message,
+    emote: emotes.message,
     fields: [
      {
       column: 'dmEnabled',
@@ -460,7 +460,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       customId: TicketRoute.Panel,
       label: (t: TicketTranslator) => t.panel.editorTitle(),
       description: (t: TicketTranslator) => t.settings.descriptions.panelEditor(),
-      emote: emotes.Message,
+      emote: emotes.message,
      },
     ],
    },
@@ -564,7 +564,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.RemindTargets,
     label: (t: TicketTranslator) => t.settings.groups.remindTargets(),
-    emote: emotes.Member,
+    emote: emotes.member,
     fields: [
      {
       column: 'remindRoles',
@@ -635,7 +635,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Limits,
     label: (t: TicketTranslator) => t.settings.groups.limits(),
-    emote: emotes.Member,
+    emote: emotes.member,
     fields: [
      {
       column: 'allowTakeClaim',

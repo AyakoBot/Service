@@ -966,7 +966,7 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const container = this.buildMirrorContainer(
    msg,
-   `${constants.formatters.getEmote(emotes.Member)} ${name}`,
+   `${constants.formatters.getEmote(emotes.member)} ${name}`,
    await this.forwardLabels(),
   );
 
@@ -1067,7 +1067,7 @@ export default class BaseTicket extends BaseTicketLogger {
   } else {
    const user = await this.getUser(msg.author_id);
    const name = user?.username || t.base.t.unknownUser();
-   authorName = `${constants.formatters.getEmote(emotes.Member)} ${name}`;
+   authorName = `${constants.formatters.getEmote(emotes.member)} ${name}`;
   }
 
   const payload = new MessagePayload(this.client, {

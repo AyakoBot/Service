@@ -38,7 +38,7 @@ import { makeInlineCode } from './util.js';
 export default (t: BaseLang) => ({
  getForumTag: (tag: APIGuildForumTag, emoji?: REmoji | string) =>
   `**${emoji}${makeInlineCode(tag.name)} / ${makeInlineCode(tag.id)}${
-   tag.moderated ? ` / ${constants.formatters.getEmote(emotes.userFlags.DiscordEmployee)}` : ''
+   tag.moderated ? ` / ${constants.formatters.getEmote(emotes.userFlags.discordEmployee)}` : ''
   }**\n`,
  getGuild: (guild: RGuild | APIPartialGuild | APIInviteGuild) =>
   `**Server ${makeInlineCode(guild.name)} / ${makeInlineCode(guild.id)}${

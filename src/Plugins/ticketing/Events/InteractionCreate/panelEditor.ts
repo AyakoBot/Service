@@ -52,7 +52,7 @@ export const buildPanelEditor = async function (
 
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `${constants.formatters.getEmote(emotes.Message)} **${t.panel.editorTitle()}**`,
+   `${constants.formatters.getEmote(emotes.message)} **${t.panel.editorTitle()}**`,
   ),
  );
 

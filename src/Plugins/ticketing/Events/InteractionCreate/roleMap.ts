@@ -42,7 +42,7 @@ export const buildRoleMapEditor = async function (
 
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `${constants.formatters.getEmote(emotes.Member)} **${t.roleMap.title()}**`,
+   `${constants.formatters.getEmote(emotes.member)} **${t.roleMap.title()}**`,
   ),
  );
 
