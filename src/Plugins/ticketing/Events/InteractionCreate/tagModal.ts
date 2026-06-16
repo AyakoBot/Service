@@ -59,7 +59,9 @@ export const tagAddModal = async function (this: TicketPlugin, cmd: APIModalSubm
   return;
  }
 
- reply.call(this, cmd, t.tag.saved({ name }));
+ const all = await Snippet.all(this.client, cmd.guild_id);
+ const payload = await buildToolkit.call(this, cmd.guild_id, all, { page: 0, manage: true });
+ payload.update(cmd);
 };
 
 const reply = function (this: TicketPlugin, cmd: APIModalSubmitInteraction, content: string) {
