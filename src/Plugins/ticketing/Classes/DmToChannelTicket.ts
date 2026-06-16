@@ -30,14 +30,9 @@ export default class DmToChannelTicket extends DMTicketMixin(ChannelTicket) {
   return superCreate;
  }
 
- async claimChannel(
-  api: API,
-  channelId: string,
-  guildId: string,
-  channelName: string,
- ): Promise<APIChannel> {
+ async claimChannel(api: API, channelId: string, guildId: string): Promise<APIChannel> {
   this.plugin.logger.logLocation(LogLevel.silly);
-  return super.claimChannel(api, channelId, guildId, channelName);
+  return super.claimChannel(api, channelId, guildId);
  }
 
  async closeChannel(api: API, channel: RChannel | RThread) {

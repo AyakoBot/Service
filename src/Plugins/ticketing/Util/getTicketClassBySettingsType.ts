@@ -8,7 +8,7 @@ import { BaseTicketErrors } from '../Classes/Enums.js';
 import ThreadTicket from '../Classes/ThreadTicket.js';
 import TicketPlugin from '../Plugin.js';
 
-export default function (this: Client, type: TicketType, ticketId: string) {
+export default function (this: Client, type: TicketType, ticketId: string): ChannelTicket {
  const plugin = this.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
 
  switch (type) {
