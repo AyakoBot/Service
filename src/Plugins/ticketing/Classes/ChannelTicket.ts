@@ -1,7 +1,7 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
-import { TicketPlacementMode } from '@ayako/database';
 import type { TicketTier } from '@ayako/database';
+import { TicketPlacementMode } from '@ayako/database';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
  ChannelType,
@@ -15,6 +15,7 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
+import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
@@ -228,7 +229,7 @@ export default class ChannelTicket extends BaseTicket {
    this.client,
    ticket.settings.guild,
    data.userId,
-   `<@${data.userId}>`,
+   { name: `<@${data.userId}>`, emote: emotes.ticket },
   );
   await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel }));
 
@@ -281,7 +282,7 @@ export default class ChannelTicket extends BaseTicket {
    this.client,
    (await this.getTicket()).settings.guild,
    data.userId,
-   `<@${data.userId}>`,
+   { name: `<@${data.userId}>`, emote: emotes.ticket },
   );
   await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel }));
 
