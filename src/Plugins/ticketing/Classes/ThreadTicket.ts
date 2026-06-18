@@ -252,8 +252,7 @@ export default class ThreadTicket extends ChannelTicket {
    : await this.createPrivateThread(api, target.channel, name);
 
   if (!fork || fork instanceof RequestHandlerError) {
-   this.plugin.nonFatalError(fork || new Error(), this.forkThread.name);
-   return null;
+   throw new Error(ThreadTicketErrors.create_CantCreateChannel, { cause: fork });
   }
 
   await this.addForkMember(api, fork.id, ticket.user);

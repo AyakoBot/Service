@@ -1,4 +1,4 @@
-import type { TicketTier } from '@ayako/database';
+import { TicketType, type TicketTier } from '@ayako/database';
 import {
  ChannelSelectMenuBuilder,
  LabelBuilder,
@@ -59,21 +59,22 @@ const tierModal = async function (
   .setRequired(false);
  if (tier?.claimRoles.length) rolesSelect.setDefaultRoles(tier.claimRoles);
 
- const categorySelect = new ChannelSelectMenuBuilder()
-  .setCustomId('category')
-  .setChannelTypes([ChannelType.GuildCategory])
-  .setMinValues(0)
-  .setMaxValues(1)
-  .setRequired(false);
- if (tier?.category) categorySelect.setDefaultChannels([tier.category]);
+ const settings = await this.client.db.client.ticketSetting.findUnique({
+  where: { id: settingsId },
+ });
+ const usesThreads =
+  settings?.type === TicketType.Thread || settings?.type === TicketType.dmToThread;
 
- const channelSelect = new ChannelSelectMenuBuilder()
-  .setCustomId('channel')
-  .setChannelTypes([ChannelType.GuildText, ChannelType.GuildForum])
+ const placementSelect = new ChannelSelectMenuBuilder()
+  .setCustomId(usesThreads ? 'channel' : 'category')
+  .setChannelTypes(
+   usesThreads ? [ChannelType.GuildText, ChannelType.GuildForum] : [ChannelType.GuildCategory],
+  )
   .setMinValues(0)
   .setMaxValues(1)
   .setRequired(false);
- if (tier?.channel) channelSelect.setDefaultChannels([tier.channel]);
+ const placementDefault = usesThreads ? tier?.channel : tier?.category;
+ if (placementDefault) placementSelect.setDefaultChannels([placementDefault]);
 
  const modal = new ModalBuilder()
   .setCustomId(customId)
@@ -88,11 +89,8 @@ const tierModal = async function (
     .setDescription(t.tierEditor.reminderHint())
     .setTextInputComponent(reminderInput),
    new LabelBuilder()
-    .setLabel(t.settings.fields.category())
-    .setChannelSelectMenuComponent(categorySelect),
-   new LabelBuilder()
-    .setLabel(t.settings.fields.channel())
-    .setChannelSelectMenuComponent(channelSelect),
+    .setLabel(usesThreads ? t.settings.fields.channel() : t.settings.fields.category())
+    .setChannelSelectMenuComponent(placementSelect),
   );
 
  const api = await this.getAPI(cmd.guild_id ?? '');

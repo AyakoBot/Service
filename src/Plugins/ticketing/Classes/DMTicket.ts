@@ -91,6 +91,10 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    return send;
   }
 
+  async relayToDm(payload: MessagePayload): Promise<void> {
+   await this.forwardToDmChannel(payload).catch(() => null);
+  }
+
   async getLeaveConfirmationPayload() {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);

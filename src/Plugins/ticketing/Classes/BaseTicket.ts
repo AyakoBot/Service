@@ -953,6 +953,10 @@ export default class BaseTicket extends BaseTicketLogger {
   return msg;
  }
 
+ async relayToDm(_payload: MessagePayload): Promise<void> {
+  return;
+ }
+
  async startsWithPrefix(content: string) {
   const ticket = await this.getTicket();
   return ticket.settings.sendMessagePrefixes.some((p) =>

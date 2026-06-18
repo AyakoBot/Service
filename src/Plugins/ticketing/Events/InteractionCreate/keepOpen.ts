@@ -10,38 +10,30 @@ export default async function (
  cmd: APIMessageComponentInteraction,
  args: string[],
 ) {
- if (!cmd.guild || !cmd.guild_id) return;
-
  const userId = cmd.user?.id || cmd.member?.user.id;
- if (!userId) {
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: new Error(BaseTicketErrors.userNotFound, { cause: userId }),
-   cmd,
-  });
-  return;
- }
 
  const ticket = await getTicketClassById.call(this.client, args[0]).catch((e: Error) => e);
  if (ticket instanceof Error || ticket === null) {
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: ticket || new Error(BaseTicketErrors.ticketNotFound, { cause: args[0] }),
-   cmd,
-  });
+  if (cmd.guild_id) {
+   handleTicketError.call(this.client, {
+    guildId: cmd.guild_id,
+    error: ticket || new Error(BaseTicketErrors.ticketNotFound, { cause: args[0] }),
+    cmd,
+   });
+  }
   return;
  }
 
  const row = await ticket.getTicket().catch((e: Error) => e);
  if (row instanceof Error) {
-  handleTicketError.call(this.client, { guildId: cmd.guild_id, error: row, cmd });
+  if (cmd.guild_id) handleTicketError.call(this.client, { guildId: cmd.guild_id, error: row, cmd });
   return;
  }
 
- const isStaff = await ticket.isUserStaff(userId).catch(() => false);
- if (!isStaff && row.user !== userId) {
+ const isStaff = userId ? await ticket.isUserStaff(userId).catch(() => false) : false;
+ if (!userId || (!isStaff && row.user !== userId)) {
   handleTicketError.call(this.client, {
-   guildId: cmd.guild_id,
+   guildId: row.settings.guild,
    error: new Error(BaseTicketErrors.claim_UserNotStaff),
    cmd,
   });
@@ -50,13 +42,22 @@ export default async function (
 
  await this.reminders.disarmInactivity(args[0]);
 
- const api = await this.getAPI(cmd.guild_id, row.settings.botToken);
+ const api = await this.getAPI(row.settings.guild, row.settings.botToken);
  await api.interactions.deferMessageUpdate(cmd.id, cmd.token, {}, {
   origin: this.name,
   reason: 'Acknowledging keep-open request',
  });
- await api.channels.deleteMessage(cmd.message.channel_id, cmd.message.id, {
-  origin: this.name,
-  reason: 'Removing inactivity warning after keep-open',
- });
+
+ const reason = 'Removing inactivity warning after keep-open';
+ if (cmd.guild_id) {
+  await api.channels.deleteMessage(cmd.message.channel_id, cmd.message.id, {
+   origin: this.name,
+   reason,
+  });
+ } else {
+  await api.channels.deleteDirectMessage(cmd.message.channel_id, cmd.message.id, {
+   origin: this.name,
+   reason,
+  });
+ }
 }

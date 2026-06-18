@@ -288,6 +288,7 @@ export default class TicketReminders {
   await ticket
    .sendMessage(payload)
    .catch((error: Error) => this.plugin.nonFatalError(error, 'fireInactivityWarn'));
+  await ticket.relayToDm(payload);
 
   await disarm(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
   await this.armCloseAfterWarn(row);
