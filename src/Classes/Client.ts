@@ -116,5 +116,8 @@ export default class Client {
    guildId,
   );
 
+ getTokenAPI = (token: string, guildId = 'register-token-api') =>
+  new CustomAPI(token.replace('Bot ', ''), this.logger, this.cache, guildId);
+
  getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
 }
