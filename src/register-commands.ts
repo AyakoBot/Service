@@ -24,7 +24,23 @@ client.registerPlugin(pluginTicketing);
 client.registerPlugin(pluginEval);
 client.registerPlugin(pluginEmbedBuilder);
 
-const body = buildCommandBody(client);
+const pluginName = process.argv
+ .find((arg) => arg.startsWith('--plugin='))
+ ?.slice('--plugin='.length)
+ .trim();
+
+const onlyPlugin = pluginName
+ ? client.plugins.find(
+    (p) => p.settingName === pluginName || p.name.toLowerCase() === pluginName.toLowerCase(),
+   )
+ : undefined;
+
+if (pluginName && !onlyPlugin) {
+ logger.error(`[register] Plugin "${pluginName}" not found`);
+ process.exit(1);
+}
+
+const body = buildCommandBody(client, onlyPlugin);
 
 const delNames = process.argv
  .find((arg) => arg.startsWith('--del='))
@@ -33,7 +49,25 @@ const delNames = process.argv
  .map((name) => name.trim())
  .filter((name) => name.length > 0);
 
-const api = client.getBaseAPI();
+const tokenEnv = process.argv
+ .find((arg) => arg.startsWith('--token='))
+ ?.slice('--token='.length)
+ .trim();
+const token = tokenEnv ? (process.env[tokenEnv] ?? '').trim() : '';
+
+if (tokenEnv && !token) {
+ logger.error(`[register] Env var ${tokenEnv} is empty or missing`);
+ process.exit(1);
+}
+
+if (Boolean(tokenEnv) !== Boolean(pluginName)) {
+ logger.error(
+  '[register] --token and --plugin must be used together, or both omitted (main bot)',
+ );
+ process.exit(1);
+}
+
+const api = tokenEnv ? client.getTokenAPI(token) : client.getBaseAPI();
 
 if (delNames?.length) {
  const existing = await api.applicationCommands.getGlobalCommands(undefined, {
