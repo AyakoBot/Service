@@ -56,6 +56,7 @@ class EditorEmotes {
   [EditorType.RoleLabelMap]: emotes.role,
   [EditorType.TicketPlacementMode]: emotes.channelTypes[15],
   [EditorType.TicketTiers]: emotes.settings,
+  [EditorType.PresenceActivityType]: emotes.member,
 
   [EditorType.GuildId]: undefined,
   [EditorType.Id]: undefined,

@@ -1,6 +1,6 @@
 import type { CustomEmbed as CustomEmbedRow } from '@ayako/database';
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { type GatewayDispatchEvents } from '@discordjs/core';
+import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
 import type { APIEmbed } from 'discord-api-types/v10';
 
 import Plugin, {
@@ -37,6 +37,14 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
  name = 'Embed Builder';
  settingName = 'embed-builder';
  tableName = 'CustomEmbed';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.AttachFiles |
+  PermissionFlagsBits.ManageWebhooks |
+  PermissionFlagsBits.ReadMessageHistory;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {

@@ -45,6 +45,7 @@ export enum EditorType {
  RoleLabelMap = 'role-label-map',
  TicketPlacementMode = 'ticket-placement-mode',
  TicketTiers = 'ticket-tiers',
+ PresenceActivityType = 'presence-activity-type',
 
  GuildId = 'guild-id',
  Id = 'id',

@@ -189,6 +189,11 @@
   "systemSummary": "{{type}} · {{status}} · {{dm}}",
   "dmOn": "DM intake on",
   "dmOff": "DM intake off",
+  "inviteBotLabel": "Invite the bot",
+  "clearTokenLabel": "Clear the bot token",
+  "botTokenCleared": "Custom bot token removed. This system now runs under the main bot.",
+  "inviteBotNoToken": "No custom bot is set for this system yet. Add a bot token first.",
+  "inviteBotText": "Invite the custom bot using the button below.",
   "groups": {
    "general": "General",
    "channels": "Channels",
@@ -201,6 +206,7 @@
    "inactivity": "Inactivity",
    "remindTargets": "Reminder Pings",
    "botIdentity": "Bot Identity",
+   "presence": "Presence",
    "escalation": "Escalation Tiers",
    "limits": "Limits & Take-Claim"
   },
@@ -238,6 +244,9 @@
    "remindRoles": "Reminder roles",
    "remindUsers": "Reminder users",
    "botToken": "Override bot token",
+   "presenceType": "Activity type",
+   "presenceText": "Activity text",
+   "presenceEmoji": "Status emoji",
    "placementMode": "Placement mode",
    "forumChannel": "Unified forum channel",
    "allowTakeClaim": "Allow take-claim",
@@ -282,6 +291,11 @@
    "remindRoles": "Roles pinged by the unclaimed reminder. If empty, the mention roles are used, then staff roles.",
    "remindUsers": "Users pinged by the unclaimed reminder. If empty, the mention users are used, then staff users.",
    "botToken": "Run this ticket system under a different bot. The token is stored safely and never shown again.",
+   "inviteBot": "Generate an invite link for the configured custom bot",
+   "clearToken": "Remove the custom bot so this system falls back to the main bot",
+   "presenceType": "What the custom bot's status shows - Playing, Listening to, Watching, Competing in, or a free-form Custom status.",
+   "presenceText": "The status text. For Custom it is the status itself; otherwise it follows the verb, e.g. \"Listening to <text>\".",
+   "presenceEmoji": "Emoji shown before a Custom status. Use a standard emoji or a custom one in <:name:id> form.",
    "placementMode": "Escalated tickets go to a separate space per tier, or one shared forum where the tier is a tag.",
    "forumChannel": "The forum or media channel that holds every ticket when you use the unified-forum option.",
    "allowTakeClaim": "Let a higher-tier staff member take a ticket that another staff member has already claimed.",
@@ -306,13 +320,20 @@
    "nonDmOnly": "Non-DM tickets only",
    "staffThreadsOff": "Enable staff discussion threads first",
    "forumModeOnly": "Unified-forum placement only",
-   "takeClaimOff": "Enable take-claim first"
+   "takeClaimOff": "Enable take-claim first",
+   "customBotOnly": "Set a custom bot token first",
+   "customStatusOnly": "Custom status type only"
   },
   "options": {
    "dmToChannel": "DM to Channel",
    "dmToThread": "DM to Thread",
    "separateSpaces": "Separate spaces (category/channel per tier)",
-   "unifiedForum": "Unified forum (tier is a forum tag)"
+   "unifiedForum": "Unified forum (tier is a forum tag)",
+   "playing": "Playing",
+   "listening": "Listening",
+   "watching": "Watching",
+   "competing": "Competing",
+   "custom": "Custom status"
   }
  },
  "logs": {

@@ -1,4 +1,4 @@
-import { GatewayDispatchEvents } from '@discordjs/core';
+import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 
 import Plugin from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
@@ -12,6 +12,12 @@ export default class FilterScraperPlugin extends Plugin<Events, never> {
  name = 'Filter Scraper';
  settingName = '';
  tableName = '';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.ManageMessages |
+  PermissionFlagsBits.ReadMessageHistory;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {

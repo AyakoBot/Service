@@ -7,6 +7,7 @@ import {
  ApplicationIntegrationType,
  GatewayDispatchEvents,
  InteractionContextType,
+ PermissionFlagsBits,
 } from '@discordjs/core';
 
 import Plugin from '../../Classes/abstracts/Plugin.js';
@@ -25,6 +26,13 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
  name = 'AFK';
  settingName = 'afk';
  tableName = 'AFKSetting';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.ReadMessageHistory |
+  PermissionFlagsBits.ManageNicknames;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {

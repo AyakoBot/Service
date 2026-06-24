@@ -1,14 +1,20 @@
 import type { Snippets, TicketSetting } from '@ayako/database';
 import {
+ PresenceActivityType,
  ThreadArchiveDuration,
  TicketLogMode,
  TicketPlacementMode,
  TicketState,
  TicketType,
 } from '@ayako/database';
-import { LogLevel } from '@ayako/utility';
+import {
+ createRedisWrapper,
+ LogLevel,
+ SatelliteChannel,
+ type RedisWrapperInterface,
+} from '@ayako/utility';
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { type GatewayDispatchEvents } from '@discordjs/core';
+import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin, {
  idSelector,
@@ -61,6 +67,7 @@ export enum TicketGroups {
  Inactivity = 'inactivity',
  RemindTargets = 'remindTargets',
  BotIdentity = 'botIdentity',
+ Presence = 'presence',
  Escalation = 'escalation',
  Limits = 'limits',
 }
@@ -70,7 +77,23 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  settingName = 'ticketing';
  tableName = 'TicketSetting';
 
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.ManageChannels |
+  PermissionFlagsBits.ManageRoles |
+  PermissionFlagsBits.ManageThreads |
+  PermissionFlagsBits.ManageMessages |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.SendMessagesInThreads |
+  PermissionFlagsBits.CreatePublicThreads |
+  PermissionFlagsBits.CreatePrivateThreads |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.AttachFiles |
+  PermissionFlagsBits.ReadMessageHistory |
+  PermissionFlagsBits.AddReactions;
+
  reminders: TicketReminders;
+ satellitesControl: RedisWrapperInterface;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -167,7 +190,28 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    this.reminders.onScheduleExpired(String(key)),
   );
   this.reminders.reconcile().catch((e: Error) => this.nonFatalError(e, 'reconcileSchedules'));
+
+  this.satellitesControl = createRedisWrapper({ db: 0 });
+  this.satellitesControl.subscribe(SatelliteChannel.Invalid);
+  this.satellitesControl.on('message', (...args: unknown[]) => {
+   const [channel, message] = args as [string, string];
+   if (channel !== SatelliteChannel.Invalid) return;
+   try {
+    const { cipher } = JSON.parse(message) as { cipher?: string };
+    if (cipher) {
+     this.invalidateToken(cipher).catch((e: Error) => this.nonFatalError(e, 'satelliteInvalid'));
+    }
+   } catch (e) {
+    this.nonFatalError(e as Error, 'satelliteInvalid');
+   }
+  });
  }
+
+ reconcileSatellites = () => {
+  this.client.cache.cachePub
+   .publish(SatelliteChannel.Reconcile, '')
+   .catch((e: Error) => this.nonFatalError(e, 'reconcileSatellites'));
+ };
 
  invalidateToken = async (cipher: string): Promise<void> => {
   await this.client.db.client.ticketSetting.updateMany({
@@ -182,6 +226,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    data: { botToken: null },
   });
   this.invalidateGuildAPI(guildId);
+  this.reconcileSatellites();
  };
 
  getCommands = () => ({
@@ -609,6 +654,76 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       arity: FieldArity.Single,
       secret: true,
       transform: botTokenTransform,
+     },
+    ],
+    actions: [
+     {
+      customId: TicketRoute.InviteBot,
+      label: (t: TicketTranslator) => t.settings.inviteBotLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.inviteBot(),
+      buttonLabel: (t: TicketTranslator) => t.base.t.Invite(),
+      emote: emotes.bot,
+     },
+     {
+      customId: TicketRoute.ClearBotToken,
+      label: (t: TicketTranslator) => t.settings.clearTokenLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.clearToken(),
+      buttonLabel: (t: TicketTranslator) => t.base.t.Clear(),
+      emote: emotes.trash,
+     },
+    ],
+   },
+   {
+    id: TicketGroups.Presence,
+    label: (t: TicketTranslator) => t.settings.groups.presence(),
+    emote: emotes.member,
+    fields: [
+     {
+      column: 'presenceType',
+      editor: EditorType.PresenceActivityType,
+      label: (t: TicketTranslator) => t.settings.fields.presenceType(),
+      description: (t: TicketTranslator) => t.settings.descriptions.presenceType(),
+      arity: FieldArity.Single,
+      showIf: (row) => ({ ok: Boolean(row.botToken), reason: en.settings.reasons.customBotOnly }),
+      options: [
+       {
+        value: PresenceActivityType.Playing,
+        label: (t: TicketTranslator) => t.settings.options.playing(),
+       },
+       {
+        value: PresenceActivityType.Listening,
+        label: (t: TicketTranslator) => t.settings.options.listening(),
+       },
+       {
+        value: PresenceActivityType.Watching,
+        label: (t: TicketTranslator) => t.settings.options.watching(),
+       },
+       {
+        value: PresenceActivityType.Competing,
+        label: (t: TicketTranslator) => t.settings.options.competing(),
+       },
+       {
+        value: PresenceActivityType.Custom,
+        label: (t: TicketTranslator) => t.settings.options.custom(),
+       },
+      ],
+     },
+     {
+      column: 'presenceText',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.presenceText(),
+      description: (t: TicketTranslator) => t.settings.descriptions.presenceText(),
+      showIf: (row) => ({ ok: Boolean(row.botToken), reason: en.settings.reasons.customBotOnly }),
+     },
+     {
+      column: 'presenceEmoji',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.presenceEmoji(),
+      description: (t: TicketTranslator) => t.settings.descriptions.presenceEmoji(),
+      showIf: (row) => ({
+       ok: row.presenceType === PresenceActivityType.Custom,
+       reason: en.settings.reasons.customStatusOnly,
+      }),
      },
     ],
    },

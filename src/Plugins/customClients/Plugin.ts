@@ -1,5 +1,5 @@
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { GatewayDispatchEvents } from '@discordjs/core';
+import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 
 import Plugin from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
@@ -14,6 +14,12 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
  name = 'Custom Clients';
  settingName = 'custom-clients';
  tableName = 'CustomClient';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.ReadMessageHistory;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {

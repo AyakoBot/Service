@@ -1,6 +1,6 @@
 import { API, RequestHandlerError } from '@ayako/api';
+import { encrypt } from '@ayako/utility';
 
-import { encrypt } from '../../../Util/crypto.js';
 import type { FieldTransform } from '../../settings/SettingsSchema.js';
 import type TicketPlugin from '../Plugin.js';
 
@@ -35,5 +35,6 @@ export const botTokenTransform: FieldTransform = async (value, ctx) => {
  }
 
  plugin.invalidateGuildAPI(ctx.guildId);
+ plugin.reconcileSatellites();
  return { value: cipher };
 };

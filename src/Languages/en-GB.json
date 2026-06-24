@@ -452,7 +452,9 @@
   "166": "Onboarding Created",
   "167": "Onboarding Updated",
   "190": "Home Settings Created",
-  "191": "Home Settings Updated"
+  "191": "Home Settings Updated",
+  "192": "Voice Channel Status Created",
+  "193": "Voice Channel Status Deleted"
  },
  "defaultSortOrder": {
   "0": "Latest Activity",
@@ -587,6 +589,7 @@
   "Add": "Add",
   "Edit": "Edit",
   "Open": "Open",
+  "Clear": "Clear",
   "Save": "Save",
   "Send": "Send",
   "Import": "Import",

@@ -66,6 +66,10 @@ model TicketSetting {
 
  botToken String? @db.VarChar
 
+ presenceType  PresenceActivityType?
+ presenceText  String?               @db.VarChar
+ presenceEmoji String?               @db.VarChar
+
  placementMode TicketPlacementMode @default(SeparateSpaces)
  forumChannel  String?             @db.VarChar
 
@@ -196,4 +200,12 @@ enum ThreadArchiveDuration {
  OneDay
  ThreeDays
  OneWeek
+}
+
+enum PresenceActivityType {
+ Playing
+ Listening
+ Watching
+ Competing
+ Custom
 }

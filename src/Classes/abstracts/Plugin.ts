@@ -1,7 +1,7 @@
 import { inspect } from 'node:util';
 
 import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ayako/api';
-import { ScopedLogger } from '@ayako/utility';
+import { decrypt, ScopedLogger } from '@ayako/utility';
 import {
  SlashCommandStringOption,
  type SlashCommandOptionsOnlyBuilder,
@@ -16,7 +16,6 @@ import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import { checkToken, TokenCheckResult } from '../../Util/botInGuild.js';
-import { decrypt } from '../../Util/crypto.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
 
@@ -70,6 +69,7 @@ export default abstract class Plugin<
  abstract name: string;
  abstract settingName: string;
  abstract tableName: string;
+ abstract customBotPerms: bigint;
  private enabled: boolean = true;
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;

@@ -53,6 +53,9 @@ export enum TicketRoute {
  PanelLabelSave = 'tickets/panel/labelsave',
  PanelPick = 'tickets/panelPick',
 
+ ClearBotToken = 'tickets/clearBotToken',
+ InviteBot = 'tickets/inviteBot',
+
  IntakeOpen = 'tickets/intakeOpen',
  IntakeExisting = 'tickets/intakeExisting',
  IntakeServer = 'tickets/intakeServer',

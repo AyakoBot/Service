@@ -15,6 +15,7 @@ import { TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 
 import autocomplete from './autocomplete.js';
+import { clearBotToken, inviteBot } from './botIdentity.js';
 import claim from './claim.js';
 import close from './close.js';
 import closeReason from './closeReason.js';
@@ -249,6 +250,14 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
   }
   case TicketRoute.IntakeExisting: {
    intakeExisting.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.ClearBotToken: {
+   clearBotToken.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.InviteBot: {
+   inviteBot.call(this, cmd, args);
    break;
   }
 
