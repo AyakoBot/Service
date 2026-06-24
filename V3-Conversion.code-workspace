@@ -5,6 +5,7 @@
   { "path": "../Database" },
   { "path": "../Gateway" },
   { "path": "../API" },
+  { "path": "../Satellites" },
  ],
  "settings": {},
 }
