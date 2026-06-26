@@ -1,3 +1,4 @@
+import { decrypt, getBotIdFromToken } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
@@ -63,8 +64,16 @@ export const inviteBot = async function (
   return;
  }
 
- const api = await this.getAPI(cmd.guild_id, row.botToken);
- const url = `https://discord.com/oauth2/authorize?client_id=${api.botId}&permissions=${this.customBotPerms.toString()}&scope=bot+applications.commands`;
+ let botId: string;
+ try {
+  botId = getBotIdFromToken(decrypt(row.botToken));
+ } catch (error) {
+  this.nonFatalError(error as Error, `${this.name} inviteBot botId`);
+  reply.call(this, cmd, t.botToken.invalid());
+  return;
+ }
+
+ const url = `https://discord.com/oauth2/authorize?client_id=${botId}&permissions=${this.customBotPerms.toString()}&scope=bot+applications.commands`;
 
  const inviteRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
   new ButtonBuilder()
