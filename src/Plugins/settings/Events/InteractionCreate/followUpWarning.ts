@@ -9,8 +9,8 @@ export const followUpWarning = async function (
 ) {
  if (!cmd.guild_id) return;
 
- const api = await this.getAPI(cmd.guild_id);
- await api.interactions.followUp(
+ await this.client.getBaseAPI().webhooks.execute(
+  cmd.application_id,
   cmd.token,
   { content, flags: MessageFlags.Ephemeral },
   { origin: this.name, reason: 'Settings field warning' },
