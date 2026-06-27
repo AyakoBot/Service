@@ -72,6 +72,7 @@ export const buildOverview = ({
        action: SettingsAction.Nav,
        settingName,
        rowId: String(row[schema.rowKey]),
+       hideUnavail: true,
       }),
      ),
    );

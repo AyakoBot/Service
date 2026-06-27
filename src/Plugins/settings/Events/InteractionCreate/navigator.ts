@@ -106,7 +106,7 @@ export const openFromCommand = async function (
     await renderPage.call(this, {
      settingName,
      rowId: String(row.id),
-     hideUnavail: false,
+     hideUnavail: true,
      cmd,
      respond: 'reply',
     });
@@ -131,7 +131,7 @@ export const openFromCommand = async function (
   settingName,
   rowId: String(row[schema.rowKey]),
   groupId: firstGroup.id,
-  hideUnavail: false,
+  hideUnavail: true,
   cmd,
   respond: 'reply',
  });

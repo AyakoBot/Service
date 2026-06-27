@@ -41,7 +41,7 @@ export default async function (
  await renderPage.call(this, {
   settingName: id.settingName,
   rowId: String(created.id),
-  hideUnavail: false,
+  hideUnavail: true,
   cmd,
   respond: 'update',
  });

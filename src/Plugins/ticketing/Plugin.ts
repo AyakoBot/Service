@@ -363,6 +363,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Category,
       label: (t: TicketTranslator) => t.settings.fields.category(),
       description: (t: TicketTranslator) => t.settings.descriptions.category(),
+      required: true,
       showIf: (row) => ({
        ok: [TicketType.Channel, TicketType.dmToChannel].includes(row.type),
        reason: en.settings.reasons.channelTypeOnly,
@@ -373,6 +374,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.channel(),
       description: (t: TicketTranslator) => t.settings.descriptions.channel(),
+      required: true,
       showIf: (row) => ({
        ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
        reason: en.settings.reasons.threadTypeOnly,
