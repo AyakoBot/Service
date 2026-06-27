@@ -10,10 +10,12 @@ import {
  resolveTicketByStaffThread,
 } from '../../Util/resolveTicket.js';
 
-export default async function (
- this: TicketPlugin,
- msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
-) {
+type MessageCreateData = ExtractPayload<GatewayDispatchEvents.MessageCreate>;
+type MessageCreatePayload =
+ | (MessageCreateData & { recipientId: string })
+ | (MessageCreateData & { recipientId?: undefined });
+
+export default async function (this: TicketPlugin, msg: MessageCreatePayload) {
  if (msg.author.bot) return;
  if (msg.type !== MessageType.Default && msg.type !== MessageType.Reply) return;
 
@@ -26,7 +28,7 @@ export default async function (
  }
 
  if (!msg.guild_id && !dmTicket) {
-  await intakeGreet.call(this, msg.author.id, msg.channel_id, msg.content || '');
+  await intakeGreet.call(this, msg.author.id, msg.channel_id, msg.content || '', msg.recipientId);
  }
 
  const channelTicket = await resolveTicketByChannel.call(this.client, msg.channel_id);

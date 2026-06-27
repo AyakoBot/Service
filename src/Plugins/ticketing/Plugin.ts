@@ -42,6 +42,7 @@ import threadUpdate from './Events/ThreadUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import TicketReminders from './Reminders/TicketReminders.js';
 import { botTokenTransform } from './Util/botTokenTransform.js';
+import { presenceEmojiTransform } from './Util/presenceEmojiTransform.js';
 import { systemDisplayLabel } from './Util/systemLabel.js';
 
 type Events =
@@ -67,7 +68,6 @@ export enum TicketGroups {
  Inactivity = 'inactivity',
  RemindTargets = 'remindTargets',
  BotIdentity = 'botIdentity',
- Presence = 'presence',
  Escalation = 'escalation',
  Limits = 'limits',
 }
@@ -655,29 +655,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       secret: true,
       transform: botTokenTransform,
      },
-    ],
-    actions: [
-     {
-      customId: TicketRoute.InviteBot,
-      label: (t: TicketTranslator) => t.settings.inviteBotLabel(),
-      description: (t: TicketTranslator) => t.settings.descriptions.inviteBot(),
-      buttonLabel: (t: TicketTranslator) => t.base.t.Invite(),
-      emote: emotes.bot,
-     },
-     {
-      customId: TicketRoute.ClearBotToken,
-      label: (t: TicketTranslator) => t.settings.clearTokenLabel(),
-      description: (t: TicketTranslator) => t.settings.descriptions.clearToken(),
-      buttonLabel: (t: TicketTranslator) => t.base.t.Clear(),
-      emote: emotes.trash,
-     },
-    ],
-   },
-   {
-    id: TicketGroups.Presence,
-    label: (t: TicketTranslator) => t.settings.groups.presence(),
-    emote: emotes.member,
-    fields: [
      {
       column: 'presenceType',
       editor: EditorType.PresenceActivityType,
@@ -718,12 +695,29 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'presenceEmoji',
       editor: EditorType.String,
+      transform: presenceEmojiTransform,
       label: (t: TicketTranslator) => t.settings.fields.presenceEmoji(),
       description: (t: TicketTranslator) => t.settings.descriptions.presenceEmoji(),
       showIf: (row) => ({
        ok: row.presenceType === PresenceActivityType.Custom,
        reason: en.settings.reasons.customStatusOnly,
       }),
+     },
+    ],
+    actions: [
+     {
+      customId: TicketRoute.InviteBot,
+      label: (t: TicketTranslator) => t.settings.inviteBotLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.inviteBot(),
+      buttonLabel: (t: TicketTranslator) => t.base.t.Invite(),
+      emote: emotes.bot,
+     },
+     {
+      customId: TicketRoute.ClearBotToken,
+      label: (t: TicketTranslator) => t.settings.clearTokenLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.clearToken(),
+      buttonLabel: (t: TicketTranslator) => t.base.t.Clear(),
+      emote: emotes.trash,
      },
     ],
    },

@@ -194,6 +194,7 @@
   "botTokenCleared": "Custom bot token removed. This system now runs under the main bot.",
   "inviteBotNoToken": "No custom bot is set for this system yet. Add a bot token first.",
   "inviteBotText": "Invite the custom bot using the button below.",
+  "presenceEmojiNotFound": "No emoji `:{{name}}:` in this server. Use a Unicode emoji, or a custom emoji from this server.",
   "groups": {
    "general": "General",
    "channels": "Channels",
