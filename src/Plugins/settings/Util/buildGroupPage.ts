@@ -73,41 +73,45 @@ export const buildGroupPage = ({
  const summary = schema.rowSummary?.(row) ?? `${t.navigator.numberLabel()} #${rowId}`;
  const headerText = `# ${textEmote(emotes.settings)} ${schema.rowLabel(row)}\n-# ${summary}`;
 
- const header: TopLevelBuilder = schema.multiRow
+ const toggleButton = (on: boolean): ButtonBuilder =>
+  new ButtonBuilder()
+   .setStyle(on ? ButtonStyle.Success : ButtonStyle.Secondary)
+   .setLabel(on ? t.navigator.enabled() : t.navigator.disabled())
+   .setEmoji(buttonEmoji(on ? emotes.enabled : emotes.disabled));
+
+ const headerToggleField = schema.groups
+  .flatMap((g) => g.fields)
+  .find((field) => field.headerToggle);
+
+ const headerToggle = headerToggleField
+  ? toggleButton(Boolean(row[headerToggleField.column])).setCustomId(
+     idFor(SettingsAction.ToggleField, group.id, headerToggleField.column),
+    )
+  : null;
+
+ const deleteButton = schema.multiRow
+  ? new ButtonBuilder()
+     .setStyle(ButtonStyle.Danger)
+     .setEmoji(buttonEmoji(emotes.trash))
+     .setLabel(t.base.t.Delete())
+     .setCustomId(idFor(SettingsAction.Delete, group.id))
+  : null;
+
+ const headerAccessory = headerToggle ?? deleteButton;
+ const header: TopLevelBuilder = headerAccessory
   ? new SectionBuilder()
      .addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText))
-     .setButtonAccessory(
-      new ButtonBuilder()
-       .setStyle(ButtonStyle.Danger)
-       .setEmoji(buttonEmoji(emotes.trash))
-       .setLabel(t.base.t.Delete())
-       .setCustomId(idFor(SettingsAction.Delete, group.id)),
-     )
+     .setButtonAccessory(headerAccessory)
   : new TextDisplayBuilder().setContent(headerText);
+
+ const displacedDelete = headerToggle && deleteButton ? deleteButton : null;
 
  const container = new ContainerBuilder();
 
- const toggleField = group.fields.find((field) => field.headerToggle);
  const groupHeading = `## ${textEmote(group.emote ?? emotes.settings)} ${group.label}${
   group.description ? `\n-# ${group.description}` : ''
  }`;
-
- if (toggleField) {
-  const on = Boolean(row[toggleField.column]);
-  container.addSectionComponents(
-   new SectionBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(groupHeading))
-    .setButtonAccessory(
-     new ButtonBuilder()
-      .setStyle(on ? ButtonStyle.Success : ButtonStyle.Secondary)
-      .setLabel(on ? t.navigator.enabled() : t.navigator.disabled())
-      .setEmoji(buttonEmoji(on ? emotes.enabled : emotes.disabled))
-      .setCustomId(idFor(SettingsAction.ToggleField, group.id, toggleField.column)),
-    ),
-  );
- } else {
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(groupHeading));
- }
+ container.addTextDisplayComponents(new TextDisplayBuilder().setContent(groupHeading));
 
  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
 
@@ -244,6 +248,8 @@ export const buildGroupPage = ({
     .setCustomId(idFor(SettingsAction.GroupNav, nextGroup.id)),
   );
  }
+
+ if (displacedDelete) navButtons.push(displacedDelete);
 
  if (navButtons.length) {
   page.push(new ActionRowBuilder<ButtonBuilder>().addComponents(...navButtons));

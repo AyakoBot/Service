@@ -24,8 +24,7 @@ export default async function (
  if (!resolved) return;
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
- const group = schema.groups.find((g) => g.id === id.groupId);
- const field = group?.fields.find((f) => f.column === id.column);
+ const field = schema.groups.flatMap((g) => g.fields).find((f) => f.column === id.column);
  if (!field) return;
 
  const row = await this.tableClient(resolved.schema.table).findFirst({
