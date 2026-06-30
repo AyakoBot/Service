@@ -5,11 +5,11 @@
   "advertText": "New here? The Setup Guide walks you through configuring this system.",
   "advertButton": "Setup Guide",
   "gates": {
-   "customBot": "Run this ticket system on your own custom bot?",
-   "notifications": "Ping your team when a ticket opens?",
-   "reminders": "Nudge staff about tickets that are waiting on a reply?",
-   "autoClose": "Automatically close tickets that go quiet?",
-   "limits": "Restrict who can open tickets, or cap how many they can have?"
+   "customBot": "Do you want to run this on your own bot?",
+   "notifications": "Do you want your team pinged when a ticket opens?",
+   "reminders": "Do you want staff and users reminded about waiting tickets?",
+   "autoClose": "Do you want inactive tickets to close on their own?",
+   "limits": "Do you want to limit who can open tickets, or how many?"
   }
  },
  "ticketSystem": "Ayako Ticketing-System",

@@ -167,12 +167,12 @@ export const buildGuidePage = ({
     new ButtonBuilder()
      .setStyle(ButtonStyle.Success)
      .setLabel(section.gate.yes ?? t.guide.yes())
-     .setEmoji(buttonEmoji(emotes.enabled))
+     .setEmoji(buttonEmoji(emotes.tickWithBackground))
      .setCustomId(idFor(SettingsAction.Guide, undefined, onFlags)),
     new ButtonBuilder()
      .setStyle(ButtonStyle.Secondary)
      .setLabel(section.gate.no ?? t.guide.no())
-     .setEmoji(buttonEmoji(emotes.disabled))
+     .setEmoji(buttonEmoji(emotes.crossWithBackground))
      .setCustomId(idFor(SettingsAction.Guide, undefined, offFlags)),
    ),
   );
@@ -180,8 +180,8 @@ export const buildGuidePage = ({
   section.steps.forEach((step) => {
    if (!stepVisible(step, row)) return;
    const isDone = stepDone(step, row);
-   const marker = textEmote(isDone ? emotes.tick : emotes.cross);
-   const optional = step.required ? '' : ` -# (${t.guide.optional()})`;
+   const marker = textEmote(isDone ? emotes.tickWithBackground : emotes.crossWithBackground);
+   const optional = step.required ? '' : `\n-# (${t.guide.optional()})`;
    const desc = step.description ? `\n-# ${step.description}` : '';
    page.push(
     new SectionBuilder()
