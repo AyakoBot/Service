@@ -10,6 +10,7 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
+import { buildGuidePage } from '../../Util/buildGuidePage.js';
 import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
@@ -149,6 +150,11 @@ export const reRender = async function (
   return;
  }
 
+ if (id.guideFlags !== undefined) {
+  await renderGuide.call(this, cmd, id);
+  return;
+ }
+
  await renderPage.call(this, {
   settingName: id.settingName,
   rowId: id.rowId,
@@ -157,4 +163,41 @@ export const reRender = async function (
   cmd,
   respond: 'update',
  });
+};
+
+export const renderGuide = async function (
+ this: SettingsPlugin,
+ cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+ id: SettingsId,
+) {
+ if (!cmd.guild_id || !id.rowId) return;
+
+ const resolved = this.resolveSchema(id.settingName);
+ if (!resolved) return;
+
+ const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+ if (!schema.guide) return;
+
+ const row = await this.tableClient(resolved.schema.table).findFirst({
+  where: { id: id.rowId, guild: cmd.guild_id },
+ });
+ if (!row) return;
+
+ const t = await this.t(cmd.guild_id);
+ const page = buildGuidePage({
+  settingName: id.settingName,
+  schema,
+  guide: schema.guide,
+  rowId: id.rowId,
+  row,
+  originGroupId: id.groupId,
+  sectionId: id.guideSection,
+  guideFlags: id.guideFlags ?? 0,
+  t,
+ });
+
+ new MessagePayload(this.client, { origin: this.name, reason: 'Settings guide' })
+  .setComponents(page.map((c) => c.toJSON() as APIMessageTopLevelComponent))
+  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
+  .update(cmd);
 };

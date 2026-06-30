@@ -75,6 +75,44 @@ export interface SettingsGroup<Row = Record<string, unknown>> {
  actions?: SettingsGroupAction[];
 }
 
+export interface SettingsGuideStep<Row = Record<string, unknown>> {
+ column: keyof Row & string;
+ label: string;
+ description?: string;
+ required?: boolean;
+ showIf?: (row: Row) => ShowIfResult;
+}
+
+export interface SettingsGuideGate {
+ flag: number;
+ question: string;
+ yes?: string;
+ no?: string;
+}
+
+export interface SettingsGuideSection<Row = Record<string, unknown>> {
+ id: string;
+ label: string;
+ description?: string;
+ emote?: APIPartialEmoji;
+ showIf?: (row: Row) => ShowIfResult;
+ gate?: SettingsGuideGate;
+ steps: SettingsGuideStep<Row>[];
+}
+
+export interface SettingsGuideAdvert {
+ text: string;
+ buttonLabel: string;
+ emote?: APIPartialEmoji;
+}
+
+export interface SettingsGuide<Row = Record<string, unknown>> {
+ title: string;
+ intro?: string;
+ advert: SettingsGuideAdvert;
+ sections: SettingsGuideSection<Row>[];
+}
+
 export interface SettingsSchema<Row = Record<string, unknown>> {
  table: TableName;
  rowKey: keyof Row & string;
@@ -84,6 +122,7 @@ export interface SettingsSchema<Row = Record<string, unknown>> {
  rowLabel: (row: Row) => string;
  rowSummary?: (row: Row) => string;
  groups: SettingsGroup<Row>[];
+ guide?: SettingsGuide<Row>;
 }
 
 export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTranslator> {
@@ -121,6 +160,44 @@ export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTran
  actions?: SettingsGroupActionDef<T>[];
 }
 
+export interface SettingsGuideStepDef<Row = Record<string, unknown>, T = DefaultTranslator> {
+ column: keyof Row & string;
+ label: (t: T) => string;
+ description?: (t: T) => string;
+ required?: boolean;
+ showIf?: (row: Row) => ShowIfResult;
+}
+
+export interface SettingsGuideGateDef<T = DefaultTranslator> {
+ flag: number;
+ question: (t: T) => string;
+ yes?: (t: T) => string;
+ no?: (t: T) => string;
+}
+
+export interface SettingsGuideSectionDef<Row = Record<string, unknown>, T = DefaultTranslator> {
+ id: string;
+ label: (t: T) => string;
+ description?: (t: T) => string;
+ emote?: APIPartialEmoji;
+ showIf?: (row: Row) => ShowIfResult;
+ gate?: SettingsGuideGateDef<T>;
+ steps: SettingsGuideStepDef<Row, T>[];
+}
+
+export interface SettingsGuideAdvertDef<T = DefaultTranslator> {
+ text: (t: T) => string;
+ buttonLabel: (t: T) => string;
+ emote?: APIPartialEmoji;
+}
+
+export interface SettingsGuideDef<Row = Record<string, unknown>, T = DefaultTranslator> {
+ title: (t: T) => string;
+ intro?: (t: T) => string;
+ advert: SettingsGuideAdvertDef<T>;
+ sections: SettingsGuideSectionDef<Row, T>[];
+}
+
 export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  table: TableName;
  rowKey: keyof Row & string;
@@ -131,6 +208,7 @@ export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTra
  rowSummary?: (t: T, row: Row) => string;
  canDelete?: RowGuard<Row>;
  groups: SettingsGroupDef<Row, T>[];
+ guide?: SettingsGuideDef<Row, T>;
 }
 
 export interface SettingsDelegate {

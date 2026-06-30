@@ -14,18 +14,41 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { hasManageGuild } from '../../Util/authorizeSettings.js';
-import { parseSettingsId, SettingsAction } from '../../Util/customId.js';
+import { parseSettingsId, SettingsAction, type SettingsId } from '../../Util/customId.js';
 
 import autocomplete from './autocomplete.js';
 import create from './create.js';
 import fieldModal from './fieldModal.js';
 import fieldSave from './fieldSave.js';
 import groupNav from './groupNav.js';
+import guideStep from './guideStep.js';
 import { openFromCommand, reRender } from './navigator.js';
 import { confirmDelete, del } from './rowActions.js';
 import setField from './setField.js';
 import toggleField from './toggleField.js';
 import toggleUnavail from './toggleUnavail.js';
+
+type ComponentHandler = (
+ this: SettingsPlugin,
+ cmd: APIMessageComponentInteraction,
+ id: SettingsId,
+) => unknown;
+
+const componentHandlers: Partial<Record<SettingsAction, ComponentHandler>> = {
+ [SettingsAction.GroupNav]: groupNav,
+ [SettingsAction.SetField](this: SettingsPlugin, cmd, id) {
+  return setField.call(this, cmd as APIMessageComponentSelectMenuInteraction, id);
+ },
+ [SettingsAction.ToggleField]: toggleField,
+ [SettingsAction.FieldModal]: fieldModal,
+ [SettingsAction.ToggleUnavail]: toggleUnavail,
+ [SettingsAction.Nav]: reRender,
+ [SettingsAction.Guide]: reRender,
+ [SettingsAction.Create]: create,
+ [SettingsAction.Delete]: confirmDelete,
+ [SettingsAction.DeleteConfirm]: del,
+ [SettingsAction.GuideStep]: guideStep,
+};
 
 const authorize = async function (this: SettingsPlugin, cmd: APIInteraction): Promise<boolean> {
  if (!cmd.guild_id) return false;
@@ -60,17 +83,7 @@ export default async function (
    if (!id) return;
    if (!(await authorize.call(this, component))) return;
 
-   if (id.action === SettingsAction.GroupNav) groupNav.call(this, component, id);
-   if (id.action === SettingsAction.SetField) {
-    setField.call(this, component as APIMessageComponentSelectMenuInteraction, id);
-   }
-   if (id.action === SettingsAction.ToggleField) toggleField.call(this, component, id);
-   if (id.action === SettingsAction.FieldModal) fieldModal.call(this, component, id);
-   if (id.action === SettingsAction.ToggleUnavail) toggleUnavail.call(this, component, id);
-   if (id.action === SettingsAction.Nav) reRender.call(this, component, id);
-   if (id.action === SettingsAction.Create) create.call(this, component, id);
-   if (id.action === SettingsAction.Delete) confirmDelete.call(this, component, id);
-   if (id.action === SettingsAction.DeleteConfirm) del.call(this, component, id);
+   componentHandlers[id.action]?.call(this, component, id);
    break;
   }
   case InteractionType.ModalSubmit: {

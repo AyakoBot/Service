@@ -12,6 +12,8 @@ export const buildFieldModal = (
  field: SettingsField,
  row: Record<string, unknown>,
  hideUnavail: boolean,
+ guideFlags?: number,
+ guideSection?: string,
 ): ModalBuilder =>
  new ModalBuilder()
   .setCustomId(
@@ -22,6 +24,8 @@ export const buildFieldModal = (
     groupId,
     column: field.column,
     hideUnavail,
+    guideFlags,
+    guideSection,
    }),
   )
   .setTitle(field.label)

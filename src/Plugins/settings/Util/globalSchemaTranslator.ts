@@ -44,5 +44,38 @@ export const globalSchemaTranslator = (
     transform: f.transform,
    })),
   })),
+  guide: def.guide
+   ? {
+      title: def.guide.title(t),
+      intro: def.guide.intro?.(t),
+      advert: {
+       text: def.guide.advert.text(t),
+       buttonLabel: def.guide.advert.buttonLabel(t),
+       emote: def.guide.advert.emote,
+      },
+      sections: def.guide.sections.map((s) => ({
+       id: s.id,
+       label: s.label(t),
+       description: s.description?.(t),
+       emote: s.emote,
+       showIf: s.showIf,
+       gate: s.gate
+        ? {
+           flag: s.gate.flag,
+           question: s.gate.question(t),
+           yes: s.gate.yes?.(t),
+           no: s.gate.no?.(t),
+          }
+        : undefined,
+       steps: s.steps.map((st) => ({
+        column: st.column,
+        label: st.label(t),
+        description: st.description?.(t),
+        required: st.required,
+        showIf: st.showIf,
+       })),
+      })),
+     }
+   : undefined,
  };
 };

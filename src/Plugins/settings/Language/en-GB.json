@@ -18,5 +18,16 @@
   "deleteTitle": "Delete \"{{label}}\"?",
   "deleteWarning": "This permanently removes this configuration. It can't be undone.",
   "confirmDelete": "Delete permanently"
+ },
+ "guide": {
+  "progress": "{{done}}/{{total}} ready",
+  "open": "Open",
+  "set": "Set up",
+  "review": "Review",
+  "back": "Back to settings",
+  "enable": "Enable system",
+  "yes": "Yes",
+  "no": "No",
+  "optional": "optional"
  }
 }

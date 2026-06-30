@@ -23,6 +23,7 @@ export type TopLevelBuilder =
  | SectionBuilder
  | ContainerBuilder
  | TextDisplayBuilder
+ | SeparatorBuilder
  | ActionRowBuilder<ButtonBuilder>
  | ActionRowBuilder<StringSelectMenuBuilder>;
 
@@ -67,8 +68,13 @@ export const buildGroupPage = ({
  hideUnavail,
  t,
 }: BuildGroupPageArgs): TopLevelBuilder[] => {
- const idFor = (action: SettingsAction, groupId?: string, column?: string): string =>
-  encodeSettingsId({ action, settingName, rowId, groupId, column, hideUnavail });
+ const idFor = (
+  action: SettingsAction,
+  groupId?: string,
+  column?: string,
+  guideFlags?: number,
+ ): string =>
+  encodeSettingsId({ action, settingName, rowId, groupId, column, hideUnavail, guideFlags });
 
  const summary = schema.rowSummary?.(row) ?? `${t.navigator.numberLabel()} #${rowId}`;
  const headerText = `# ${textEmote(emotes.settings)} ${schema.rowLabel(row)}\n-# ${summary}`;
@@ -105,6 +111,18 @@ export const buildGroupPage = ({
   : new TextDisplayBuilder().setContent(headerText);
 
  const displacedDelete = headerToggle && deleteButton ? deleteButton : null;
+
+ const advert = schema.guide
+  ? new SectionBuilder()
+     .addTextDisplayComponents(new TextDisplayBuilder().setContent(schema.guide.advert.text))
+     .setButtonAccessory(
+      new ButtonBuilder()
+       .setStyle(ButtonStyle.Primary)
+       .setLabel(schema.guide.advert.buttonLabel)
+       .setEmoji(buttonEmoji(schema.guide.advert.emote ?? emotes.ticket))
+       .setCustomId(idFor(SettingsAction.Guide, group.id, undefined, 0)),
+     )
+  : null;
 
  const container = new ContainerBuilder();
 
@@ -182,7 +200,7 @@ export const buildGroupPage = ({
   );
  }
 
- const page: TopLevelBuilder[] = [header, container];
+ const page: TopLevelBuilder[] = advert ? [header, advert, container] : [header, container];
  const groups = visibleGroups(schema, row);
  const useSelect = groups.length > 5;
 

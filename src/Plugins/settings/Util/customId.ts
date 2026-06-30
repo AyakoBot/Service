@@ -9,6 +9,8 @@ export enum SettingsAction {
  Create = 'create',
  Delete = 'delete',
  DeleteConfirm = 'delc',
+ Guide = 'guide',
+ GuideStep = 'gstep',
 }
 
 export interface SettingsId {
@@ -18,6 +20,8 @@ export interface SettingsId {
  groupId?: string;
  column?: string;
  hideUnavail?: boolean;
+ guideFlags?: number;
+ guideSection?: string;
 }
 
 export const encodeSettingsId = (id: SettingsId): string =>
@@ -29,12 +33,16 @@ export const encodeSettingsId = (id: SettingsId): string =>
   id.groupId ?? '',
   id.column ?? '',
   id.hideUnavail ? '1' : '',
+  id.guideFlags === undefined ? '' : String(id.guideFlags),
+  id.guideSection ?? '',
  ].join(':');
 
 export const parseSettingsId = (customId: string): SettingsId | null => {
  if (!customId.startsWith('settings:')) return null;
- const [, action, settingName, rowId, groupId, column, hideUnavail] = customId.split(':');
+ const [, action, settingName, rowId, groupId, column, hideUnavail, guideFlags, guideSection] =
+  customId.split(':');
  if (!action || !settingName) return null;
+ const flags = guideFlags === '' || guideFlags === undefined ? undefined : Number(guideFlags);
  return {
   action: action as SettingsAction,
   settingName,
@@ -42,5 +50,7 @@ export const parseSettingsId = (customId: string): SettingsId | null => {
   groupId: groupId || undefined,
   column: column || undefined,
   hideUnavail: hideUnavail === '1',
+  guideFlags: flags !== undefined && Number.isNaN(flags) ? undefined : flags,
+  guideSection: guideSection || undefined,
  };
 };
