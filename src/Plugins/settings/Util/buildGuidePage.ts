@@ -18,7 +18,7 @@ import type {
 
 import type { TopLevelBuilder } from './buildGroupPage.js';
 import { encodeSettingsId, SettingsAction } from './customId.js';
-import { addFlag, hasFlag, removeFlag } from './guideFlags.js';
+import { addFlag, hasFlag } from './guideFlags.js';
 import { buttonEmoji, textEmote } from './settingsEmotes.js';
 
 type SettingsTranslator = Awaited<ReturnType<SettingsPlugin['t']>>;
@@ -160,7 +160,7 @@ export const buildGuidePage = ({
 
  if (section.gate && !sectionOpen(section, row, guideFlags)) {
   const onFlags = addFlag(guideFlags, section.gate.flag);
-  const offFlags = removeFlag(guideFlags, section.gate.flag);
+  const nextId = visible[(index + 1) % visible.length]?.id;
   page.push(new TextDisplayBuilder().setContent(`-# ${section.gate.question}`));
   page.push(
    new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -173,7 +173,7 @@ export const buildGuidePage = ({
      .setStyle(ButtonStyle.Secondary)
      .setLabel(section.gate.no ?? t.guide.no())
      .setEmoji(buttonEmoji(emotes.crossWithBackground))
-     .setCustomId(idFor(SettingsAction.Guide, undefined, offFlags)),
+     .setCustomId(idFor(SettingsAction.Guide, undefined, guideFlags, nextId)),
    ),
   );
  } else {
