@@ -72,6 +72,14 @@ export enum TicketGroups {
  Limits = 'limits',
 }
 
+export enum TicketGuideFlag {
+ WantsCustomBot = 1 << 0,
+ WantsNotifications = 1 << 1,
+ WantsReminders = 1 << 2,
+ WantsAutoClose = 1 << 3,
+ WantsLimits = 1 << 4,
+}
+
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
  name = 'Ticketing';
  settingName = 'ticketing';
@@ -262,6 +270,234 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   title: (t: TicketTranslator) => t.settings.configTitle(),
   rowLabel: (t: TicketTranslator, row: TicketSetting) => systemDisplayLabel(t, row),
   overviewDescription: (t: TicketTranslator) => t.settings.overviewDescription(),
+  guide: {
+   title: (t: TicketTranslator) => t.guide.title(),
+   intro: (t: TicketTranslator) => t.guide.intro(),
+   advert: {
+    text: (t: TicketTranslator) => t.guide.advertText(),
+    buttonLabel: (t: TicketTranslator) => t.guide.advertButton(),
+    emote: emotes.ticket,
+   },
+   sections: [
+    {
+     id: TicketGroups.General,
+     label: (t: TicketTranslator) => t.settings.groups.general(),
+     steps: [
+      {
+       column: 'type',
+       label: (t: TicketTranslator) => t.settings.fields.type(),
+       required: true,
+      },
+      {
+       column: 'name',
+       label: (t: TicketTranslator) => t.base.t.name(),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Channels,
+     label: (t: TicketTranslator) => t.settings.groups.channels(),
+     emote: emotes.channelTypes[0],
+     steps: [
+      {
+       column: 'category',
+       label: (t: TicketTranslator) => t.settings.fields.category(),
+       required: true,
+       showIf: (row) => ({
+        ok: [TicketType.Channel, TicketType.dmToChannel].includes(row.type),
+        reason: en.settings.reasons.channelTypeOnly,
+       }),
+      },
+      {
+       column: 'channel',
+       label: (t: TicketTranslator) => t.settings.fields.channel(),
+       required: true,
+       showIf: (row) => ({
+        ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
+        reason: en.settings.reasons.threadTypeOnly,
+       }),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Staff,
+     label: (t: TicketTranslator) => t.settings.groups.staff(),
+     emote: emotes.member,
+     steps: [
+      {
+       column: 'staffRoles',
+       label: (t: TicketTranslator) => t.settings.fields.staffRoles(),
+      },
+      {
+       column: 'staffUsers',
+       label: (t: TicketTranslator) => t.settings.fields.staffUsers(),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Dm,
+     label: (t: TicketTranslator) => t.settings.groups.dm(),
+     emote: emotes.message,
+     showIf: (row) => ({
+      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
+      reason: en.settings.reasons.dmOnly,
+     }),
+     steps: [
+      {
+       column: 'dmEnabled',
+       label: (t: TicketTranslator) => t.settings.fields.dmEnabled(),
+      },
+      {
+       column: 'sendMessagePrefixes',
+       label: (t: TicketTranslator) => t.settings.fields.sendMessagePrefixes(),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Notifications,
+     label: (t: TicketTranslator) => t.settings.groups.notifications(),
+     emote: emotes.info,
+     gate: {
+      flag: TicketGuideFlag.WantsNotifications,
+      question: (t: TicketTranslator) => t.guide.gates.notifications(),
+     },
+     steps: [
+      {
+       column: 'mentionRoles',
+       label: (t: TicketTranslator) => t.settings.fields.mentionRoles(),
+      },
+      {
+       column: 'mentionUsers',
+       label: (t: TicketTranslator) => t.settings.fields.mentionUsers(),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Reminders,
+     label: (t: TicketTranslator) => t.settings.groups.reminders(),
+     emote: emotes.timer,
+     gate: {
+      flag: TicketGuideFlag.WantsReminders,
+      question: (t: TicketTranslator) => t.guide.gates.reminders(),
+     },
+     steps: [
+      {
+       column: 'remindUnclaimedAfter',
+       label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedAfter(),
+      },
+      {
+       column: 'remindUnclaimedEvery',
+       label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedEvery(),
+      },
+      {
+       column: 'remindStaleAfter',
+       label: (t: TicketTranslator) => t.settings.fields.remindStaleAfter(),
+      },
+      {
+       column: 'remindStaleEvery',
+       label: (t: TicketTranslator) => t.settings.fields.remindStaleEvery(),
+      },
+      {
+       column: 'remindRoles',
+       label: (t: TicketTranslator) => t.settings.fields.remindRoles(),
+      },
+      {
+       column: 'remindUsers',
+       label: (t: TicketTranslator) => t.settings.fields.remindUsers(),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Inactivity,
+     label: (t: TicketTranslator) => t.settings.groups.inactivity(),
+     emote: emotes.timer,
+     gate: {
+      flag: TicketGuideFlag.WantsAutoClose,
+      question: (t: TicketTranslator) => t.guide.gates.autoClose(),
+     },
+     steps: [
+      {
+       column: 'inactivityWarnAfter',
+       label: (t: TicketTranslator) => t.settings.fields.inactivityWarnAfter(),
+      },
+      {
+       column: 'inactivityCloseAfter',
+       label: (t: TicketTranslator) => t.settings.fields.inactivityCloseAfter(),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.Limits,
+     label: (t: TicketTranslator) => t.settings.groups.limits(),
+     emote: emotes.member,
+     gate: {
+      flag: TicketGuideFlag.WantsLimits,
+      question: (t: TicketTranslator) => t.guide.gates.limits(),
+     },
+     steps: [
+      {
+       column: 'ticketLimitTotal',
+       label: (t: TicketTranslator) => t.settings.fields.ticketLimitTotal(),
+      },
+      {
+       column: 'ticketLimitKind',
+       label: (t: TicketTranslator) => t.settings.fields.ticketLimitKind(),
+      },
+      {
+       column: 'denyRoles',
+       label: (t: TicketTranslator) => t.settings.fields.denyRoles(),
+      },
+      {
+       column: 'denyUsers',
+       label: (t: TicketTranslator) => t.settings.fields.denyUsers(),
+      },
+      {
+       column: 'allowTakeClaim',
+       label: (t: TicketTranslator) => t.settings.fields.allowTakeClaim(),
+      },
+      {
+       column: 'staffTierRoles',
+       label: (t: TicketTranslator) => t.settings.fields.staffTierRoles(),
+       showIf: (row) => ({
+        ok: Boolean(row.allowTakeClaim),
+        reason: en.settings.reasons.takeClaimOff,
+       }),
+      },
+     ],
+    },
+    {
+     id: TicketGroups.BotIdentity,
+     label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
+     emote: emotes.lock,
+     gate: {
+      flag: TicketGuideFlag.WantsCustomBot,
+      question: (t: TicketTranslator) => t.guide.gates.customBot(),
+     },
+     steps: [
+      {
+       column: 'botToken',
+       label: (t: TicketTranslator) => t.settings.fields.botToken(),
+      },
+      {
+       column: 'presenceType',
+       label: (t: TicketTranslator) => t.settings.fields.presenceType(),
+       showIf: (row) => ({
+        ok: Boolean(row.botToken),
+        reason: en.settings.reasons.customBotOnly,
+       }),
+      },
+      {
+       column: 'presenceText',
+       label: (t: TicketTranslator) => t.settings.fields.presenceText(),
+       showIf: (row) => ({
+        ok: Boolean(row.botToken),
+        reason: en.settings.reasons.customBotOnly,
+       }),
+      },
+     ],
+    },
+   ],
+  },
   rowSummary: (t: TicketTranslator, row: TicketSetting) => {
    const typeLabels: Record<TicketType, string> = {
     [TicketType.Channel]: t.base.t.Channel(),

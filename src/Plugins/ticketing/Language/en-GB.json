@@ -1,4 +1,17 @@
 {
+ "guide": {
+  "title": "Ticket Setup Guide",
+  "intro": "Work through these steps to get your ticket system ready, then enable it.",
+  "advertText": "New here? The Setup Guide walks you through configuring this system.",
+  "advertButton": "Setup Guide",
+  "gates": {
+   "customBot": "Run this ticket system on your own custom bot?",
+   "notifications": "Ping your team when a ticket opens?",
+   "reminders": "Nudge staff about tickets that are waiting on a reply?",
+   "autoClose": "Automatically close tickets that go quiet?",
+   "limits": "Restrict who can open tickets, or cap how many they can have?"
+  }
+ },
  "ticketSystem": "Ayako Ticketing-System",
  "userInfo": "More User Info",
  "replyWith": "Reply Prefixes",
