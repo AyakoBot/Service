@@ -46,15 +46,18 @@ export const deleteNick = async function (
  if (!member?.nick) return;
 
  const { nick } = member;
- const suffix = [afkNickSuffixFull, afkNickSuffixShort].find(
-  (s) => nick.endsWith(s) && afkNickSuffixFor(nick.length - s.length) === s,
- );
- if (!suffix) return;
+ if (!nick.includes('AFK')) return;
+
+ const cleaned = nick
+  .replace(/\[AFK\]/g, '')
+  .replace(/AFK/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
 
  const res = await (await this.getAPI(guildId)).guilds.editMember(
   member.guild_id,
   member.user_id,
-  { nick: nick.slice(0, -suffix.length) },
+  { nick: cleaned || null },
   { reason: t.t.removeReason(), origin: this.name },
  );
 
