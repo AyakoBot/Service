@@ -40,6 +40,17 @@ export enum SettingsCategory {
  Vote = 'vote',
 }
 
+export enum PluginName {
+ Afk = 'afk',
+ FilterScraper = '',
+ Settings = 'settings',
+ CustomClients = 'custom-clients',
+ Ticketing = 'ticketing',
+ Eval = 'eval',
+ EmbedBuilder = 'embed-builder',
+ ComponentBuilder = 'component-builder',
+}
+
 /**
  * Base language structure that all plugins must follow.
  * Plugins can extend this with their own nested structures.
@@ -67,7 +78,8 @@ export default abstract class Plugin<
 > {
  client: Client;
  abstract name: string;
- abstract settingName: string;
+ abstract settingName: PluginName;
+ dependencies: PluginName[] = [];
  abstract tableName: string;
  abstract customBotPerms: bigint;
  private enabled: boolean = true;
