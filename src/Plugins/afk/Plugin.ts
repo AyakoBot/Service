@@ -10,7 +10,7 @@ import {
  PermissionFlagsBits,
 } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 
@@ -24,7 +24,8 @@ type AFKLanguage = typeof en;
 
 export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
  name = 'AFK';
- settingName = 'afk';
+ settingName = PluginName.Afk;
+ dependencies = [PluginName.Settings];
  tableName = 'AFKSetting';
 
  customBotPerms =

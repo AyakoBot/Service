@@ -1,6 +1,6 @@
 import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
 import messageCreate from './Events/MessageCreate/index.js';
@@ -11,7 +11,7 @@ type APILanguage = {};
 
 export default class EvalPlugin extends Plugin<Events, APILanguage> {
  name = 'Eval';
- settingName = 'eval';
+ settingName = PluginName.Eval;
  tableName = '';
 
  customBotPerms =

@@ -1,6 +1,6 @@
 import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 
@@ -10,7 +10,7 @@ type Events = GatewayDispatchEvents.AutoModerationActionExecution;
 
 export default class FilterScraperPlugin extends Plugin<Events, never> {
  name = 'Filter Scraper';
- settingName = '';
+ settingName = PluginName.FilterScraper;
  tableName = '';
 
  customBotPerms =

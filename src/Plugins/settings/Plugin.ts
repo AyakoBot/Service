@@ -1,6 +1,6 @@
 import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
 import interactionCreate from './Events/InteractionCreate/index.js';
@@ -12,7 +12,7 @@ type APILanguage = typeof en;
 
 export default class SettingsPlugin extends Plugin<Events, APILanguage> {
  name = 'Settings';
- settingName = 'settings';
+ settingName = PluginName.Settings;
  tableName = '';
 
  customBotPerms =
