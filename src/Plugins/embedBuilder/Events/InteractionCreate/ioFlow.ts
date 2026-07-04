@@ -1,5 +1,11 @@
 import { txtFileWriter } from '@ayako/utility';
-import { EmbedBuilder, LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
+import {
+ EmbedBuilder,
+ LabelBuilder,
+ ModalBuilder,
+ TextDisplayBuilder,
+ TextInputBuilder,
+} from '@discordjs/builders';
 import {
  MessageFlags,
  TextInputStyle,
@@ -10,6 +16,12 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
+import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
+import {
+ ComponentBuilderCommand,
+ ComponentBuilderSubcommand,
+} from '../../../componentBuilder/Classes/Commands.js';
 import { findModalValue } from '../../../settings/Util/findModalValue.js';
 import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
@@ -38,6 +50,7 @@ export const importOpen = async function (
  const modal = new ModalBuilder()
   .setCustomId(this.getRoute(EmbedBuilderRoute.ImportSave))
   .setTitle(t.io.importTitle())
+  .addTextDisplayComponents(new TextDisplayBuilder().setContent(t.io.guide()))
   .addLabelComponents(
    inputIds.map((id, index) =>
     new LabelBuilder()
@@ -73,9 +86,36 @@ export const importSave = async function (
   .trim();
  if (!code) return;
 
+ let parsed: unknown;
+ if (isLink(code)) {
+  parsed = await resolveDiscohookLink(code);
+  if (parsed === null) {
+   ephemeralNote.call(this, cmd, t.io.linkFailed());
+   return;
+  }
+ } else {
+  try {
+   parsed = JSON.parse(code);
+  } catch {
+   ephemeralNote.call(this, cmd, t.errors.invalidJson());
+   return;
+  }
+ }
+
+ if (detectMessageJsonKind(parsed) === MessageJsonKind.ComponentsV2) {
+  ephemeralNote.call(
+   this,
+   cmd,
+   t.io.componentsDetected({
+    command: `\`/${ComponentBuilderCommand.ComponentBuilder} ${ComponentBuilderSubcommand.Create}\``,
+   }),
+  );
+  return;
+ }
+
  let embed: APIEmbed;
  try {
-  embed = extractEmbed(JSON.parse(code) as APIEmbed | APIEmbed[] | APIMessage);
+  embed = extractEmbed(parsed as APIEmbed | APIEmbed[] | APIMessage);
   new EmbedBuilder(embed).toJSON();
  } catch {
   ephemeralNote.call(this, cmd, t.errors.invalidJson());
