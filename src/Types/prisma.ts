@@ -81,6 +81,7 @@ export interface DataBaseTables {
  ticketRoleMap: PrismaTables.TicketRoleMap;
  ticketTier: PrismaTables.TicketTier;
  customEmbed: PrismaTables.CustomEmbed;
+ customComponents: PrismaTables.CustomComponents;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
