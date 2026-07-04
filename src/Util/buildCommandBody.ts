@@ -10,7 +10,9 @@ import {
 
 import type Client from '../Classes/Client.js';
 
-const buildSettingsCommand = (client: Client, only?: Client['plugins'][number]) => {
+import resolvePluginDependencies from './resolvePluginDependencies.js';
+
+const buildSettingsCommand = (plugins: Client['plugins']) => {
  const command = new SlashCommandBuilder()
   .setName('settings')
   .setDescription('Configure ayako for this server')
@@ -18,7 +20,7 @@ const buildSettingsCommand = (client: Client, only?: Client['plugins'][number]) 
 
  const byCategory = new Map<string, SlashCommandSubcommandBuilder[]>();
 
- (only ? [only] : client.plugins).forEach((plugin) => {
+ plugins.forEach((plugin) => {
   plugin.getCommands().settings.forEach((entry) => {
    const key = entry.category ?? 'general';
    byCategory.set(key, [...(byCategory.get(key) ?? []), ...entry.commands]);
@@ -41,11 +43,11 @@ const buildCommandBody = (
  client: Client,
  only?: Client['plugins'][number],
 ): RESTPostAPIChatInputApplicationCommandsJSONBody[] => {
- const standalone = (only ? [only] : client.plugins).flatMap(
-  (plugin) => plugin.getCommands().commands,
- );
+ const selected = only ? resolvePluginDependencies(client, only) : client.plugins;
 
- return [buildSettingsCommand(client, only), ...standalone].map((command) => command.toJSON());
+ const standalone = selected.flatMap((plugin) => plugin.getCommands().commands);
+
+ return [buildSettingsCommand(selected), ...standalone].map((command) => command.toJSON());
 };
 
 export default buildCommandBody;
