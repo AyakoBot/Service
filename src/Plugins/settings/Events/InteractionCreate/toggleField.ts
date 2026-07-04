@@ -3,15 +3,10 @@ import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import { isUnset } from '../../Util/isUnset.js';
 
 import { followUpWarning } from './followUpWarning.js';
 import { reRender } from './navigator.js';
-
-const isUnset = (value: unknown): boolean =>
- value === undefined ||
- value === null ||
- value === '' ||
- (Array.isArray(value) && value.length === 0);
 
 export default async function (
  this: SettingsPlugin,

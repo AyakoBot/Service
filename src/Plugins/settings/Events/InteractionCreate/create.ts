@@ -2,8 +2,10 @@ import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-t
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
+import { SettingsAction } from '../../Util/customId.js';
 import type { SettingsId } from '../../Util/customId.js';
 
+import { renderGuide } from './navigator.js';
 import { renderPage } from './renderPage.js';
 
 export default async function (
@@ -35,6 +37,17 @@ export default async function (
    .setContent(t.base.errors.unknownError())
    .setFlags(MessageFlags.Ephemeral)
    .reply(cmd);
+  return;
+ }
+
+ if (resolved.schema.guide) {
+  await renderGuide.call(this, cmd, {
+   action: SettingsAction.Guide,
+   settingName: id.settingName,
+   rowId: String(created.id),
+   groupId: resolved.schema.groups[0]?.id,
+   guideFlags: 0,
+  });
   return;
  }
 

@@ -20,14 +20,17 @@
   "confirmDelete": "Delete permanently"
  },
  "guide": {
-  "progress": "{{done}}/{{total}} ready",
+  "progress": "{{done}}/{{total}} required steps done",
+  "complete": "All steps complete — you're good to go!",
   "open": "Open",
   "set": "Set up",
   "review": "Review",
   "back": "Back to settings",
+  "finish": "Finish",
   "enable": "Enable system",
+  "enabled": "Enabled",
   "yes": "Yes",
-  "no": "No",
+  "no": "No, skip",
   "optional": "optional"
  }
 }

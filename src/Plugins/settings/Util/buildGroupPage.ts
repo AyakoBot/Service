@@ -13,7 +13,9 @@ import emotes from '../../../Classes/Emotes.js';
 import type SettingsPlugin from '../Plugin.js';
 import type { SettingsField, SettingsGroup, SettingsSchema } from '../SettingsSchema.js';
 
+import { guideProgress, type GuideActionState } from './buildGuidePage.js';
 import { encodeSettingsId, SettingsAction } from './customId.js';
+import { isUnset } from './isUnset.js';
 import { renderInlineField } from './renderInlineField.js';
 import { buttonEmoji, textEmote } from './settingsEmotes.js';
 
@@ -34,14 +36,9 @@ export interface BuildGroupPageArgs {
  rowId: string;
  row: Record<string, unknown>;
  hideUnavail: boolean;
+ actionState?: GuideActionState;
  t: SettingsTranslator;
 }
-
-const isUnset = (value: unknown): boolean =>
- value === undefined ||
- value === null ||
- value === '' ||
- (Array.isArray(value) && value.length === 0);
 
 const isGroupAvailable = (group: SettingsGroup, row: Record<string, unknown>): boolean =>
  !group.showIf || group.showIf(row).ok;
@@ -66,6 +63,7 @@ export const buildGroupPage = ({
  rowId,
  row,
  hideUnavail,
+ actionState,
  t,
 }: BuildGroupPageArgs): TopLevelBuilder[] => {
  const idFor = (
@@ -112,17 +110,25 @@ export const buildGroupPage = ({
 
  const displacedDelete = headerToggle && deleteButton ? deleteButton : null;
 
- const advert = schema.guide
-  ? new SectionBuilder()
-     .addTextDisplayComponents(new TextDisplayBuilder().setContent(schema.guide.advert.text))
-     .setButtonAccessory(
-      new ButtonBuilder()
-       .setStyle(ButtonStyle.Primary)
-       .setLabel(schema.guide.advert.buttonLabel)
-       .setEmoji(buttonEmoji(schema.guide.advert.emote ?? emotes.ticket))
-       .setCustomId(idFor(SettingsAction.Guide, group.id, undefined, 0)),
-     )
-  : null;
+ const buildAdvert = (guide: NonNullable<SettingsSchema['guide']>): SectionBuilder => {
+  const { done, total } = guideProgress(guide.sections, row, 0, actionState);
+  const complete = done === total;
+  const text = complete
+   ? `-# ${guide.advert.text}`
+   : `${guide.advert.text}\n-# ${t.guide.progress({ done: String(done), total: String(total) })}`;
+
+  return new SectionBuilder()
+   .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
+   .setButtonAccessory(
+    new ButtonBuilder()
+     .setStyle(complete ? ButtonStyle.Secondary : ButtonStyle.Primary)
+     .setLabel(guide.advert.buttonLabel)
+     .setEmoji(buttonEmoji(guide.advert.emote ?? emotes.ticket))
+     .setCustomId(idFor(SettingsAction.Guide, group.id, undefined, 0)),
+   );
+ };
+
+ const advert = schema.guide ? buildAdvert(schema.guide) : null;
 
  const container = new ContainerBuilder();
 

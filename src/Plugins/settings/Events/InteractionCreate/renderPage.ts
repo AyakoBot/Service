@@ -8,6 +8,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import guideActionState from '../../Util/guideActionState.js';
 
 export interface RenderPageArgs {
  settingName: string;
@@ -37,6 +38,14 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  if (!group) return;
 
  const t = await this.t(cmd.guild_id);
+ const actionState = schema.guide
+  ? await guideActionState.call(this, {
+     guide: schema.guide,
+     row,
+     plugin: resolved.plugin,
+     guildId: cmd.guild_id,
+    })
+  : undefined;
  const page = buildGroupPage({
   settingName,
   schema,
@@ -44,6 +53,7 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
   rowId,
   row,
   hideUnavail,
+  actionState,
   t,
  });
 

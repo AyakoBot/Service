@@ -75,11 +75,21 @@ export interface SettingsGroup<Row = Record<string, unknown>> {
  actions?: SettingsGroupAction[];
 }
 
+export interface SettingsGuideStepAction<Row = Record<string, unknown>> {
+ customId: string;
+ doneIf: (row: Row, ctx: RowGuardContext) => Promise<boolean> | boolean;
+}
+
+export type SettingsGuideStepRequired<Row = Record<string, unknown>> =
+ | boolean
+ | ((row: Row) => boolean);
+
 export interface SettingsGuideStep<Row = Record<string, unknown>> {
- column: keyof Row & string;
+ column?: keyof Row & string;
+ action?: SettingsGuideStepAction<Row>;
  label: string;
  description?: string;
- required?: boolean;
+ required?: SettingsGuideStepRequired<Row>;
  showIf?: (row: Row) => ShowIfResult;
 }
 
@@ -161,10 +171,11 @@ export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTran
 }
 
 export interface SettingsGuideStepDef<Row = Record<string, unknown>, T = DefaultTranslator> {
- column: keyof Row & string;
+ column?: keyof Row & string;
+ action?: SettingsGuideStepAction<Row>;
  label: (t: T) => string;
  description?: (t: T) => string;
- required?: boolean;
+ required?: SettingsGuideStepRequired<Row>;
  showIf?: (row: Row) => ShowIfResult;
 }
 
@@ -234,5 +245,22 @@ export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
     `[settings] group '${group.id}' on table '${schema.table}' has ${group.fields.length} fields; max is 10 fields per modal.`,
    );
   }
+ });
+
+ const columns = new Set(schema.groups.flatMap((group) => group.fields.map((f) => f.column)));
+
+ schema.guide?.sections.forEach((section) => {
+  section.steps.forEach((step) => {
+   if (Boolean(step.column) === Boolean(step.action)) {
+    throw new Error(
+     `[settings] guide section '${section.id}' on table '${schema.table}' has a step that must define exactly one of 'column' or 'action'.`,
+    );
+   }
+   if (step.column && !columns.has(step.column)) {
+    throw new Error(
+     `[settings] guide section '${section.id}' on table '${schema.table}' references unknown column '${step.column}'.`,
+    );
+   }
+  });
  });
 };

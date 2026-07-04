@@ -1,5 +1,17 @@
 import type { DefaultTranslator, SettingsSchema, SettingsSchemaDef } from '../SettingsSchema.js';
 
+const fieldDescription = (
+ def: SettingsSchemaDef,
+ t: DefaultTranslator,
+ column?: string,
+): string | undefined =>
+ (column
+  ? def.groups
+     .flatMap((g) => g.fields)
+     .find((f) => f.column === column)
+     ?.description?.(t)
+  : undefined);
+
 export const globalSchemaTranslator = (
  t: DefaultTranslator,
  def: SettingsSchemaDef,
@@ -69,8 +81,9 @@ export const globalSchemaTranslator = (
         : undefined,
        steps: s.steps.map((st) => ({
         column: st.column,
+        action: st.action,
         label: st.label(t),
-        description: st.description?.(t),
+        description: st.description?.(t) ?? fieldDescription(def, t, st.column),
         required: st.required,
         showIf: st.showIf,
        })),

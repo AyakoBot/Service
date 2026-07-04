@@ -14,6 +14,7 @@ import { buildGuidePage } from '../../Util/buildGuidePage.js';
 import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import guideActionState from '../../Util/guideActionState.js';
 
 import { renderPage } from './renderPage.js';
 
@@ -184,6 +185,12 @@ export const renderGuide = async function (
  if (!row) return;
 
  const t = await this.t(cmd.guild_id);
+ const actionState = await guideActionState.call(this, {
+  guide: schema.guide,
+  row,
+  plugin: resolved.plugin,
+  guildId: cmd.guild_id,
+ });
  const page = buildGuidePage({
   settingName: id.settingName,
   schema,
@@ -193,6 +200,7 @@ export const renderGuide = async function (
   originGroupId: id.groupId,
   sectionId: id.guideSection,
   guideFlags: id.guideFlags ?? 0,
+  actionState,
   t,
  });
 
