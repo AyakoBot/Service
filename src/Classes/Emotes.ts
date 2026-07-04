@@ -167,18 +167,19 @@ class Emotes {
  mutedUpdated = { name: 'MutedUpdated', id: '1155146943811559465', animated: false };
 
  // TODO: replace - high prio
- invis = { name: 'invis', id: '1155180316781187224', animated: false };
- gift = { name: 'Gift', id: '1155146922861023292', animated: false };
- refresh = { name: '🔃', id: null, animated: false };
- unlock = { name: '🔓', id: null, animated: false };
- forth = { name: '➡', id: null };
- cross = { name: 'Cross', id: '1155170284328984627', animated: false };
- crossWithBackground = { name: 'CrossWithBackground', id: '1155170084155838574', animated: false };
- tick = { name: 'Tick', id: '1155170196701593640', animated: false };
- tickWithBackground = { name: 'TickWithBackground', id: '1155170127529115711', animated: false };
- loading = { name: 'Loading', id: '1155535552075026432', animated: true };
  bot = { name: 'Bot', id: '1155173739894427880', animated: false };
 
+ invis = { name: 'invis', id: '1522601619701891302', animated: false };
+ crossWithBackground = { name: 'crosswithbackground', id: '1522601848186601715', animated: false };
+ forth = { name: 'forth', id: '1522601829450514432', animated: false };
+ gift = { name: 'gift', id: '1522601679864860692', animated: false };
+ loading = { name: 'loading', id: '1522601915475562537', animated: true };
+ refresh = { name: 'refresh', id: '1522601701461200976', animated: false };
+ tickWithBackground = { name: 'tickwithbackground', id: '1522601868197629982', animated: false };
+ unlock = { name: 'unlock', id: '1522601770398777525', animated: false };
+ up = { name: 'up', id: '1522601739285434500', animated: false };
+ cross = { name: 'cross', id: '1522601127281950833', animated: false };
+ tick = { name: 'tick', id: '1522601105283092540', animated: false };
  hammer = { name: 'hammer', animated: false, id: '1514954555073499156' };
  enabled = { name: 'enabled', animated: false, id: '1514954556402962492' };
  emoji = { name: 'emoji', animated: false, id: '1514954557917106236' };
@@ -199,14 +200,14 @@ class Emotes {
  role = { name: 'role', animated: false, id: '1514954599801557223' };
  question = { name: 'question', animated: false, id: '1514954601168638046' };
  plus = { name: 'plus', animated: false, id: '1514954604935385289' };
- next = { name: 'next', animated: false, id: '1514954609402183840' };
+ next = { name: 'next', animated: false, id: '1522601006175617204' };
  member = { name: 'member', animated: false, id: '1514954612887519242' };
  lock = { name: 'lock', animated: false, id: '1514954617333481564' };
  info = { name: 'info', animated: false, id: '1514954618537250896' };
  log = { name: 'log', animated: false, id: '1514955317748826203' };
  message = { name: 'message', animated: false, id: '1514955335704641556' };
  number = { name: 'number', animated: false, id: '1514955360488656967' };
- prev = { name: 'prev', animated: false, id: '1514955400389066783' };
+ prev = { name: 'prev', animated: false, id: '1522600991659397120' };
  settings = { name: 'settings', animated: false, id: '1514955416642257017' };
  ticket = { name: 'ticket', animated: false, id: '1514955446295724072' };
  tools = { name: 'tools', animated: false, id: '1514955467506323567' };
