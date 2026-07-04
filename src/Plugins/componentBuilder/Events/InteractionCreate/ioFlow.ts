@@ -1,5 +1,10 @@
 import { txtFileWriter } from '@ayako/utility';
-import { LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
+import {
+ LabelBuilder,
+ ModalBuilder,
+ TextDisplayBuilder,
+ TextInputBuilder,
+} from '@discordjs/builders';
 import {
  MessageFlags,
  TextInputStyle,
@@ -8,6 +13,12 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
+import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
+import {
+ EmbedBuilderCommand,
+ EmbedBuilderSubcommand,
+} from '../../../embedBuilder/Classes/Commands.js';
 import { findModalValue } from '../../../settings/Util/findModalValue.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
@@ -37,6 +48,7 @@ export const importOpen = async function (
  const modal = new ModalBuilder()
   .setCustomId(this.getRoute(ComponentBuilderRoute.ImportSave))
   .setTitle(t.io.importTitle().slice(0, 45))
+  .addTextDisplayComponents(new TextDisplayBuilder().setContent(t.io.guide()))
   .addLabelComponents(
    inputIds.map((id, index) =>
     new LabelBuilder()
@@ -72,14 +84,33 @@ export const importSave = async function (
   .trim();
  if (!code) return;
 
- let tree: WipTree | null;
- try {
-  tree = normalizeImport(JSON.parse(code));
- } catch {
-  tree = null;
+ let parsed: unknown;
+ if (isLink(code)) {
+  parsed = await resolveDiscohookLink(code);
+  if (parsed === null) {
+   ephemeralNote.call(this, cmd, t.io.linkFailed());
+   return;
+  }
+ } else {
+  try {
+   parsed = JSON.parse(code);
+  } catch {
+   ephemeralNote.call(this, cmd, t.errors.invalidJson());
+   return;
+  }
  }
+
+ let tree: WipTree | null = normalizeImport(parsed);
  if (!tree) {
-  ephemeralNote.call(this, cmd, t.errors.invalidJson());
+  ephemeralNote.call(
+   this,
+   cmd,
+   detectMessageJsonKind(parsed) === MessageJsonKind.Embeds
+    ? t.io.embedsDetected({
+       command: `\`/${EmbedBuilderCommand.EmbedBuilder} ${EmbedBuilderSubcommand.Create}\``,
+      })
+    : t.errors.invalidJson(),
+  );
   return;
  }
 

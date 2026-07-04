@@ -73,5 +73,5 @@ export default async function (
    selectedPath: null,
    canManage,
   })
-  .edit(msg.channel_id, surface.id);
+  .edit(msg.channel_id, surface.id, msg.guild_id);
 }

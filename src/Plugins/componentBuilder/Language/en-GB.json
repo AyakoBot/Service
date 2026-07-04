@@ -131,7 +131,10 @@
  "io": {
   "importTitle": "Import components JSON",
   "jsonLabel": "JSON",
-  "jsonHint": "A components array, a single component, or a full message"
+  "jsonHint": "A components array, a single component, a full message, or a discohook.app link",
+  "guide": "**Importing from [discohook.app](https://discohook.app)**\nBuild your message there, then paste either a discohook **link** (share or data URL) or the JSON from its **JSON Data Editor** below.\n-# JSON too long for one field? Continue in the next one - the fields are joined in order.",
+  "embedsDetected": "That JSON is an embed message. Import it with the embed builder: {{command}}",
+  "linkFailed": "Couldn't read that discohook link. Share links expire after a while - export the JSON from the JSON Data Editor and paste that instead."
  },
  "settings": {
   "configTitle": "Saved Component Messages",
