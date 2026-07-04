@@ -342,20 +342,12 @@ export class MessagePayload {
   });
  }
 
- edit(channelId: string, messageId: string) {
-  return this.client.getBaseAPI().channels.editMessage(channelId, messageId, this.getAPIPayload(), {
+ async edit(channelId: string, messageId: string, guildId: string) {
+  const api = await this.client.getAPI(guildId);
+  return api.channels.editMessage(channelId, messageId, this.getAPIPayload(), {
    origin: this.origin,
    reason: this.reason,
   });
- }
-
- editDM(channelId: string, messageId: string) {
-  return this.client
-   .getBaseAPI()
-   .channels.editDirectMessage(channelId, messageId, this.getAPIPayload(), {
-    origin: this.origin,
-    reason: this.reason,
-   });
  }
 
  update(cmd: APIInteraction) {
