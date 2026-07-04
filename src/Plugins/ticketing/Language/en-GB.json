@@ -1,9 +1,28 @@
 {
  "guide": {
   "title": "Ticket Setup Guide",
-  "intro": "Work through these steps to get your ticket system ready, then enable it.",
+  "intro": "Work through the sections below. The last one takes your system live.",
   "advertText": "New here? The Setup Guide walks you through configuring this system.",
   "advertButton": "Setup Guide",
+  "sectionDesc": {
+   "general": "Pick how tickets open and give this system a name.",
+   "channels": "Where new tickets are created.",
+   "staff": "Who handles tickets. Staff can claim, reply, and close.",
+   "dm": "Relay each ticket into its creator's DMs; staff reply with a prefix.",
+   "notifications": "Ping your team the moment a ticket opens.",
+   "reminders": "Nudge staff about unclaimed or stale tickets.",
+   "inactivity": "Warn ticket creators and auto-close tickets that go quiet.",
+   "limits": "Cap open tickets and control who can open or take them.",
+   "botIdentity": "Run this system under your own bot.",
+   "goLive": "Flip the switch and give members a way to open tickets."
+  },
+  "goLive": {
+   "label": "Go Live",
+   "enable": "Turn the system on",
+   "enableDesc": "Activate this ticket system. A panel can only be posted while it is active.",
+   "panel": "Post a ticket panel",
+   "panelDesc": "The panel is the message members press to open a ticket. Build one, pick this system as one of its kinds, and post it to a channel."
+  },
   "gates": {
    "customBot": "Do you want to run this on your own bot?",
    "notifications": "Do you want your team pinged when a ticket opens?",

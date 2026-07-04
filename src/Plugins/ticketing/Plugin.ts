@@ -18,6 +18,7 @@ import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core
 
 import Plugin, {
  idSelector,
+ PluginName,
  SettingsCategory,
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
@@ -80,9 +81,14 @@ export enum TicketGuideFlag {
  WantsLimits = 1 << 4,
 }
 
+export enum TicketGuideSection {
+ GoLive = 'goLive',
+}
+
 export default class TicketPlugin extends Plugin<Events, APILanguage> {
  name = 'Ticketing';
- settingName = 'ticketing';
+ settingName = PluginName.Ticketing;
+ dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'TicketSetting';
 
  customBotPerms =
@@ -282,6 +288,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.General,
      label: (t: TicketTranslator) => t.settings.groups.general(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.general(),
      steps: [
       {
        column: 'type',
@@ -297,7 +304,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Channels,
      label: (t: TicketTranslator) => t.settings.groups.channels(),
-     emote: emotes.channelTypes[0],
+     description: (t: TicketTranslator) => t.guide.sectionDesc.channels(),
+     emote: emotes.channelcategory,
      steps: [
       {
        column: 'category',
@@ -322,11 +330,13 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Staff,
      label: (t: TicketTranslator) => t.settings.groups.staff(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.staff(),
      emote: emotes.member,
      steps: [
       {
        column: 'staffRoles',
        label: (t: TicketTranslator) => t.settings.fields.staffRoles(),
+       required: (row) => !row.staffUsers.length,
       },
       {
        column: 'staffUsers',
@@ -337,6 +347,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Dm,
      label: (t: TicketTranslator) => t.settings.groups.dm(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.dm(),
      emote: emotes.message,
      showIf: (row) => ({
       ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
@@ -356,6 +367,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Notifications,
      label: (t: TicketTranslator) => t.settings.groups.notifications(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.notifications(),
      emote: emotes.info,
      gate: {
       flag: TicketGuideFlag.WantsNotifications,
@@ -375,6 +387,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Reminders,
      label: (t: TicketTranslator) => t.settings.groups.reminders(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.reminders(),
      emote: emotes.timer,
      gate: {
       flag: TicketGuideFlag.WantsReminders,
@@ -410,7 +423,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Inactivity,
      label: (t: TicketTranslator) => t.settings.groups.inactivity(),
-     emote: emotes.timer,
+     description: (t: TicketTranslator) => t.guide.sectionDesc.inactivity(),
+     emote: emotes.warning,
      gate: {
       flag: TicketGuideFlag.WantsAutoClose,
       question: (t: TicketTranslator) => t.guide.gates.autoClose(),
@@ -429,7 +443,8 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.Limits,
      label: (t: TicketTranslator) => t.settings.groups.limits(),
-     emote: emotes.member,
+     description: (t: TicketTranslator) => t.guide.sectionDesc.limits(),
+     emote: emotes.number,
      gate: {
       flag: TicketGuideFlag.WantsLimits,
       question: (t: TicketTranslator) => t.guide.gates.limits(),
@@ -468,6 +483,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     {
      id: TicketGroups.BotIdentity,
      label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.botIdentity(),
      emote: emotes.lock,
      gate: {
       flag: TicketGuideFlag.WantsCustomBot,
@@ -493,6 +509,40 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
         ok: Boolean(row.botToken),
         reason: en.settings.reasons.customBotOnly,
        }),
+      },
+     ],
+    },
+    {
+     id: TicketGuideSection.GoLive,
+     label: (t: TicketTranslator) => t.guide.goLive.label(),
+     description: (t: TicketTranslator) => t.guide.sectionDesc.goLive(),
+     emote: emotes.send,
+     steps: [
+      {
+       column: 'active',
+       label: (t: TicketTranslator) => t.guide.goLive.enable(),
+       description: (t: TicketTranslator) => t.guide.goLive.enableDesc(),
+       required: true,
+      },
+      {
+       action: {
+        customId: TicketRoute.Panel,
+        doneIf: async (row, ctx) => {
+         const panels = await ctx.client.db.client.ticketPanel.findMany({
+          where: { guild: row.guild },
+         });
+         return panels.some(
+          (panel) =>
+           Boolean(panel.message) && panel.kinds.some((kind) => String(kind) === String(row.id)),
+         );
+        },
+       },
+       label: (t: TicketTranslator) => t.guide.goLive.panel(),
+       description: (t: TicketTranslator) => t.guide.goLive.panelDesc(),
+       required: (row) =>
+        !(
+         [TicketType.dmToChannel, TicketType.dmToThread].includes(row.type) && row.dmEnabled
+        ),
       },
      ],
     },
