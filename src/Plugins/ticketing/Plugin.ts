@@ -14,7 +14,7 @@ import {
  type RedisWrapperInterface,
 } from '@ayako/utility';
 import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
+import { ChannelType, PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
 
 import Plugin, {
  idSelector,
@@ -608,15 +608,25 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       arity: FieldArity.Single,
       required: true,
       options: [
-       { value: TicketType.Channel, label: (t: TicketTranslator) => t.base.t.Channel() },
-       { value: TicketType.Thread, label: (t: TicketTranslator) => t.base.t.Thread() },
+       {
+        value: TicketType.Channel,
+        label: (t: TicketTranslator) => t.base.t.Channel(),
+        description: (t: TicketTranslator) => t.settings.optionDescriptions.channel(),
+       },
+       {
+        value: TicketType.Thread,
+        label: (t: TicketTranslator) => t.base.t.Thread(),
+        description: (t: TicketTranslator) => t.settings.optionDescriptions.thread(),
+       },
        {
         value: TicketType.dmToChannel,
         label: (t: TicketTranslator) => t.settings.options.dmToChannel(),
+        description: (t: TicketTranslator) => t.settings.optionDescriptions.dmToChannel(),
        },
        {
         value: TicketType.dmToThread,
         label: (t: TicketTranslator) => t.settings.options.dmToThread(),
+        description: (t: TicketTranslator) => t.settings.optionDescriptions.dmToThread(),
        },
       ],
      },
@@ -660,6 +670,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.channel(),
       description: (t: TicketTranslator) => t.settings.descriptions.channel(),
+      channelTypes: [ChannelType.GuildText],
       required: true,
       showIf: (row) => ({
        ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
@@ -706,6 +717,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channels,
       label: (t: TicketTranslator) => t.settings.fields.logChannels(),
       description: (t: TicketTranslator) => t.settings.descriptions.logChannels(),
+      channelTypes: [ChannelType.GuildText],
       arity: FieldArity.Multi,
      },
     ],
@@ -744,6 +756,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.staffThreadsChannel(),
       description: (t: TicketTranslator) => t.settings.descriptions.staffThreadsChannel(),
+      channelTypes: [ChannelType.GuildText],
       showIf: (row) => ({
        ok: Boolean(row.staffThreads),
        reason: en.settings.reasons.staffThreadsOff,
@@ -848,6 +861,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channels,
       label: (t: TicketTranslator) => t.settings.fields.transcriptChannels(),
       description: (t: TicketTranslator) => t.settings.descriptions.transcriptChannels(),
+      channelTypes: [ChannelType.GuildText],
       arity: FieldArity.Multi,
      },
     ],
@@ -1036,6 +1050,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.forumChannel(),
       description: (t: TicketTranslator) => t.settings.descriptions.forumChannel(),
+      channelTypes: [ChannelType.GuildForum],
       showIf: (row) => ({
        ok: row.placementMode === TicketPlacementMode.UnifiedForum,
        reason: en.settings.reasons.forumModeOnly,

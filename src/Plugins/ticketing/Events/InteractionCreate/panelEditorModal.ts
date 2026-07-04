@@ -62,7 +62,12 @@ export const panelAdd = async function (this: TicketPlugin, cmd: APIMessageCompo
     .setChannelSelectMenuComponent(
      new ChannelSelectMenuBuilder()
       .setCustomId('channel')
-      .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+      .setChannelTypes(
+       ChannelType.GuildText,
+       ChannelType.GuildAnnouncement,
+       ChannelType.GuildForum,
+       ChannelType.GuildMedia,
+      )
       .setMinValues(1)
       .setMaxValues(1),
     ),
@@ -117,7 +122,12 @@ export const panelEdit = async function (
     .setChannelSelectMenuComponent(
      new ChannelSelectMenuBuilder()
       .setCustomId('channel')
-      .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+      .setChannelTypes(
+       ChannelType.GuildText,
+       ChannelType.GuildAnnouncement,
+       ChannelType.GuildForum,
+       ChannelType.GuildMedia,
+      )
       .setMinValues(1)
       .setMaxValues(1)
       .setDefaultChannels(panel.channel ? [panel.channel] : []),

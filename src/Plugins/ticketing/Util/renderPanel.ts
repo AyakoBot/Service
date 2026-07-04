@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import type { TicketPanel as TicketPanelRow, TicketSetting } from '@ayako/database';
 import {
  ActionRowBuilder,
@@ -8,6 +9,9 @@ import {
 } from '@discordjs/builders';
 import {
  ButtonStyle,
+ ChannelFlags,
+ ChannelType,
+ ThreadAutoArchiveDuration,
  type APIEmbed,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
@@ -71,19 +75,82 @@ export const buildHubPayload = async function (
   .setComponents(components);
 };
 
+const forumPostOrEdit = async function (
+ this: TicketPlugin,
+ guildId: string,
+ channelId: string,
+ currentMessage: string | null,
+ payload: MessagePayload,
+ postName: string,
+): Promise<string | null> {
+ const api = await this.getAPI(guildId);
+
+ if (currentMessage) {
+  await api.channels.edit(
+   currentMessage,
+   { archived: false },
+   { origin: this.name, reason: 'Reviving ticket panel post' },
+  );
+  const edited = await payload
+   .edit(currentMessage, currentMessage, guildId)
+   .catch((error: Error) => {
+    this.nonFatalError(error, 'renderPanel.editForumPost');
+    return null;
+   });
+  if (edited && !(edited instanceof RequestHandlerError)) return currentMessage;
+ }
+
+ const thread = await api.channels.createForumThread(
+  channelId,
+  {
+   name: postName,
+   auto_archive_duration: ThreadAutoArchiveDuration.OneWeek,
+   message: payload.getAPIPayload(),
+  },
+  { origin: this.name, reason: 'Posting ticket panel as forum post' },
+ );
+ if (thread instanceof RequestHandlerError) {
+  this.nonFatalError(
+   new Error('Failed to create the ticket panel forum post', { cause: thread }),
+   'renderPanel.forumPost',
+  );
+  return null;
+ }
+
+ const pinned = await api.channels.edit(
+  thread.id,
+  { flags: ChannelFlags.Pinned },
+  { origin: this.name, reason: 'Pinning ticket panel post' },
+ );
+ if (pinned instanceof RequestHandlerError) {
+  this.nonFatalError(
+   new Error('Failed to pin the ticket panel forum post', { cause: pinned }),
+   'renderPanel.pinForumPost',
+  );
+ }
+
+ return thread.id;
+};
+
 const postOrEdit = async function (
  this: TicketPlugin,
  guildId: string,
  channelId: string,
  currentMessage: string | null,
  payload: MessagePayload,
+ postName: string,
 ): Promise<string | null> {
+ const channel = await this.client.cache.channels.get(channelId);
+ if (channel && [ChannelType.GuildForum, ChannelType.GuildMedia].includes(channel.type)) {
+  return forumPostOrEdit.call(this, guildId, channelId, currentMessage, payload, postName);
+ }
+
  if (currentMessage) {
-  const edited = await payload.edit(channelId, currentMessage).catch((error: Error) => {
+  const edited = await payload.edit(channelId, currentMessage, guildId).catch((error: Error) => {
    this.nonFatalError(error, 'renderPanel.edit');
    return null;
   });
-  if (edited && !(edited instanceof Error)) return currentMessage;
+  if (edited && !(edited instanceof RequestHandlerError)) return currentMessage;
  }
 
  const sent = await payload
@@ -110,8 +177,21 @@ export const renderHubPanel = async function (
  });
  if (!kinds.length) return null;
 
+ const t = await this.t(panel.guild);
+ const postName = ((panel.embed as APIEmbed | null)?.title || t.panel.forumPostName()).slice(
+  0,
+  100,
+ );
+
  const payload = await buildHubPayload.call(this, panel, kinds);
- const messageId = await postOrEdit.call(this, panel.guild, panel.channel, panel.message, payload);
+ const messageId = await postOrEdit.call(
+  this,
+  panel.guild,
+  panel.channel,
+  panel.message,
+  payload,
+  postName,
+ );
 
  if (messageId && messageId !== panel.message) {
   await new TicketPanel(this.client, panel.guild, String(panel.id))

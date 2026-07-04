@@ -595,7 +595,7 @@ export default class ChannelTicket extends BaseTicket {
   const ticket = await this.getTicket();
 
   const payload = await this.getInitPayload(true, staffThreadId);
-  const modify = await payload.edit(ticket.channel, initMessageId);
+  const modify = await payload.edit(ticket.channel, initMessageId, ticket.settings.guild);
   if (modify instanceof RequestHandlerError) {
    this.plugin.nonFatalError(modify, this.editInitWithStaffMention.name);
   }

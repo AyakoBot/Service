@@ -177,6 +177,7 @@
   "editorTitle": "Ticket Panels",
   "empty": "No panels yet. Press **Add** to build a panel that lists one or more ticket kinds.",
   "hubDesc": "Pick the kind of ticket you would like to open.",
+  "forumPostName": "Open a ticket",
   "pickKind": "Choose a ticket type",
   "kindCount": "{{count}} kind(s)",
   "post": "Post",
@@ -356,6 +357,12 @@
    "takeClaimOff": "Enable take-claim first",
    "customBotOnly": "Set a custom bot token first",
    "customStatusOnly": "Custom status type only"
+  },
+  "optionDescriptions": {
+   "channel": "Each ticket gets its own text channel under a category",
+   "thread": "Each ticket is a private thread in one fixed channel",
+   "dmToChannel": "Members write to the bot in DMs, staff answer from a per-ticket channel",
+   "dmToThread": "Members write to the bot in DMs, staff answer from a private thread"
   },
   "options": {
    "dmToChannel": "DM to Channel",

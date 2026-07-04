@@ -868,7 +868,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const staffThreadId = await this.getStaffThreadId();
   const payload = await this.buildStatusSurface(false, staffThreadId);
 
-  const modify = await payload.edit(ticket.channel, ticket.surfaceMessage);
+  const modify = await payload.edit(ticket.channel, ticket.surfaceMessage, ticket.settings.guild);
   if (modify instanceof RequestHandlerError) {
    this.plugin.nonFatalError(modify, this.refreshSurface.name);
   }
@@ -1085,8 +1085,17 @@ export default class BaseTicket extends BaseTicketLogger {
    .setComponents([this.buildMirrorContainer(msg, author, await this.forwardLabels()).toJSON()])
    .setFlags(MessageFlags.IsComponentsV2);
 
-  if (mirror.isDm) await payload.editDM(mirror.channelId, mirror.messageId);
-  else await payload.edit(mirror.channelId, mirror.messageId);
+  if (mirror.isDm) {
+   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+   await api.channels.editDirectMessage(
+    mirror.channelId,
+    mirror.messageId,
+    payload.getAPIPayload(),
+    { origin: BaseTicket.name, reason: 'Editing mirrored message' },
+   );
+  } else {
+   await payload.edit(mirror.channelId, mirror.messageId, ticket.settings.guild);
+  }
  }
 
  async deleteMirror(mirror: MirrorRef) {
