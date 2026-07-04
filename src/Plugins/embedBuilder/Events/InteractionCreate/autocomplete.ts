@@ -1,27 +1,12 @@
 import {
- ApplicationCommandOptionType,
  type APIApplicationCommandAutocompleteInteraction,
  type APIApplicationCommandOptionChoice,
 } from 'discord-api-types/v10';
 
+import { findFocusedString } from '../../../../Util/interactionOptions.js';
 import { EmbedBuilderCommand } from '../../Classes/Commands.js';
 import CustomEmbed from '../../CustomEmbed.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
-
-const findFocused = (
- options: APIApplicationCommandAutocompleteInteraction['data']['options'],
-): string => {
- for (const option of options ?? []) {
-  if (option.type === ApplicationCommandOptionType.Subcommand) {
-   const nested = option.options?.find(
-    (o) => o.type === ApplicationCommandOptionType.String && o.focused,
-   );
-   if (nested && nested.type === ApplicationCommandOptionType.String) return nested.value;
-  }
-  if (option.type === ApplicationCommandOptionType.String && option.focused) return option.value;
- }
- return '';
-};
 
 export default async function (
  this: EmbedBuilderPlugin,
@@ -29,7 +14,7 @@ export default async function (
 ) {
  if (!cmd.guild_id || cmd.data.name !== EmbedBuilderCommand.EmbedBuilder) return;
 
- const query = findFocused(cmd.data.options).toLowerCase();
+ const query = findFocusedString(cmd.data.options).toLowerCase();
  const saved = await CustomEmbed.all(this.client, cmd.guild_id);
 
  const choices: APIApplicationCommandOptionChoice[] = saved

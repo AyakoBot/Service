@@ -8,7 +8,6 @@ import {
  applyProperty,
  blank,
  currentValue,
- parseColor,
  parseTimestamp,
 } from './applyProperty.js';
 
@@ -28,11 +27,7 @@ test('clamps values to the property limit', () => {
  assert.equal(result.embed.title?.length, 256);
 });
 
-test('parses colors and rejects invalid ones', () => {
- assert.equal(parseColor('#5865F2'), 0x5865f2);
- assert.equal(parseColor('5865f2'), 0x5865f2);
- assert.equal(parseColor('xyz'), null);
-
+test('rejects invalid colors', () => {
  const bad = applyProperty({}, EmbedProperty.Color, 'nope', null);
  assert.ok(!bad.ok && bad.error === ApplyErrorCode.InvalidColor);
 });

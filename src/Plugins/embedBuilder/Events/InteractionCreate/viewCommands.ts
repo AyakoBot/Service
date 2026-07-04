@@ -1,20 +1,19 @@
 import { RequestHandlerError } from '@ayako/api';
 import { txtFileWriter } from '@ayako/utility';
 import {
- ApplicationCommandOptionType,
  MessageFlags,
  type APIApplicationCommandInteraction,
  type APIApplicationCommandInteractionDataSubcommandOption,
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { getStringOption, getSubcommand } from '../../../../Util/interactionOptions.js';
+import { messageLinkPattern } from '../../../../Util/messageLink.js';
 import { EmbedBuilderSubcommand } from '../../Classes/Commands.js';
 import CustomEmbed from '../../CustomEmbed.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 
 import { startOpen } from './start.js';
-
-const messageLinkPattern = /channels\/(\d+)\/(\d+)\/(\d+)/;
 
 const fileReply = function (
  this: EmbedBuilderPlugin,
@@ -39,23 +38,6 @@ const errorReply = function (
   .reply(cmd);
 };
 
-const subcommand = (
- cmd: APIApplicationCommandInteraction,
-): APIApplicationCommandInteractionDataSubcommandOption | null => {
- if (!('options' in cmd.data)) return null;
- const top = cmd.data.options?.[0];
- if (!top || top.type !== ApplicationCommandOptionType.Subcommand) return null;
- return top;
-};
-
-const stringOption = (
- sub: APIApplicationCommandInteractionDataSubcommandOption,
- name: string,
-): string => {
- const option = sub.options?.find((o) => o.name === name);
- return option && option.type === ApplicationCommandOptionType.String ? option.value : '';
-};
-
 const viewMessage = async function (
  this: EmbedBuilderPlugin,
  cmd: APIApplicationCommandInteraction,
@@ -64,7 +46,7 @@ const viewMessage = async function (
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
 
- const match = stringOption(sub, 'message-link').match(messageLinkPattern);
+ const match = getStringOption(sub, 'message-link').match(messageLinkPattern);
  if (!match || match[1] !== cmd.guild_id) {
   errorReply.call(this, cmd, t.errors.notALink());
   return;
@@ -91,7 +73,7 @@ const viewSaved = async function (
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
 
- const row = await CustomEmbed.byName(this.client, cmd.guild_id, stringOption(sub, 'name'));
+ const row = await CustomEmbed.byName(this.client, cmd.guild_id, getStringOption(sub, 'name'));
  if (!row) {
   errorReply.call(this, cmd, t.errors.notFound());
   return;
@@ -101,7 +83,7 @@ const viewSaved = async function (
 };
 
 export default async function (this: EmbedBuilderPlugin, cmd: APIApplicationCommandInteraction) {
- const sub = subcommand(cmd);
+ const sub = getSubcommand(cmd);
  if (!sub) return;
 
  switch (sub.name) {

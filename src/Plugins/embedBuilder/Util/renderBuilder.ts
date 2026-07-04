@@ -17,6 +17,7 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
+import { cleanPreview } from '../../../Util/cleanPreview.js';
 import { buttonEmoji, textEmote } from '../../settings/Util/settingsEmotes.js';
 import {
  EmbedProperty,
@@ -32,7 +33,6 @@ import type EmbedBuilderPlugin from '../Plugin.js';
 
 import { blank, currentValue } from './applyProperty.js';
 import { buildMarkerUrl, isSendable, placeholderUrl, type BuilderMarker } from './builderState.js';
-import { cleanPreview } from './cleanPreview.js';
 
 type Translator = Awaited<ReturnType<EmbedBuilderPlugin['t']>>;
 

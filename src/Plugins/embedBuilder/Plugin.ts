@@ -5,6 +5,7 @@ import type { APIEmbed } from 'discord-api-types/v10';
 
 import Plugin, {
  idSelector,
+ PluginName,
  SettingsCategory,
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
@@ -35,7 +36,7 @@ export enum EmbedBuilderGroups {
 
 export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
  name = 'Embed Builder';
- settingName = 'embed-builder';
+ settingName = PluginName.EmbedBuilder;
  tableName = 'CustomEmbed';
 
  customBotPerms =

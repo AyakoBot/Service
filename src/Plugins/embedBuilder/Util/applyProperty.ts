@@ -1,5 +1,6 @@
 import type { APIEmbed } from 'discord-api-types/v10';
 
+import { parseColor } from '../../../Util/parseColor.js';
 import { EmbedProperty, propertyLengths } from '../Classes/Properties.js';
 
 export enum ApplyErrorCode {
@@ -26,12 +27,6 @@ const parseUrl = (value: string): string | null => {
  } catch {
   return null;
  }
-};
-
-export const parseColor = (value: string): number | null => {
- const match = value.trim().replace(/^#/, '');
- if (!/^[0-9a-f]{6}$/i.test(match)) return null;
- return parseInt(match, 16);
 };
 
 export enum TimestampToken {
