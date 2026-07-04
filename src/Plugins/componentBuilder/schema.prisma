@@ -1,0 +1,20 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model CustomComponents {
+ id         Decimal @id @db.Decimal
+ guild      String  @db.VarChar
+ name       String  @default("") @db.VarChar
+ components Json?
+
+ @@index(guild)
+}
