@@ -1,4 +1,4 @@
-import type { APIPartialEmoji } from '@discordjs/core';
+import type { APIPartialEmoji, ChannelType } from '@discordjs/core';
 
 import type Plugin from '../../Classes/abstracts/Plugin.js';
 import type { BaseLang, BaseLanguage } from '../../Classes/abstracts/Plugin.js';
@@ -48,7 +48,10 @@ export interface SettingsField<Row = Record<string, unknown>> {
  label: string;
  description?: string;
  arity?: FieldArity;
- options?: { label: string; value: string }[] | (() => Promise<{ label: string; value: string }[]>);
+ options?:
+  | { label: string; value: string; description?: string }[]
+  | (() => Promise<{ label: string; value: string; description?: string }[]>);
+ channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
  headerToggle?: boolean;
@@ -142,8 +145,9 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  description?: (t: T) => string;
  arity?: FieldArity;
  options?:
-  | { label: (t: T) => string; value: string }[]
-  | (() => Promise<{ label: string; value: string }[]>);
+  | { label: (t: T) => string; value: string; description?: (t: T) => string }[]
+  | (() => Promise<{ label: string; value: string; description?: string }[]>);
+ channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
  headerToggle?: boolean;

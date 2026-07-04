@@ -99,13 +99,16 @@ const renderEntitySelect = (
     .setChannelTypes(ChannelType.GuildCategory)
     .setDefaultChannels(ids)
     .setDisabled(disabled);
-  default:
-   return new ChannelSelectMenuBuilder()
+  default: {
+   const select = new ChannelSelectMenuBuilder()
     .setCustomId(customId)
     .setMinValues(0)
     .setMaxValues(maxValues)
     .setDefaultChannels(ids)
     .setDisabled(disabled);
+   if (field.channelTypes?.length) select.setChannelTypes(...field.channelTypes);
+   return select;
+  }
  }
 };
 

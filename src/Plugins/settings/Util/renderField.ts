@@ -80,14 +80,15 @@ const renderEntity = (field: SettingsField, value: unknown, customId: string): L
      .setChannelTypes(ChannelType.GuildCategory)
      .setDefaultChannels(ids),
    );
-  default:
-   return label.setChannelSelectMenuComponent(
-    new ChannelSelectMenuBuilder()
-     .setCustomId(customId)
-     .setMinValues(0)
-     .setMaxValues(maxValues)
-     .setDefaultChannels(ids),
-   );
+  default: {
+   const select = new ChannelSelectMenuBuilder()
+    .setCustomId(customId)
+    .setMinValues(0)
+    .setMaxValues(maxValues)
+    .setDefaultChannels(ids);
+   if (field.channelTypes?.length) select.setChannelTypes(...field.channelTypes);
+   return label.setChannelSelectMenuComponent(select);
+  }
  }
 };
 

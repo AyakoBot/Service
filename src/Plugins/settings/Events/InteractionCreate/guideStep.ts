@@ -13,7 +13,10 @@ import type { TopLevelBuilder } from '../../Util/buildGroupPage.js';
 import { encodeSettingsId, SettingsAction, type SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { renderInlineField } from '../../Util/renderInlineField.js';
+import { InlineKind, resolveInlineKind } from '../../Util/resolveInlineKind.js';
 import { buttonEmoji } from '../../Util/settingsEmotes.js';
+
+import fieldModal from './fieldModal.js';
 
 export default async function (
  this: SettingsPlugin,
@@ -34,8 +37,14 @@ export default async function (
  });
  if (!row) return;
 
- const t = await this.t(cmd.guild_id);
  const visible = field.showIf ? field.showIf(row) : { ok: true };
+
+ if (visible.ok && resolveInlineKind(field) === InlineKind.ModalText) {
+  await fieldModal.call(this, cmd, id);
+  return;
+ }
+
+ const t = await this.t(cmd.guild_id);
 
  const idFor = (action: SettingsAction, column: string): string =>
   encodeSettingsId({
