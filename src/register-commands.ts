@@ -13,6 +13,7 @@ const { default: pluginCustomClients } = await import('./Plugins/customClients/P
 const { default: pluginTicketing } = await import('./Plugins/ticketing/Plugin.js');
 const { default: pluginEval } = await import('./Plugins/eval/Plugin.js');
 const { default: pluginEmbedBuilder } = await import('./Plugins/embedBuilder/Plugin.js');
+const { default: pluginComponentBuilder } = await import('./Plugins/componentBuilder/Plugin.js');
 const { default: buildCommandBody } = await import('./Util/buildCommandBody.js');
 
 const client = new Client();
@@ -23,6 +24,7 @@ client.registerPlugin(pluginCustomClients);
 client.registerPlugin(pluginTicketing);
 client.registerPlugin(pluginEval);
 client.registerPlugin(pluginEmbedBuilder);
+client.registerPlugin(pluginComponentBuilder);
 
 const pluginName = process.argv
  .find((arg) => arg.startsWith('--plugin='))
