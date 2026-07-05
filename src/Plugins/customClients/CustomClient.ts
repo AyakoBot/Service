@@ -2,7 +2,7 @@ import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ay
 
 import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
-import { checkToken } from '../../Util/botInGuild.js';
+import { checkToken, TokenCheckResult } from '../../Util/tokenCheck.js';
 
 import CustomClientsPlugin from './Plugin.js';
 
@@ -54,12 +54,12 @@ export default class CustomClient extends DBEntry<'customClient'> {
   const api = new API(entry.token, this.plugin.logger, this.client.cache, guildId);
   const status = await checkToken(api, guildId);
 
-  if (status === 'ok') {
+  if (status === TokenCheckResult.OK) {
    this.apiCache.set(guildId, api);
    return api;
   }
 
-  if (status === 'invalid') {
+  if (status === TokenCheckResult.Invalid) {
    this.apiCache.delete(guildId);
    await this.db.client.customClient.update({
     where: { guildId },
@@ -91,7 +91,6 @@ export default class CustomClient extends DBEntry<'customClient'> {
  };
 
  registerErrorHandler = (api: API) => {
-  // TODO: implement error debug channel
   api.on('error', async (message: RequestHandlerError<RequestHandlerErrorType>) => {
    const guildIds = await this.getGuildIdFromError(api, message);
    if (!guildIds) {
