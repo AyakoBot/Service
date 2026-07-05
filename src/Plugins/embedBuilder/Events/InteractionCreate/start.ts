@@ -21,6 +21,7 @@ import {
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import CustomEmbed from '../../CustomEmbed.js';
@@ -119,7 +120,7 @@ export const openIntoThread = async function (
  this: EmbedBuilderPlugin,
  cmd: APIInteraction,
  embed: APIEmbed,
- respond: 'reply' | 'update',
+ respond: RespondMode,
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
@@ -135,7 +136,7 @@ export const openIntoThread = async function (
    : `${textEmote(emotes.warning)} ${failNote}`;
 
  const payload = confirmSurface.call(this, content);
- if (respond === 'reply') payload.reply(cmd);
+ if (respond === RespondMode.Reply) payload.reply(cmd);
  else payload.update(cmd);
 };
 
@@ -152,7 +153,7 @@ export const startFresh = async function (
  this: EmbedBuilderPlugin,
  cmd: APIMessageComponentInteraction,
 ) {
- await openIntoThread.call(this, cmd, {}, 'update');
+ await openIntoThread.call(this, cmd, {}, RespondMode.Update);
 };
 
 export const loadPick = async function (
@@ -180,7 +181,7 @@ export const loadOpen = async function (
   return;
  }
 
- await openIntoThread.call(this, cmd, (row.embed ?? {}) as APIEmbed, 'update');
+ await openIntoThread.call(this, cmd, (row.embed ?? {}) as APIEmbed, RespondMode.Update);
 };
 
 export const openFromAction = async function (
@@ -198,7 +199,7 @@ export const openFromAction = async function (
   return;
  }
 
- await openIntoThread.call(this, cmd, (row.embed ?? {}) as APIEmbed, 'reply');
+ await openIntoThread.call(this, cmd, (row.embed ?? {}) as APIEmbed, RespondMode.Reply);
 };
 
 export const deleteSaved = async function (

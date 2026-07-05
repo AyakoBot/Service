@@ -17,12 +17,14 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import {
  ComponentBuilderCommand,
  ComponentBuilderSubcommand,
 } from '../../../componentBuilder/Classes/Commands.js';
-import { findModalValue } from '../../../settings/Util/findModalValue.js';
+import { EmbedProperty, fieldLimit, propertyLengths } from '../../Classes/Properties.js';
 import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 import { builderContext, ephemeralNote } from '../../Util/builderContext.js';
@@ -39,6 +41,18 @@ const extractEmbed = (parsed: APIEmbed | APIEmbed[] | APIMessage): APIEmbed => {
  if ('embeds' in parsed && Array.isArray(parsed.embeds)) return parsed.embeds[0] ?? {};
  return parsed as APIEmbed;
 };
+
+const withinLimits = (embed: APIEmbed): boolean =>
+ (embed.fields?.length ?? 0) <= fieldLimit &&
+ (embed.title?.length ?? 0) <= (propertyLengths[EmbedProperty.Title] ?? Infinity) &&
+ (embed.description?.length ?? 0) <= (propertyLengths[EmbedProperty.Description] ?? Infinity) &&
+ (embed.author?.name.length ?? 0) <= (propertyLengths[EmbedProperty.AuthorName] ?? Infinity) &&
+ (embed.footer?.text.length ?? 0) <= (propertyLengths[EmbedProperty.FooterText] ?? Infinity) &&
+ (embed.fields ?? []).every(
+  (field) =>
+   field.name.length <= (propertyLengths[EmbedProperty.FieldName] ?? Infinity) &&
+   field.value.length <= (propertyLengths[EmbedProperty.FieldValue] ?? Infinity),
+ );
 
 export const importOpen = async function (
  this: EmbedBuilderPlugin,
@@ -114,11 +128,18 @@ export const importSave = async function (
  }
 
  let embed: APIEmbed;
+ let valid: boolean;
  try {
   embed = extractEmbed(parsed as APIEmbed | APIEmbed[] | APIMessage);
   new EmbedBuilder(embed).toJSON();
+  valid = withinLimits(embed);
  } catch {
   ephemeralNote.call(this, cmd, t.errors.invalidJson());
+  return;
+ }
+
+ if (!valid) {
+  ephemeralNote.call(this, cmd, t.errors.tooLong());
   return;
  }
 
@@ -131,7 +152,7 @@ export const importSave = async function (
   return;
  }
 
- await openIntoThread.call(this, cmd, embed, 'update');
+ await openIntoThread.call(this, cmd, embed, RespondMode.Update);
 };
 
 export const exportJson = async function (

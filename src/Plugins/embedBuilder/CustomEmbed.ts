@@ -1,7 +1,7 @@
 import type { CustomEmbed as CustomEmbedRow, Prisma } from '@ayako/database';
 import type { APIEmbed } from 'discord-api-types/v10';
 
-import DBEntry, { findMany } from '../../Classes/abstracts/DBEntry.js';
+import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
 import type { FindManyArgs } from '../../Types/prisma.js';
 
@@ -14,7 +14,7 @@ export default class CustomEmbed extends DBEntry<'customEmbed'> {
  }
 
  static all(client: Client, guild: string): Promise<CustomEmbedRow[]> {
-  return findMany(client, 'customEmbed', { where: { guild } } as FindManyArgs<'customEmbed'>);
+  return client.db.findMany('customEmbed', { where: { guild } } as FindManyArgs<'customEmbed'>);
  }
 
  static byId(client: Client, id: string): Promise<CustomEmbedRow | null> {

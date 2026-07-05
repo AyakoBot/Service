@@ -112,6 +112,8 @@
   "invalidWebhookUrl": "That doesn't look like a Discord webhook URL.",
   "webhookWrongGuild": "That webhook belongs to a different server.",
   "webhookUnreachable": "I couldn't reach that webhook - check the URL is still valid.",
+  "webhookIdentityTooLong": "That webhook name and avatar URL are too long to carry - use a shorter one or send via a webhook URL.",
+  "tooLong": "That embed exceeds Discord's length limits - shorten it and import again.",
   "notEditable": "That message wasn't sent by me or one of my webhooks.",
   "notALink": "That's not a message link.",
   "manageGuildRequired": "You need the Manage Server permission to do that."

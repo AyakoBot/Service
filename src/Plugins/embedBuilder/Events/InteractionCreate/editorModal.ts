@@ -5,7 +5,7 @@ import {
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
-import { findModalValue } from '../../../settings/Util/findModalValue.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import {
  EmbedProperty,
  propertyInputs,

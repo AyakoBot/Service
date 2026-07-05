@@ -11,13 +11,13 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { messageLinkPattern } from '../../../../Util/messageLink.js';
 import { parseWebhookUrl } from '../../../../Util/parseWebhookUrl.js';
-import { findModalValue } from '../../../settings/Util/findModalValue.js';
 import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 import { authorizeManage, builderContext, ephemeralNote } from '../../Util/builderContext.js';
-import { isSendable } from '../../Util/builderState.js';
+import { buildMarkerUrl, isSendable, markerUrlLimit } from '../../Util/builderState.js';
 import { renderBuilder, SendMode, sendRows, type BuilderView } from '../../Util/renderBuilder.js';
 
 const sendableContext = async function (
@@ -217,6 +217,11 @@ export const webhookSubmit = async function (
    webhookAvatar: avatar || undefined,
   },
  };
+
+ if (buildMarkerUrl(view.marker).length > markerUrlLimit) {
+  ephemeralNote.call(this, cmd, t.errors.webhookIdentityTooLong());
+  return;
+ }
 
  renderBuilder.call(this, t, view, sendRows.call(this, t, SendMode.Webhook)).update(cmd);
 };

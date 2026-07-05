@@ -48,6 +48,8 @@ export interface BuilderMessageLike {
  components?: APIMessageTopLevelComponent[];
 }
 
+export const markerUrlLimit = 2048;
+
 export const buildMarkerUrl = (marker: BuilderMarker): string => {
  const url = new URL(markerBase);
  url.searchParams.set(MarkerParam.Builder, 'true');
