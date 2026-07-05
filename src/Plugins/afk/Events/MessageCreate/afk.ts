@@ -1,11 +1,12 @@
 import type { RMessage } from '@ayako/utility';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import canUserExecuteCommand from '../../../../Util/canUserExecuteCommand.js';
 import AFKState from '../../AFKState.js';
 import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
 import { buildReasonEmbeds, getContent } from '../../Util/afkStatus.js';
+import canUserExecuteCommand from '../../Util/canUserExecuteCommand.js';
+import { clampReason } from '../../Util/clampReason.js';
 import { setNick } from '../../Util/nick.js';
 
 export default async function (
@@ -45,7 +46,11 @@ export default async function (
  const member = await this.client.cache.members.get(msg.guild_id, msg.author_id);
  if (!member) return;
 
- const reason = msg.content.slice(commandName.length + (prefix || '').length).trim() || null;
+ const reason = await clampReason.call(
+  this,
+  msg.guild_id,
+  msg.content.slice(commandName.length + (prefix || '').length).trim() || null,
+ );
 
  const afkBase = new AFKState(this.client, msg.author_id, msg.guild_id);
  const afk = await afkBase.get();

@@ -16,6 +16,7 @@ const afkNickSuffixFor = (baseLength: number) => {
 export const setNick = async function (this: AFKPlugin, userId: string, guildId: string) {
  const member = await this.client.cache.members.get(guildId, userId);
  if (!member) return undefined;
+ if (member.nick?.includes('AFK')) return undefined;
 
  const user = member.nick
   ? { username: '', global_name: '' }

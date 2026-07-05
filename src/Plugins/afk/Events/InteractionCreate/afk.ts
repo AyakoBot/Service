@@ -10,6 +10,7 @@ import AFKState from '../../AFKState.js';
 import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
 import { buildReasonEmbeds, getContent } from '../../Util/afkStatus.js';
+import { clampReason } from '../../Util/clampReason.js';
 import { setNick } from '../../Util/nick.js';
 
 export default async function (this: AFKPlugin, cmd: APIInteraction) {
@@ -24,9 +25,13 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
 
  const member = cmd.member || (await this.client.cache.members.get(cmd.guild_id, user.id));
 
- const reason = cmd.data.options
-  ?.filter((o) => o.type === ApplicationCommandOptionType.String)
-  .find((o) => o.name === 'reason')?.value as string | undefined;
+ const reason = await clampReason.call(
+  this,
+  cmd.guild_id,
+  cmd.data.options
+   ?.filter((o) => o.type === ApplicationCommandOptionType.String)
+   .find((o) => o.name === 'reason')?.value as string | undefined,
+ );
 
  const afkBase = new AFKState(this.client, user.id, cmd.guild_id);
  const afk = await afkBase.get();
