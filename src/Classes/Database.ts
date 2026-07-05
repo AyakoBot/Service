@@ -2,6 +2,9 @@ import { Prisma, PrismaClient } from '@ayako/database';
 import type { Cache, logger as Logger } from '@ayako/utility';
 import { PrismaPg } from '@prisma/adapter-pg';
 
+import type { DataBaseTables, FindManyArgs, TableName } from '../Types/prisma.js';
+
+import type { ModelDelegate } from './abstracts/DBEntry.js';
 import type { CacheOperationData } from './DatabaseCache.js';
 import { DatabaseCache } from './DatabaseCache.js';
 import type Metrics from './Metrics.js';
@@ -18,10 +21,11 @@ export default class Database {
   logger.silly('[Database] Creating PrismaClient with extensions...');
   this.client = new PrismaClient({
    adapter: new PrismaPg({
-    connectionString: `${process.env.MAIN_DATABASE_URL?.replace(
-     'postgres:5432',
-     'localhost:5432',
-    )}/Ayako-v3`,
+    connectionString: `${
+     process.argv.includes('--local')
+      ? process.env.MAIN_DATABASE_URL?.replace('postgres:5432', 'localhost:5432')
+      : process.env.MAIN_DATABASE_URL
+    }/Ayako-v3`,
    }),
   })
    .$extends(this.getLoggingExtension(logger))
@@ -30,6 +34,16 @@ export default class Database {
 
   logger.log('[Database] Database initialization complete');
  }
+
+ findMany = <T extends TableName>(
+  tableName: T,
+  args: FindManyArgs<T>,
+ ): Promise<DataBaseTables[T][]> => {
+  const delegate = (this.client as unknown as Record<string, unknown>)[
+   tableName
+  ] as ModelDelegate<T>;
+  return delegate.findMany(args);
+ };
 
  private getLoggingExtension = (loggerInstance: typeof Logger) =>
   Prisma.defineExtension({
@@ -43,7 +57,7 @@ export default class Database {
      } catch (error) {
       loggerInstance.error('[Prisma] Error on', model, operation, ':', (error as Error).message);
       loggerInstance.debug('[Prisma] Stack:', (error as Error).stack);
-      return null;
+      throw error;
      }
     },
    },
