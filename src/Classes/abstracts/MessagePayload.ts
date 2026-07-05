@@ -1,4 +1,4 @@
-import { RequestHandlerError } from '@ayako/api';
+import { type API as CustomAPI, RequestHandlerError } from '@ayako/api';
 import { logger, type RChannel, type RMessage, type RThread, type RUser } from '@ayako/utility';
 import { EmbedBuilder } from '@discordjs/builders';
 import { type CreateMessageOptions, type DescriptiveRawFile } from '@discordjs/core';
@@ -342,9 +342,9 @@ export class MessagePayload {
   });
  }
 
- async edit(channelId: string, messageId: string, guildId: string) {
-  const api = await this.client.getAPI(guildId);
-  return api.channels.editMessage(channelId, messageId, this.getAPIPayload(), {
+ async edit(channelId: string, messageId: string, guildId: string, api?: CustomAPI) {
+  const resolved = api ?? (await this.client.getAPI(guildId));
+  return resolved.channels.editMessage(channelId, messageId, this.getAPIPayload(), {
    origin: this.origin,
    reason: this.reason,
   });
