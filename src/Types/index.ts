@@ -1,5 +1,3 @@
-import './gateway.js';
-
 export enum Colors {
  Danger = 0xff0000,
  Success = 0x00ff00,
