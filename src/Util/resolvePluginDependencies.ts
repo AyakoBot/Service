@@ -1,10 +1,10 @@
 import type Client from '../Classes/Client.js';
 
-const resolvePluginDependencies = (
- client: Client,
+const resolvePluginDependencies = function (
+ this: Client,
  root: Client['plugins'][number],
-): Client['plugins'] => {
- const byName = new Map(client.plugins.map((plugin) => [plugin.settingName, plugin]));
+): Client['plugins'] {
+ const byName = new Map(this.plugins.map((plugin) => [plugin.settingName, plugin]));
  const resolved: Client['plugins'] = [];
  const visited = new Set<string>();
  const queue: Client['plugins'] = [root];

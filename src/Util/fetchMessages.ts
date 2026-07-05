@@ -4,15 +4,6 @@ import type { APIMessage } from 'discord-api-types/v10';
 
 import type Client from '../Classes/Client.js';
 
-/**
- * Fetches up to `filter.amount` messages from a channel, newest-first,
- * optionally bounded by `before` (exclusive upper) and `after` (exclusive lower).
- * @param channelId The id of the channel to read from.
- * @param guildId The id of the guild whose API client to use.
- * @param filter Amount to fetch, optional `before`/`after` bounds, `isDm` flag, and an
- * optional `abortWhen` predicate that stops pagination once a page contains a match.
- * @returns The fetched messages in newest-first order, or `[]` on request failure.
- */
 export default async function (
  this: Client,
  channelId: string,

@@ -39,11 +39,11 @@ const buildSettingsCommand = (plugins: Client['plugins']) => {
  return command;
 };
 
-const buildCommandBody = (
- client: Client,
+const buildCommandBody = function (
+ this: Client,
  only?: Client['plugins'][number],
-): RESTPostAPIChatInputApplicationCommandsJSONBody[] => {
- const selected = only ? resolvePluginDependencies(client, only) : client.plugins;
+): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
+ const selected = only ? resolvePluginDependencies.call(this, only) : this.plugins;
 
  const standalone = selected.flatMap((plugin) => plugin.getCommands().commands);
 
