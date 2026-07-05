@@ -13,9 +13,9 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { messageLinkPattern } from '../../../../Util/messageLink.js';
 import { parseWebhookUrl } from '../../../../Util/parseWebhookUrl.js';
-import { findModalValue } from '../../../settings/Util/findModalValue.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
 import {

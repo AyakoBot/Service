@@ -14,12 +14,13 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import {
  EmbedBuilderCommand,
  EmbedBuilderSubcommand,
 } from '../../../embedBuilder/Classes/Commands.js';
-import { findModalValue } from '../../../settings/Util/findModalValue.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
 import { applyErrorText } from '../../Util/applyErrorText.js';
@@ -33,7 +34,7 @@ import {
 } from '../../Util/componentTree.js';
 import { renderBuilder } from '../../Util/renderBuilder.js';
 
-import { openIntoThread, RespondMode } from './start.js';
+import { openIntoThread } from './start.js';
 
 const inputIds = ['json0', 'json1', 'json2'];
 const inputLength = 4000;

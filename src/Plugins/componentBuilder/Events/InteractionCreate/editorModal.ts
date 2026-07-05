@@ -6,7 +6,7 @@ import {
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
-import { findModalValue } from '../../../settings/Util/findModalValue.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { MediaAddKind, NodeKind } from '../../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';

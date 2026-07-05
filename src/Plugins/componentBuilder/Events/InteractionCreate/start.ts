@@ -20,6 +20,7 @@ import {
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import CustomComponents from '../../CustomComponents.js';
@@ -29,11 +30,6 @@ import type { WipTree } from '../../Util/componentTree.js';
 import { openThread } from '../../Util/openThread.js';
 
 const selectLimit = 25;
-
-export enum RespondMode {
- Reply = 'reply',
- Update = 'update',
-}
 
 const buildStartSurface = async function (
  this: ComponentBuilderPlugin,

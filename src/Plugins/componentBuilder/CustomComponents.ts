@@ -1,6 +1,6 @@
 import type { CustomComponents as CustomComponentsRow, Prisma } from '@ayako/database';
 
-import DBEntry, { findMany } from '../../Classes/abstracts/DBEntry.js';
+import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
 import type { FindManyArgs } from '../../Types/prisma.js';
 
@@ -15,7 +15,7 @@ export default class CustomComponents extends DBEntry<'customComponents'> {
  }
 
  static all(client: Client, guild: string): Promise<CustomComponentsRow[]> {
-  return findMany(client, 'customComponents', {
+  return client.db.findMany('customComponents', {
    where: { guild },
   } as FindManyArgs<'customComponents'>);
  }

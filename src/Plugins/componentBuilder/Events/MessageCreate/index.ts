@@ -1,9 +1,9 @@
 import { getGuildPerms } from '@ayako/utility';
-import { PermissionFlagsBits } from '@discordjs/core';
 import { MessageType, type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import fetchMessages from '../../../../Util/fetchMessages.js';
+import { hasManageGuild } from '../../../settings/Util/authorizeSettings.js';
 import { NodeKind } from '../../Classes/Nodes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
 import { applyText } from '../../Util/applyNode.js';
@@ -61,9 +61,7 @@ export default async function (
  });
 
  const permissions = await getGuildPerms.call(this.client.cache, msg.guild_id, msg.author.id);
- const canManage =
-  (permissions.response & PermissionFlagsBits.ManageGuild) === PermissionFlagsBits.ManageGuild ||
-  (permissions.response & PermissionFlagsBits.Administrator) === PermissionFlagsBits.Administrator;
+ const canManage = hasManageGuild(permissions.response);
 
  const t = await this.t(msg.guild_id);
  await renderBuilder
@@ -73,5 +71,5 @@ export default async function (
    selectedPath: null,
    canManage,
   })
-  .edit(msg.channel_id, surface.id, msg.guild_id);
+  .edit(msg.channel_id, surface.id, msg.guild_id, api);
 }
