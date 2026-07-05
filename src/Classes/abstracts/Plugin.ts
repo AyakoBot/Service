@@ -15,17 +15,12 @@ import merge from 'lodash.merge';
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
-import { checkToken, TokenCheckResult } from '../../Util/botInGuild.js';
+import { checkToken, TokenCheckResult } from '../../Util/tokenCheck.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
 
 export type BaseLang = TranslatorType<typeof baseLang>;
 
-/**
- * Categories for settings commands.
- * Plugins can assign their settings commands to one of these categories
- * for better organization in the UI.
- */
 export enum SettingsCategory {
  Utility = 'utility',
  Info = 'info',
@@ -51,16 +46,8 @@ export enum PluginName {
  ComponentBuilder = 'component-builder',
 }
 
-/**
- * Base language structure that all plugins must follow.
- * Plugins can extend this with their own nested structures.
- */
 export type BaseLanguage = Record<string, unknown>;
 
-/**
- * Language files mapping locales to language objects.
- * 'en-GB' is required as the base/fallback language.
- */
 export type LanguageFiles<L extends BaseLanguage> = {
  // eslint-disable-next-line @typescript-eslint/naming-convention
  'en-GB': L;
@@ -193,13 +180,6 @@ export default abstract class Plugin<
  disable = () => (this.enabled = false);
  isEnabled = () => this.enabled;
 
- /**
-  * Gets the merged language object for a given guild or locale.
-  * Falls back to 'en-GB' for missing translations.
-  *
-  * @param guildIdOrLocale - Guild ID (bigint/string) or locale string (e.g., 'en-GB')
-  * @returns The merged language object
-  */
  protected getLanguage = async (
   guildIdOrLocale: string | bigint | null | undefined,
  ): Promise<L> => {
@@ -213,17 +193,6 @@ export default abstract class Plugin<
   ) as L;
  };
 
- /**
-  * Gets a typed translator for the given guild or locale.
-  * Returns a proxy that converts string templates into callable functions.
-  *
-  * @example
-  * const t = await plugin.t(guildId);
-  * t.messages.welcome({ user: { username: 'Ayako' } });
-  *
-  * @param guildIdOrLocale - Guild ID (bigint/string) or locale string
-  * @returns A typed translator proxy
-  */
  t = async (
   guildIdOrLocale: string | bigint | null | undefined,
  ): Promise<TranslatorType<L> & { base: BaseLang }> => {
