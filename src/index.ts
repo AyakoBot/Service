@@ -64,7 +64,6 @@ client.registerPlugin(pluginEval);
 client.registerPlugin(pluginEmbedBuilder);
 client.registerPlugin(pluginComponentBuilder);
 
-// TODO: remove
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
 
 process.on('SIGINT', () => {
