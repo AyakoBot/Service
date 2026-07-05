@@ -28,7 +28,6 @@ export class DatabaseCache {
    logger.silly('[DatabaseCache] No where clause, bypassing cache for', name, data.operation);
    return data.query(data.args);
   }
-  if (!data.args.where) return data.query(data.args);
 
   const indexValues = this.getKey<typeof name>(data.args.where, index);
 
@@ -48,11 +47,8 @@ export class DatabaseCache {
    case 'update':
    case 'updateMany':
    case 'upsert':
-   case 'create':
    case 'delete':
    case 'deleteMany':
-   case 'createMany':
-   case 'createManyAndReturn':
     logger.debug('[DatabaseCache] Invalidating cache keys for', name, ':', keys);
     keys.forEach((key) => (key.length ? this.cache.cacheDb.del(key) : 0));
     return data.query(data.args);
