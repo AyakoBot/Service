@@ -24,12 +24,12 @@ import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
+import fetchMessages from '../../../Util/fetchMessages.js';
+import type TicketPlugin from '../Plugin.js';
 import {
  cloneMessageIntoContainer,
  contextMarkerButton,
-} from '../../../Util/cloneMessageIntoContainer.js';
-import fetchMessages from '../../../Util/fetchMessages.js';
-import type TicketPlugin from '../Plugin.js';
+} from '../Util/cloneMessageIntoContainer.js';
 import isUnderLimit from '../Util/isUnderLimit.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 import {
@@ -199,7 +199,7 @@ export default class BaseTicket extends BaseTicketLogger {
   if (!ticket.settings.allowTakeClaim) return false;
 
   const tiers = await this.listTiers();
-  return canUserTakeClaim(this.client, ticket, userId, tiers);
+  return canUserTakeClaim.call(this.client, ticket, userId, tiers);
  }
 
  async postUnclaimMarker(actorId: string) {
@@ -238,7 +238,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const target = tiers.find((tier) => tier.id.toString() === targetTierId);
   if (!target) throw new Error(BaseTicketErrors.escalate_TierNotFound);
 
-  const reachable = await canUserReachTier(this.client, ticket, userId, target, tiers);
+  const reachable = await canUserReachTier.call(this.client, ticket, userId, target, tiers);
   if (!reachable) throw new Error(BaseTicketErrors.escalate_CannotReach);
 
   this.plugin.logger.logLocation(LogLevel.debug);
@@ -281,7 +281,7 @@ export default class BaseTicket extends BaseTicketLogger {
  async reachableTiersFor(userId: string): Promise<TicketTier[]> {
   const ticket = await this.getTicket();
   const tiers = await this.listTiers();
-  return reachableTiers(this.client, ticket, userId, tiers);
+  return reachableTiers.call(this.client, ticket, userId, tiers);
  }
 
  async postEscalationMarker(actorId: string, tier: TicketTier) {
@@ -367,7 +367,7 @@ export default class BaseTicket extends BaseTicketLogger {
   if (!tiers.length) return this.isUserStaff(userId);
 
   const ticket = await this.getTicket();
-  return canUserClaimTier(this.client, ticket, userId, tiers);
+  return canUserClaimTier.call(this.client, ticket, userId, tiers);
  }
 
  async canUserDelete(userId: string) {
@@ -506,10 +506,6 @@ export default class BaseTicket extends BaseTicketLogger {
 
   await this.enforceCreateLimits(dbOpts.settingsId, dbOpts.userId);
 
-  const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId);
-  this.dbTicket = preparedEntry;
-  this.plugin.logger.logLocation(LogLevel.debug);
-
   const settings = await this.getTicketSettings(dbOpts.settingsId);
 
   if (settings.denyUsers.includes(createOpts.userId)) {
@@ -518,6 +514,10 @@ export default class BaseTicket extends BaseTicketLogger {
   if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
    throw new Error(BaseTicketErrors.create_RoleDenied);
   }
+
+  const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId);
+  this.dbTicket = preparedEntry;
+  this.plugin.logger.logLocation(LogLevel.debug);
 
   const { channelId }: { channelId: string } = yield;
 

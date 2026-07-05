@@ -10,11 +10,11 @@ import {
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
+import { findModalValue, findModalValues } from '../../../../Util/findModalValue.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import TicketRoleMap from '../../Classes/TicketRoleMap.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
-import { findModalValue, findModalValues } from '../../Util/findModalValue.js';
 
 import { buildRoleMapEditor, roleMapWarn } from './roleMap.js';
 

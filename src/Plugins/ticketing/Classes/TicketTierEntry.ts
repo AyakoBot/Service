@@ -1,7 +1,7 @@
 import type { TicketSetting, TicketTier } from '@ayako/database';
 import { TicketPlacementMode } from '@ayako/database';
 
-import DBEntry, { findMany } from '../../../Classes/abstracts/DBEntry.js';
+import DBEntry from '../../../Classes/abstracts/DBEntry.js';
 import type Client from '../../../Classes/Client.js';
 import type { FindManyArgs } from '../../../Types/prisma.js';
 
@@ -33,7 +33,7 @@ export default class TicketTierEntry extends DBEntry<'ticketTier'> {
  }
 
  list(): Promise<TicketTier[]> {
-  return findMany(this.client, 'ticketTier', {
+  return this.client.db.findMany('ticketTier', {
    where: { settingsId: this.settingsId },
    orderBy: { rank: 'asc' },
   } as FindManyArgs<'ticketTier'>);

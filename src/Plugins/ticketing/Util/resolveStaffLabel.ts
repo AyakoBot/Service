@@ -28,5 +28,3 @@ export const resolveStaffLabel = async function (
  const role = await this.cache.roles.get(match.role);
  return role ? { name: role.name, emote: fallback.emote } : fallback;
 };
-
-export default resolveStaffLabel;

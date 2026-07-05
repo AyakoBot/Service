@@ -4,9 +4,10 @@ import type {
 } from 'discord-api-types/v10';
 
 import type Client from '../../../Classes/Client.js';
-import showCommandError from '../../../Util/showCommandError.js';
 import { BaseTicketErrors } from '../Classes/Enums.js';
 import TicketPlugin from '../Plugin.js';
+
+import showCommandError from './showCommandError.js';
 
 export default async function (
  this: Client,
@@ -36,25 +37,27 @@ const getErrorMessage = function (
 ) {
  const plugin = this.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
 
- switch (true) {
-  case error.message === BaseTicketErrors.userNotFound:
+ switch (error.message) {
+  case BaseTicketErrors.userNotFound:
    return t.base.errors.userNotFound();
 
-  case error.message === BaseTicketErrors.create_LimitKindReached:
+  case BaseTicketErrors.create_LimitKindReached:
    return t.errors[BaseTicketErrors.create_LimitKindReached]({
     count: String((error.cause as { count?: number } | undefined)?.count ?? 0),
    });
 
-  case error.message === BaseTicketErrors.create_LimitTotalReached:
+  case BaseTicketErrors.create_LimitTotalReached:
    return t.errors[BaseTicketErrors.create_LimitTotalReached]({
     count: String((error.cause as { count?: number } | undefined)?.count ?? 0),
    });
 
-  case Object.keys(t.errors).includes(error.message):
-   return t.errors[error.message as keyof typeof t.errors]();
+  default: {
+   if (Object.keys(t.errors).includes(error.message)) {
+    return t.errors[error.message as keyof typeof t.errors]();
+   }
 
-  default:
    plugin.nonFatalError(error, 'ticketErrorHandler');
    return `${t.base.errors.unknownError()} - ${error.message}`;
+  }
  }
 };

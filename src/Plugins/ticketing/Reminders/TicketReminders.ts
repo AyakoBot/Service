@@ -12,14 +12,6 @@ import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import emotes from '../../../Classes/Emotes.js';
-import {
- arm,
- disarm,
- isArmed,
- scanDataKeys,
- stripDataPrefix,
- stripMarkerPrefix,
-} from '../../../Util/Schedule.js';
 import type BaseTicket from '../Classes/BaseTicket.js';
 import { TicketRoute } from '../Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
@@ -33,6 +25,15 @@ import {
  remindKey,
  ticketKey,
 } from './keys.js';
+import {
+ arm,
+ dataKey,
+ disarm,
+ isArmed,
+ scanDataKeys,
+ stripDataPrefix,
+ stripMarkerPrefix,
+} from './Schedule.js';
 
 type TicketRow = Ticket & { settings: TicketSetting };
 type Translator = Awaited<ReturnType<TicketPlugin['t']>>;
@@ -69,11 +70,11 @@ export default class TicketReminders {
  armKind = async (ticket: TicketRow, kind: RemindKind, after: number) => {
   const key = remindKey(kind, String(ticket.id));
   if (after <= 0) {
-   await disarm(this.client, key);
+   await disarm.call(this.client, key);
    return;
   }
 
-  await arm(
+  await arm.call(
    this.client,
    key,
    encodeJob({ guildId: ticket.settings.guild, ticketId: String(ticket.id), kind }),
@@ -82,7 +83,7 @@ export default class TicketReminders {
  };
 
  disarmKinds = async (ticketId: string, kinds: RemindKind[]) => {
-  await Promise.all(kinds.map((kind) => disarm(this.client, remindKey(kind, ticketId))));
+  await Promise.all(kinds.map((kind) => disarm.call(this.client, remindKey(kind, ticketId))));
  };
 
  setRemindAt = async (ticketId: string, epochMs: number | null) => {
@@ -105,7 +106,7 @@ export default class TicketReminders {
  armTierReminder = async (ticket: TicketRow, tier: TicketTier) => {
   const after =
    positiveSeconds(tier.reminderSeconds) || positiveSeconds(ticket.settings.remindUnclaimedAfter);
-  await disarm(this.client, remindKey(RemindKind.Unclaimed, String(ticket.id)));
+  await disarm.call(this.client, remindKey(RemindKind.Unclaimed, String(ticket.id)));
   await this.armKind(ticket, RemindKind.Unclaimed, after);
  };
 
@@ -147,7 +148,7 @@ export default class TicketReminders {
   const { settings } = ticket;
   const warnAfter = positiveSeconds(settings.inactivityWarnAfter);
 
-  await disarm(this.client, remindKey(RemindKind.InactivityClose, id));
+  await disarm.call(this.client, remindKey(RemindKind.InactivityClose, id));
   await this.armKind(ticket, RemindKind.InactivityWarn, warnAfter);
 
   if (ticket.state === TicketState.claimed) {
@@ -224,7 +225,7 @@ export default class TicketReminders {
  fireStale = async (ticket: BaseTicket) => {
   const row = await ticket.getTicket();
   if (row.state !== TicketState.claimed || !row.claimer) {
-   await disarm(this.client, remindKey(RemindKind.Stale, String(row.id)));
+   await disarm.call(this.client, remindKey(RemindKind.Stale, String(row.id)));
    return;
   }
 
@@ -270,13 +271,13 @@ export default class TicketReminders {
  fireInactivityWarn = async (ticket: BaseTicket) => {
   const row = await ticket.getTicket();
   if (row.state !== TicketState.opened && row.state !== TicketState.claimed) {
-   await disarm(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
+   await disarm.call(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
    return;
   }
 
   const closeAfter = positiveSeconds(row.settings.inactivityCloseAfter);
   if (closeAfter <= 0) {
-   await disarm(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
+   await disarm.call(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
    return;
   }
 
@@ -290,14 +291,14 @@ export default class TicketReminders {
    .catch((error: Error) => this.plugin.nonFatalError(error, 'fireInactivityWarn'));
   await ticket.relayToDm(payload);
 
-  await disarm(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
+  await disarm.call(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
   await this.armCloseAfterWarn(row);
  };
 
  fireInactivityClose = async (ticket: BaseTicket) => {
   const row = await ticket.getTicket();
   if (row.state === TicketState.closed || row.state === TicketState.deleted) {
-   await disarm(this.client, remindKey(RemindKind.InactivityClose, String(row.id)));
+   await disarm.call(this.client, remindKey(RemindKind.InactivityClose, String(row.id)));
    return;
   }
 
@@ -347,13 +348,13 @@ export default class TicketReminders {
  reconcile = async () => {
   if (!this.client.cache.scheduleDb) return;
 
-  const dataKeys = await scanDataKeys(this.client, 'scheduled-data:tickets:*');
+  const dataKeys = await scanDataKeys.call(this.client, `${dataKey(ticketKey)}*`);
   if (!dataKeys.length) return;
 
   const overdue: string[] = [];
-  for (const dataKey of dataKeys) {
-   const key = stripDataPrefix(dataKey);
-   if (!(await isArmed(this.client, key))) overdue.push(key);
+  for (const raw of dataKeys) {
+   const key = stripDataPrefix(raw);
+   if (!(await isArmed.call(this.client, key))) overdue.push(key);
   }
 
   this.plugin.logger.debug(`[Ticketing] Reconciling ${overdue.length} overdue schedule(s)`);

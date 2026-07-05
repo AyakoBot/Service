@@ -1,7 +1,7 @@
-import { RequestHandlerError } from '@ayako/api';
+import { RequestHandlerError, type API } from '@ayako/api';
 import { TicketState, TicketType } from '@ayako/database';
 import type { Ticket, TicketSetting } from '@ayako/database';
-import { LogLevel, type RMessage } from '@ayako/utility';
+import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
@@ -23,6 +23,7 @@ import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 import type { SurfaceState } from './BaseTicket.js';
 import BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
+import type ChannelTicket from './ChannelTicket.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
 import DmToThreadTicket from './DmToThreadTicket.js';
 import { DMTicketErrors } from './Enums.js';
@@ -33,7 +34,7 @@ type AbstractCtor<T = {}> = new (...args: any[]) => T;
 /* eslint-enable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any */
 
 // eslint-disable-next-line func-style, @typescript-eslint/naming-convention
-export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBase) {
+export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: TBase) {
  abstract class DMTicket extends Base {
   static async findTicketByDMChannelId(
    client: Client,
@@ -344,6 +345,31 @@ export function DMTicketMixin<TBase extends AbstractCtor<BaseTicket>>(Base: TBas
    });
 
    return !!existing;
+  }
+
+  async createChannel(api: API, username: string, settingsId: string) {
+   this.plugin.logger.logLocation(LogLevel.silly);
+
+   await this.setDmChannel();
+   const superCreate = await super.createChannel(api, username, settingsId);
+
+   const initDmPayload = await this.getInitDmPayload();
+   const dmMessage = await this.forwardToDmChannel(initDmPayload);
+   if (!dmMessage) throw new Error(DMTicketErrors.cantSendMessage);
+
+   await this.setStarterDm(dmMessage.id);
+   await this.pinMessage(dmMessage);
+
+   return superCreate;
+  }
+
+  async closeChannel(api: API, channel: RChannel | RThread) {
+   this.plugin.logger.logLocation(LogLevel.silly);
+
+   const superClose = await super.closeChannel(api, channel);
+   await this.unpinStartMessage();
+
+   return superClose;
   }
 
   async setDmChannel() {

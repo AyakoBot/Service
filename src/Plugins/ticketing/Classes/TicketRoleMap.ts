@@ -31,13 +31,6 @@ export default class TicketRoleMap extends DBEntry<'ticketRoleMap'> {
   return entries;
  }
 
- async resolve(roleIds: Set<string>): Promise<string | null> {
-  const entries = await this.list();
-  const match = entries.find((entry) => roleIds.has(entry.role));
-  if (!match) return null;
-  return match.label.trim() ? match.label : null;
- }
-
  async add(role: string, label: string): Promise<RoleMapEntry[]> {
   const entries = await this.list();
   const existing = entries.findIndex((entry) => entry.role === role);

@@ -14,12 +14,12 @@ import {
 } from 'discord-api-types/v10';
 
 import { formatDurationSeconds, parseDurationSeconds } from '../../../../Util/durationSeconds.js';
+import { findModalValue, findModalValues } from '../../../../Util/findModalValue.js';
 import { TierErrors } from '../../Classes/Enums.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import TicketTierEntry, { type TierInput } from '../../Classes/TicketTierEntry.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
-import { findModalValue, findModalValues } from '../../Util/findModalValue.js';
 
 import { buildTierEditor, tierWarn } from './tierManage.js';
 

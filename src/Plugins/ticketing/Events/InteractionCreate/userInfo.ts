@@ -14,8 +14,8 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
 import getUser from '../../../../Util/getUser.js';
-import { snowflakeToMs } from '../../../../Util/snowflakeToDate.js';
 import type TicketPlugin from '../../Plugin.js';
+import { snowflakeToMs } from '../../Util/snowflakeToMs.js';
 import { ticketCounts } from '../../Util/ticketCounts.js';
 
 const roleLineCap = 1500;

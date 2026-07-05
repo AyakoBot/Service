@@ -1,6 +1,6 @@
 import type { Snippets } from '@ayako/database';
 
-import DBEntry, { findMany } from '../../../Classes/abstracts/DBEntry.js';
+import DBEntry from '../../../Classes/abstracts/DBEntry.js';
 import type Client from '../../../Classes/Client.js';
 import type { FindManyArgs } from '../../../Types/prisma.js';
 
@@ -12,7 +12,7 @@ export default class Snippet extends DBEntry<'snippets'> {
  }
 
  static all(client: Client, guild: string) {
-  return findMany(client, 'snippets', {
+  return client.db.findMany('snippets', {
    where: { guild },
    orderBy: { name: 'asc' },
   } as FindManyArgs<'snippets'>);

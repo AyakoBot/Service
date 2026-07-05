@@ -1,8 +1,8 @@
 import { type APIModalSubmitInteraction } from 'discord-api-types/v10';
 
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
-import { findModalValue } from '../../Util/findModalValue.js';
 import getTicketClassById from '../../Util/getTicketClassById.js';
 import handleTicketError from '../../Util/handleTicketError.js';
 

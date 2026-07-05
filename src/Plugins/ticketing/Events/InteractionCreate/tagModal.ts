@@ -1,11 +1,11 @@
 import { MessageFlags, type APIModalSubmitInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { SnippetErrors } from '../../Classes/Enums.js';
 import Snippet from '../../Classes/Snippet.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
-import { findModalValue } from '../../Util/findModalValue.js';
 import { buildToolkit, filterSnippets } from '../../Util/tagToolkit.js';
 
 export const tagSearchModal = async function (

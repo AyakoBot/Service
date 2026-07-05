@@ -2,8 +2,8 @@ import { ComponentType, type APIMessageComponentInteraction } from 'discord-api-
 
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
-import getTicketClassBySettingsType from '../../Util/getTicketClassBySettingsType.js';
 import handleTicketError from '../../Util/handleTicketError.js';
+import startTicketCreate from '../../Util/startTicketCreate.js';
 
 export default async function (
  this: TicketPlugin,
@@ -40,16 +40,12 @@ export default async function (
   return;
  }
 
- const ticket = getTicketClassBySettingsType.call(this.client, ticketSettings.type, '0');
- const create = ticket.create(
-  { settingsId, userId: user.id },
-  { cmd, userId: user.id, roleIds: cmd.member.roles, username: user.username },
- );
- create.next().catch((e: Error) =>
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: e,
-   cmd,
-  }),
- );
+ startTicketCreate.call(this, cmd, {
+  guildId: (cmd.guild?.id || cmd.guild_id)!,
+  settingsId,
+  type: ticketSettings.type,
+  userId: user.id,
+  roleIds: cmd.member.roles,
+  username: user.username,
+ });
 }

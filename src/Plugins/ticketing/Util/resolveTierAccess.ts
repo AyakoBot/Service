@@ -4,12 +4,12 @@ import type Client from '../../../Classes/Client.js';
 
 type TicketRow = Ticket & { settings: TicketSetting };
 
-const heldRoles = async (
- client: Client,
+const heldRoles = async function (
+ this: Client,
  guildId: string,
  userId: string,
-): Promise<Set<string>> => {
- const member = await client.cache.members.get(guildId, userId);
+): Promise<Set<string>> {
+ const member = await this.cache.members.get(guildId, userId);
  return new Set(member?.roles ?? []);
 };
 
@@ -40,19 +40,19 @@ const userSeniority = (
  roles: Set<string>,
 ): number => Math.max(tierRankOf(tiers, roles) ?? -1, staffTierRankOf(settings, roles));
 
-export const canUserTakeClaim = async (
- client: Client,
+export const canUserTakeClaim = async function (
+ this: Client,
  ticket: TicketRow,
  takerId: string,
  tiers: TicketTier[],
-): Promise<boolean> => {
+): Promise<boolean> {
  if (!ticket.settings.allowTakeClaim) return false;
  if (!ticket.claimer || ticket.claimer === takerId) return false;
 
- const takerRoles = await heldRoles(client, ticket.settings.guild, takerId);
+ const takerRoles = await heldRoles.call(this, ticket.settings.guild, takerId);
  if (!isBaselineStaff(ticket.settings, takerId, takerRoles)) return false;
 
- const claimerRoles = await heldRoles(client, ticket.settings.guild, ticket.claimer);
+ const claimerRoles = await heldRoles.call(this, ticket.settings.guild, ticket.claimer);
 
  const takerSeniority = userSeniority(ticket.settings, tiers, takerRoles);
  const claimerSeniority = userSeniority(ticket.settings, tiers, claimerRoles);
@@ -60,14 +60,14 @@ export const canUserTakeClaim = async (
  return takerSeniority > claimerSeniority;
 };
 
-export const canUserReachTier = async (
- client: Client,
+export const canUserReachTier = async function (
+ this: Client,
  ticket: TicketRow,
  userId: string,
  target: TicketTier,
  tiers: TicketTier[],
-): Promise<boolean> => {
- const roles = await heldRoles(client, ticket.settings.guild, userId);
+): Promise<boolean> {
+ const roles = await heldRoles.call(this, ticket.settings.guild, userId);
 
  if (target.claimRoles.some((role) => roles.has(role))) return true;
 
@@ -88,27 +88,27 @@ export const canUserReachTier = async (
  return false;
 };
 
-export const reachableTiers = async (
- client: Client,
+export const reachableTiers = async function (
+ this: Client,
  ticket: TicketRow,
  userId: string,
  tiers: TicketTier[],
-): Promise<TicketTier[]> => {
+): Promise<TicketTier[]> {
  const reachable: TicketTier[] = [];
  for (const tier of tiers) {
   if (tier.id.toString() === ticket.tierId?.toString()) continue;
-  if (await canUserReachTier(client, ticket, userId, tier, tiers)) reachable.push(tier);
+  if (await canUserReachTier.call(this, ticket, userId, tier, tiers)) reachable.push(tier);
  }
  return reachable;
 };
 
-export const canUserClaimTier = async (
- client: Client,
+export const canUserClaimTier = async function (
+ this: Client,
  ticket: TicketRow,
  userId: string,
  tiers: TicketTier[],
-): Promise<boolean> => {
- const roles = await heldRoles(client, ticket.settings.guild, userId);
+): Promise<boolean> {
+ const roles = await heldRoles.call(this, ticket.settings.guild, userId);
  if (isBaselineStaff(ticket.settings, userId, roles)) return true;
 
  if (!tiers.length) return false;

@@ -4,9 +4,8 @@ import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
 import { buildEndPayload, buildExistingPayload } from '../../Util/buildIntakePayload.js';
 import getOpenableKinds, { type OpenableKind } from '../../Util/getOpenableKinds.js';
-import getTicketClassBySettingsType from '../../Util/getTicketClassBySettingsType.js';
-import handleTicketError from '../../Util/handleTicketError.js';
 import isUnderLimit from '../../Util/isUnderLimit.js';
+import startTicketCreate from '../../Util/startTicketCreate.js';
 
 export const startKind = async function (
  this: TicketPlugin,
@@ -24,19 +23,14 @@ export const startKind = async function (
  const member = await this.client.cache.members.get(guildId, userId);
  const user = await this.client.cache.users.get(userId);
 
- const ticket = getTicketClassBySettingsType.call(this.client, kind.settings.type, '0');
- const create = ticket.create(
-  { settingsId: String(kind.settings.id), userId },
-  {
-   cmd,
-   userId,
-   roleIds: member?.roles ?? [],
-   username: user?.username || userId,
-  },
- );
- create.next().catch((e: Error) =>
-  handleTicketError.call(this.client, { guildId, error: e, cmd }),
- );
+ startTicketCreate.call(this, cmd, {
+  guildId,
+  settingsId: String(kind.settings.id),
+  type: kind.settings.type,
+  userId,
+  roleIds: member?.roles ?? [],
+  username: user?.username || userId,
+ });
 };
 
 export const intakeKind = async function (
