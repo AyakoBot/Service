@@ -15,7 +15,6 @@ export default async function (
  this: EvalPlugin,
  msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
 ) {
- if (msg.author.id !== process.env.ownerId) return;
  if (!msg.guild_id) return;
 
  const args = msg.content.split(/\s+/g);

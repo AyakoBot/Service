@@ -28,7 +28,7 @@ export default class EvalPlugin extends Plugin<Events, APILanguage> {
  eventHandlers = {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MESSAGE_CREATE: (data) => {
-   if (data.author.id !== '318453143476371456') return;
+   if (!process.env.ownerId || data.author.id !== process.env.ownerId) return;
    if (!data.content.startsWith('seval')) return;
    if (!this.isEnabled()) return;
 
@@ -44,6 +44,4 @@ export default class EvalPlugin extends Plugin<Events, APILanguage> {
   commands: [],
   settings: [],
  });
-
- settingsEditorTypes = {};
 }
