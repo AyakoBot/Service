@@ -9,6 +9,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGuidePage } from '../../Util/buildGuidePage.js';
 import { buildOverview } from '../../Util/buildOverview.js';
@@ -51,7 +52,7 @@ const sendOverview = async function (
  this: SettingsPlugin,
  cmd: APIApplicationCommandInteraction | APIMessageComponentInteraction | APIModalSubmitInteraction,
  settingName: string,
- respond: 'reply' | 'update',
+ respond: RespondMode,
 ) {
  if (!cmd.guild_id) return;
 
@@ -80,7 +81,7 @@ const sendOverview = async function (
   .setComponents([overview.toJSON() as APIMessageTopLevelComponent])
   .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral);
 
- if (respond === 'reply') payload.reply(cmd);
+ if (respond === RespondMode.Reply) payload.reply(cmd);
  else payload.update(cmd);
 };
 
@@ -110,13 +111,13 @@ export const openFromCommand = async function (
      rowId: String(row.id),
      hideUnavail: true,
      cmd,
-     respond: 'reply',
+     respond: RespondMode.Reply,
     });
     return;
    }
   }
 
-  await sendOverview.call(this, cmd, settingName, 'reply');
+  await sendOverview.call(this, cmd, settingName, RespondMode.Reply);
   return;
  }
 
@@ -135,7 +136,7 @@ export const openFromCommand = async function (
   groupId: firstGroup.id,
   hideUnavail: true,
   cmd,
-  respond: 'reply',
+  respond: RespondMode.Reply,
  });
 };
 
@@ -147,7 +148,7 @@ export const reRender = async function (
  if (!cmd.guild_id) return;
 
  if (!id.rowId) {
-  await sendOverview.call(this, cmd, id.settingName, 'update');
+  await sendOverview.call(this, cmd, id.settingName, RespondMode.Update);
   return;
  }
 
@@ -162,7 +163,7 @@ export const reRender = async function (
   groupId: id.groupId,
   hideUnavail: Boolean(id.hideUnavail),
   cmd,
-  respond: 'update',
+  respond: RespondMode.Update,
  });
 };
 

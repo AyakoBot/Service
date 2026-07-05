@@ -6,7 +6,7 @@ import { assertSchemaValid } from './SettingsSchema.js';
 
 const field = (column: string) => ({ column, editor: EditorType.Boolean, label: () => column });
 
-test('passes a schema whose groups each have <= 5 fields', () => {
+test('passes a schema whose groups each have <= 10 fields', () => {
  assert.doesNotThrow(() =>
   assertSchemaValid({
    table: 'ticketSetting',
@@ -18,7 +18,7 @@ test('passes a schema whose groups each have <= 5 fields', () => {
  );
 });
 
-test('throws when a group exceeds 5 fields', () => {
+test('throws when a group exceeds 10 fields', () => {
  assert.throws(
   () =>
    assertSchemaValid({
@@ -26,8 +26,14 @@ test('throws when a group exceeds 5 fields', () => {
     rowKey: 'id',
     multiRow: true,
     rowLabel: () => 'x',
-    groups: [{ id: 'g', label: () => 'G', fields: ['a', 'b', 'c', 'd', 'e', 'f'].map(field) }],
+    groups: [
+     {
+      id: 'g',
+      label: () => 'G',
+      fields: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'].map(field),
+     },
+    ],
    }),
-  /5 fields/,
+  /10 fields/,
  );
 });

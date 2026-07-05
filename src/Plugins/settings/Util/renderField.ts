@@ -1,5 +1,4 @@
 import {
- ChannelSelectMenuBuilder,
  CheckboxBuilder,
  CheckboxGroupBuilder,
  LabelBuilder,
@@ -10,13 +9,14 @@ import {
  TextInputBuilder,
  UserSelectMenuBuilder,
 } from '@discordjs/builders';
-import { ChannelType, TextInputStyle } from 'discord-api-types/v10';
+import { TextInputStyle } from 'discord-api-types/v10';
 
 import { formatDurationSeconds } from '../../../Util/durationSeconds.js';
 import { EditorType } from '../EditorType.js';
 import { FieldArity } from '../SettingsSchema.js';
 import type { SettingsField } from '../SettingsSchema.js';
 
+import { asOptions, buildEntitySelect } from './fieldValueHelpers.js';
 import { ComponentKind, resolveComponentKind } from './resolveComponentKind.js';
 
 const labelDescLimit = 100;
@@ -26,70 +26,17 @@ const clampDescription = (description: string): string => {
  return `${description.slice(0, labelDescLimit - 1)}…`;
 };
 
-const asOptions = (field: SettingsField): { label: string; value: string }[] => {
- if (Array.isArray(field.options)) return field.options;
- return [];
-};
-
-const toIds = (value: unknown): string[] => {
- if (Array.isArray(value)) return value.map((entry) => String(entry)).filter((id) => id.length > 0);
- if (value === undefined || value === null || value === '') return [];
- return [String(value)];
-};
-
 const renderEntity = (field: SettingsField, value: unknown, customId: string): LabelBuilder => {
  const label = new LabelBuilder().setLabel(field.label);
  if (field.description) label.setDescription(clampDescription(field.description));
 
- const maxValues = field.arity === FieldArity.Multi ? 25 : 1;
- const ids = toIds(value);
-
- switch (field.editor) {
-  case EditorType.Role:
-  case EditorType.Roles:
-   return label.setRoleSelectMenuComponent(
-    new RoleSelectMenuBuilder()
-     .setCustomId(customId)
-     .setMinValues(0)
-     .setMaxValues(maxValues)
-     .setDefaultRoles(ids),
-   );
-  case EditorType.User:
-  case EditorType.Users:
-   return label.setUserSelectMenuComponent(
-    new UserSelectMenuBuilder()
-     .setCustomId(customId)
-     .setMinValues(0)
-     .setMaxValues(maxValues)
-     .setDefaultUsers(ids),
-   );
-  case EditorType.Mention:
-  case EditorType.Mentions:
-   return label.setMentionableSelectMenuComponent(
-    new MentionableSelectMenuBuilder()
-     .setCustomId(customId)
-     .setMinValues(0)
-     .setMaxValues(maxValues),
-   );
-  case EditorType.Category:
-   return label.setChannelSelectMenuComponent(
-    new ChannelSelectMenuBuilder()
-     .setCustomId(customId)
-     .setMinValues(0)
-     .setMaxValues(maxValues)
-     .setChannelTypes(ChannelType.GuildCategory)
-     .setDefaultChannels(ids),
-   );
-  default: {
-   const select = new ChannelSelectMenuBuilder()
-    .setCustomId(customId)
-    .setMinValues(0)
-    .setMaxValues(maxValues)
-    .setDefaultChannels(ids);
-   if (field.channelTypes?.length) select.setChannelTypes(...field.channelTypes);
-   return label.setChannelSelectMenuComponent(select);
-  }
+ const select = buildEntitySelect(field, value, customId);
+ if (select instanceof RoleSelectMenuBuilder) return label.setRoleSelectMenuComponent(select);
+ if (select instanceof UserSelectMenuBuilder) return label.setUserSelectMenuComponent(select);
+ if (select instanceof MentionableSelectMenuBuilder) {
+  return label.setMentionableSelectMenuComponent(select);
  }
+ return label.setChannelSelectMenuComponent(select);
 };
 
 export const renderField = (field: SettingsField, row: Record<string, unknown>): LabelBuilder => {

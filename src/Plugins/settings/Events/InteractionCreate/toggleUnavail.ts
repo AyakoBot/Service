@@ -1,5 +1,6 @@
 import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
+import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
 
@@ -18,6 +19,6 @@ export default async function (
   groupId: id.groupId,
   hideUnavail: Boolean(id.hideUnavail),
   cmd,
-  respond: 'update',
+  respond: RespondMode.Update,
  });
 }

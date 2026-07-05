@@ -1,11 +1,11 @@
 import { type APIModalSubmitInteraction } from 'discord-api-types/v10';
 
 import { parseDurationSeconds } from '../../../../Util/durationSeconds.js';
+import { findModalValue } from '../../../../Util/findModalValue.js';
 import { EditorType } from '../../EditorType.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsField } from '../../SettingsSchema.js';
 import type { SettingsId } from '../../Util/customId.js';
-import { findModalValue } from '../../Util/findModalValue.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 
 import { followUpWarning } from './followUpWarning.js';
@@ -19,9 +19,6 @@ const readValue = (field: SettingsField, raw: string | undefined): unknown => {
    .split('\n')
    .map((line) => line.trim())
    .filter((line) => line.length > 0);
- }
- if (field.editor === EditorType.Number) {
-  return raw === undefined || raw === '' ? null : Number(raw);
  }
  if (raw === undefined) return undefined;
  return raw === '' ? null : raw;
@@ -58,6 +55,17 @@ export default async function (
    return;
   }
   value = seconds;
+ } else if (field.editor === EditorType.Number && raw !== undefined && raw !== '') {
+  const parsed = Number(raw);
+  if (Number.isNaN(parsed)) {
+   const t = await this.t(cmd.guild_id);
+   await reRender.call(this, cmd, id);
+   await followUpWarning.call(this, cmd, t.base.errors.invalidNumber());
+   return;
+  }
+  value = parsed;
+ } else if (field.editor === EditorType.Number) {
+  value = null;
  } else {
   value = readValue(field, raw);
  }

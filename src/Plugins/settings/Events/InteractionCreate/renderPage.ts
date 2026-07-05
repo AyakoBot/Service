@@ -5,6 +5,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
@@ -16,7 +17,7 @@ export interface RenderPageArgs {
  groupId?: string;
  hideUnavail: boolean;
  cmd: APIInteraction;
- respond: 'reply' | 'update';
+ respond: RespondMode;
 }
 
 export const renderPage = async function (this: SettingsPlugin, args: RenderPageArgs) {
@@ -64,6 +65,6 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
   .setComponents(page.map((c) => c.toJSON() as APIMessageTopLevelComponent))
   .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral);
 
- if (respond === 'reply') payload.reply(cmd);
+ if (respond === RespondMode.Reply) payload.reply(cmd);
  else payload.update(cmd);
 };

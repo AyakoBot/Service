@@ -120,7 +120,7 @@ test('buildGuideBar renders one icon per section and points at the current one',
  const bar = buildGuideBar(sections, 1);
  const [icons, pointer] = bar.split('\n');
  assert.equal(icons, '<:one:1><:two:2><:three:3>');
- assert.match(pointer, /^<:invis:\d+>🔼$/);
+ assert.match(pointer, /^<:invis:\d+><:up:\d+>$/);
 });
 
 test('buildGuideBar collapses for a single section', () => {

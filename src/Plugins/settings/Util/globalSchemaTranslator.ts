@@ -46,7 +46,11 @@ export const globalSchemaTranslator = (
     description: f.description?.(t),
     arity: f.arity,
     options: Array.isArray(f.options)
-     ? f.options.map((o) => ({ value: o.value, label: o.label(t), description: o.description?.(t) }))
+     ? f.options.map((o) => ({
+        value: o.value,
+        label: o.label(t),
+        description: o.description?.(t),
+       }))
      : f.options,
     channelTypes: f.channelTypes,
     required: f.required,

@@ -1,6 +1,7 @@
 import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { SettingsAction } from '../../Util/customId.js';
 import type { SettingsId } from '../../Util/customId.js';
@@ -56,6 +57,6 @@ export default async function (
   rowId: String(created.id),
   hideUnavail: true,
   cmd,
-  respond: 'update',
+  respond: RespondMode.Update,
  });
 }

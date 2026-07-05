@@ -1,8 +1,8 @@
-import type { ContainerBuilder } from '@discordjs/builders';
+import type { ContainerBuilder ,
+ ChannelSelectMenuBuilder } from '@discordjs/builders';
 import {
  ActionRowBuilder,
  ButtonBuilder,
- ChannelSelectMenuBuilder,
  MentionableSelectMenuBuilder,
  RoleSelectMenuBuilder,
  SectionBuilder,
@@ -19,6 +19,7 @@ import { FieldArity, type SettingsField, type ShowIfResult } from '../SettingsSc
 
 import { SettingsAction } from './customId.js';
 import editorEmotes from './editorEmotes.js';
+import { asOptions, buildEntitySelect, type EntitySelectBuilder } from './fieldValueHelpers.js';
 import { InlineKind, resolveInlineKind } from './resolveInlineKind.js';
 import { buttonEmoji, textEmote } from './settingsEmotes.js';
 
@@ -27,17 +28,6 @@ export interface InlineFieldChrome {
  disabled: string;
  change: string;
 }
-
-const toIds = (value: unknown): string[] => {
- if (Array.isArray(value)) return value.map((entry) => String(entry)).filter((id) => id.length > 0);
- if (value === undefined || value === null || value === '') return [];
- return [String(value)];
-};
-
-const asOptions = (field: SettingsField): { label: string; value: string }[] => {
- if (Array.isArray(field.options)) return field.options;
- return [];
-};
 
 const heading = (field: SettingsField, prefix: string): string => {
  const title = prefix ? `### ${prefix} ${field.label}` : `### ${field.label}`;
@@ -59,57 +49,10 @@ const renderEntitySelect = (
  value: unknown,
  customId: string,
  disabled: boolean,
-):
- | RoleSelectMenuBuilder
- | UserSelectMenuBuilder
- | ChannelSelectMenuBuilder
- | MentionableSelectMenuBuilder => {
- const maxValues = field.arity === FieldArity.Multi ? 25 : 1;
- const ids = toIds(value);
-
- switch (field.editor) {
-  case EditorType.Role:
-  case EditorType.Roles:
-   return new RoleSelectMenuBuilder()
-    .setCustomId(customId)
-    .setMinValues(0)
-    .setMaxValues(maxValues)
-    .setDefaultRoles(ids)
-    .setDisabled(disabled);
-  case EditorType.User:
-  case EditorType.Users:
-   return new UserSelectMenuBuilder()
-    .setCustomId(customId)
-    .setMinValues(0)
-    .setMaxValues(maxValues)
-    .setDefaultUsers(ids)
-    .setDisabled(disabled);
-  case EditorType.Mention:
-  case EditorType.Mentions:
-   return new MentionableSelectMenuBuilder()
-    .setCustomId(customId)
-    .setMinValues(0)
-    .setMaxValues(maxValues)
-    .setDisabled(disabled);
-  case EditorType.Category:
-   return new ChannelSelectMenuBuilder()
-    .setCustomId(customId)
-    .setMinValues(0)
-    .setMaxValues(maxValues)
-    .setChannelTypes(ChannelType.GuildCategory)
-    .setDefaultChannels(ids)
-    .setDisabled(disabled);
-  default: {
-   const select = new ChannelSelectMenuBuilder()
-    .setCustomId(customId)
-    .setMinValues(0)
-    .setMaxValues(maxValues)
-    .setDefaultChannels(ids)
-    .setDisabled(disabled);
-   if (field.channelTypes?.length) select.setChannelTypes(...field.channelTypes);
-   return select;
-  }
- }
+): EntitySelectBuilder => {
+ const select = buildEntitySelect(field, value, customId);
+ select.setDisabled(disabled);
+ return select;
 };
 
 export const renderInlineField = (
