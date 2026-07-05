@@ -16,8 +16,6 @@ export default class Client {
  isDev = process.argv.includes('--dev');
 
  cache = new Cache(0, 1, true);
- // TODO: reenable this
- // cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  logger: typeof Logger = Logger;
 
  private api = new API(
@@ -87,7 +85,7 @@ export default class Client {
  ) => {
   const plugin = new PluginClass(this);
 
-  const exists = this.plugins.find((p) => p.name === PluginClass.name);
+  const exists = this.plugins.find((p) => p.constructor.name === PluginClass.name);
   if (exists) return;
 
   this.plugins.push(plugin as Plugin<GatewayDispatchEvents, BaseLanguage>);
