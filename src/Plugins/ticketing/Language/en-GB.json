@@ -2,7 +2,7 @@
  "guide": {
   "title": "Ticket Setup Guide",
   "intro": "Work through the sections below. The last one takes your system live.",
-  "advertText": "New here? The Setup Guide walks you through configuring this system.",
+  "advertText": "**New here?** The Setup Guide walks you through configuring this system.",
   "advertButton": "Setup Guide",
   "sectionDesc": {
    "general": "Pick how tickets open and give this system a name.",
