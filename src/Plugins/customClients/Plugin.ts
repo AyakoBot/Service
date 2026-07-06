@@ -78,6 +78,13 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   return rows.map((row) => row.token).filter((token): token is string => Boolean(token));
  };
 
+ onEmojiSyncTokenInvalid = async (token: string): Promise<void> => {
+  await this.client.db.client.customClient.updateMany({
+   where: { token },
+   data: { token: null },
+  });
+ };
+
  getCommands = () => ({
   commands: [],
   settings: [

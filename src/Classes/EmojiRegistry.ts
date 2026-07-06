@@ -145,6 +145,7 @@ export default class EmojiRegistry {
  private sets: Map<string, EmoteSet> = new Map();
  private pending: Map<string, Promise<void>> = new Map();
  private warned: Set<string> = new Set();
+ private invalidApps: Set<string> = new Set();
  private assets: Map<string, string> | null = null;
 
  constructor(client: Client) {
@@ -194,19 +195,36 @@ export default class EmojiRegistry {
  };
 
  private syncStoredIdentities = async () => {
-  const tokenLists = await Promise.all(
-   this.client.plugins.map((plugin) =>
-    plugin.getEmojiSyncTokens?.().catch((error: Error) => {
+  await Promise.all(
+   this.client.plugins.map(async (plugin) => {
+    if (!plugin.getEmojiSyncTokens) return;
+
+    const tokens = await plugin.getEmojiSyncTokens().catch((error: Error) => {
      this.client.logger.error(
       `[EmojiRegistry] Failed to collect identity tokens: ${error.message}`,
      );
-     return [];
-    }),
-   ),
-  );
+     return [] as string[];
+    });
 
-  await Promise.all(
-   tokenLists.flatMap((tokens) => tokens ?? []).map((token) => this.ensureToken(token)),
+    await Promise.all(
+     tokens.map(async (token) => {
+      const api = this.client.getTokenAPI(token, 'emoji-registry');
+      await this.ensure(api);
+      if (!this.invalidApps.has(api.botId)) return;
+
+      this.client.logger.warn(
+       `[EmojiRegistry] Pruning invalid stored token for app ${api.botId}`,
+      );
+      await plugin
+       .onEmojiSyncTokenInvalid?.(token)
+       .catch((error: Error) =>
+        this.client.logger.error(
+         `[EmojiRegistry] Failed to prune token for app ${api.botId}: ${error.message}`,
+        ),
+       );
+     }),
+    );
+   }),
   );
  };
 
@@ -232,7 +250,12 @@ export default class EmojiRegistry {
    reason: 'startup emoji sync',
   });
   if (existing instanceof RequestHandlerError) {
-   this.client.logger.error(`[EmojiRegistry] Failed to fetch emojis for app ${api.botId}`);
+   const status = (existing.error as { status?: number } | null)?.status;
+   if (status === 401) this.invalidApps.add(api.botId);
+
+   this.client.logger.error(
+    `[EmojiRegistry] Failed to fetch emojis for app ${api.botId} (status: ${status ?? 'unknown'})`,
+   );
    return;
   }
 

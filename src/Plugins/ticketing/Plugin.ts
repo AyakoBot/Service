@@ -251,6 +251,26 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   });
  };
 
+ onEmojiSyncTokenInvalid = async (token: string): Promise<void> => {
+  const rows = await this.client.db.client.ticketSetting.findMany({
+   where: { botToken: { not: null } },
+   select: { botToken: true },
+  });
+
+  const dead = [...new Set(rows.map((row) => row.botToken))].filter(
+   (cipher): cipher is string => {
+    if (!cipher) return false;
+    try {
+     return decrypt(cipher) === token;
+    } catch {
+     return false;
+    }
+   },
+  );
+
+  await Promise.all(dead.map((cipher) => this.invalidateToken(cipher)));
+ };
+
  onGuildRemoved = async (guildId: string) => {
   await this.client.db.client.ticketSetting.updateMany({
    where: { guild: guildId },

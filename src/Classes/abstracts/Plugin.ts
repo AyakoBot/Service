@@ -85,6 +85,8 @@ export default abstract class Plugin<
 
  getEmojiSyncTokens?: () => Promise<string[]>;
 
+ onEmojiSyncTokenInvalid?: (token: string) => Promise<void>;
+
  onGuildRemoved?: (guildId: string) => Promise<void>;
 
  constructor(client: Client) {
