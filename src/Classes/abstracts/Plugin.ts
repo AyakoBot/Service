@@ -46,6 +46,7 @@ export enum PluginName {
  EmbedBuilder = 'embed-builder',
  ComponentBuilder = 'component-builder',
  Info = 'info',
+ Welcome = 'welcome',
 }
 
 export type BaseLanguage = Record<string, unknown>;

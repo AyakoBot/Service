@@ -82,6 +82,8 @@ export interface DataBaseTables {
  ticketTier: PrismaTables.TicketTier;
  customEmbed: PrismaTables.CustomEmbed;
  customComponents: PrismaTables.CustomComponents;
+ welcomeSetting: PrismaTables.WelcomeSetting;
+ welcomeGif: PrismaTables.WelcomeGif;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
