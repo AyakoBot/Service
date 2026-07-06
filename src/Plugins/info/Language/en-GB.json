@@ -1,0 +1,275 @@
+{
+ "user": {
+  "title": "User Info",
+  "botTitle": "Bot User Info",
+  "memberTitle": "Server Membership",
+  "displayName": "Display Name",
+  "nickname": "Nickname",
+  "timeout": "Timed out",
+  "boostingSince": "Boosting since",
+  "pending": "Membership pending",
+  "accentColor": "Accent Color",
+  "avatarDecoration": "Avatar Decoration",
+  "memberFlags": "Member Flags",
+  "newAccount": "This account is less than a week old",
+  "viewRoles": "View Roles",
+  "viewBasicPerms": "View Server Permissions",
+  "viewChannelPerms": "View Permissions in a Channel",
+  "openDesktop": "Desktop",
+  "openBrowser": "Browser"
+ },
+ "avatar": {
+  "title": "Avatar",
+  "global": "Global Avatar",
+  "server": "Server Avatar",
+  "none": "This user has no avatar set."
+ },
+ "banner": {
+  "title": "Banner",
+  "global": "Global Banner",
+  "server": "Server Banner",
+  "none": "This user has no banner set."
+ },
+ "server": {
+  "title": "Server Info",
+  "acronym": "Acronym",
+  "vanity": "Vanity URL",
+  "owner": "Owner",
+  "afkChannel": "AFK Channel",
+  "afkTimeout": "AFK Timeout",
+  "systemChannel": "System Channel",
+  "rulesChannel": "Rules Channel",
+  "publicUpdatesChannel": "Public Updates Channel",
+  "safetyAlertsChannel": "Safety Alerts Channel",
+  "widgetChannel": "Widget Channel",
+  "statsTitle": "Statistics",
+  "boosts": "Boosts",
+  "otherTitle": "Other",
+  "notifications": "Default Notifications",
+  "notificationNames": {
+   "0": "All Messages",
+   "1": "Only Mentions"
+  },
+  "contentFilter": "Explicit Content Filter",
+  "contentFilterNames": {
+   "0": "Disabled",
+   "1": "Members without Roles",
+   "2": "All Members"
+  },
+  "mfaLevel": "Moderation 2FA Requirement",
+  "nsfwLevel": "NSFW Level",
+  "nsfwLevelNames": {
+   "0": "Default",
+   "1": "Explicit",
+   "2": "Safe",
+   "3": "Age Restricted"
+  },
+  "verificationLevel": "Verification Level",
+  "verificationLevelNames": {
+   "0": "None",
+   "1": "Low",
+   "2": "Medium",
+   "3": "High",
+   "4": "Very High"
+  },
+  "locale": "Preferred Locale",
+  "viewFeatures": "View Features",
+  "viewRoles": "View Roles"
+ },
+ "channel": {
+  "title": "Channel Info",
+  "nsfw": "NSFW",
+  "parent": "Parent",
+  "slowmode": "Slowmode",
+  "bitrate": "Bitrate",
+  "userLimit": "User Limit",
+  "rtcRegion": "Voice Region",
+  "videoQuality": "Video Quality",
+  "videoQualityNames": {
+   "1": "Auto",
+   "2": "720p"
+  },
+  "autoArchive": "Default Auto-Archive",
+  "forumLayout": "Forum Layout",
+  "sortOrder": "Default Sort Order",
+  "defaultReaction": "Default Reaction",
+  "threadSlowmode": "Default Thread Slowmode",
+  "position": "Position",
+  "tags": "Available Tags",
+  "children": "Channels in this Category",
+  "topicHidden": "Redacted - you cannot view this channel"
+ },
+ "role": {
+  "title": "Role Info",
+  "hoisted": "Hoisted",
+  "position": "Position",
+  "managed": "Managed by an Integration",
+  "boosterRole": "Server Booster Role",
+  "purchasable": "Available for Purchase",
+  "guildConnections": "Linked Role",
+  "inPrompt": "Used in Onboarding",
+  "unicodeEmoji": "Emoji",
+  "viewMembers": "View Members",
+  "viewChannelPerms": "View Permissions in a Channel"
+ },
+ "emoji": {
+  "title": "Emoji Info",
+  "listTitle": "Server Emojis",
+  "animated": "Animated",
+  "available": "Available",
+  "managed": "Managed",
+  "roles": "Restricted to Roles",
+  "none": "This server has no emojis."
+ },
+ "sticker": {
+  "title": "Sticker Info",
+  "listTitle": "Server Stickers",
+  "format": "Format",
+  "formatNames": {
+   "1": "PNG",
+   "2": "APNG",
+   "3": "Lottie",
+   "4": "GIF"
+  },
+  "available": "Available",
+  "tags": "Related Emoji",
+  "none": "This server has no stickers."
+ },
+ "invite": {
+  "title": "Invite Info",
+  "expiresAt": "Expires",
+  "maxUses": "Maximum Uses",
+  "temporary": "Grants temporary Membership",
+  "approxMembers": "Approximate Members",
+  "approxOnline": "Approximately Online"
+ },
+ "membercount": {
+  "title": "Member-Count",
+  "statbot": "For more in-depth statistics, try [Statbot](https://statbot.net/)"
+ },
+ "history": {
+  "title": "Message History",
+  "versions": "{{count}} cached version(s)",
+  "unchanged": "Content unchanged",
+  "noContent": "No text content",
+  "pinned": "Pinned",
+  "attachments": "Attachments",
+  "components": "Components",
+  "editedAt": "Edited",
+  "none": "I have no cached records of this message - it may be older than 14 days or was sent while I was offline."
+ },
+ "ping": {
+  "title": "Ping",
+  "delivery": "Event Delivery",
+  "roundtrip": "Roundtrip Latency",
+  "measuring": "Measuring…"
+ },
+ "bot": {
+  "title": "Bot Info",
+  "uptime": "Uptime",
+  "memory": "Memory",
+  "cpu": "CPU",
+  "os": "Operating System",
+  "nodeVersion": "Node.js"
+ },
+ "badges": {
+  "title": "Badges in this Server",
+  "scanned": "Based on {{count}} cached members",
+  "none": "No badge data available."
+ },
+ "servers": {
+  "title": "Servers",
+  "members": "{{count}} Members",
+  "none": "No servers found."
+ },
+ "events": {
+  "title": "Scheduled Events",
+  "startsAt": "Starts",
+  "endsAt": "Ends",
+  "location": "Location",
+  "interested": "Interested",
+  "status": "Status",
+  "statusNames": {
+   "1": "Scheduled",
+   "2": "Active",
+   "3": "Completed",
+   "4": "Cancelled"
+  },
+  "creator": "Creator",
+  "none": "This server has no scheduled events."
+ },
+ "webhook": {
+  "title": "Webhook Info",
+  "typeNames": {
+   "1": "Incoming",
+   "2": "Channel Follower",
+   "3": "Application"
+  },
+  "hasToken": "Has a Token"
+ },
+ "automod": {
+  "title": "Auto-Moderation Rules",
+  "trigger": "Trigger",
+  "triggerNames": {
+   "1": "Keyword",
+   "3": "Spam",
+   "4": "Keyword Preset",
+   "5": "Mention Spam",
+   "6": "Member Profile"
+  },
+  "actions": "Actions",
+  "actionNames": {
+   "1": "Block Message",
+   "2": "Send Alert",
+   "3": "Timeout",
+   "4": "Block Member Interaction"
+  },
+  "exemptRoles": "Exempt Roles",
+  "exemptChannels": "Exempt Channels",
+  "keywords": "Keywords",
+  "none": "This server has no Auto-Moderation rules."
+ },
+ "soundboard": {
+  "title": "Soundboard Sounds",
+  "volume": "Volume",
+  "none": "This server has no soundboard sounds."
+ },
+ "permissions": {
+  "title": "Permissions",
+  "inChannel": "Permissions of {{target}} in {{channel}}",
+  "serverWide": "Server-wide Permissions of {{target}}",
+  "pickOne": "Provide either a user or a role."
+ },
+ "rolesList": {
+  "memberTitle": "Roles of {{user}}",
+  "serverTitle": "Roles in this Server",
+  "none": "Nothing to show here."
+ },
+ "members": {
+  "title": "Members with {{role}}",
+  "file": "The full list is attached as a file",
+  "none": "No members have this role."
+ },
+ "features": {
+  "more": "Not everything fits here - {{count}} features are enabled in total"
+ },
+ "common": {
+  "id": "ID",
+  "url": "URL",
+  "uploader": "Uploader",
+  "page": "Page {{page}}/{{total}}"
+ },
+ "errors": {
+  "guildOnly": "This command only works in a server.",
+  "userNotFound": "I couldn't find that user.",
+  "serverNotFound": "I couldn't find that server - I'm probably not in it.",
+  "channelNotFound": "I couldn't find that channel.",
+  "roleNotFound": "I couldn't find that role.",
+  "emojiNotFound": "I couldn't find that emoji.",
+  "stickerNotFound": "I couldn't find that sticker.",
+  "inviteNotFound": "That invite is invalid or expired.",
+  "webhookNotFound": "I couldn't find that webhook - check the URL.",
+  "invalidWebhookUrl": "That doesn't look like a Discord webhook URL.",
+  "nothingHere": "There's nothing to show here."
+ }
+}

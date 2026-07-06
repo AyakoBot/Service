@@ -4,6 +4,7 @@ import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ay
 import { decrypt, ScopedLogger } from '@ayako/utility';
 import {
  SlashCommandStringOption,
+ type ContextMenuCommandBuilder,
  type SlashCommandOptionsOnlyBuilder,
  type SlashCommandSubcommandBuilder,
  type SlashCommandSubcommandsOnlyBuilder,
@@ -44,6 +45,7 @@ export enum PluginName {
  Eval = 'eval',
  EmbedBuilder = 'embed-builder',
  ComponentBuilder = 'component-builder',
+ Info = 'info',
 }
 
 export type BaseLanguage = Record<string, unknown>;
@@ -201,7 +203,11 @@ export default abstract class Plugin<
  };
 
  abstract getCommands(): {
-  commands: (SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder)[];
+  commands: (
+   | SlashCommandOptionsOnlyBuilder
+   | SlashCommandSubcommandsOnlyBuilder
+   | ContextMenuCommandBuilder
+  )[];
   settings: { category: SettingsCategory | null; commands: SlashCommandSubcommandBuilder[] }[];
  };
 

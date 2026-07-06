@@ -16,6 +16,7 @@ export default async function registerCommandsSetup(tag: string) {
  const { default: pluginEval } = await import('../Plugins/eval/Plugin.js');
  const { default: pluginEmbedBuilder } = await import('../Plugins/embedBuilder/Plugin.js');
  const { default: pluginComponentBuilder } = await import('../Plugins/componentBuilder/Plugin.js');
+ const { default: pluginInfo } = await import('../Plugins/info/Plugin.js');
  const { default: buildCommandBody } = await import('./buildCommandBody.js');
 
  const client: Client = new ClientClass();
@@ -27,6 +28,7 @@ export default async function registerCommandsSetup(tag: string) {
  client.registerPlugin(pluginEval);
  client.registerPlugin(pluginEmbedBuilder);
  client.registerPlugin(pluginComponentBuilder);
+ client.registerPlugin(pluginInfo);
 
  const pluginName = process.argv
   .find((arg) => arg.startsWith('--plugin='))

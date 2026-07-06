@@ -22,6 +22,39 @@ export const getStringOption = (
  return option && option.type === ApplicationCommandOptionType.String ? option.value : '';
 };
 
+export const getBooleanOption = (
+ sub: APIApplicationCommandInteractionDataSubcommandOption,
+ name: string,
+ fallback: boolean,
+): boolean => {
+ const option = sub.options?.find((o) => o.name === name);
+ return option && option.type === ApplicationCommandOptionType.Boolean ? option.value : fallback;
+};
+
+export const getUserOption = (
+ sub: APIApplicationCommandInteractionDataSubcommandOption,
+ name: string,
+): string | null => {
+ const option = sub.options?.find((o) => o.name === name);
+ return option && option.type === ApplicationCommandOptionType.User ? option.value : null;
+};
+
+export const getChannelOption = (
+ sub: APIApplicationCommandInteractionDataSubcommandOption,
+ name: string,
+): string | null => {
+ const option = sub.options?.find((o) => o.name === name);
+ return option && option.type === ApplicationCommandOptionType.Channel ? option.value : null;
+};
+
+export const getRoleOption = (
+ sub: APIApplicationCommandInteractionDataSubcommandOption,
+ name: string,
+): string | null => {
+ const option = sub.options?.find((o) => o.name === name);
+ return option && option.type === ApplicationCommandOptionType.Role ? option.value : null;
+};
+
 export const findFocusedString = (
  options: APIApplicationCommandAutocompleteInteraction['data']['options'],
 ): string => {
