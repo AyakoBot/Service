@@ -6,7 +6,7 @@ import {
 } from '@discordjs/builders';
 import { ButtonStyle } from 'discord-api-types/v10';
 
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import type { SettingsSchema } from '../SettingsSchema.js';
 
 import { encodeSettingsId, SettingsAction } from './customId.js';
@@ -21,6 +21,7 @@ export interface OverviewOptions {
  settingName: string;
  schema: SettingsSchema;
  rows: Record<string, unknown>[];
+ emotes: EmoteSet;
 }
 
 export const buildOverview = ({
@@ -32,6 +33,7 @@ export const buildOverview = ({
  settingName,
  schema,
  rows,
+ emotes,
 }: OverviewOptions): ContainerBuilder => {
  const container = new ContainerBuilder().addSectionComponents(
   new SectionBuilder()

@@ -5,6 +5,7 @@ export const buttonEmoji = (emote: APIPartialEmoji): APIMessageComponentEmoji =>
  if (emote.id) {
   return { id: emote.id, name: emote.name || undefined, animated: emote.animated };
  }
+ if (emote.name && /^\w+$/.test(emote.name)) return { name: '❔' };
  return { ...emote, name: emote.name || undefined, id: undefined };
 };
 

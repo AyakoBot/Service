@@ -1,3 +1,5 @@
+import type { APIPartialEmoji } from 'discord-api-types/v10';
+
 import type Client from '../../../Classes/Client.js';
 import TicketRoleMap from '../Classes/TicketRoleMap.js';
 
@@ -7,11 +9,11 @@ export const resolveStaffLabel = async function (
  staffId: string,
  fallback: {
   name: string;
-  emote: { name: string | null; id: string | null; animated: boolean | null } | undefined;
+  emote: APIPartialEmoji | undefined;
  },
 ): Promise<{
  name: string;
- emote: { name: string | null; id: string | null; animated: boolean | null } | undefined;
+ emote: APIPartialEmoji | undefined;
 }> {
  const member = await this.cache.members.get(guildId, staffId);
  if (!member) return fallback;

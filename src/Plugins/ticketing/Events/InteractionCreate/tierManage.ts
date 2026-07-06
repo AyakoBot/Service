@@ -17,7 +17,6 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { type MoveDirection, PageDirection } from '../../Classes/Enums.js';
 import { TicketRoute } from '../../Classes/Routes.js';
@@ -35,6 +34,8 @@ export const buildTierEditor = async function (
  page: number,
 ) {
  const t = await this.t(guildId);
+ const api = await this.getAPI(guildId);
+ const emotes = this.client.emojis.for(api);
  const pageCount = Math.max(1, Math.ceil(tiers.length / tierPageSize));
  const safePage = Math.min(Math.max(0, page), pageCount - 1);
  const start = safePage * tierPageSize;

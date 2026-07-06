@@ -46,6 +46,7 @@ export const openThread = async function (
   selectedField: null,
   selectedProperty: null,
   canManage: hasManageGuild(cmd.member.permissions),
+  emotes: this.client.emojis.for(api),
  });
 
  const sent = await api.channels.createMessage(thread.id, payload.getAPIPayload(), {

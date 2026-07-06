@@ -1,8 +1,9 @@
-import type { APIPartialEmoji, ChannelType } from '@discordjs/core';
+import type { ChannelType } from '@discordjs/core';
 
 import type Plugin from '../../Classes/abstracts/Plugin.js';
 import type { BaseLang, BaseLanguage } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
+import type { EmoteName } from '../../Classes/EmoteName.js';
 import type { TableName } from '../../Types/prisma.js';
 import type { TranslatorType } from '../../Util/translator.js';
 
@@ -65,14 +66,14 @@ export interface SettingsGroupAction {
  label: string;
  description?: string;
  buttonLabel?: string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
 }
 
 export interface SettingsGroup<Row = Record<string, unknown>> {
  id: string;
  label: string;
  description?: string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
  showIf?: (row: Row) => ShowIfResult;
  fields: SettingsField<Row>[];
  actions?: SettingsGroupAction[];
@@ -107,7 +108,7 @@ export interface SettingsGuideSection<Row = Record<string, unknown>> {
  id: string;
  label: string;
  description?: string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
  showIf?: (row: Row) => ShowIfResult;
  gate?: SettingsGuideGate;
  steps: SettingsGuideStep<Row>[];
@@ -116,7 +117,7 @@ export interface SettingsGuideSection<Row = Record<string, unknown>> {
 export interface SettingsGuideAdvert {
  text: string;
  buttonLabel: string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
 }
 
 export interface SettingsGuide<Row = Record<string, unknown>> {
@@ -161,14 +162,14 @@ export interface SettingsGroupActionDef<T = DefaultTranslator> {
  label: (t: T) => string;
  description?: (t: T) => string;
  buttonLabel?: (t: T) => string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
 }
 
 export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  id: string;
  label: (t: T) => string;
  description?: (t: T) => string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
  showIf?: (row: Row) => ShowIfResult;
  fields: SettingsFieldDef<Row, T>[];
  actions?: SettingsGroupActionDef<T>[];
@@ -194,7 +195,7 @@ export interface SettingsGuideSectionDef<Row = Record<string, unknown>, T = Defa
  id: string;
  label: (t: T) => string;
  description?: (t: T) => string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
  showIf?: (row: Row) => ShowIfResult;
  gate?: SettingsGuideGateDef<T>;
  steps: SettingsGuideStepDef<Row, T>[];
@@ -203,7 +204,7 @@ export interface SettingsGuideSectionDef<Row = Record<string, unknown>, T = Defa
 export interface SettingsGuideAdvertDef<T = DefaultTranslator> {
  text: (t: T) => string;
  buttonLabel: (t: T) => string;
- emote?: APIPartialEmoji;
+ emote?: EmoteName;
 }
 
 export interface SettingsGuideDef<Row = Record<string, unknown>, T = DefaultTranslator> {

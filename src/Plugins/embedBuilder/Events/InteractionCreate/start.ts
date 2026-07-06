@@ -19,7 +19,6 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
@@ -37,6 +36,8 @@ const buildStartSurface = async function (
  selectedId: string | null,
 ) {
  const t = await this.t(guildId);
+ const api = await this.getAPI(guildId);
+ const emotes = this.client.emojis.for(api);
  const saved = await CustomEmbed.all(this.client, guildId);
 
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
@@ -124,6 +125,8 @@ export const openIntoThread = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const result = await openThread.call(this, cmd, embed);
  const failNote =

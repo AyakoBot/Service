@@ -45,6 +45,8 @@ export const builderContext = async function (
   return null;
  }
 
+ const api = await this.getAPI(cmd.guild_id);
+
  return {
   message,
   view: {
@@ -53,6 +55,7 @@ export const builderContext = async function (
    selectedField: getSelectedField(message),
    selectedProperty: getSelectedProperty(message),
    canManage: hasManageGuild(cmd.member?.permissions),
+   emotes: this.client.emojis.for(api),
   },
  };
 };

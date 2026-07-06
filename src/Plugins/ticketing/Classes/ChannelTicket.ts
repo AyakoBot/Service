@@ -15,7 +15,6 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
@@ -232,6 +231,7 @@ export default class ChannelTicket extends BaseTicket {
 
   await this.refreshSurface();
 
+  const emotes = this.client.emojis.for(api);
   const claimerLabel = await resolveStaffLabel.call(
    this.client,
    ticket.settings.guild,
@@ -285,9 +285,12 @@ export default class ChannelTicket extends BaseTicket {
   await this.addClaimerToStaffThread(data.userId);
   await this.refreshSurface();
 
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
   const claimerLabel = await resolveStaffLabel.call(
    this.client,
-   (await this.getTicket()).settings.guild,
+   ticket.settings.guild,
    data.userId,
    { name: `<@${data.userId}>`, emote: emotes.ticket },
   );

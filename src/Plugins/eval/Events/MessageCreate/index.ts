@@ -5,7 +5,6 @@ import { type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import type EvalPlugin from '../../Plugin.js';
 
@@ -21,6 +20,7 @@ export default async function (
  args.shift();
  const code = `${args.slice(0).join(' ')}`;
  const api = await this.getAPI(msg.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  try {
   let evaled =

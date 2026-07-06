@@ -7,7 +7,6 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import emotes from '../../../../Classes/Emotes.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { encodeSettingsId, SettingsAction, type SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
@@ -33,6 +32,8 @@ export const confirmDelete = async function (
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
  const t = await this.t(cmd.guild_id);
+ const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const guard = await resolved.schema.canDelete?.(row, {
   client: this.client,

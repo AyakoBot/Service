@@ -83,13 +83,15 @@ export default abstract class Plugin<
 
  invalidateToken?: (cipher: string) => Promise<void>;
 
+ getEmojiSyncTokens?: () => Promise<string[]>;
+
  onGuildRemoved?: (guildId: string) => Promise<void>;
 
  constructor(client: Client) {
   this.client = client;
  }
 
- protected getPluginBotToken = (): string | undefined => this.pluginBotToken;
+ getPluginBotToken = (): string | undefined => this.pluginBotToken;
 
  invalidateGuildAPI = (guildId: string) => {
   this.overrideApiCache.delete(guildId);

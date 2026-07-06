@@ -7,7 +7,7 @@ import {
 } from '@discordjs/builders';
 import { ButtonStyle } from 'discord-api-types/v10';
 
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import type SettingsPlugin from '../Plugin.js';
 import type {
  SettingsGuide,
@@ -37,6 +37,7 @@ export interface BuildGuidePageArgs {
  guideFlags: number;
  actionState?: GuideActionState;
  t: SettingsTranslator;
+ emotes: EmoteSet;
 }
 
 export { isUnset } from './isUnset.js';
@@ -124,9 +125,15 @@ export const requiredColumnStepsLeft = (
  return left;
 };
 
-export const buildGuideBar = (sections: SettingsGuideSection[], index: number): string => {
+export const buildGuideBar = (
+ emotes: EmoteSet,
+ sections: SettingsGuideSection[],
+ index: number,
+): string => {
  if (sections.length < 2) return '';
- const icons = sections.map((section) => textEmote(section.emote ?? emotes.settings)).join('');
+ const icons = sections
+  .map((section) => textEmote(section.emote ? emotes.get(section.emote) : emotes.settings))
+  .join('');
  const pointer = `${sections
   .slice(0, index)
   .map(() => textEmote(emotes.invis))
@@ -145,6 +152,7 @@ type IdFor = (
 ) => string;
 
 const buildHeader = (
+ emotes: EmoteSet,
  guide: SettingsGuide,
  visible: SettingsGuideSection[],
  index: number,
@@ -153,17 +161,20 @@ const buildHeader = (
  t: SettingsTranslator,
 ): TextDisplayBuilder => {
  const lines = [
-  `# ${textEmote(guide.advert.emote ?? emotes.settings)} ${guide.title}`,
+  `# ${textEmote(
+   guide.advert.emote ? emotes.get(guide.advert.emote) : emotes.settings,
+  )} ${guide.title}`,
   `-# ${t.guide.progress({ done: String(progress.done), total: String(progress.total) })}`,
  ];
  if (complete) lines.push(`-# ${t.guide.complete()}`);
  else if (guide.intro) lines.push(`-# ${guide.intro}`);
- const bar = buildGuideBar(visible, index);
+ const bar = buildGuideBar(emotes, visible, index);
  if (bar) lines.push(bar);
  return new TextDisplayBuilder().setContent(lines.join('\n'));
 };
 
 const buildGateRow = (
+ emotes: EmoteSet,
  section: SettingsGuideSection,
  visible: SettingsGuideSection[],
  index: number,
@@ -188,6 +199,7 @@ const buildGateRow = (
 };
 
 const buildStepRow = (
+ emotes: EmoteSet,
  step: SettingsGuideStep,
  row: Record<string, unknown>,
  rowId: string,
@@ -215,6 +227,7 @@ const buildStepRow = (
 };
 
 const buildBackButton = (
+ emotes: EmoteSet,
  schema: SettingsSchema,
  settingName: string,
  rowId: string,
@@ -243,7 +256,7 @@ const buildNav = (
  complete: boolean,
  idFor: IdFor,
 ): ActionRowBuilder<ButtonBuilder> => {
- const { schema, guide, row, guideFlags, actionState, t } = args;
+ const { schema, guide, row, guideFlags, actionState, t, emotes } = args;
  const nav = new ActionRowBuilder<ButtonBuilder>();
 
  if (visible.length > 1) {
@@ -262,7 +275,7 @@ const buildNav = (
  }
 
  nav.addComponents(
-  buildBackButton(schema, args.settingName, args.rowId, args.originGroupId, complete, t),
+  buildBackButton(emotes, schema, args.settingName, args.rowId, args.originGroupId, complete, t),
  );
 
  const toggleColumn = headerToggleColumn(schema);
@@ -283,7 +296,8 @@ const buildNav = (
 };
 
 export const buildGuidePage = (args: BuildGuidePageArgs): TopLevelBuilder[] => {
- const { settingName, schema, guide, rowId, row, originGroupId, sectionId, guideFlags, t } = args;
+ const { settingName, schema, guide, rowId, row, originGroupId, sectionId, guideFlags, t, emotes } =
+  args;
  const actionState = args.actionState ?? {};
 
  const visible = guide.sections.filter(
@@ -314,12 +328,14 @@ export const buildGuidePage = (args: BuildGuidePageArgs): TopLevelBuilder[] => {
 
  const progress = guideProgress(guide.sections, row, guideFlags, actionState);
  const complete = progress.total > 0 && progress.done === progress.total;
- const page: TopLevelBuilder[] = [buildHeader(guide, visible, index, progress, complete, t)];
+ const page: TopLevelBuilder[] = [
+  buildHeader(emotes, guide, visible, index, progress, complete, t),
+ ];
 
  if (!section) {
   page.push(
    new ActionRowBuilder<ButtonBuilder>().addComponents(
-    buildBackButton(schema, settingName, rowId, originGroupId, complete, t),
+    buildBackButton(emotes, schema, settingName, rowId, originGroupId, complete, t),
    ),
   );
   return page;
@@ -328,7 +344,7 @@ export const buildGuidePage = (args: BuildGuidePageArgs): TopLevelBuilder[] => {
  page.push(new SeparatorBuilder().setDivider(true));
  page.push(
   new TextDisplayBuilder().setContent(
-   `## ${textEmote(section.emote ?? emotes.settings)} ${section.label}${
+   `## ${textEmote(section.emote ? emotes.get(section.emote) : emotes.settings)} ${section.label}${
     section.description ? `\n-# ${section.description}` : ''
    }`,
   ),
@@ -336,11 +352,11 @@ export const buildGuidePage = (args: BuildGuidePageArgs): TopLevelBuilder[] => {
 
  if (section.gate && !sectionOpen(section, row, guideFlags, actionState)) {
   page.push(new TextDisplayBuilder().setContent(`-# ${section.gate.question}`));
-  page.push(buildGateRow(section, visible, index, guideFlags, idFor, t));
+  page.push(buildGateRow(emotes, section, visible, index, guideFlags, idFor, t));
  } else {
   section.steps.forEach((step) => {
    if (!stepVisible(step, row)) return;
-   page.push(buildStepRow(step, row, rowId, actionState, idFor, t));
+   page.push(buildStepRow(emotes, step, row, rowId, actionState, idFor, t));
   });
  }
 

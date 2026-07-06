@@ -13,7 +13,7 @@ import {
  type APIMessageComponentInteraction,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoRoute } from '../../Classes/Routes.js';
@@ -23,6 +23,7 @@ import { getHide, respond, respondError, RespondVia, type Translator } from '../
 
 const listContainer = async function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  page: number,
 ): Promise<ContainerBuilder | null> {
@@ -89,8 +90,10 @@ export default async function (
  sub: APIApplicationCommandInteractionDataSubcommandOption,
 ) {
  const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
 
- const container = await listContainer.call(this, t, 1);
+ const container = await listContainer.call(this, emotes, t, 1);
  if (!container) {
   respondError.call(this, cmd, t.servers.none());
   return;
@@ -105,9 +108,11 @@ export const serversPage = async function (
  args: string[],
 ) {
  const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
  const page = Number(args[0]) || 1;
 
- const container = await listContainer.call(this, t, page);
+ const container = await listContainer.call(this, emotes, t, page);
  if (!container) return;
 
  respond.call(this, cmd, [container], true, RespondVia.Update);

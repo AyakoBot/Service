@@ -8,6 +8,7 @@ import GuildSetting from '../Plugins/settings/GuildSetting.js';
 import type Plugin from './abstracts/Plugin.js';
 import type { BaseLanguage } from './abstracts/Plugin.js';
 import Database from './Database.js';
+import EmojiRegistry from './EmojiRegistry.js';
 import JobCache from './JobCache.js';
 import Metrics from './Metrics.js';
 import SendMessageCache from './SendMessageCache.js';
@@ -36,6 +37,8 @@ export default class Client {
  languageCache: Map<string, string> = new Map();
 
  plugins: Plugin<GatewayDispatchEvents, BaseLanguage>[] = [];
+
+ emojis = new EmojiRegistry(this);
 
  constructor() {
   this.logger.log('[Client] Initializing Client...');

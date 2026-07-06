@@ -5,7 +5,6 @@ import type {
  APIApplicationCommandInteractionDataSubcommandOption,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
@@ -24,6 +23,9 @@ export default async function (
   respondError.call(this, cmd, t.errors.guildOnly());
   return;
  }
+
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const members = await this.client.cache.members.getAll(cmd.guild_id);
  const users = (
@@ -47,7 +49,10 @@ export default async function (
 
  const lines = counts
   .filter(({ count }) => count > 0)
-  .map(({ badge, count }) => `${textEmote(badge.emote)} \`${count}\` ${badge.label(t.base)}`);
+  .map(
+   ({ badge, count }) =>
+    `${textEmote(emotes.get(badge.emote))} \`${count}\` ${badge.label(t.base)}`,
+  );
  if (nitroCount) {
   lines.push(`${textEmote(emotes.userFlags.nitro)} \`${nitroCount}\` ${t.base.userFlags.Nitro()}+`);
  }

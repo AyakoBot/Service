@@ -9,6 +9,7 @@ import {
 } from '@ayako/database';
 import {
  createRedisWrapper,
+ decrypt,
  LogLevel,
  SatelliteChannel,
  type RedisWrapperInterface,
@@ -23,7 +24,7 @@ import Plugin, {
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
-import emotes from '../../Classes/Emotes.js';
+import { EmoteName } from '../../Classes/EmoteName.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -234,6 +235,22 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   });
  };
 
+ getEmojiSyncTokens = async (): Promise<string[]> => {
+  const rows = await this.client.db.client.ticketSetting.findMany({
+   where: { botToken: { not: null } },
+   select: { botToken: true },
+  });
+
+  return [...new Set(rows.map((row) => row.botToken))].flatMap((cipher) => {
+   if (!cipher) return [];
+   try {
+    return [decrypt(cipher)];
+   } catch {
+    return [];
+   }
+  });
+ };
+
  onGuildRemoved = async (guildId: string) => {
   await this.client.db.client.ticketSetting.updateMany({
    where: { guild: guildId },
@@ -282,7 +299,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    advert: {
     text: (t: TicketTranslator) => t.guide.advertText(),
     buttonLabel: (t: TicketTranslator) => t.guide.advertButton(),
-    emote: emotes.ticket,
+    emote: EmoteName.Ticket,
    },
    sections: [
     {
@@ -305,7 +322,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Channels,
      label: (t: TicketTranslator) => t.settings.groups.channels(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.channels(),
-     emote: emotes.channelcategory,
+     emote: EmoteName.ChannelCategory,
      steps: [
       {
        column: 'category',
@@ -331,7 +348,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Staff,
      label: (t: TicketTranslator) => t.settings.groups.staff(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.staff(),
-     emote: emotes.member,
+     emote: EmoteName.Member,
      steps: [
       {
        column: 'staffRoles',
@@ -348,7 +365,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Dm,
      label: (t: TicketTranslator) => t.settings.groups.dm(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.dm(),
-     emote: emotes.message,
+     emote: EmoteName.Message,
      showIf: (row) => ({
       ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
       reason: en.settings.reasons.dmOnly,
@@ -368,7 +385,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Notifications,
      label: (t: TicketTranslator) => t.settings.groups.notifications(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.notifications(),
-     emote: emotes.info,
+     emote: EmoteName.Info,
      gate: {
       flag: TicketGuideFlag.WantsNotifications,
       question: (t: TicketTranslator) => t.guide.gates.notifications(),
@@ -388,7 +405,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Reminders,
      label: (t: TicketTranslator) => t.settings.groups.reminders(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.reminders(),
-     emote: emotes.timer,
+     emote: EmoteName.Timer,
      gate: {
       flag: TicketGuideFlag.WantsReminders,
       question: (t: TicketTranslator) => t.guide.gates.reminders(),
@@ -424,7 +441,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Inactivity,
      label: (t: TicketTranslator) => t.settings.groups.inactivity(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.inactivity(),
-     emote: emotes.warning,
+     emote: EmoteName.Warning,
      gate: {
       flag: TicketGuideFlag.WantsAutoClose,
       question: (t: TicketTranslator) => t.guide.gates.autoClose(),
@@ -444,7 +461,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Limits,
      label: (t: TicketTranslator) => t.settings.groups.limits(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.limits(),
-     emote: emotes.number,
+     emote: EmoteName.Number,
      gate: {
       flag: TicketGuideFlag.WantsLimits,
       question: (t: TicketTranslator) => t.guide.gates.limits(),
@@ -484,7 +501,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.BotIdentity,
      label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.botIdentity(),
-     emote: emotes.lock,
+     emote: EmoteName.Lock,
      gate: {
       flag: TicketGuideFlag.WantsCustomBot,
       question: (t: TicketTranslator) => t.guide.gates.customBot(),
@@ -516,7 +533,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGuideSection.GoLive,
      label: (t: TicketTranslator) => t.guide.goLive.label(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.goLive(),
-     emote: emotes.send,
+     emote: EmoteName.Send,
      steps: [
       {
        column: 'active',
@@ -652,7 +669,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Channels,
     label: (t: TicketTranslator) => t.settings.groups.channels(),
-    emote: emotes.channelTypes[0],
+    emote: EmoteName.ChannelText,
     fields: [
      {
       column: 'category',
@@ -725,7 +742,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Staff,
     label: (t: TicketTranslator) => t.settings.groups.staff(),
-    emote: emotes.member,
+    emote: EmoteName.Member,
     fields: [
      {
       column: 'staffRoles',
@@ -767,7 +784,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Notifications,
     label: (t: TicketTranslator) => t.settings.groups.notifications(),
-    emote: emotes.info,
+    emote: EmoteName.Info,
     fields: [
      {
       column: 'mentionRoles',
@@ -788,7 +805,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Dm,
     label: (t: TicketTranslator) => t.settings.groups.dm(),
-    emote: emotes.message,
+    emote: EmoteName.Message,
     showIf: (row) => ({
      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
      reason: en.settings.reasons.dmOnly,
@@ -806,7 +823,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Panel,
     label: (t: TicketTranslator) => t.settings.groups.panel(),
-    emote: emotes.message,
+    emote: EmoteName.Message,
     fields: [
      {
       column: 'dmEnabled',
@@ -820,14 +837,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       customId: TicketRoute.Panel,
       label: (t: TicketTranslator) => t.panel.editorTitle(),
       description: (t: TicketTranslator) => t.settings.descriptions.panelEditor(),
-      emote: emotes.message,
+      emote: EmoteName.Message,
      },
     ],
    },
    {
     id: TicketGroups.Forum,
     label: (t: TicketTranslator) => t.settings.groups.forum(),
-    emote: emotes.channelTypes[15],
+    emote: EmoteName.ChannelForum,
     fields: [
      {
       column: 'createTags',
@@ -869,7 +886,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Reminders,
     label: (t: TicketTranslator) => t.settings.groups.reminders(),
-    emote: emotes.timer,
+    emote: EmoteName.Timer,
     fields: [
      {
       column: 'remindUnclaimedAfter',
@@ -904,7 +921,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Inactivity,
     label: (t: TicketTranslator) => t.settings.groups.inactivity(),
-    emote: emotes.timer,
+    emote: EmoteName.Timer,
     fields: [
      {
       column: 'inactivityWarnAfter',
@@ -925,7 +942,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.RemindTargets,
     label: (t: TicketTranslator) => t.settings.groups.remindTargets(),
-    emote: emotes.member,
+    emote: EmoteName.Member,
     fields: [
      {
       column: 'remindRoles',
@@ -946,7 +963,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.BotIdentity,
     label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
-    emote: emotes.lock,
+    emote: EmoteName.Lock,
     fields: [
      {
       column: 'botToken',
@@ -1012,21 +1029,21 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.inviteBotLabel(),
       description: (t: TicketTranslator) => t.settings.descriptions.inviteBot(),
       buttonLabel: (t: TicketTranslator) => t.base.t.Invite(),
-      emote: emotes.bot,
+      emote: EmoteName.Bot,
      },
      {
       customId: TicketRoute.ClearBotToken,
       label: (t: TicketTranslator) => t.settings.clearTokenLabel(),
       description: (t: TicketTranslator) => t.settings.descriptions.clearToken(),
       buttonLabel: (t: TicketTranslator) => t.base.t.Clear(),
-      emote: emotes.trash,
+      emote: EmoteName.Trash,
      },
     ],
    },
    {
     id: TicketGroups.Escalation,
     label: (t: TicketTranslator) => t.settings.groups.escalation(),
-    emote: emotes.tools,
+    emote: EmoteName.Tools,
     fields: [
      {
       column: 'placementMode',
@@ -1062,14 +1079,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       customId: TicketRoute.TierManage,
       label: (t: TicketTranslator) => t.tierEditor.title(),
       description: (t: TicketTranslator) => t.settings.descriptions.tierEditor(),
-      emote: emotes.tools,
+      emote: EmoteName.Tools,
      },
     ],
    },
    {
     id: TicketGroups.Limits,
     label: (t: TicketTranslator) => t.settings.groups.limits(),
-    emote: emotes.member,
+    emote: EmoteName.Member,
     fields: [
      {
       column: 'allowTakeClaim',

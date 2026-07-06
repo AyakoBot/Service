@@ -30,13 +30,13 @@ import type {
 
 import type { BaseLang } from '../../../Classes/abstracts/Plugin.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import stp from '../../../Util/stp.js';
 
 const makeInlineCode = (text: string) => `\`${text}\``;
 
 export default (t: BaseLang) => ({
- getForumTag: (tag: APIGuildForumTag, emoji?: REmoji | string) =>
+ getForumTag: (emotes: EmoteSet, tag: APIGuildForumTag, emoji?: REmoji | string) =>
   `**${emoji}${makeInlineCode(tag.name)} / ${makeInlineCode(tag.id)}${
    tag.moderated ? ` / ${constants.formatters.getEmote(emotes.userFlags.discordEmployee)}` : ''
   }**\n`,

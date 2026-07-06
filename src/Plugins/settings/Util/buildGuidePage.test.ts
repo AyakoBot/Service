@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import type { APIPartialEmoji } from 'discord-api-types/v10';
+
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
+import { EmoteName } from '../../../Classes/EmoteName.js';
 import type { SettingsGuideSection } from '../SettingsSchema.js';
 
 import {
@@ -20,6 +24,15 @@ const section = (over: Partial<SettingsGuideSection> = {}): SettingsGuideSection
  steps: [{ column: 'a', label: 'A', required: true }],
  ...over,
 });
+
+const resolveEmote = (name: EmoteName): APIPartialEmoji => ({ id: '1', name, animated: false });
+
+const emotes = {
+ get: resolveEmote,
+ settings: resolveEmote(EmoteName.Settings),
+ invis: resolveEmote(EmoteName.Invis),
+ up: resolveEmote(EmoteName.Up),
+} as EmoteSet;
 
 test('stepDone reads truthiness of the row value', () => {
  assert.equal(stepDone({ column: 'a', label: 'A' }, { a: 'x' }), true);
@@ -113,16 +126,16 @@ test('requiredColumnStepsLeft ignores action steps and the excluded column', () 
 
 test('buildGuideBar renders one icon per section and points at the current one', () => {
  const sections = [
-  section({ id: 'one', emote: { name: 'one', id: '1' } }),
-  section({ id: 'two', emote: { name: 'two', id: '2' } }),
-  section({ id: 'three', emote: { name: 'three', id: '3' } }),
+  section({ id: 'one', emote: EmoteName.Info }),
+  section({ id: 'two', emote: EmoteName.Role }),
+  section({ id: 'three', emote: EmoteName.Timer }),
  ];
- const bar = buildGuideBar(sections, 1);
+ const bar = buildGuideBar(emotes, sections, 1);
  const [icons, pointer] = bar.split('\n');
- assert.equal(icons, '<:one:1><:two:2><:three:3>');
+ assert.equal(icons, '<:info:1><:role:1><:timer:1>');
  assert.match(pointer, /^<:invis:\d+><:up:\d+>$/);
 });
 
 test('buildGuideBar collapses for a single section', () => {
- assert.equal(buildGuideBar([section()], 0), '');
+ assert.equal(buildGuideBar(emotes, [section()], 0), '');
 });

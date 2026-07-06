@@ -1,7 +1,6 @@
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import type { APIApplicationCommandInteraction } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
@@ -14,6 +13,9 @@ export default async function (this: InfoPlugin, cmd: APIApplicationCommandInter
   respondError.call(this, cmd, t.errors.guildOnly());
   return;
  }
+
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const guild = await this.client.cache.guilds.get(cmd.guild_id);
  // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -6,6 +6,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type ComponentBuilderPlugin from '../Plugin.js';
 
@@ -17,6 +18,7 @@ export interface BuilderView {
  tree: WipTree;
  selectedPath: string | null;
  canManage: boolean;
+ emotes: EmoteSet;
 }
 
 export const ephemeralNote = function (
@@ -49,6 +51,7 @@ export const builderContext = async function (
 
  const tree = getWipTree(message);
  const selectedPath = getSelectedPath(message);
+ const api = await this.getAPI(cmd.guild_id);
 
  return {
   message,
@@ -57,6 +60,7 @@ export const builderContext = async function (
    tree,
    selectedPath: selectedPath && getNode(tree, selectedPath) ? selectedPath : null,
    canManage: hasManageGuild(cmd.member?.permissions),
+   emotes: this.client.emojis.for(api),
   },
  };
 };

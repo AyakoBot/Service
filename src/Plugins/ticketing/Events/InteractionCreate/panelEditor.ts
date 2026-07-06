@@ -19,7 +19,6 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import {
  EmbedBuilderCommand,
@@ -43,6 +42,8 @@ export const buildPanelEditor = async function (
  page: number,
 ) {
  const t = await this.t(guildId);
+ const api = await this.getAPI(guildId);
+ const emotes = this.client.emojis.for(api);
  const pageCount = Math.max(1, Math.ceil(panels.length / panelPageSize));
  const safePage = Math.min(Math.max(0, page), pageCount - 1);
  const start = safePage * panelPageSize;

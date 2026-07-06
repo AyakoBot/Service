@@ -39,6 +39,8 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  if (!group) return;
 
  const t = await this.t(cmd.guild_id);
+ const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
  const actionState = schema.guide
   ? await guideActionState.call(this, {
      guide: schema.guide,
@@ -56,6 +58,7 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
   hideUnavail,
   actionState,
   t,
+  emotes,
  });
 
  const payload = new MessagePayload(this.client, {

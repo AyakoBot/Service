@@ -7,7 +7,6 @@ import {
  StringSelectMenuOptionBuilder,
  TextDisplayBuilder,
 } from '@discordjs/builders';
-import type { APIPartialEmoji } from '@discordjs/core';
 import {
  ButtonStyle,
  ChannelType,
@@ -18,7 +17,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
-import emotes from '../../../Classes/Emotes.js';
+import { EmoteName } from '../../../Classes/EmoteName.js';
 import { cleanPreview } from '../../../Util/cleanPreview.js';
 import { buttonEmoji, textEmote } from '../../settings/Util/settingsEmotes.js';
 import {
@@ -33,12 +32,7 @@ import type ComponentBuilderPlugin from '../Plugin.js';
 
 import { applyErrorText } from './applyErrorText.js';
 import type { BuilderView } from './builderContext.js';
-import {
- buildMarkerUrl,
- ChromeComponentId,
- isSendable,
- type BuilderMarker,
-} from './builderState.js';
+import { buildMarkerUrl, ChromeComponentId, isSendable } from './builderState.js';
 import {
  countComponents,
  flattenTree,
@@ -59,20 +53,20 @@ export enum SendMode {
 
 const previewLimit = 90;
 
-const kindEmotes: Record<NodeKind, APIPartialEmoji> = {
- [NodeKind.Text]: emotes.paragraph,
- [NodeKind.Container]: emotes.channelcategory,
- [NodeKind.Section]: emotes.heading,
- [NodeKind.Separator]: emotes.footer,
- [NodeKind.Gallery]: emotes.image,
- [NodeKind.Row]: emotes.command,
- [NodeKind.Button]: emotes.enabled,
- [NodeKind.StringSelect]: emotes.fields,
- [NodeKind.UserSelect]: emotes.member,
- [NodeKind.RoleSelect]: emotes.role,
- [NodeKind.ChannelSelect]: emotes.channelthread,
- [NodeKind.MentionableSelect]: emotes.member,
- [NodeKind.Thumbnail]: emotes.thumbnail,
+const kindEmotes: Record<NodeKind, EmoteName> = {
+ [NodeKind.Text]: EmoteName.Paragraph,
+ [NodeKind.Container]: EmoteName.ChannelCategory,
+ [NodeKind.Section]: EmoteName.Heading,
+ [NodeKind.Separator]: EmoteName.Footer,
+ [NodeKind.Gallery]: EmoteName.Image,
+ [NodeKind.Row]: EmoteName.Command,
+ [NodeKind.Button]: EmoteName.Enabled,
+ [NodeKind.StringSelect]: EmoteName.Fields,
+ [NodeKind.UserSelect]: EmoteName.Member,
+ [NodeKind.RoleSelect]: EmoteName.Role,
+ [NodeKind.ChannelSelect]: EmoteName.ChannelThread,
+ [NodeKind.MentionableSelect]: EmoteName.Member,
+ [NodeKind.Thumbnail]: EmoteName.Thumbnail,
 };
 
 const kindLabel = (t: Translator, kind: NodeKind): string =>
@@ -196,11 +190,11 @@ export const actionsFor = (view: BuilderView): NodeAction[] => {
  return actions.filter((action) => !structureActions.includes(action));
 };
 
-const markerLinkButton = (marker: BuilderMarker): ButtonBuilder =>
+const markerLinkButton = (view: BuilderView): ButtonBuilder =>
  new ButtonBuilder()
   .setStyle(ButtonStyle.Link)
-  .setURL(buildMarkerUrl(marker))
-  .setEmoji(buttonEmoji(emotes.info));
+  .setURL(buildMarkerUrl(view.marker))
+  .setEmoji(buttonEmoji(view.emotes.info));
 
 const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
  const entries = flattenTree(view.tree);
@@ -213,7 +207,7 @@ const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, vie
    )
    .setValue(entry.path)
    .setDefault(entry.path === view.selectedPath);
-  if (kind) option.setEmoji(buttonEmoji(kindEmotes[kind]));
+  if (kind) option.setEmoji(buttonEmoji(view.emotes.get(kindEmotes[kind])));
 
   const preview = nodePreview(t, entry.node);
   if (preview) option.setDescription(preview.slice(0, 100));
@@ -273,18 +267,18 @@ const utilityRow = function (this: ComponentBuilderPlugin, t: Translator, view: 
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(ComponentBuilderRoute.Empty))
    .setLabel(t.base.t.Empty())
-   .setEmoji(buttonEmoji(emotes.trash)),
+   .setEmoji(buttonEmoji(view.emotes.trash)),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(ComponentBuilderRoute.ImportJson))
    .setLabel(t.base.t.Import())
-   .setEmoji(buttonEmoji(emotes.json)),
+   .setEmoji(buttonEmoji(view.emotes.json)),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(ComponentBuilderRoute.ExportJson))
    .setLabel(t.base.t.Export())
-   .setEmoji(buttonEmoji(emotes.json)),
-  markerLinkButton(view.marker),
+   .setEmoji(buttonEmoji(view.emotes.json)),
+  markerLinkButton(view),
  );
 };
 
@@ -296,19 +290,19 @@ const actionRow = function (this: ComponentBuilderPlugin, t: Translator, view: B
    .setStyle(ButtonStyle.Success)
    .setCustomId(this.getRoute(ComponentBuilderRoute.Save))
    .setLabel(t.base.t.Save())
-   .setEmoji(buttonEmoji(emotes.save))
+   .setEmoji(buttonEmoji(view.emotes.save))
    .setDisabled(locked),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Success)
    .setCustomId(this.getRoute(ComponentBuilderRoute.Send))
    .setLabel(t.base.t.Send())
-   .setEmoji(buttonEmoji(emotes.send))
+   .setEmoji(buttonEmoji(view.emotes.send))
    .setDisabled(locked),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Primary)
    .setCustomId(this.getRoute(ComponentBuilderRoute.EditMessage))
    .setLabel(t.builder.editMessage())
-   .setEmoji(buttonEmoji(emotes.edit))
+   .setEmoji(buttonEmoji(view.emotes.edit))
    .setDisabled(locked),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Danger)
@@ -363,7 +357,7 @@ export const sendRows = function (
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(ComponentBuilderRoute.Back))
    .setLabel(t.base.t.Back())
-   .setEmoji(buttonEmoji(emotes.back)),
+   .setEmoji(buttonEmoji(view.emotes.back)),
  );
 
  if (mode === SendMode.Bot) {
@@ -372,11 +366,11 @@ export const sendRows = function (
     .setStyle(ButtonStyle.Primary)
     .setCustomId(this.getRoute(ComponentBuilderRoute.WebhookModal))
     .setLabel(t.send.asWebhook())
-    .setEmoji(buttonEmoji(emotes.webhook)),
+    .setEmoji(buttonEmoji(view.emotes.webhook)),
   );
  }
 
- buttons.addComponents(markerLinkButton(view.marker));
+ buttons.addComponents(markerLinkButton(view));
 
  return [
   new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(select),
@@ -385,6 +379,7 @@ export const sendRows = function (
 };
 
 const headerText = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
+ const { emotes } = view;
  const lines = [
   `# ${textEmote(emotes.json)} ${t.builder.title()} · <@${view.marker.execId}>`,
   t.builder.desc(),

@@ -16,7 +16,6 @@ import {
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import { PageDirection } from '../Classes/Enums.js';
 import { TicketRoute } from '../Classes/Routes.js';
@@ -48,6 +47,8 @@ export const buildToolkit = async function (
  opts: { page: number; query?: string; manage?: boolean },
 ) {
  const t = await this.t(guildId);
+ const api = await this.getAPI(guildId);
+ const emotes = this.client.emojis.for(api);
  const pageCount = Math.max(1, Math.ceil(snippets.length / pageSize));
  const page = Math.min(Math.max(0, opts.page), pageCount - 1);
  const slice = snippets.slice(page * pageSize, page * pageSize + pageSize);

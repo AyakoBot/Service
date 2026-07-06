@@ -12,7 +12,7 @@ import {
 } from '@discordjs/builders';
 import { ButtonStyle, ChannelType } from 'discord-api-types/v10';
 
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { formatDurationSeconds } from '../../../Util/durationSeconds.js';
 import { EditorType } from '../EditorType.js';
 import { FieldArity, type SettingsField, type ShowIfResult } from '../SettingsSchema.js';
@@ -34,8 +34,8 @@ const heading = (field: SettingsField, prefix: string): string => {
  return field.description ? `${title}\n-# ${field.description}` : title;
 };
 
-const editorPrefix = (field: SettingsField, value?: unknown): string => {
- const emote = editorEmotes.forEditor(field.editor, value);
+const editorPrefix = (emotes: EmoteSet, field: SettingsField, value?: unknown): string => {
+ const emote = editorEmotes.forEditor(emotes, field.editor, value);
  return emote ? textEmote(emote) : '';
 };
 
@@ -57,6 +57,7 @@ const renderEntitySelect = (
 
 export const renderInlineField = (
  container: ContainerBuilder,
+ emotes: EmoteSet,
  field: SettingsField,
  row: Record<string, unknown>,
  customIdFor: (action: SettingsAction, column: string) => string,
@@ -90,7 +91,9 @@ export const renderInlineField = (
    const multi = field.arity === FieldArity.Multi;
    const options = asOptions(field);
    container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(withReason(heading(field, editorPrefix(field)), visible)),
+    new TextDisplayBuilder().setContent(
+     withReason(heading(field, editorPrefix(emotes, field)), visible),
+    ),
    );
    container.addActionRowComponents(
     new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -120,7 +123,7 @@ export const renderInlineField = (
    );
    container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
-     withReason(heading(field, editorPrefix(field, ChannelType.GuildText)), visible),
+     withReason(heading(field, editorPrefix(emotes, field, ChannelType.GuildText)), visible),
     ),
    );
    if (select instanceof RoleSelectMenuBuilder) {
@@ -162,7 +165,7 @@ export const renderInlineField = (
     new SectionBuilder()
      .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-       withReason(`${heading(field, editorPrefix(field))}${preview}`, visible),
+       withReason(`${heading(field, editorPrefix(emotes, field))}${preview}`, visible),
       ),
      )
      .setButtonAccessory(

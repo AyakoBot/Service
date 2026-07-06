@@ -6,7 +6,6 @@ import type {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
@@ -30,6 +29,7 @@ export default async function (
  }
 
  const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
  const invite = await api.invites.get(
   code,
   { with_counts: true, with_expiration: true },
@@ -74,7 +74,7 @@ export default async function (
       : t.base.t.Never(),
     ),
     'temporary' in invite
-     ? line(emotes.timer, t.invite.temporary(), yesNo(t.base, Boolean(invite.temporary)))
+     ? line(emotes.timer, t.invite.temporary(), yesNo(emotes, t.base, Boolean(invite.temporary)))
      : null,
     invite.approximate_member_count !== undefined
      ? line(emotes.member, t.invite.approxMembers(), `\`${invite.approximate_member_count}\``)

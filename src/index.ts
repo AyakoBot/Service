@@ -68,6 +68,10 @@ client.registerPlugin(pluginInfo);
 
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
 
+logger.log('[Startup] Syncing application emojis');
+await client.emojis.init();
+logger.log('[Startup] Application emojis synced');
+
 process.on('SIGINT', () => {
  logger.log('[Shutdown] Received SIGINT signal');
  logger.debug('[Shutdown] Gracefully shutting down');

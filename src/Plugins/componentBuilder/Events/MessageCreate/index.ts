@@ -70,6 +70,7 @@ export default async function (
    tree: result.tree,
    selectedPath: null,
    canManage,
+   emotes: this.client.emojis.for(api),
   })
   .edit(msg.channel_id, surface.id, msg.guild_id, api);
 }

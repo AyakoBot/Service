@@ -15,7 +15,6 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
 import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
@@ -193,6 +192,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   async getLeavePayload() {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
+   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+   const emotes = this.client.emojis.for(api);
    const user = await this.client.cache.users.get(ticket.user);
 
    return new MessagePayload(this.client, {
@@ -291,6 +292,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   async getCloseDmPayload(reason?: string, closerId?: string) {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
+   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+   const emotes = this.client.emojis.for(api);
 
    const fallback = { name: t.SupportTeam(), emote: emotes.tools };
    const author = closerId
@@ -546,6 +549,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   async cloneToDm(msg: RMessage) {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
+   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+   const emotes = this.client.emojis.for(api);
 
    const fallback = { name: t.SupportTeam(), emote: emotes.tools };
    const authorName = await resolveStaffLabel.call(

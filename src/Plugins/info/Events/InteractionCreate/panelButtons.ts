@@ -3,7 +3,6 @@ import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { RolesTarget } from '../../Classes/Routes.js';
@@ -28,6 +27,8 @@ export const rolesButton = async function (
  if (!id) return;
 
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const roles =
   target === RolesTarget.Member
@@ -75,6 +76,8 @@ export const membersButton = async function (
  if (!roleId) return;
 
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const members = (await this.client.cache.members.getAll(cmd.guild_id)).filter((member) =>
   member.roles.includes(roleId),
@@ -115,6 +118,8 @@ export const featuresButton = async function (
  if (!guildId) return;
 
  const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
 
  const guild = await this.client.cache.guilds.get(guildId);
  if (!guild) {

@@ -17,7 +17,7 @@ import {
  type APIApplicationCommandInteractionDataSubcommandOption,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
@@ -34,10 +34,13 @@ const acronym = (name: string): string =>
   .replace(/\w+/g, (word) => word[0])
   .replace(/\s/g, '');
 
-const channelLine = (label: string, channelId: string | null | undefined): string | null =>
- (channelId ? line(emotes.message, label, `<#${channelId}>`) : null);
+const channelLine = (
+ emotes: EmoteSet,
+ label: string,
+ channelId: string | null | undefined,
+): string | null => (channelId ? line(emotes.message, label, `<#${channelId}>`) : null);
 
-const identityLines = (t: Translator, guild: RGuild): string[] =>
+const identityLines = (emotes: EmoteSet, t: Translator, guild: RGuild): string[] =>
  [
   line(emotes.info, t.base.t.name(), `\`${guild.name}\``),
   line(emotes.heading, t.server.acronym(), `\`${acronym(guild.name)}\``),
@@ -56,14 +59,14 @@ const identityLines = (t: Translator, guild: RGuild): string[] =>
    : null,
  ].filter((entry): entry is string => entry !== null);
 
-const channelLines = (t: Translator, guild: RGuild): string[] =>
+const channelLines = (emotes: EmoteSet, t: Translator, guild: RGuild): string[] =>
  [
-  channelLine(t.server.systemChannel(), guild.system_channel_id),
-  channelLine(t.server.rulesChannel(), guild.rules_channel_id),
-  channelLine(t.server.publicUpdatesChannel(), guild.public_updates_channel_id),
-  channelLine(t.server.safetyAlertsChannel(), guild.safety_alerts_channel_id),
-  channelLine(t.server.widgetChannel(), guild.widget_channel_id),
-  channelLine(t.server.afkChannel(), guild.afk_channel_id),
+  channelLine(emotes, t.server.systemChannel(), guild.system_channel_id),
+  channelLine(emotes, t.server.rulesChannel(), guild.rules_channel_id),
+  channelLine(emotes, t.server.publicUpdatesChannel(), guild.public_updates_channel_id),
+  channelLine(emotes, t.server.safetyAlertsChannel(), guild.safety_alerts_channel_id),
+  channelLine(emotes, t.server.widgetChannel(), guild.widget_channel_id),
+  channelLine(emotes, t.server.afkChannel(), guild.afk_channel_id),
   guild.afk_channel_id
    ? line(emotes.timer, t.server.afkTimeout(), `\`${guild.afk_timeout / 60}min\``)
    : null,
@@ -71,6 +74,7 @@ const channelLines = (t: Translator, guild: RGuild): string[] =>
 
 const statLines = async function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  guild: RGuild,
 ): Promise<string[]> {
@@ -105,7 +109,7 @@ const statLines = async function (
  ].filter((entry): entry is string => entry !== null);
 };
 
-const otherLines = (t: Translator, guild: RGuild): string[] => [
+const otherLines = (emotes: EmoteSet, t: Translator, guild: RGuild): string[] => [
  line(
   emotes.message,
   t.server.notifications(),
@@ -116,7 +120,7 @@ const otherLines = (t: Translator, guild: RGuild): string[] => [
   t.server.contentFilter(),
   nameOf(t.server.contentFilterNames, guild.explicit_content_filter, t.base.t.Unknown()),
  ),
- line(emotes.lock, t.server.mfaLevel(), yesNo(t.base, guild.mfa_level === 1)),
+ line(emotes.lock, t.server.mfaLevel(), yesNo(emotes, t.base, guild.mfa_level === 1)),
  line(
   emotes.warning,
   t.server.nsfwLevel(),
@@ -152,9 +156,16 @@ export default async function (
   return;
  }
 
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
+
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
 
- const header = `## ${textEmote(emotes.server)} ${t.server.title()}\n${identityLines(t, guild).join('\n')}`;
+ const header = `## ${textEmote(emotes.server)} ${t.server.title()}\n${identityLines(
+  emotes,
+  t,
+  guild,
+ ).join('\n')}`;
  if (guild.icon_url) {
   container.addSectionComponents(
    new SectionBuilder()
@@ -165,7 +176,7 @@ export default async function (
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(header));
  }
 
- const channels = channelLines(t, guild);
+ const channels = channelLines(emotes, t, guild);
  if (channels.length) {
   container.addSeparatorComponents(
    new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
@@ -180,7 +191,7 @@ export default async function (
  );
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `### ${t.server.statsTitle()}\n${(await statLines.call(this, t, guild)).join('\n')}`,
+   `### ${t.server.statsTitle()}\n${(await statLines.call(this, emotes, t, guild)).join('\n')}`,
   ),
  );
 
@@ -189,7 +200,7 @@ export default async function (
  );
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `### ${t.server.otherTitle()}\n${otherLines(t, guild).join('\n')}`,
+   `### ${t.server.otherTitle()}\n${otherLines(emotes, t, guild).join('\n')}`,
   ),
  );
 

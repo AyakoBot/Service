@@ -11,7 +11,6 @@ import type {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { parseWebhookUrl } from '../../../../Util/parseWebhookUrl.js';
@@ -40,6 +39,7 @@ export default async function (
  }
 
  const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
  const webhook = await api.webhooks.get(
   parsed.id,
   { token: parsed.token },
@@ -75,7 +75,7 @@ export default async function (
   webhook.application_id
    ? line(emotes.bot, t.base.t.Application(), codeId(webhook.application_id))
    : null,
-  line(emotes.lock, t.webhook.hasToken(), yesNo(t.base, Boolean(webhook.token))),
+  line(emotes.lock, t.webhook.hasToken(), yesNo(emotes, t.base, Boolean(webhook.token))),
  ]
   .filter((entry): entry is string => entry !== null)
   .join('\n');

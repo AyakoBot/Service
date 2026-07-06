@@ -6,7 +6,6 @@ import {
  StringSelectMenuBuilder,
  StringSelectMenuOptionBuilder,
 } from '@discordjs/builders';
-import type { APIPartialEmoji } from '@discordjs/core';
 import {
  ButtonStyle,
  ChannelType,
@@ -15,7 +14,8 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
+import { EmoteName } from '../../../Classes/EmoteName.js';
 import { Colors } from '../../../Types/index.js';
 import { cleanPreview } from '../../../Util/cleanPreview.js';
 import { buttonEmoji, textEmote } from '../../settings/Util/settingsEmotes.js';
@@ -47,24 +47,25 @@ export interface BuilderView {
  selectedField: number | null;
  selectedProperty: EmbedProperty | null;
  canManage: boolean;
+ emotes: EmoteSet;
 }
 
-const propertyEmotes: Record<EmbedProperty, APIPartialEmoji> = {
- [EmbedProperty.Title]: emotes.heading,
- [EmbedProperty.Description]: emotes.paragraph,
- [EmbedProperty.Url]: emotes.link,
- [EmbedProperty.Image]: emotes.image,
- [EmbedProperty.Thumbnail]: emotes.thumbnail,
- [EmbedProperty.Color]: emotes.palette,
- [EmbedProperty.AuthorName]: emotes.author,
- [EmbedProperty.AuthorIcon]: emotes.author,
- [EmbedProperty.AuthorUrl]: emotes.author,
- [EmbedProperty.FooterText]: emotes.footer,
- [EmbedProperty.FooterIcon]: emotes.footer,
- [EmbedProperty.Timestamp]: emotes.calendar,
- [EmbedProperty.FieldName]: emotes.fields,
- [EmbedProperty.FieldValue]: emotes.fields,
- [EmbedProperty.FieldInline]: emotes.fields,
+const propertyEmotes: Record<EmbedProperty, EmoteName> = {
+ [EmbedProperty.Title]: EmoteName.Heading,
+ [EmbedProperty.Description]: EmoteName.Paragraph,
+ [EmbedProperty.Url]: EmoteName.Link,
+ [EmbedProperty.Image]: EmoteName.Image,
+ [EmbedProperty.Thumbnail]: EmoteName.Thumbnail,
+ [EmbedProperty.Color]: EmoteName.Palette,
+ [EmbedProperty.AuthorName]: EmoteName.Author,
+ [EmbedProperty.AuthorIcon]: EmoteName.Author,
+ [EmbedProperty.AuthorUrl]: EmoteName.Author,
+ [EmbedProperty.FooterText]: EmoteName.Footer,
+ [EmbedProperty.FooterIcon]: EmoteName.Footer,
+ [EmbedProperty.Timestamp]: EmoteName.Calendar,
+ [EmbedProperty.FieldName]: EmoteName.Fields,
+ [EmbedProperty.FieldValue]: EmoteName.Fields,
+ [EmbedProperty.FieldInline]: EmoteName.Fields,
 };
 
 const propertyLabel = (t: Translator, property: EmbedProperty): string =>
@@ -104,6 +105,7 @@ const inputList = (t: Translator, inputs: PropertyInput[]): string =>
   .join(', ');
 
 const headerEmbed = function (this: EmbedBuilderPlugin, t: Translator, view: BuilderView) {
+ const { emotes } = view;
  const lines = [t.builder.desc()];
 
  if (view.selectedProperty && propertyInputs[view.selectedProperty] === PropertyInput.Typed) {
@@ -162,7 +164,7 @@ const propertySelectRow = function (this: EmbedBuilderPlugin, t: Translator, vie
    .setLabel(propertyLabel(t, property))
    .setValue(property)
    .setDescription(previewValue(t, view, property))
-   .setEmoji(buttonEmoji(propertyEmotes[property]))
+   .setEmoji(buttonEmoji(view.emotes.get(propertyEmotes[property])))
    .setDefault(property === view.selectedProperty),
  );
 
@@ -171,13 +173,13 @@ const propertySelectRow = function (this: EmbedBuilderPlugin, t: Translator, vie
    new StringSelectMenuOptionBuilder()
     .setLabel(t.builder.backToEmbed())
     .setValue(FieldOption.Back)
-    .setEmoji(buttonEmoji(emotes.back)),
+    .setEmoji(buttonEmoji(view.emotes.back)),
   );
   options.push(
    new StringSelectMenuOptionBuilder()
     .setLabel(t.builder.removeField())
     .setValue(FieldOption.Remove)
-    .setEmoji(buttonEmoji(emotes.trash)),
+    .setEmoji(buttonEmoji(view.emotes.trash)),
   );
  }
 
@@ -197,7 +199,7 @@ const fieldSelectRow = function (this: EmbedBuilderPlugin, t: Translator, view: 
    .setLabel(t.builder.fieldNr({ nr: String(index + 1) }))
    .setValue(String(index))
    .setDescription(cleanPreview(field.name).replace(/\s+/g, ' ').slice(0, 90) || t.builder.notSet())
-   .setEmoji(buttonEmoji(emotes.fields))
+   .setEmoji(buttonEmoji(view.emotes.fields))
    .setDefault(index === view.selectedField),
  );
 
@@ -206,7 +208,7 @@ const fieldSelectRow = function (this: EmbedBuilderPlugin, t: Translator, view: 
    new StringSelectMenuOptionBuilder()
     .setLabel(t.builder.addField())
     .setValue(FieldOption.Add)
-    .setEmoji(buttonEmoji(emotes.plus)),
+    .setEmoji(buttonEmoji(view.emotes.plus)),
   );
  }
 
@@ -226,23 +228,23 @@ const utilityRow = function (this: EmbedBuilderPlugin, t: Translator, view: Buil
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.Empty))
    .setLabel(t.builder.emptyEmbed())
-   .setEmoji(buttonEmoji(emotes.trash)),
+   .setEmoji(buttonEmoji(view.emotes.trash)),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.EmptyField))
    .setLabel(t.builder.emptyField())
-   .setEmoji(buttonEmoji(emotes.trash))
+   .setEmoji(buttonEmoji(view.emotes.trash))
    .setDisabled(view.selectedField === null),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.ImportJson))
    .setLabel(t.base.t.Import())
-   .setEmoji(buttonEmoji(emotes.json)),
+   .setEmoji(buttonEmoji(view.emotes.json)),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.ExportJson))
    .setLabel(t.base.t.Export())
-   .setEmoji(buttonEmoji(emotes.json)),
+   .setEmoji(buttonEmoji(view.emotes.json)),
  );
 };
 
@@ -254,19 +256,19 @@ const actionRow = function (this: EmbedBuilderPlugin, t: Translator, view: Build
    .setStyle(ButtonStyle.Success)
    .setCustomId(this.getRoute(EmbedBuilderRoute.Save))
    .setLabel(t.base.t.Save())
-   .setEmoji(buttonEmoji(emotes.save))
+   .setEmoji(buttonEmoji(view.emotes.save))
    .setDisabled(locked),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Success)
    .setCustomId(this.getRoute(EmbedBuilderRoute.Send))
    .setLabel(t.base.t.Send())
-   .setEmoji(buttonEmoji(emotes.send))
+   .setEmoji(buttonEmoji(view.emotes.send))
    .setDisabled(locked),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Primary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.EditMessage))
    .setLabel(t.builder.editMessage())
-   .setEmoji(buttonEmoji(emotes.edit))
+   .setEmoji(buttonEmoji(view.emotes.edit))
    .setDisabled(locked),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Danger)
@@ -291,6 +293,7 @@ export const builderRows = function (
 export const sendRows = function (
  this: EmbedBuilderPlugin,
  t: Translator,
+ view: BuilderView,
  mode: SendMode,
 ): APIMessageTopLevelComponent[] {
  const webhook = mode === SendMode.Webhook;
@@ -318,7 +321,7 @@ export const sendRows = function (
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.Back))
    .setLabel(t.base.t.Back())
-   .setEmoji(buttonEmoji(emotes.back)),
+   .setEmoji(buttonEmoji(view.emotes.back)),
  );
 
  if (mode === SendMode.Bot) {
@@ -327,7 +330,7 @@ export const sendRows = function (
     .setStyle(ButtonStyle.Primary)
     .setCustomId(this.getRoute(EmbedBuilderRoute.WebhookModal))
     .setLabel(t.send.asWebhook())
-    .setEmoji(buttonEmoji(emotes.webhook)),
+    .setEmoji(buttonEmoji(view.emotes.webhook)),
   );
  }
 

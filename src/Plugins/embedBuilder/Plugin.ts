@@ -10,7 +10,7 @@ import Plugin, {
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
-import emotes from '../../Classes/Emotes.js';
+import { EmoteName } from '../../Classes/EmoteName.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -150,7 +150,7 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
    {
     id: EmbedBuilderGroups.Embed,
     label: (t: EmbedBuilderTranslator) => t.settings.groups.embed(),
-    emote: emotes.json,
+    emote: EmoteName.Json,
     fields: [
      {
       column: 'name',
@@ -166,7 +166,7 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
       customId: EmbedBuilderRoute.OpenBuilder,
       label: (t: EmbedBuilderTranslator) => t.builder.title(),
       description: (t: EmbedBuilderTranslator) => t.settings.descriptions.openBuilder(),
-      emote: emotes.edit,
+      emote: EmoteName.Edit,
      },
     ],
    },

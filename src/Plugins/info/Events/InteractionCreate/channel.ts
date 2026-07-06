@@ -13,7 +13,7 @@ import {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { getChannelOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
@@ -23,15 +23,15 @@ import type InfoPlugin from '../../Plugin.js';
 import { chunkByLength, codeId, line, nameOf, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
 
-const channelEmote = (type: number) =>
- emotes.channelTypes[type as keyof typeof emotes.channelTypes] ?? emotes.message;
+const channelEmote = (emotes: EmoteSet, type: number) =>
+ emotes.channelTypes[type as keyof EmoteSet['channelTypes']] ?? emotes.message;
 
-const baseLines = (t: Translator, channel: RChannel): string[] =>
+const baseLines = (emotes: EmoteSet, t: Translator, channel: RChannel): string[] =>
  [
   line(emotes.info, t.base.t.name(), `\`${channel.name}\``),
   line(emotes.number, t.common.id(), codeId(channel.id)),
   line(
-   channelEmote(channel.type),
+   channelEmote(emotes, channel.type),
    t.base.t.Type(),
    nameOf(t.base.channelTypes, channel.type, t.base.channelTypes.unknownChannel()),
   ),
@@ -43,11 +43,11 @@ const baseLines = (t: Translator, channel: RChannel): string[] =>
    ? line(emotes.number, t.channel.position(), `\`${channel.position}\``)
    : null,
   'nsfw' in channel
-   ? line(emotes.warning, t.channel.nsfw(), yesNo(t.base, Boolean(channel.nsfw)))
+   ? line(emotes.warning, t.channel.nsfw(), yesNo(emotes, t.base, Boolean(channel.nsfw)))
    : null,
  ].filter((entry): entry is string => entry !== null);
 
-const textLines = (t: Translator, channel: RChannel): string[] => {
+const textLines = (emotes: EmoteSet, t: Translator, channel: RChannel): string[] => {
  const lines: string[] = [];
 
  if ('rate_limit_per_user' in channel && channel.rate_limit_per_user) {
@@ -70,7 +70,7 @@ const textLines = (t: Translator, channel: RChannel): string[] => {
  return lines;
 };
 
-const voiceLines = (t: Translator, channel: RChannel): string[] => {
+const voiceLines = (emotes: EmoteSet, t: Translator, channel: RChannel): string[] => {
  const lines: string[] = [];
 
  if ('bitrate' in channel && channel.bitrate) {
@@ -101,7 +101,7 @@ const voiceLines = (t: Translator, channel: RChannel): string[] => {
  return lines;
 };
 
-const forumLines = (t: Translator, channel: RChannel): string[] => {
+const forumLines = (emotes: EmoteSet, t: Translator, channel: RChannel): string[] => {
  const lines: string[] = [];
 
  if ('default_forum_layout' in channel && channel.default_forum_layout !== undefined) {
@@ -154,6 +154,7 @@ const forumLines = (t: Translator, channel: RChannel): string[] => {
 
 const topicLines = async function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  cmd: APIApplicationCommandInteraction,
  channel: RChannel,
@@ -183,6 +184,7 @@ const topicLines = async function (
 
 const childrenBlocks = async function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  guildId: string,
  channel: RChannel,
@@ -193,7 +195,7 @@ const childrenBlocks = async function (
  const children = all
   .filter((child) => child.parent_id === channel.id)
   .sort((a, b) => ('position' in a && 'position' in b ? (a.position ?? 0) - (b.position ?? 0) : 0))
-  .map((child) => `${textEmote(channelEmote(child.type))} <#${child.id}>`);
+  .map((child) => `${textEmote(channelEmote(emotes, child.type))} <#${child.id}>`);
 
  if (!children.length) return [];
  return chunkByLength([`### ${t.channel.children()}`, ...children]);
@@ -210,6 +212,9 @@ export default async function (
   return;
  }
 
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
+
  const channelId = getChannelOption(sub, InfoOption.Channel);
  const channel = channelId
   ? ((await this.client.cache.channels.get(channelId)) ??
@@ -225,15 +230,19 @@ export default async function (
 
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `## ${textEmote(channelEmote(resolved.type))} ${t.channel.title()}\n${baseLines(t, resolved).join('\n')}`,
+   `## ${textEmote(channelEmote(emotes, resolved.type))} ${t.channel.title()}\n${baseLines(
+    emotes,
+    t,
+    resolved,
+   ).join('\n')}`,
   ),
  );
 
  const detail = [
-  ...textLines(t, resolved),
-  ...voiceLines(t, resolved),
-  ...forumLines(t, resolved),
-  ...(await topicLines.call(this, t, cmd, resolved)),
+  ...textLines(emotes, t, resolved),
+  ...voiceLines(emotes, t, resolved),
+  ...forumLines(emotes, t, resolved),
+  ...(await topicLines.call(this, emotes, t, cmd, resolved)),
  ];
  if (detail.length) {
   container.addSeparatorComponents(
@@ -242,7 +251,7 @@ export default async function (
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(detail.join('\n')));
  }
 
- for (const block of await childrenBlocks.call(this, t, cmd.guild_id, resolved)) {
+ for (const block of await childrenBlocks.call(this, emotes, t, cmd.guild_id, resolved)) {
   container.addSeparatorComponents(
    new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
   );

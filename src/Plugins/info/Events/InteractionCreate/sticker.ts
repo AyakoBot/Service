@@ -18,7 +18,7 @@ import {
  type APIMessageComponentInteraction,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { messageLinkPattern } from '../../../../Util/messageLink.js';
@@ -30,7 +30,7 @@ import type InfoPlugin from '../../Plugin.js';
 import { chunkByLength, codeId, line, nameOf, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, RespondVia, type Translator } from '../../Util/respond.js';
 
-const singleContainer = (t: Translator, sticker: RSticker): ContainerBuilder => {
+const singleContainer = (emotes: EmoteSet, t: Translator, sticker: RSticker): ContainerBuilder => {
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
 
  container.addTextDisplayComponents(
@@ -49,7 +49,11 @@ const singleContainer = (t: Translator, sticker: RSticker): ContainerBuilder => 
      t.sticker.format(),
      nameOf(t.sticker.formatNames, sticker.format_type, t.base.t.Unknown()),
     ),
-    line(emotes.enabled, t.sticker.available(), yesNo(t.base, sticker.available !== false)),
+    line(
+     emotes.enabled,
+     t.sticker.available(),
+     yesNo(emotes, t.base, sticker.available !== false),
+    ),
     sticker.tags ? line(emotes.emoji, t.sticker.tags(), `\`${sticker.tags}\``) : null,
    ]
     .filter((entry): entry is string => entry !== null)
@@ -68,6 +72,7 @@ const singleContainer = (t: Translator, sticker: RSticker): ContainerBuilder => 
 
 const listContainer = function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  all: RSticker[],
  page: number,
@@ -143,6 +148,9 @@ export default async function (
   return;
  }
 
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
+
  const input = getStringOption(sub, InfoOption.Sticker).trim();
  if (input) {
   const sticker = await resolveSticker.call(this, cmd.guild_id, input);
@@ -150,7 +158,7 @@ export default async function (
    respondError.call(this, cmd, t.errors.stickerNotFound());
    return;
   }
-  respond.call(this, cmd, [singleContainer(t, sticker)], getHide(sub));
+  respond.call(this, cmd, [singleContainer(emotes, t, sticker)], getHide(sub));
   return;
  }
 
@@ -160,7 +168,7 @@ export default async function (
   return;
  }
 
- respond.call(this, cmd, [listContainer.call(this, t, all, 1)], getHide(sub));
+ respond.call(this, cmd, [listContainer.call(this, emotes, t, all, 1)], getHide(sub));
 }
 
 export const stickerPage = async function (
@@ -170,8 +178,16 @@ export const stickerPage = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
  const page = Number(args[0]) || 1;
 
  const all = await this.client.cache.stickers.getAll(cmd.guild_id);
- respond.call(this, cmd, [listContainer.call(this, t, all, page)], true, RespondVia.Update);
+ respond.call(
+  this,
+  cmd,
+  [listContainer.call(this, emotes, t, all, page)],
+  true,
+  RespondVia.Update,
+ );
 };

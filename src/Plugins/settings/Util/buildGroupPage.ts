@@ -9,7 +9,7 @@ import {
 } from '@discordjs/builders';
 import { ButtonStyle } from 'discord-api-types/v10';
 
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import type SettingsPlugin from '../Plugin.js';
 import type { SettingsField, SettingsGroup, SettingsSchema } from '../SettingsSchema.js';
 
@@ -38,6 +38,7 @@ export interface BuildGroupPageArgs {
  hideUnavail: boolean;
  actionState?: GuideActionState;
  t: SettingsTranslator;
+ emotes: EmoteSet;
 }
 
 const isGroupAvailable = (group: SettingsGroup, row: Record<string, unknown>): boolean =>
@@ -65,6 +66,7 @@ export const buildGroupPage = ({
  hideUnavail,
  actionState,
  t,
+ emotes,
 }: BuildGroupPageArgs): TopLevelBuilder[] => {
  const idFor = (
   action: SettingsAction,
@@ -123,7 +125,7 @@ export const buildGroupPage = ({
     new ButtonBuilder()
      .setStyle(complete ? ButtonStyle.Secondary : ButtonStyle.Primary)
      .setLabel(guide.advert.buttonLabel)
-     .setEmoji(buttonEmoji(guide.advert.emote ?? emotes.ticket))
+     .setEmoji(buttonEmoji(guide.advert.emote ? emotes.get(guide.advert.emote) : emotes.ticket))
      .setCustomId(idFor(SettingsAction.Guide, group.id, undefined, 0)),
    );
  };
@@ -132,7 +134,9 @@ export const buildGroupPage = ({
 
  const container = new ContainerBuilder();
 
- const groupHeading = `## ${textEmote(group.emote ?? emotes.settings)} ${group.label}${
+ const groupHeading = `## ${textEmote(
+  group.emote ? emotes.get(group.emote) : emotes.settings,
+ )} ${group.label}${
   group.description ? `\n-# ${group.description}` : ''
  }`;
  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(groupHeading));
@@ -147,6 +151,7 @@ export const buildGroupPage = ({
 
    renderInlineField(
     container,
+    emotes,
     field,
     row,
     (action, column) => idFor(action, group.id, column),
@@ -162,7 +167,9 @@ export const buildGroupPage = ({
  if (group.actions?.length) {
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
   group.actions.forEach((action) => {
-   const actionText = `### ${action.emote ? `${textEmote(action.emote)} ` : ''}${action.label}${
+   const actionText = `### ${
+    action.emote ? `${textEmote(emotes.get(action.emote))} ` : ''
+   }${action.label}${
     action.description ? `\n-# ${action.description}` : ''
    }`;
    container.addSectionComponents(
@@ -224,7 +231,7 @@ export const buildGroupPage = ({
      value: g.id,
      default: g.id === group.id,
      description: g.description,
-     emoji: buttonEmoji(g.emote ?? emotes.settings),
+     emoji: buttonEmoji(g.emote ? emotes.get(g.emote) : emotes.settings),
     })),
    );
   page.push(new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select));
@@ -237,7 +244,7 @@ export const buildGroupPage = ({
     new ButtonBuilder()
      .setStyle(current ? ButtonStyle.Primary : ButtonStyle.Secondary)
      .setLabel(incomplete ? `${g.label} ${t.navigator.incomplete()}` : g.label)
-     .setEmoji(buttonEmoji(g.emote ?? emotes.settings))
+     .setEmoji(buttonEmoji(g.emote ? emotes.get(g.emote) : emotes.settings))
      .setDisabled(current)
      .setCustomId(idFor(SettingsAction.GroupNav, g.id)),
    );

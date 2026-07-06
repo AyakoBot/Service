@@ -11,7 +11,7 @@ import { ButtonStyle, MessageFlags } from 'discord-api-types/v10';
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import type BaseTicket from '../Classes/BaseTicket.js';
 import { TicketRoute } from '../Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
@@ -240,6 +240,7 @@ export default class TicketReminders {
   t: Translator,
   row: TicketRow,
   closeUnix: number,
+  emotes: EmoteSet,
  ): MessagePayload => {
   const container = new ContainerBuilder()
    .addTextDisplayComponents(
@@ -284,7 +285,9 @@ export default class TicketReminders {
   const t = await this.plugin.t(row.settings.guild);
   const closeUnix = Math.floor((Date.now() + closeAfter * 1000) / 1000);
 
-  const payload = this.buildInactivityWarnPayload(t, row, closeUnix);
+  const api = await this.plugin.getAPI(row.settings.guild, row.settings.botToken);
+  const emotes = this.client.emojis.for(api);
+  const payload = this.buildInactivityWarnPayload(t, row, closeUnix, emotes);
 
   await ticket
    .sendMessage(payload)

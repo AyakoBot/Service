@@ -72,6 +72,7 @@ export default async function (
    selectedField: getSelectedField(surface),
    selectedProperty: null,
    canManage,
+   emotes: this.client.emojis.for(api),
   })
   .edit(msg.channel_id, surface.id, msg.guild_id, api);
 }

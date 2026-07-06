@@ -16,7 +16,7 @@ import {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoRoute } from '../../Classes/Routes.js';
@@ -77,6 +77,7 @@ const versionBlock = (
 
 const historyContainer = async function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  messageId: string,
  page: number,
@@ -145,8 +146,10 @@ export default async function (this: InfoPlugin, cmd: APIApplicationCommandInter
 
  const interaction = cmd as APIMessageApplicationCommandInteraction;
  const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
 
- const container = await historyContainer.call(this, t, interaction.data.target_id, 1);
+ const container = await historyContainer.call(this, emotes, t, interaction.data.target_id, 1);
  if (!container) {
   respondError.call(this, cmd, t.history.none());
   return;
@@ -164,9 +167,11 @@ export const messageHistoryPage = async function (
  if (!messageId) return;
 
  const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
  const page = Number(pageArg) || 1;
 
- const container = await historyContainer.call(this, t, messageId, page);
+ const container = await historyContainer.call(this, emotes, t, messageId, page);
  if (!container) return;
 
  respond.call(this, cmd, [container], true, RespondVia.Update);

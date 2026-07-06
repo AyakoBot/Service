@@ -65,7 +65,7 @@ export const sendOpen = async function (
 
  const t = await this.t(cmd.guild_id ?? undefined);
  renderBuilder
-  .call(this, t, ctx.view, sendRows.call(this, t, SendMode.Bot))
+  .call(this, t, ctx.view, sendRows.call(this, t, ctx.view, SendMode.Bot))
   .update(cmd);
 };
 
@@ -223,7 +223,7 @@ export const webhookSubmit = async function (
   return;
  }
 
- renderBuilder.call(this, t, view, sendRows.call(this, t, SendMode.Webhook)).update(cmd);
+ renderBuilder.call(this, t, view, sendRows.call(this, t, view, SendMode.Webhook)).update(cmd);
 };
 
 const resolveWebhook = async function (

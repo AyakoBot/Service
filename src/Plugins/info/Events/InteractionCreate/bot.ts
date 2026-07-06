@@ -8,7 +8,6 @@ import {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import formatDuration from '../../../../Util/formatDuration.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
@@ -28,6 +27,7 @@ export default async function (
  const t = await this.t(cmd.guild_id ?? cmd.locale);
 
  const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
  const botUser = await resolveUser.call(this, api.botId);
  const guilds = await this.client.cache.guilds.getAll();
 

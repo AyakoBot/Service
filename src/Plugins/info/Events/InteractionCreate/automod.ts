@@ -6,7 +6,7 @@ import {
  type APIAutoModerationRule,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
@@ -15,11 +15,11 @@ import { getHide, respond, respondError, type Translator } from '../../Util/resp
 
 const keywordPreviewCap = 15;
 
-const ruleBlock = (t: Translator, rule: APIAutoModerationRule): string =>
+const ruleBlock = (emotes: EmoteSet, t: Translator, rule: APIAutoModerationRule): string =>
  [
   `### ${rule.name}`,
   line(emotes.number, t.common.id(), codeId(rule.id)),
-  line(emotes.enabled, t.base.t.Enabled(), yesNo(t.base, rule.enabled)),
+  line(emotes.enabled, t.base.t.Enabled(), yesNo(emotes, t.base, rule.enabled)),
   line(
    emotes.automod,
    t.automod.trigger(),
@@ -68,6 +68,9 @@ export default async function (
   return;
  }
 
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
+
  const rules = await this.client.cache.automods.getAll(cmd.guild_id);
  if (!rules.length) {
   respondError.call(this, cmd, t.automod.none());
@@ -85,7 +88,9 @@ export default async function (
   container.addSeparatorComponents(
    new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
   );
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(ruleBlock(t, rule)));
+  container.addTextDisplayComponents(
+   new TextDisplayBuilder().setContent(ruleBlock(emotes, t, rule)),
+  );
  });
 
  respond.call(this, cmd, [container], getHide(sub));

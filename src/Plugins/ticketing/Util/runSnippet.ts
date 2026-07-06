@@ -6,7 +6,7 @@ import { MessageFlags, type APIInteraction } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../Types/index.js';
 import type BaseTicket from '../Classes/BaseTicket.js';
 import type TicketPlugin from '../Plugin.js';
@@ -43,18 +43,20 @@ export default async function (
  guildId: string,
 ) {
  const t = await this.t(guildId);
+ const api = await this.getAPI(guildId);
+ const emotes = this.client.emojis.for(api);
 
  const ticket =
   (await resolveTicketByChannel.call(this.client, channelId)) ||
   (await resolveTicketByStaffThread.call(this.client, channelId));
 
  if (!ticket) {
-  showError.call(this, cmd, t.base.t.error(), t.tag.errors.noTicket());
+  showError.call(this, cmd, emotes, t.base.t.error(), t.tag.errors.noTicket());
   return;
  }
 
  const dbTicket = await ticket.getTicket();
- const ctx = { guildId, staffId, ticket: dbTicket };
+ const ctx = { guildId, staffId, ticket: dbTicket, emotes };
 
  const userText = snippet.userText
   ? await resolveSnippetVars.call(this.client, snippet.userText, ctx)
@@ -124,6 +126,7 @@ const postStaffNote = async function (
 const showError = function (
  this: TicketPlugin,
  cmd: APIInteraction,
+ emotes: EmoteSet,
  title: string,
  description: string,
 ) {

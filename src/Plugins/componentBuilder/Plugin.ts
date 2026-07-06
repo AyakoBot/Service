@@ -9,7 +9,7 @@ import Plugin, {
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
-import emotes from '../../Classes/Emotes.js';
+import { EmoteName } from '../../Classes/EmoteName.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -156,7 +156,7 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
    {
     id: ComponentBuilderGroups.Message,
     label: (t: ComponentBuilderTranslator) => t.settings.groups.message(),
-    emote: emotes.json,
+    emote: EmoteName.Json,
     fields: [
      {
       column: 'name',
@@ -172,7 +172,7 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
       customId: ComponentBuilderRoute.OpenBuilder,
       label: (t: ComponentBuilderTranslator) => t.builder.title(),
       description: (t: ComponentBuilderTranslator) => t.settings.descriptions.openBuilder(),
-      emote: emotes.edit,
+      emote: EmoteName.Edit,
      },
     ],
    },

@@ -1,7 +1,7 @@
 import type { Ticket, TicketSetting } from '@ayako/database';
 
 import type Client from '../../../Classes/Client.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 
 import { resolveStaffLabel } from './resolveStaffLabel.js';
 
@@ -9,6 +9,7 @@ export interface SnippetVarContext {
  guildId: string;
  staffId: string;
  ticket: (Ticket & { settings: TicketSetting }) | null;
+ emotes: EmoteSet;
 }
 
 const resolveSnippetVars = async function (
@@ -20,12 +21,12 @@ const resolveSnippetVars = async function (
 
  const staff = await resolveStaffLabel.call(this, ctx.guildId, ctx.staffId, {
   name: `<@${ctx.staffId}>`,
-  emote: emotes.member,
+  emote: ctx.emotes.member,
  });
  const claimer = ctx.ticket?.claimer
   ? await resolveStaffLabel.call(this, ctx.guildId, ctx.ticket.claimer, {
      name: `<@${ctx.ticket.claimer}>`,
-     emote: emotes.member,
+     emote: ctx.emotes.member,
     })
   : { name: '', emote: undefined };
 

@@ -2,7 +2,7 @@ import type { APIPartialEmoji } from '@discordjs/core';
 
 import type { BaseLang } from '../../../Classes/abstracts/Plugin.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 
 export const containerCharBudget = 3500;
 
@@ -11,7 +11,7 @@ export const line = (emote: APIPartialEmoji, label: string, value: string): stri
 
 export const subLine = (label: string, value: string): string => `-# ${label}: ${value}`;
 
-export const yesNo = (base: BaseLang, value: boolean): string =>
+export const yesNo = (emotes: EmoteSet, base: BaseLang, value: boolean): string =>
  `${constants.formatters.getEmote(value ? emotes.enabled : emotes.disabled)} ${
   value ? base.t.Yes() : base.t.No()
  }`;

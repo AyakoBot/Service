@@ -36,5 +36,6 @@ export const botTokenTransform: FieldTransform = async (value, ctx) => {
 
  plugin.invalidateGuildAPI(ctx.guildId);
  plugin.reconcileSatellites();
+ void ctx.client.emojis.ensureToken(value);
  return { value: cipher };
 };

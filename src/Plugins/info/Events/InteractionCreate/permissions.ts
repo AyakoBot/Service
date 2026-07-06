@@ -10,7 +10,7 @@ import {
  type APIMessageComponentInteraction,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import {
  getChannelOption,
@@ -91,7 +91,12 @@ const categoryPerms: Record<PermCategory, (keyof typeof PermissionFlagsBits)[]> 
  [PermCategory.Advanced]: ['Administrator'],
 };
 
-export const permsContainer = (t: Translator, title: string, allow: bigint): ContainerBuilder => {
+export const permsContainer = (
+ emotes: EmoteSet,
+ t: Translator,
+ title: string,
+ allow: bigint,
+): ContainerBuilder => {
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(`## ${textEmote(emotes.permissions)} ${title}`),
@@ -166,6 +171,9 @@ export default async function (
   return;
  }
 
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
+
  const userId = getUserOption(sub, InfoOption.User);
  const roleId = getRoleOption(sub, InfoOption.Role);
  const channelId = getChannelOption(sub, InfoOption.Channel);
@@ -184,7 +192,14 @@ export default async function (
   respond.call(
    this,
    cmd,
-   [permsContainer(t, t.permissions.inChannel({ target, channel: `<#${channelId}>` }), allow)],
+   [
+    permsContainer(
+     emotes,
+     t,
+     t.permissions.inChannel({ target, channel: `<#${channelId}>` }),
+     allow,
+    ),
+   ],
    true,
   );
   return;
@@ -194,7 +209,12 @@ export default async function (
   ? (await getGuildPerms.call(this.client.cache, cmd.guild_id, userId)).response
   : BigInt((await this.client.cache.roles.get(roleId as string))?.permissions ?? 0);
 
- respond.call(this, cmd, [permsContainer(t, t.permissions.serverWide({ target }), allow)], true);
+ respond.call(
+  this,
+  cmd,
+  [permsContainer(emotes, t, t.permissions.serverWide({ target }), allow)],
+  true,
+ );
 }
 
 export const basicPerms = async function (
@@ -207,12 +227,14 @@ export const basicPerms = async function (
  if (!targetId) return;
 
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
  const { response } = await getGuildPerms.call(this.client.cache, cmd.guild_id, targetId);
 
  respond.call(
   this,
   cmd,
-  [permsContainer(t, t.permissions.serverWide({ target: `<@${targetId}>` }), response)],
+  [permsContainer(emotes, t, t.permissions.serverWide({ target: `<@${targetId}>` }), response)],
   true,
  );
 };
@@ -230,6 +252,8 @@ export const permsSelect = async function (
  if (!targetId || !channelId) return;
 
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const allow =
   target === PermsTarget.Role
@@ -241,7 +265,14 @@ export const permsSelect = async function (
  respond.call(
   this,
   cmd,
-  [permsContainer(t, t.permissions.inChannel({ target: mention, channel: `<#${channelId}>` }), allow)],
+  [
+   permsContainer(
+    emotes,
+    t,
+    t.permissions.inChannel({ target: mention, channel: `<#${channelId}>` }),
+    allow,
+   ),
+  ],
   true,
  );
 };

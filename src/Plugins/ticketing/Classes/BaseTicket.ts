@@ -22,7 +22,7 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
-import emotes from '../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../Types/index.js';
 import fetchMessages from '../../../Util/fetchMessages.js';
 import type TicketPlugin from '../Plugin.js';
@@ -287,6 +287,8 @@ export default class BaseTicket extends BaseTicketLogger {
  async postEscalationMarker(actorId: string, tier: TicketTier) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
 
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Info)
@@ -436,6 +438,8 @@ export default class BaseTicket extends BaseTicketLogger {
  async postAutoCloseNotice(actorId: string, reason?: string) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
 
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Warning)
@@ -628,7 +632,7 @@ export default class BaseTicket extends BaseTicketLogger {
   return SurfaceState.Opened;
  }
 
- stateGlyph(state: SurfaceState): string {
+ stateGlyph(state: SurfaceState, emotes: EmoteSet): string {
   switch (state) {
    case SurfaceState.Claimed:
     return constants.formatters.getEmote(emotes.tools) || '';
@@ -687,6 +691,8 @@ export default class BaseTicket extends BaseTicketLogger {
  ) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
   const state = stateOverride ?? this.resolveSurfaceState(ticket);
 
   const components: APIMessageTopLevelComponent[] = [];
@@ -719,7 +725,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const tierLine = this.tierLine(ticket, tiers, t);
 
   const bodyLines = [
-   `${this.stateGlyph(state)} ${this.stateLabel(state, t)}`,
+   `${this.stateGlyph(state, emotes)} ${this.stateLabel(state, t)}`,
    `${t.base.t.User()}: <@${ticket.user}>`,
    claimerLine,
    tierLine,
@@ -971,6 +977,8 @@ export default class BaseTicket extends BaseTicketLogger {
  async forwardToTicketChannel(msg: RMessage) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
   const user = await this.getUser(msg.author_id);
   const name = user?.username || t.base.t.unknownUser();
 
@@ -1065,6 +1073,8 @@ export default class BaseTicket extends BaseTicketLogger {
  async editMirror(mirror: MirrorRef, msg: RMessage) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
 
   let author: { name: string; emote: { name: string | null; id: string | null } | undefined };
   if (mirror.isDm) {
@@ -1086,7 +1096,6 @@ export default class BaseTicket extends BaseTicketLogger {
    .setFlags(MessageFlags.IsComponentsV2);
 
   if (mirror.isDm) {
-   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
    await api.channels.editDirectMessage(
     mirror.channelId,
     mirror.messageId,
@@ -1133,6 +1142,7 @@ export default class BaseTicket extends BaseTicketLogger {
  async react(msg: RMessage) {
   const ticket = await this.getTicket();
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
   const opts = { origin: BaseTicket.name, reason: 'Marking message forwarded to the user' };
   const main = constants.formatters.getEmoteIdentifier(emotes.tickWithBackground);
 
@@ -1156,6 +1166,7 @@ export default class BaseTicket extends BaseTicketLogger {
  async unreact(msg: RMessage) {
   const ticket = await this.getTicket();
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
   const opts = { origin: BaseTicket.name, reason: 'Removing forwarded marker from message' };
   const main = constants.formatters.getEmoteIdentifier(emotes.tickWithBackground);
 

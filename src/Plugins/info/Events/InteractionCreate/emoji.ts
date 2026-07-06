@@ -17,7 +17,7 @@ import {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
@@ -30,7 +30,7 @@ import { getHide, respond, respondError, RespondVia, type Translator } from '../
 
 const emojiIdPattern = /^(?:<(?<animated>a)?:(?<name>\w+):)?(?<id>\d{15,21})>?$/;
 
-const singleContainer = (t: Translator, emoji: REmoji): ContainerBuilder => {
+const singleContainer = (emotes: EmoteSet, t: Translator, emoji: REmoji): ContainerBuilder => {
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
 
  container.addTextDisplayComponents(
@@ -41,9 +41,9 @@ const singleContainer = (t: Translator, emoji: REmoji): ContainerBuilder => {
     line(emotes.number, t.common.id(), codeId(emoji.id)),
     line(emotes.link, t.common.url(), `[${t.base.t.Open()}](${emoji.url})`),
     line(emotes.calendar, t.base.t.Created(), timeOf(snowflakeToMs(emoji.id), t.base)),
-    line(emotes.image, t.emoji.animated(), yesNo(t.base, Boolean(emoji.animated))),
-    line(emotes.enabled, t.emoji.available(), yesNo(t.base, emoji.available !== false)),
-    line(emotes.settings, t.emoji.managed(), yesNo(t.base, Boolean(emoji.managed))),
+    line(emotes.image, t.emoji.animated(), yesNo(emotes, t.base, Boolean(emoji.animated))),
+    line(emotes.enabled, t.emoji.available(), yesNo(emotes, t.base, emoji.available !== false)),
+    line(emotes.settings, t.emoji.managed(), yesNo(emotes, t.base, Boolean(emoji.managed))),
     emoji.roles?.length
      ? line(emotes.role, t.emoji.roles(), emoji.roles.map((id) => `<@&${id}>`).join(' '))
      : null,
@@ -62,6 +62,7 @@ const singleContainer = (t: Translator, emoji: REmoji): ContainerBuilder => {
 
 const listContainer = function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  all: REmoji[],
  page: number,
@@ -113,6 +114,8 @@ export default async function (
  sub: APIApplicationCommandInteractionDataSubcommandOption,
 ) {
  const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
  const input = getStringOption(sub, InfoOption.Emoji).trim();
 
  if (input) {
@@ -124,7 +127,7 @@ export default async function (
    respondError.call(this, cmd, t.errors.emojiNotFound());
    return;
   }
-  respond.call(this, cmd, [singleContainer(t, emoji)], getHide(sub));
+  respond.call(this, cmd, [singleContainer(emotes, t, emoji)], getHide(sub));
   return;
  }
 
@@ -139,7 +142,7 @@ export default async function (
   return;
  }
 
- respond.call(this, cmd, [listContainer.call(this, t, all, 1)], getHide(sub));
+ respond.call(this, cmd, [listContainer.call(this, emotes, t, all, 1)], getHide(sub));
 }
 
 export const emojiPage = async function (
@@ -149,8 +152,16 @@ export const emojiPage = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
  const page = Number(args[0]) || 1;
 
  const all = await this.client.cache.emojis.getAll(cmd.guild_id);
- respond.call(this, cmd, [listContainer.call(this, t, all, page)], true, RespondVia.Update);
+ respond.call(
+  this,
+  cmd,
+  [listContainer.call(this, emotes, t, all, page)],
+  true,
+  RespondVia.Update,
+ );
 };

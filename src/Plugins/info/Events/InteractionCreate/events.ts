@@ -6,7 +6,6 @@ import {
  type APIApplicationCommandInteractionDataSubcommandOption,
 } from 'discord-api-types/v10';
 
-import emotes from '../../../../Classes/Emotes.js';
 import { Colors } from '../../../../Types/index.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
@@ -23,6 +22,9 @@ export default async function (
   respondError.call(this, cmd, t.errors.guildOnly());
   return;
  }
+
+ const api = await this.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const events = await this.client.cache.events.getAll(cmd.guild_id);
  if (!events.length) {

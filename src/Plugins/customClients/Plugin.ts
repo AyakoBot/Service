@@ -69,6 +69,15 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   this.invalidateGuildAPI(guildId);
  };
 
+ getEmojiSyncTokens = async (): Promise<string[]> => {
+  const rows = await this.client.db.client.customClient.findMany({
+   where: { token: { not: null } },
+   select: { token: true },
+  });
+
+  return rows.map((row) => row.token).filter((token): token is string => Boolean(token));
+ };
+
  getCommands = () => ({
   commands: [],
   settings: [

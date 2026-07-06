@@ -61,6 +61,8 @@ const sendOverview = async function (
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
  const t = await this.t(cmd.guild_id);
+ const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
 
  const rows = await this.tableClient(resolved.schema.table).findMany({
   where: { guild: cmd.guild_id },
@@ -75,6 +77,7 @@ const sendOverview = async function (
   settingName,
   schema,
   rows,
+  emotes,
  });
 
  const payload = new MessagePayload(this.client, { origin: this.name, reason: 'Settings overview' })
@@ -186,6 +189,8 @@ export const renderGuide = async function (
  if (!row) return;
 
  const t = await this.t(cmd.guild_id);
+ const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const emotes = this.client.emojis.for(api);
  const actionState = await guideActionState.call(this, {
   guide: schema.guide,
   row,
@@ -203,6 +208,7 @@ export const renderGuide = async function (
   guideFlags: id.guideFlags ?? 0,
   actionState,
   t,
+  emotes,
  });
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Settings guide' })

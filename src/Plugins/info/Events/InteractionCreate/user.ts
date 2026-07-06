@@ -22,7 +22,7 @@ import {
 } from 'discord-api-types/v10';
 
 import constants from '../../../../Classes/Constants.js';
-import emotes from '../../../../Classes/Emotes.js';
+import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
 import getUser from '../../../../Util/getUser.js';
 import { getUserOption } from '../../../../Util/interactionOptions.js';
@@ -45,6 +45,7 @@ const memberFlagNames = (flags: number): string[] =>
   .map(([name]) => name.replace(/([a-z])([A-Z])/g, '$1 $2'));
 
 const identitySection = function (
+ emotes: EmoteSet,
  t: Translator,
  user: RUser,
  container: ContainerBuilder,
@@ -67,7 +68,7 @@ const identitySection = function (
  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(header));
 };
 
-const userDetailLines = (t: Translator, user: RUser): string[] => {
+const userDetailLines = (emotes: EmoteSet, t: Translator, user: RUser): string[] => {
  const createdMs = snowflakeToMs(user.id);
  const lines = [line(emotes.calendar, t.base.t.Created(), timeOf(createdMs, t.base))];
 
@@ -89,7 +90,7 @@ const userDetailLines = (t: Translator, user: RUser): string[] => {
  return lines;
 };
 
-const memberDetailLines = (t: Translator, member: RMember): string[] => {
+const memberDetailLines = (emotes: EmoteSet, t: Translator, member: RMember): string[] => {
  const lines: string[] = [];
 
  if (member.nick) lines.push(line(emotes.edit, t.user.nickname(), `\`${member.nick}\``));
@@ -114,7 +115,7 @@ const memberDetailLines = (t: Translator, member: RMember): string[] => {
   Boolean(member.communication_disabled_until) &&
   new Date(member.communication_disabled_until as string).getTime() > Date.now();
  lines.push(
-  `${line(emotes.timer, t.user.timeout(), yesNo(t.base, timedOut))}${
+  `${line(emotes.timer, t.user.timeout(), yesNo(emotes, t.base, timedOut))}${
    timedOut
     ? ` (${constants.formatters.getTime(
        new Date(member.communication_disabled_until as string).getTime(),
@@ -123,7 +124,9 @@ const memberDetailLines = (t: Translator, member: RMember): string[] => {
   }`,
  );
 
- if (member.pending) lines.push(line(emotes.warning, t.user.pending(), yesNo(t.base, true)));
+ if (member.pending) {
+  lines.push(line(emotes.warning, t.user.pending(), yesNo(emotes, t.base, true)));
+ }
 
  const flagNames = memberFlagNames(member.flags ?? 0);
  if (flagNames.length) {
@@ -137,6 +140,7 @@ const memberDetailLines = (t: Translator, member: RMember): string[] => {
 
 const interactionRows = function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  user: RUser,
  member: RMember | null,
@@ -185,6 +189,7 @@ const interactionRows = function (
 
 export const buildUserContainer = function (
  this: InfoPlugin,
+ emotes: EmoteSet,
  t: Translator,
  user: RUser,
  member: RMember | null,
@@ -196,7 +201,7 @@ export const buildUserContainer = function (
   user.accent_color ?? (isNewAccount ? Colors.Warning : Colors.Info),
  );
 
- identitySection(t, user, container);
+ identitySection(emotes, t, user, container);
  if (isNewAccount) {
   container.addTextDisplayComponents(
    new TextDisplayBuilder().setContent(`-# ${textEmote(emotes.warning)} ${t.user.newAccount()}`),
@@ -204,10 +209,10 @@ export const buildUserContainer = function (
  }
 
  container.addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(userDetailLines(t, user).join('\n')),
+  new TextDisplayBuilder().setContent(userDetailLines(emotes, t, user).join('\n')),
  );
 
- const badges = userBadgeLines(t.base, user, member);
+ const badges = userBadgeLines(emotes, t.base, user, member);
  if (badges.length) {
   container.addSeparatorComponents(
    new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
@@ -223,7 +228,7 @@ export const buildUserContainer = function (
   );
   container.addTextDisplayComponents(
    new TextDisplayBuilder().setContent(
-    `### ${t.user.memberTitle()}\n${memberDetailLines(t, member).join('\n')}`,
+    `### ${t.user.memberTitle()}\n${memberDetailLines(emotes, t, member).join('\n')}`,
    ),
   );
   if (member.avatar_url && member.avatar_url !== user.avatar_url) {
@@ -243,7 +248,7 @@ export const buildUserContainer = function (
   );
  }
 
- interactionRows.call(this, t, user, member, container);
+ interactionRows.call(this, emotes, t, user, member, container);
 
  return container;
 };
@@ -276,7 +281,10 @@ export default async function (
   ? await this.client.cache.members.get(cmd.guild_id, user.id)
   : null;
 
- respond.call(this, cmd, [buildUserContainer.call(this, t, user, member)], getHide(sub));
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
+
+ respond.call(this, cmd, [buildUserContainer.call(this, emotes, t, user, member)], getHide(sub));
 }
 
 export const rerenderUser = async function (
@@ -295,5 +303,8 @@ export const rerenderUser = async function (
   ? await this.client.cache.members.get(cmd.guild_id, user.id)
   : null;
 
- respond.call(this, cmd, [buildUserContainer.call(this, t, user, member)], true);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
+
+ respond.call(this, cmd, [buildUserContainer.call(this, emotes, t, user, member)], true);
 };
