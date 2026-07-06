@@ -220,13 +220,19 @@ const fieldSelectRow = function (this: EmbedBuilderPlugin, t: Translator, view: 
  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 };
 
-const utilityRow = function (this: EmbedBuilderPlugin, t: Translator) {
+const utilityRow = function (this: EmbedBuilderPlugin, t: Translator, view: BuilderView) {
  return new ActionRowBuilder<ButtonBuilder>().addComponents(
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.Empty))
-   .setLabel(t.base.t.Empty())
+   .setLabel(t.builder.emptyEmbed())
    .setEmoji(buttonEmoji(emotes.trash)),
+  new ButtonBuilder()
+   .setStyle(ButtonStyle.Secondary)
+   .setCustomId(this.getRoute(EmbedBuilderRoute.EmptyField))
+   .setLabel(t.builder.emptyField())
+   .setEmoji(buttonEmoji(emotes.trash))
+   .setDisabled(view.selectedField === null),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
    .setCustomId(this.getRoute(EmbedBuilderRoute.ImportJson))
@@ -277,7 +283,7 @@ export const builderRows = function (
  return [
   propertySelectRow.call(this, t, view),
   fieldSelectRow.call(this, t, view),
-  utilityRow.call(this, t),
+  utilityRow.call(this, t, view),
   actionRow.call(this, t, view),
  ].map((row) => row.toJSON() as unknown as APIMessageTopLevelComponent);
 };

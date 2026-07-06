@@ -27,6 +27,8 @@
   "fieldNr": "Field {{nr}}",
   "addField": "Add a field",
   "removeField": "Remove this field",
+  "emptyEmbed": "Empty Embed",
+  "emptyField": "Empty Field",
   "backToEmbed": "Back to main embed",
   "notSet": "Not set",
   "notYourBuilder": "This builder belongs to someone else.",

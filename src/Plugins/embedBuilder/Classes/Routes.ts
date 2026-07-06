@@ -9,6 +9,7 @@ export enum EmbedBuilderRoute {
  Field = 'embeds/field',
  Editor = 'embeds/editor',
  Empty = 'embeds/empty',
+ EmptyField = 'embeds/emptyField',
 
  ImportJson = 'embeds/import',
  ImportSave = 'embeds/importSave',

@@ -112,6 +112,21 @@ export const emptyBuilder = async function (
  });
 };
 
+export const emptyField = async function (
+ this: EmbedBuilderPlugin,
+ cmd: APIMessageComponentInteraction,
+) {
+ const ctx = await builderContext.call(this, cmd);
+ if (!ctx) return;
+
+ const { selectedField } = ctx.view;
+ if (selectedField === null || !ctx.view.embed.fields?.[selectedField]) return;
+
+ ctx.view.embed.fields[selectedField] = { name: blank, value: blank };
+
+ await rerender.call(this, cmd, { ...ctx.view, selectedProperty: null });
+};
+
 export const backToBuilder = async function (
  this: EmbedBuilderPlugin,
  cmd: APIMessageComponentInteraction,

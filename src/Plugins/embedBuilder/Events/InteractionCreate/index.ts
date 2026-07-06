@@ -18,6 +18,7 @@ import {
  backToBuilder,
  closeThread,
  emptyBuilder,
+ emptyField,
  fieldPick,
  propertyPick,
 } from './builderActions.js';
@@ -102,6 +103,10 @@ const button = async function (this: EmbedBuilderPlugin, cmd: APIMessageComponen
   }
   case EmbedBuilderRoute.Empty: {
    emptyBuilder.call(this, cmd);
+   break;
+  }
+  case EmbedBuilderRoute.EmptyField: {
+   emptyField.call(this, cmd);
    break;
   }
   case EmbedBuilderRoute.ExportJson: {
