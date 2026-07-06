@@ -1,12 +1,11 @@
 import {
- MessageFlags,
  type APIMessage,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
+import ephemeralNote from '../../../Util/ephemeralNote.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type ComponentBuilderPlugin from '../Plugin.js';
 
@@ -21,16 +20,7 @@ export interface BuilderView {
  emotes: EmoteSet;
 }
 
-export const ephemeralNote = function (
- this: ComponentBuilderPlugin,
- cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
- content: string,
-) {
- new MessagePayload(this.client, { origin: this.name, reason: 'Component builder warning' })
-  .setContent(content)
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
-};
+export { ephemeralNote };
 
 export const builderContext = async function (
  this: ComponentBuilderPlugin,

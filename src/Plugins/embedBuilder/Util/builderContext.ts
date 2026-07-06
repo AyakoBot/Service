@@ -1,11 +1,10 @@
 import {
- MessageFlags,
  type APIMessage,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
+import ephemeralNote from '../../../Util/ephemeralNote.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
 
@@ -17,16 +16,7 @@ import {
 } from './builderState.js';
 import type { BuilderView } from './renderBuilder.js';
 
-export const ephemeralNote = function (
- this: EmbedBuilderPlugin,
- cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
- content: string,
-) {
- new MessagePayload(this.client, { origin: this.name, reason: 'Embed builder warning' })
-  .setContent(content)
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
-};
+export { ephemeralNote };
 
 export const builderContext = async function (
  this: EmbedBuilderPlugin,
