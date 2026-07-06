@@ -178,6 +178,7 @@
   "webhookNoComponents": "That webhook can't carry buttons or selects - only webhooks I own can. Remove the interactive components or send without a webhook URL.",
   "webhookIdentityTooLong": "That webhook name and avatar URL are too long to carry - use a shorter one or send via a webhook URL.",
   "notEditable": "That message wasn't sent by me or one of my webhooks.",
+  "notComponentsV2": "That message doesn't use Components V2 - edit it with the Embed Builder instead.",
   "notALink": "That's not a message link.",
   "manageGuildRequired": "You need the Manage Server permission to do that."
  }

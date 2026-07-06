@@ -383,6 +383,11 @@ export const editSave = async function (
   return;
  }
 
+ if ((message.flags ?? 0) & MessageFlags.IsComponentsV2) {
+  ephemeralNote.call(this, cmd, t.errors.isComponentsV2());
+  return;
+ }
+
  if (message.webhook_id) {
   const ok = await editWebhookMessage.call(
    this,
