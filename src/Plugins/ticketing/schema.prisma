@@ -11,41 +11,163 @@ datasource db {
 //#endregion
 
 model TicketSetting {
- id                  Decimal    @id @db.Decimal
- guild               String     @db.VarChar
- active              Boolean    @default(false)
- logChannels         String[]   @db.VarChar
- archiveCategory     String?    @db.VarChar
+ id     Decimal @id @db.Decimal
+ guild  String  @db.VarChar
+ name   String? @db.VarChar
+ active Boolean @default(false)
+
+ logMode     TicketLogMode @default(Channel)
+ logChannels String[]      @db.VarChar
+
+ createTags String[] @db.VarChar
+ claimTags  String[] @db.VarChar
+ closeTags  String[] @db.VarChar
+ tagClaimer Boolean  @default(false)
+
+ transcriptChannels String[] @db.VarChar
+
+ archiveCategory String?               @db.VarChar
+ archiveDuration ThreadArchiveDuration @default(OneHour)
+
  type                TicketType @default(Thread)
- // Only need on dmToThread & Thread
- archiveDuration     Decimal    @default(60) @db.Decimal
  channel             String?    @db.VarChar
- // Only need on dmToChannel & Channel
  category            String?    @db.VarChar
- // Only need on dmToThread & dmToChannel
  sendMessagePrefixes String[]   @db.Text
+
+ allowCreatorClose Boolean @default(false)
+
+ staffThreads        Boolean @default(false)
+ staffThreadsChannel String? @db.VarChar
 
  mentionRoles String[] @db.VarChar
  mentionUsers String[] @db.VarChar
+ staffRoles   String[] @db.VarChar
+ staffUsers   String[] @db.VarChar
 
- denyUsers String[]   @db.VarChar
- denyRoles String[]   @db.VarChar
- DMTicket  DMTicket[]
+ denyUsers String[] @db.VarChar
+ denyRoles String[] @db.VarChar
+
+ dmEnabled Boolean @default(false)
+
+ panelChannel     String? @db.VarChar
+ panelMessage     String? @db.VarChar
+ panelEmbed       Json?
+ panelButtonLabel String? @db.VarChar
+
+ remindUnclaimedAfter Decimal @default(0) @db.Decimal // 0 = disabled
+ remindUnclaimedEvery Decimal @default(0) @db.Decimal // 0 = disabled
+ remindStaleAfter     Decimal @default(0) @db.Decimal // 0 = disabled
+ remindStaleEvery     Decimal @default(0) @db.Decimal // 0 = disabled
+ inactivityWarnAfter  Decimal @default(0) @db.Decimal // 0 = disabled
+ inactivityCloseAfter Decimal @default(0) @db.Decimal // 0 = disabled
+
+ remindRoles String[] @db.VarChar
+ remindUsers String[] @db.VarChar
+
+ botToken String? @db.VarChar
+
+ presenceType  PresenceActivityType?
+ presenceText  String?               @db.VarChar
+ presenceEmoji String?               @db.VarChar
+
+ placementMode TicketPlacementMode @default(SeparateSpaces)
+ forumChannel  String?             @db.VarChar
+
+ allowTakeClaim Boolean  @default(false)
+ staffTierRoles String[] @db.VarChar
+
+ ticketLimitTotal Int @default(0) // 0 = unlimited
+ ticketLimitKind  Int @default(0) // 0 = unlimited
+
+ Ticket Ticket[]
+ tiers  TicketTier[]
 
  @@index(guild)
  @@index(type)
 }
 
-model DMTicket {
- dm         String  @id @db.VarChar
- user       String  @unique @db.VarChar
- channel    String  @unique @db.VarChar
- settingsId Decimal @db.Decimal
+model Ticket {
+ id         Decimal     @id @db.Decimal
+ dm         String?     @unique @db.VarChar
+ starterDm  String?     @unique @db.VarChar
+ user       String      @db.VarChar
+ channel    String      @unique @db.VarChar
+ settingsId Decimal     @db.Decimal
+ state      TicketState @default(opened)
+
+ surfaceMessage String? @db.VarChar
+
+ claimer   String?   @db.VarChar
+ claimedAt DateTime?
+
+ priority      TicketPriority @default(None)
+ lastMessageAt DateTime?
+ remindAt      Decimal?       @db.Decimal
+
+ // Escalation tier
+ tierId Decimal?    @db.Decimal
+ tier   TicketTier? @relation(fields: [tierId], references: [id])
 
  settings TicketSetting @relation(fields: [settingsId], references: [id])
 
  @@index(dm)
  @@index(channel)
+ @@index(tierId)
+}
+
+model TicketPanel {
+ id      Decimal   @id @db.Decimal
+ guild   String    @db.VarChar
+ channel String?   @db.VarChar
+ message String?   @db.VarChar
+ embed   Json?
+ kinds   Decimal[]
+
+ @@index(guild)
+}
+
+model Snippets {
+ id        Decimal  @id @db.Decimal
+ guild     String   @db.VarChar
+ name      String   @db.VarChar
+ userText  String?  @db.Text
+ staffText String?  @db.Text
+ kinds     String[] @db.VarChar
+
+ @@unique([guild, name])
+ @@index(guild)
+}
+
+model TicketRoleMap {
+ guild         String   @id @db.VarChar
+ roleMapRoles  String[] @db.VarChar
+ roleMapLabels String[] @db.Text
+
+ @@index(guild)
+}
+
+model TicketTier {
+ id              Decimal       @id @db.Decimal
+ settingsId      Decimal       @db.Decimal
+ name            String        @db.VarChar
+ rank            Int
+ claimRoles      String[]      @db.VarChar
+ category        String?       @db.VarChar
+ channel         String?       @db.VarChar
+ reminderSeconds Decimal       @default(0) @db.Decimal
+ settings        TicketSetting @relation(fields: [settingsId], references: [id])
+ Ticket          Ticket[]
+
+ @@unique([settingsId, rank])
+ @@index(settingsId)
+}
+
+enum TicketState {
+ opened
+ closed
+ claimed
+ prepared
+ deleted
 }
 
 enum TicketType {
@@ -53,4 +175,37 @@ enum TicketType {
  dmToChannel
  Thread
  Channel
+}
+
+enum TicketLogMode {
+ Channel
+ Thread
+}
+
+enum TicketPriority {
+ None
+ Low
+ Medium
+ High
+ Urgent
+}
+
+enum TicketPlacementMode {
+ SeparateSpaces
+ UnifiedForum
+}
+
+enum ThreadArchiveDuration {
+ OneHour
+ OneDay
+ ThreeDays
+ OneWeek
+}
+
+enum PresenceActivityType {
+ Playing
+ Listening
+ Watching
+ Competing
+ Custom
 }

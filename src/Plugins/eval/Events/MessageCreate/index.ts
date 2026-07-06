@@ -1,12 +1,12 @@
-import { txtFileWriter } from '@ayako/utility';
-import { type GatewayDispatchEvents } from 'discord-api-types/v10';
 import util from 'util';
 
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import type { ExtractPayload } from '../../../../Types/gateway.js';
+import { txtFileWriter } from '@ayako/utility';
+import { type GatewayDispatchEvents } from 'discord-api-types/v10';
 
+import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
 import emotes from '../../../../Classes/Emotes.js';
+import type { ExtractPayload } from '../../../../Types/gateway.js';
 import type EvalPlugin from '../../Plugin.js';
 
 const { log } = console;
@@ -15,16 +15,14 @@ export default async function (
  this: EvalPlugin,
  msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
 ) {
- if (msg.author.id !== process.env.ownerId) return;
  if (!msg.guild_id) return;
 
  const args = msg.content.split(/\s+/g);
  args.shift();
  const code = `${args.slice(0).join(' ')}`;
- const api = await this.client.getAPI(msg.guild_id);
+ const api = await this.getAPI(msg.guild_id);
 
  try {
-  // eslint-disable-next-line no-eval
   let evaled =
    code.includes('await') || code.includes('return')
     ? await eval(`(async () => {${code}})()`)

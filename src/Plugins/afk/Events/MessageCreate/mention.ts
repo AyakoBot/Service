@@ -1,12 +1,14 @@
-import { getPathFromError, type RMessage } from '@ayako/utility';
+import { type RMessage } from '@ayako/utility';
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
-
 import { MessageFlags } from 'discord-api-types/v10';
+
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
 import AFKState from '../../AFKState.js';
+import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
+import { scheduleNoticeDelete } from '../../Util/scheduleNoticeDelete.js';
 
 export default async function (
  this: AFKPlugin,
@@ -14,7 +16,7 @@ export default async function (
  commandName: string | null,
  t: Awaited<ReturnType<AFKPlugin['t']>>,
 ) {
- if (commandName === 'unafk') return;
+ if (commandName === AfkCommand.Unafk) return;
  if (!msg.mention_users?.length) return;
  if (msg.mention_users.length > 10) return;
 
@@ -57,16 +59,5 @@ export default async function (
   )
   .send();
 
- this.client.jobCache.createJob(
-  getPathFromError(new Error()),
-  new Date(Date.now() + 10000),
-  async () => {
-   if (!m) return;
-
-   (await this.client.getAPI(msg.guild_id)).channels.deleteMessage(m.channel_id, m.id, {
-    reason: t.t.replyReason(),
-    origin: this.name,
-   });
-  },
- );
+ scheduleNoticeDelete.call(this, m, msg.guild_id, t.t.replyReason());
 }

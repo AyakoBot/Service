@@ -7,12 +7,14 @@ import {
  ApplicationIntegrationType,
  GatewayDispatchEvents,
  InteractionContextType,
+ PermissionFlagsBits,
 } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 
+import { AfkCommand } from './Enums.js';
 import InteractionCreate from './Events/InteractionCreate/index.js';
 import MessageCreate from './Events/MessageCreate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
@@ -22,8 +24,16 @@ type AFKLanguage = typeof en;
 
 export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
  name = 'AFK';
- settingName = 'afk';
+ settingName = PluginName.Afk;
+ dependencies = [PluginName.Settings];
  tableName = 'AFKSetting';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.ReadMessageHistory |
+  PermissionFlagsBits.ManageNicknames;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -37,9 +47,9 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   ) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
-   this.client.logger.debug(`[Plugin:${this.name}] MessageCreate event received`);
+   this.logger.debug(`[Plugin:${this.name}] MessageCreate event received`);
    if (!this.isEnabled()) return;
-   this.client.logger.debug(`[Plugin:${this.name}] Processing MessageCreate event`);
+   this.logger.debug(`[Plugin:${this.name}] Processing MessageCreate event`);
    MessageCreate.call(this, data);
   },
 
@@ -48,9 +58,9 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   ) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
 
-   this.client.logger.debug(`[Plugin:${this.name}] InteractionCreate event received`);
+   this.logger.debug(`[Plugin:${this.name}] InteractionCreate event received`);
    if (!this.isEnabled()) return;
-   this.client.logger.debug(`[Plugin:${this.name}] Processing InteractionCreate event`);
+   this.logger.debug(`[Plugin:${this.name}] Processing InteractionCreate event`);
    InteractionCreate.call(this, data);
   },
  };
@@ -62,7 +72,7 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
  getCommands = () => ({
   commands: [
    new SlashCommandBuilder()
-    .setName('afk')
+    .setName(AfkCommand.Afk)
     .setDescription('Set your AFK Status')
     .setContexts([InteractionContextType.Guild])
     .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
@@ -78,7 +88,7 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
     category: null,
     commands: [
      new SlashCommandSubcommandBuilder()
-      .setName('afk')
+      .setName(AfkCommand.Afk)
       .setDescription('Make adjustments to the AFK-Command and what can be set as AFK-Status'),
     ],
    },

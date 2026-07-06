@@ -1,6 +1,6 @@
-import { type GatewayDispatchEvents } from '@discordjs/core';
+import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
 import messageCreate from './Events/MessageCreate/index.js';
@@ -11,8 +11,13 @@ type APILanguage = {};
 
 export default class EvalPlugin extends Plugin<Events, APILanguage> {
  name = 'Eval';
- settingName = 'eval';
+ settingName = PluginName.Eval;
  tableName = '';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -23,7 +28,7 @@ export default class EvalPlugin extends Plugin<Events, APILanguage> {
  eventHandlers = {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   MESSAGE_CREATE: (data) => {
-   if (data.author.id !== '318453143476371456') return;
+   if (!process.env.ownerId || data.author.id !== process.env.ownerId) return;
    if (!data.content.startsWith('seval')) return;
    if (!this.isEnabled()) return;
 
@@ -39,6 +44,4 @@ export default class EvalPlugin extends Plugin<Events, APILanguage> {
   commands: [],
   settings: [],
  });
-
- settingsEditorTypes = {};
 }

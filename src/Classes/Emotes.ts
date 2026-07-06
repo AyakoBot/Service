@@ -1,272 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-
 class Emotes {
- levelUpEmotes = [
-  { name: '🆙', animated: false, id: undefined },
-  { name: 'AyakoPeek', id: '1155535675077165087', animated: false },
- ];
-
- switch = {
-  disabled: [
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170604874481735.png',
-    name: 'disableYesSwitch',
-    id: '1155170604874481735',
-    animated: false,
-   },
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170470140854373.png',
-    name: 'neutralNoSwitch',
-    id: '1155170470140854373',
-    animated: false,
-   },
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170535253225523.png',
-    name: 'enableNoSwitch',
-    id: '1155170535253225523',
-    animated: false,
-   },
-  ],
-  enabled: [
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170574889390170.png',
-    name: 'disableNoSwitch',
-    id: '1155170574889390170',
-    animated: false,
-   },
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170470140854373.png',
-    name: 'neutralNoSwitch',
-    id: '1155170470140854373',
-    animated: false,
-   },
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170631856439419.png',
-    name: 'enableYesSwitch',
-    id: '1155170631856439419',
-    animated: false,
-   },
-  ],
-  neutral: [
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170574889390170.png',
-    name: 'disableNoSwitch',
-    id: '1155170574889390170',
-    animated: false,
-   },
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170499589062778.png',
-    name: 'neutralYesSwitch',
-    id: '1155170499589062778',
-    animated: false,
-   },
-   {
-    link: 'https://cdn.discordapp.com/emojis/1155170535253225523.png',
-    name: 'enableNoSwitch',
-    id: '1155170535253225523',
-    animated: false,
-   },
-  ],
- };
-
- ayakoLove = {
-  link: 'https://cdn.discordapp.com/emojis/1155535797395673188.png',
-  name: 'AMayakoLove',
-  id: '1155535797395673188',
-  animated: false,
- };
-
- ayakoLove2 = {
-  link: 'https://cdn.discordapp.com/emojis/874102206176034826.png',
-  name: 'AMayakoLove',
-  id: '874102206176034826',
-  animated: false,
- };
-
- userFlags = {
-  ActiveDeveloper: { name: 'ActiveDeveloper', id: '1155170977928454235', animated: false },
-  DiscordEmployee: { name: 'DiscordStaff', id: '1155174136377778247', animated: false },
-  PartneredServerOwner: {
-   name: 'PartneredServerOwner',
-   id: '1155173898657214495',
-   animated: false,
-  },
-  HypesquadEvents: {
-   name: 'HypeSquadEventCoordinator',
-   id: '1155174221014634517',
-   animated: false,
-  },
-  BugHunterLevel1: {
-   name: 'BughunterLevel1',
-   id: '1155174014701023242',
-   animated: false,
-  },
-  HouseBravery: { name: 'Bravery', id: '1155173952616931421', animated: false },
-  HouseBrilliance: { name: 'Brilliance', id: '1155174251020685332', animated: false },
-  HouseBalance: { name: 'Balance', id: '1155174103079194624', animated: false },
-  EarlySupporter: {
-   name: 'EarlySupporter',
-   id: '1155174296818290779',
-   animated: false,
-   link: 'https://cdn.discordapp.com/emojis/1155174296818290779.png',
-  },
-  BugHunterLevel2: {
-   name: 'BughunterLevel2',
-   id: '1155174059567497298',
-   animated: false,
-  },
-  VerifiedBot: [
-   { name: 'VerBot2', id: '1155173769736884274', animated: false },
-   { name: 'VerBot1', id: '1155173816188797040', animated: false },
-  ],
-  EarlyVerifiedBotDeveloper: {
-   name: 'EarlyVerifiedBotDev',
-   id: '1155173867757764648',
-   animated: false,
-  },
-  DiscordCertifiedModerator: {
-   name: 'DiscordModerator',
-   id: '1155174194468892732',
-   animated: false,
-   link: 'https://cdn.discordapp.com/emojis/1155174194468892732.png',
-  },
-  Bot: { name: 'Bot', id: '945605032190029825', animated: false },
-  Nitro: { name: 'Nitro', id: '1155173700237271052', animated: false },
-  Boost1: { name: '1Month', id: '1155173056717783080', animated: false },
-  Boost2: { name: '2Months', id: '1155173094890156052', animated: false },
-  Boost3: { name: '3Months', id: '1155173315992891553', animated: false },
-  Boost6: { name: '6Months', id: '1155173130126491749', animated: false },
-  Boost9: { name: '9Months', id: '1155173402814988338', animated: false },
-  Boost12: { name: '12Months', id: '1155173654833938553', animated: false },
-  Boost15: { name: '15Months', id: '1155173168214970530', animated: false },
-  Boost18: { name: '18Months', id: '1155173235319636028', animated: false },
-  Boost24: { name: '24Months', id: '1155173202495025163', animated: false },
- };
-
- channelTypes = {
-  0: { name: 'Text', id: '1155172796138266786', animated: false },
-  2: { name: 'Voice', id: '1155172845522014258', animated: false },
-  4: { name: 'Category', id: '1155172885653114990', animated: false },
-  5: { name: 'News', id: '1155172962002030795', animated: false },
-  10: { name: 'NewsThread', id: '1155172730358997022', animated: false },
-  11: { name: 'Thread', id: '1155172999176134756', animated: false },
-  12: { name: 'Thread', id: '1155172999176134756', animated: false },
-  13: { name: 'Stage', id: '1155172924072927353', animated: false },
-  15: { name: 'Forum', id: '1155171717749145680', animated: false },
- };
-
- cross = {
-  name: 'Cross',
-  id: '1155170284328984627',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170284328984627.png',
- };
-
- crossWithBackground = {
-  name: 'CrossWithBackground',
-  id: '1155170084155838574',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170084155838574.png',
- };
-
- tick = {
-  name: 'Tick',
-  id: '1155170196701593640',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170196701593640.png',
- };
-
- tickWithBackground = {
-  name: 'TickWithBackground',
-  id: '1155170127529115711',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170127529115711.png',
- };
-
- loading = {
-  name: 'Loading',
-  id: '1155535552075026432',
-  animated: true,
-  link: 'https://cdn.discordapp.com/emojis/1155535552075026432.gif',
- };
-
- disabled = {
-  name: 'disabled',
-  id: '1155170690174025781',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170690174025781.png',
- };
-
- enabled = {
-  name: 'enabled',
-  id: '1155170663104004126',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155170663104004126.png',
- };
-
- bot = {
-  name: 'Bot',
-  id: '1155173739894427880',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155173739894427880.png',
- };
-
- back = { name: '⬅' };
-
- forth = { name: '➡' };
-
- info = { name: 'ℹ' };
-
- warning = { name: '⚠', link: 'https://cdn.ayakobot.com/Ayako_Assets/Warning.png' };
-
- tools = { name: '🛠️' };
-
- settings = {
-  name: 'Settings',
-  id: '1155535411368710234',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155535411368710234.png',
- };
-
- trash = {
-  name: 'Trash',
-  id: '1155535170494005268',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155535170494005268.png',
- };
-
- plus = {
-  name: 'Plus',
-  id: '1155148994901712906',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148994901712906.png',
- };
-
- minus = {
-  name: 'Minus',
-  id: '1155148975486283847',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148975486283847.png',
- };
-
- plusBG = {
-  name: 'PlusWithBackground',
-  id: '1155148973066170469',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148973066170469.png',
- };
-
- minusBG = {
-  name: 'MinusWithBackground',
-  id: '1155148974223794256',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155148974223794256.png',
- };
-
- flags = {
-  en: { name: '🇺🇸 🇬🇧' },
- };
-
  timers = [
   { name: '1s', id: '1155195421631713410', animated: true },
   { name: '2s', id: '1155195494314819634', animated: true },
@@ -330,202 +62,172 @@ class Emotes {
   { name: '60s', id: '1167722187420074034', animated: true },
  ];
 
- lock = { name: '🔒' };
+ levelUpEmotes = [
+  { name: '🆙', animated: false, id: undefined },
+  { name: 'AyakoPeek', id: '1155535675077165087', animated: false },
+ ];
 
- unlock = { name: '🔓' };
-
- ban = {
-  name: 'AuditLogBan',
-  id: '1155146931216060606',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146931216060606.png',
+ switch = {
+  disabled: [
+   { name: 'disableYesSwitch', id: '1155170604874481735', animated: false },
+   { name: 'neutralNoSwitch', id: '1155170470140854373', animated: false },
+   { name: 'enableNoSwitch', id: '1155170535253225523', animated: false },
+  ],
+  enabled: [
+   { name: 'disableNoSwitch', id: '1155170574889390170', animated: false },
+   { name: 'neutralNoSwitch', id: '1155170470140854373', animated: false },
+   { name: 'enableYesSwitch', id: '1155170631856439419', animated: false },
+  ],
+  neutral: [
+   { name: 'disableNoSwitch', id: '1155170574889390170', animated: false },
+   { name: 'neutralYesSwitch', id: '1155170499589062778', animated: false },
+   { name: 'enableNoSwitch', id: '1155170535253225523', animated: false },
+  ],
  };
 
- banCross = {
-  name: 'AuditLogBanCross',
-  id: '1155146933975908464',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146933975908464.png',
+ ayakoLove = { name: 'AMayakoLove', id: '1155535797395673188', animated: false };
+ ayakoLove2 = { name: 'AMayakoLove', id: '874102206176034826', animated: false };
+
+ userFlags = {
+  activeDeveloper: { name: 'ActiveDeveloper', id: '1155170977928454235', animated: false },
+  discordEmployee: { name: 'DiscordStaff', id: '1155174136377778247', animated: false },
+  partneredServerOwner: {
+   name: 'PartneredServerOwner',
+   id: '1155173898657214495',
+   animated: false,
+  },
+  hypesquadEvents: {
+   name: 'HypeSquadEventCoordinator',
+   id: '1155174221014634517',
+   animated: false,
+  },
+  bugHunterLevel1: { name: 'BughunterLevel1', id: '1155174014701023242', animated: false },
+  houseBravery: { name: 'Bravery', id: '1155173952616931421', animated: false },
+  houseBrilliance: { name: 'Brilliance', id: '1155174251020685332', animated: false },
+  houseBalance: { name: 'Balance', id: '1155174103079194624', animated: false },
+  earlySupporter: { name: 'EarlySupporter', id: '1155174296818290779', animated: false },
+  bugHunterLevel2: { name: 'BughunterLevel2', id: '1155174059567497298', animated: false },
+  verifiedBot: [
+   { name: 'VerBot2', id: '1155173769736884274', animated: false },
+   { name: 'VerBot1', id: '1155173816188797040', animated: false },
+  ],
+  earlyVerifiedBotDeveloper: {
+   name: 'EarlyVerifiedBotDev',
+   id: '1155173867757764648',
+   animated: false,
+  },
+  discordCertifiedModerator: {
+   name: 'DiscordModerator',
+   id: '1155174194468892732',
+   animated: false,
+  },
+  bot: { name: 'Bot', id: '945605032190029825', animated: false },
+  nitro: { name: 'Nitro', id: '1155173700237271052', animated: false },
+  boost1: { name: '1Month', id: '1155173056717783080', animated: false },
+  boost2: { name: '2Months', id: '1155173094890156052', animated: false },
+  boost3: { name: '3Months', id: '1155173315992891553', animated: false },
+  boost6: { name: '6Months', id: '1155173130126491749', animated: false },
+  boost9: { name: '9Months', id: '1155173402814988338', animated: false },
+  boost12: { name: '12Months', id: '1155173654833938553', animated: false },
+  boost15: { name: '15Months', id: '1155173168214970530', animated: false },
+  boost18: { name: '18Months', id: '1155173235319636028', animated: false },
+  boost24: { name: '24Months', id: '1155173202495025163', animated: false },
  };
 
- banError = {
-  name: 'AuditLogBanError',
-  id: '1155146937826279544',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146937826279544.png',
+ channelTypes = {
+  0: { name: 'message', id: '1514955335704641556', animated: false },
+  2: { name: 'channelvoice', id: '1514955526033903626', animated: false },
+  4: { name: 'channelcategory', id: '1514955483990196314', animated: false },
+  5: { name: 'channelnews', id: '1514954581891874926', animated: false },
+  10: { name: 'channelnewsthread', id: '1514955503103639634', animated: false },
+  11: { name: 'channelthread', id: '1514954574333743104', animated: false },
+  12: { name: 'channelthread', id: '1514954574333743104', animated: false },
+  13: { name: 'channelstage', id: '1514954577793777694', animated: false },
+  15: { name: 'channelforum', id: '1514954583418601553', animated: false },
  };
 
- banTick = {
-  name: 'AuditLogBanTick',
-  id: '1155146926531027044',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146926531027044.png',
+ flags = {
+  en: { name: '🇺🇸 🇬🇧' },
  };
 
- banUpdate = {
-  name: 'AuditLogBanUpdated',
-  id: '1155146927860613260',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146927860613260.png',
- };
+ ban = { name: 'AuditLogBan', id: '1155146931216060606', animated: false };
+ banCross = { name: 'AuditLogBanCross', id: '1155146933975908464', animated: false };
+ banError = { name: 'AuditLogBanError', id: '1155146937826279544', animated: false };
+ banTick = { name: 'AuditLogBanTick', id: '1155146926531027044', animated: false };
+ banUpdate = { name: 'AuditLogBanUpdated', id: '1155146927860613260', animated: false };
 
- timedoutCross = {
-  name: 'TimedOutCross',
-  id: '1155146935154516009',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146935154516009.png',
- };
+ timedoutCross = { name: 'TimedOutCross', id: '1155146935154516009', animated: false };
+ timedoutError = { name: 'TimedOutError', id: '1155146936622522538', animated: false };
+ timedoutTick = { name: 'TimedOutTick', id: '1155146932344340481', animated: false };
+ timedoutUpdated = { name: 'TimedOutUpdated', id: '1155146940766486641', animated: false };
 
- timedoutError = {
-  name: 'TimedOutError',
-  id: '1155146936622522538',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146936622522538.png',
- };
+ mutedCross = { name: 'MutedCross', id: '1155146929458651336', animated: false };
+ mutedError = { name: 'MutedError', id: '1155146941978644581', animated: false };
+ mutedTick = { name: 'MutedTick', id: '1155146939021676675', animated: false };
+ mutedUpdated = { name: 'MutedUpdated', id: '1155146943811559465', animated: false };
 
- timedoutTick = {
-  name: 'TimedOutTick',
-  id: '1155146932344340481',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146932344340481.png',
- };
+ // TODO: replace - high prio
+ bot = { name: 'Bot', id: '1155173739894427880', animated: false };
 
- timedoutUpdated = {
-  name: 'TimedOutUpdated',
-  id: '1155146940766486641',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146940766486641.png',
- };
-
- mutedCross = {
-  name: 'MutedCross',
-  id: '1155146929458651336',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146929458651336.png',
- };
-
- mutedError = {
-  name: 'MutedError',
-  id: '1155146941978644581',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146941978644581.png',
- };
-
- mutedTick = {
-  name: 'MutedTick',
-  id: '1155146939021676675',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146939021676675.png',
- };
-
- mutedUpdated = {
-  name: 'MutedUpdated',
-  id: '1155146943811559465',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146943811559465.png',
- };
-
- invis = {
-  name: 'invis',
-  id: '1155180316781187224',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155180316781187224.png',
- };
-
- edit = {
-  name: 'Edit',
-  id: '1155146925331456070',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146925331456070.png',
- };
-
- gift = {
-  name: 'Gift',
-  id: '1155146922861023292',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155146922861023292.png',
- };
-
- Role = {
-  name: 'Role',
-  id: '1155171601688580268',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155171601688580268.png',
- };
-
- Member = {
-  name: 'Member',
-  id: '1155171562933211267',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155171562933211267.png',
- };
-
- refresh = { name: '🔃' };
-
- question = { name: '❓' };
-
- Message = {
-  name: 'Message',
-  id: '1155161274859139202',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155161274859139202.png',
- };
-
- MemberBright = {
-  name: 'Member',
-  id: '1155161273785397289',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1155161273785397289.png',
- };
-
- book = {
-  name: 'AMAyakoBookGIF',
-  id: '1155535992825073714',
-  animated: true,
-  link: 'https://cdn.discordapp.com/emojis/1155535992825073714.png',
- };
-
- buy = {
-  name: 'Buy',
-  id: '1165211793703043152',
-  animated: false,
-  link: 'https://cdn.discordapp.com/emojis/1165211793703043152.png',
- };
-
- youtube = {
-  name: 'YouTube',
-  animated: false,
-  id: '1329038046204661760',
-  link: 'https://cdn.discordapp.com/emojis/1329038046204661760.png',
- };
-
- rp = {
-  name: 'RP',
-  animated: false,
-  id: '1329038480369647656',
-  link: 'https://cdn.discordapp.com/emojis/1329038480369647656.png',
- };
-
- created = {
-  name: 'Created',
-  animated: false,
-  id: '1155171800578261042',
-  link: 'https://cdn.discordapp.com/emojis/1155171800578261042.png',
- };
-
- updated = {
-  name: 'Updated',
-  animated: false,
-  id: '1155171880303591464',
-  link: 'https://cdn.discordapp.com/emojis/1155171880303591464.png',
- };
-
- deleted = {
-  name: 'Deleted',
-  animated: false,
-  id: '1155171841128796210',
-  link: 'https://cdn.discordapp.com/emojis/1155171841128796210.png',
- };
+ invis = { name: 'invis', id: '1522601619701891302', animated: false };
+ crossWithBackground = { name: 'crosswithbackground', id: '1522601848186601715', animated: false };
+ forth = { name: 'forth', id: '1522601829450514432', animated: false };
+ gift = { name: 'gift', id: '1522601679864860692', animated: false };
+ loading = { name: 'loading', id: '1522601915475562537', animated: true };
+ refresh = { name: 'refresh', id: '1522601701461200976', animated: false };
+ tickWithBackground = { name: 'tickwithbackground', id: '1522601868197629982', animated: false };
+ unlock = { name: 'unlock', id: '1522601770398777525', animated: false };
+ up = { name: 'up', id: '1522601739285434500', animated: false };
+ cross = { name: 'cross', id: '1522601127281950833', animated: false };
+ tick = { name: 'tick', id: '1522601105283092540', animated: false };
+ hammer = { name: 'hammer', animated: false, id: '1514954555073499156' };
+ enabled = { name: 'enabled', animated: false, id: '1514954556402962492' };
+ emoji = { name: 'emoji', animated: false, id: '1514954557917106236' };
+ warning = { name: 'warning', animated: false, id: '1514954559573987439' };
+ calendar = { name: 'calendar', animated: false, id: '1514954561067159633' };
+ brain = { name: 'brain', animated: false, id: '1514954562862317699' };
+ back = { name: 'back', animated: false, id: '1514954564187586580' };
+ automod = { name: 'automod', animated: false, id: '1514954565613523075' };
+ edit = { name: 'edit', animated: false, id: '1514954566989254706' };
+ command = { name: 'command', animated: false, id: '1514954570357280939' };
+ channelthread = { name: 'channelthread', animated: false, id: '1514954574333743104' };
+ channelstage = { name: 'channelstage', animated: false, id: '1514954577793777694' };
+ channelnews = { name: 'channelnews', animated: false, id: '1514954581891874926' };
+ channelforum = { name: 'channelforum', animated: false, id: '1514954583418601553' };
+ trash = { name: 'trash', animated: false, id: '1514954587310653590' };
+ timer = { name: 'timer', animated: false, id: '1514954591656083649' };
+ shop = { name: 'shop', animated: false, id: '1514954595057795112' };
+ role = { name: 'role', animated: false, id: '1514954599801557223' };
+ question = { name: 'question', animated: false, id: '1514954601168638046' };
+ plus = { name: 'plus', animated: false, id: '1514954604935385289' };
+ next = { name: 'next', animated: false, id: '1522601006175617204' };
+ member = { name: 'member', animated: false, id: '1514954612887519242' };
+ lock = { name: 'lock', animated: false, id: '1514954617333481564' };
+ info = { name: 'info', animated: false, id: '1514954618537250896' };
+ log = { name: 'log', animated: false, id: '1514955317748826203' };
+ message = { name: 'message', animated: false, id: '1514955335704641556' };
+ number = { name: 'number', animated: false, id: '1514955360488656967' };
+ prev = { name: 'prev', animated: false, id: '1522600991659397120' };
+ settings = { name: 'settings', animated: false, id: '1514955416642257017' };
+ ticket = { name: 'ticket', animated: false, id: '1514955446295724072' };
+ tools = { name: 'tools', animated: false, id: '1514955467506323567' };
+ channelcategory = { name: 'channelcategory', animated: false, id: '1514955483990196314' };
+ channelnewsthread = { name: 'channelnewsthread', animated: false, id: '1514955503103639634' };
+ channelvoice = { name: 'channelvoice', animated: false, id: '1514955526033903626' };
+ disabled = { name: 'disabled', animated: false, id: '1514955537878618144' };
+ heading = { name: 'heading', animated: false, id: '1515134188117033011' };
+ paragraph = { name: 'paragraph', animated: false, id: '1515134220572295278' };
+ author = { name: 'author', animated: false, id: '1515134240692375552' };
+ footer = { name: 'footer', animated: false, id: '1515134264189124820' };
+ image = { name: 'image', animated: false, id: '1515134279724568646' };
+ thumbnail = { name: 'thumbnail', animated: false, id: '1515134304659701840' };
+ palette = { name: 'palette', animated: false, id: '1515134330102353930' };
+ link = { name: 'link', animated: false, id: '1515134361651908731' };
+ fields = { name: 'fields', animated: false, id: '1515134386318741504' };
+ save = { name: 'save', animated: false, id: '1515134399891509372' };
+ send = { name: 'send', animated: false, id: '1515134413271466067' };
+ webhook = { name: 'webhook', animated: false, id: '1515134479147073688' };
+ json = { name: 'json', animated: false, id: '1515134500701733125' };
 }
 
 const emotes = new Emotes();

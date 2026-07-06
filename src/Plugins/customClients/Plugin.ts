@@ -1,7 +1,7 @@
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { GatewayDispatchEvents } from '@discordjs/core';
+import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
 import CustomClient from './CustomClient.js';
@@ -12,8 +12,14 @@ type APILanguage = typeof en;
 
 export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
  name = 'Custom Clients';
- settingName = 'custom-clients';
+ settingName = PluginName.CustomClients;
  tableName = 'CustomClient';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.ReadMessageHistory;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -26,10 +32,11 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
   client.getAPI = this.getApiFromGuildId;
+  client.getCustomAPI = this.getCustomApiFromGuildId;
   client.getBotIdForGuildId = this.getBotIdForGuildId;
 
   this.client.cache.on('interaction', (message) => {
-   this.client.logger.silly('[CustomClientsPlugin] Received interaction event:', message);
+   this.logger.silly('[CustomClientsPlugin] Received interaction event:', message);
    this.client.cache.emit(GatewayDispatchEvents.InteractionCreate, message);
   });
  }
@@ -40,9 +47,26 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   return ccBase.getAPIforGuildId(guildId);
  };
 
+ getCustomApiFromGuildId = async (guildId?: string) => {
+  if (!guildId) return null;
+  const ccBase = new CustomClient(this.client, guildId);
+  return ccBase.getCustomAPIforGuildId(guildId);
+ };
+
  getBotIdForGuildId = async (guildId: string) => {
   const ccBase = new CustomClient(this.client, guildId);
   return ccBase.getBotIdForGuildId(guildId);
+ };
+
+ onGuildRemoved = async (guildId: string) => {
+  await this.client.db.client.customClient.updateMany({
+   where: { guildId },
+   data: { token: null },
+  });
+
+  const ccBase = new CustomClient(this.client, guildId);
+  ccBase.apiCache.delete(guildId);
+  this.invalidateGuildAPI(guildId);
  };
 
  getCommands = () => ({

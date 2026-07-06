@@ -2,12 +2,18 @@ import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ay
 
 import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
+import { checkToken, TokenCheckResult } from '../../Util/tokenCheck.js';
+
+import CustomClientsPlugin from './Plugin.js';
 
 export default class CustomClient extends DBEntry<'customClient'> {
  apiCache: Map<string, API> = new Map();
+ plugin: CustomClientsPlugin;
 
  constructor(client: Client, guildId: string) {
   super(client, 'customClient', { where: { guildId } });
+
+  this.plugin = client.plugins.find((p) => p instanceof CustomClientsPlugin) as CustomClientsPlugin;
  }
 
  getBotIdForGuildId = async (guildId: string) => {
@@ -26,7 +32,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
  createBaseAPI = (guildId: string) => {
   const api = new API(
    (this.client.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', ''),
-   this.client.logger,
+   this.plugin.logger,
    this.client.cache,
    guildId,
   );
@@ -37,26 +43,40 @@ export default class CustomClient extends DBEntry<'customClient'> {
   return api;
  };
 
- getAPIforGuildId = async (guildId: string) => {
-  const base = new CustomClient(this.client, guildId);
+ getCustomAPIforGuildId = async (guildId: string): Promise<API | null> => {
   const cached = this.apiCache.get(guildId);
   if (cached) return cached;
 
+  const base = new CustomClient(this.client, guildId);
   const entry = await base.get();
-  if (!entry || !entry.token) return this.createBaseAPI(guildId);
+  if (!entry || !entry.token) return null;
 
-  const api = new API(entry.token, this.client.logger, this.client.cache, guildId);
-  const isValid = await this.validateAPI(guildId, api);
-  if (!isValid) this.createBaseAPI(guildId);
+  const api = new API(entry.token, this.plugin.logger, this.client.cache, guildId);
+  const status = await checkToken(api, guildId);
 
-  this.apiCache.set(guildId, api);
-  return api;
+  if (status === TokenCheckResult.OK) {
+   this.apiCache.set(guildId, api);
+   return api;
+  }
+
+  if (status === TokenCheckResult.Invalid) {
+   this.apiCache.delete(guildId);
+   await this.db.client.customClient.update({
+    where: { guildId },
+    data: { token: null },
+   });
+  }
+
+  return null;
  };
+
+ getAPIforGuildId = async (guildId: string) =>
+  (await this.getCustomAPIforGuildId(guildId)) ?? this.createBaseAPI(guildId);
 
  validateAPI = async (guildId: string, api?: API) => {
   const apiToValidate = api || (await this.getAPIforGuildId(guildId));
   const self = await apiToValidate.applications
-   .getCurrent({ origin: 'API Initialization', reason: 'Validating API token' })
+   .getCurrent({ origin: this.validateAPI.name, reason: 'Validating API token' })
    .catch(() => null);
   if (self) return true;
 
@@ -71,11 +91,10 @@ export default class CustomClient extends DBEntry<'customClient'> {
  };
 
  registerErrorHandler = (api: API) => {
-  // TODO: implement error debug channel
   api.on('error', async (message: RequestHandlerError<RequestHandlerErrorType>) => {
    const guildIds = await this.getGuildIdFromError(api, message);
    if (!guildIds) {
-    this.client.logger.error('Received 401 error from API but could not determine guild ID.');
+    this.plugin.logger.error('Received 401 error from API but could not determine guild ID.');
     return;
    }
 
@@ -83,8 +102,8 @@ export default class CustomClient extends DBEntry<'customClient'> {
     guildIds.forEach((guildId) => this.validateAPI(guildId));
    }
 
-   this.client.logger.error(`API error for bot ${api.botId}`);
-   this.client.logger.debug(message);
+   this.plugin.logger.error(`API error for bot ${api.botId}`);
+   this.plugin.logger.debug(message);
   });
  };
 
@@ -95,7 +114,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
     : await this.getGuildIdFromAPI(api);
 
   if (!guildId) {
-   this.client.logger.error(
+   this.plugin.logger.error(
     'Received 401 error from API but could not determine guild ID to invalidate token for.',
    );
    return false;

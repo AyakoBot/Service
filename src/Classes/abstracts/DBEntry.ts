@@ -11,7 +11,7 @@ import type {
 import type Client from '../Client.js';
 import type Database from '../Database.js';
 
-interface ModelDelegate<T extends TableName> {
+export interface ModelDelegate<T extends TableName> {
  findUnique(args: FindUniqueArgs<T>): Promise<DataBaseTables[T] | null>;
  delete(args: FindUniqueArgs<T>): Promise<DataBaseTables[T]>;
  update(args: FindUniqueArgs<T> & { data: UpdateData<T> }): Promise<DataBaseTables[T]>;
@@ -68,39 +68,3 @@ export default abstract class DBEntry<const T extends TableName> {
    .then((r) => r);
  }
 }
-
-export const findMany = <T extends TableName>(
- client: Client,
- tableName: T,
- args: FindManyArgs<T>,
-): Promise<DataBaseTables[T][]> => {
- logger.silly('[DBEntry] Finding many', tableName, 'entries');
- const delegate = (client.db.client as unknown as Record<string, unknown>)[
-  tableName
- ] as ModelDelegate<T>;
- return delegate.findMany(args).then((r: DataBaseTables[T][]) => r);
-};
-
-export const deleteMany = <T extends TableName>(
- client: Client,
- tableName: T,
- args: FindUniqueArgs<T>,
-) => {
- logger.debug('[DBEntry] Deleting many', tableName, 'entries');
- const delegate = (client.db.client as unknown as Record<string, unknown>)[
-  tableName
- ] as ModelDelegate<T>;
- return delegate.delete(args);
-};
-
-export const findUnique = <T extends TableName>(
- client: Client,
- tableName: T,
- args: FindUniqueArgs<T>,
-): Promise<DataBaseTables[T] | null> => {
- logger.silly('[DBEntry] Finding unique', tableName, 'entry');
- const delegate = (client.db.client as unknown as Record<string, unknown>)[
-  tableName
- ] as ModelDelegate<T>;
- return delegate.findUnique(args).then((r: DataBaseTables[T] | null) => r);
-};

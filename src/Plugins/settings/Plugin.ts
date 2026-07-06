@@ -1,17 +1,25 @@
-import { type GatewayDispatchEvents } from '@discordjs/core';
+import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 
-import Plugin from '../../Classes/abstracts/Plugin.js';
+import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 
+import interactionCreate from './Events/InteractionCreate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
+import type { ResolvedSchema, SettingsDelegate } from './SettingsSchema.js';
 
-type Events = GatewayDispatchEvents.MessageCreate | GatewayDispatchEvents.InteractionCreate;
+type Events = GatewayDispatchEvents.InteractionCreate;
 type APILanguage = typeof en;
 
 export default class SettingsPlugin extends Plugin<Events, APILanguage> {
  name = 'Settings';
- settingName = '';
+ settingName = PluginName.Settings;
  tableName = '';
+
+ customBotPerms =
+  PermissionFlagsBits.ViewChannel |
+  PermissionFlagsBits.SendMessages |
+  PermissionFlagsBits.EmbedLinks |
+  PermissionFlagsBits.ReadMessageHistory;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -19,7 +27,19 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
  };
  /* eslint-enable @typescript-eslint/naming-convention */
 
- eventHandlers = {} as Plugin<Events, APILanguage>['eventHandlers'];
+ eventHandlers = {
+  [GatewayDispatchEvents.InteractionCreate]: (data) => {
+   if (
+    !data.guild_id
+     ? !this.client.debugUsers.includes(data.user?.id || '')
+     : !this.client.debugGuilds.includes(data.guild_id || '')
+   ) {
+    return; // TODO: remove
+   }
+
+   interactionCreate.call(this, data);
+  },
+ } as Plugin<Events, APILanguage>['eventHandlers'];
 
  constructor(client: Client) {
   super(client);
@@ -29,51 +49,15 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
   commands: [],
   settings: [],
  });
+
+ resolveSchema = (settingName: string): ResolvedSchema | null => {
+  const plugin = this.client.plugins.find((p) => p.settingName === settingName);
+  if (!plugin || !plugin.settingsSchema) return null;
+  return { plugin, schema: plugin.settingsSchema };
+ };
+
+ tableClient = (table: string): SettingsDelegate =>
+  (this.client.db.client as unknown as Record<string, SettingsDelegate>)[table];
 }
 
-export enum EditorType {
- Channel = 'channel',
- Channels = 'channels',
- Role = 'role',
- Roles = 'roles',
- User = 'user',
- Users = 'users',
- Mention = 'mention',
- Mentions = 'mentions',
-
- Boolean = 'boolean',
- Duration = 'duration',
- String = 'string',
- Language = 'language',
- Number = 'number',
- Punishment = 'punishment',
- AntiRaidPunishment = 'antiraid-punishment',
- Embed = 'embed',
- Token = 'token',
- BotToken = 'bot-token',
- Message = 'message',
- ShopType = 'shoptype',
- FormulaType = 'formulatype',
- Emote = 'emote',
- Emotes = 'emotes',
- Command = 'command',
- AutoModRules = 'automodrules',
- SettingLink = 'settinglink',
- AutoPunishment = 'auto-punishment',
- LvlUpMode = 'lvlupmode',
- Strings = 'strings',
- QuestionType = 'question-type',
- Category = 'category',
- Voice = 'voice',
- Permission = 'permission',
- RoleMode = 'rolemode',
- Commands = 'commands',
- Questions = 'questions',
- Position = 'position',
- ThreadAutoArchiveDuration = 'thread-archive-time',
- WeekendsType = 'weekends-type',
- TicketType = 'ticketing-type',
- TicketLogMode = 'ticket-log-mode',
-
- Ignore = '-'
-}
+export { EditorType } from './EditorType.js';

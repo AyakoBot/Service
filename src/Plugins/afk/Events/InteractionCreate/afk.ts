@@ -1,4 +1,3 @@
-import { EmbedBuilder } from '@discordjs/builders';
 import {
  ApplicationCommandOptionType,
  ApplicationCommandType,
@@ -7,15 +6,16 @@ import {
 } from '@discordjs/core';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import { Colors } from '../../../../Types/index.js';
 import AFKState from '../../AFKState.js';
+import { AfkCommand } from '../../Enums.js';
 import type AFKPlugin from '../../Plugin.js';
-
-import { getCensoredContent, getContent } from './util.js';
+import { buildReasonEmbeds, getContent } from '../../Util/afkStatus.js';
+import { clampReason } from '../../Util/clampReason.js';
+import { setNick } from '../../Util/nick.js';
 
 export default async function (this: AFKPlugin, cmd: APIInteraction) {
  if (cmd.type !== InteractionType.ApplicationCommand) return;
- if (cmd.data.name !== 'afk') return;
+ if (cmd.data.name !== AfkCommand.Afk) return;
  if (!cmd.guild_id) return;
  if (!cmd.channel?.id) return;
 
@@ -25,9 +25,13 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
 
  const member = cmd.member || (await this.client.cache.members.get(cmd.guild_id, user.id));
 
- const reason = cmd.data.options
-  ?.filter((o) => o.type === ApplicationCommandOptionType.String)
-  .find((o) => o.name === 'reason')?.value as string | undefined;
+ const reason = await clampReason.call(
+  this,
+  cmd.guild_id,
+  cmd.data.options
+   ?.filter((o) => o.type === ApplicationCommandOptionType.String)
+   .find((o) => o.name === 'reason')?.value as string | undefined,
+ );
 
  const afkBase = new AFKState(this.client, user.id, cmd.guild_id);
  const afk = await afkBase.get();
@@ -36,17 +40,7 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
   .setSendTo([{ channel: cmd.channel.id, guildId: cmd.guild_id }])
   .setContent(await getContent.call(this, cmd.guild_id, afk, user.id))
   .setEmbeds(
-   reason
-    ? [
-       new EmbedBuilder()
-        .setColor(Colors.Loading)
-        .setDescription(
-         await getCensoredContent
-          .call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? [])
-          .then((r) => `-# ${r}`),
-        ),
-      ]
-    : [],
+   await buildReasonEmbeds.call(this, cmd.guild_id, reason, cmd.channel.id, member?.roles ?? []),
   )
   .reply(cmd);
 
@@ -59,4 +53,6 @@ export default async function (this: AFKPlugin, cmd: APIInteraction) {
   },
   { reason, since: Date.now() },
  );
+
+ setNick.call(this, user.id, cmd.guild_id);
 }

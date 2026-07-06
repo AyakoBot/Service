@@ -1,8 +1,10 @@
-import { getPathFromError, logger, type RMessage } from '@ayako/utility';
-import { scheduleJob, type Job } from 'node-schedule';
+import { inspect } from 'node:util';
 
 import { RequestHandlerError } from '@ayako/api';
+import { getPathFromError, logger, type RMessage } from '@ayako/utility';
 import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
+import { scheduleJob, type Job } from 'node-schedule';
+
 import type { MessagePayload } from './abstracts/MessagePayload.js';
 import type Client from './Client.js';
 
@@ -138,7 +140,8 @@ export default class SendMessageCache {
 
    if (apiMessage instanceof RequestHandlerError) {
     logger.debug('[SendMessageCache] 1 Failed to send message to', entry.channelId);
-    logger.debug(apiMessage);
+    logger.debug(inspect(apiMessage));
+    logger.debug(inspect(apiMessage.cause));
     return;
    }
 

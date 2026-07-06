@@ -21,15 +21,12 @@ export default async function (
  if (presetLength !== 1) return;
  if (!data.matched_keyword) return;
 
- new FilteredWord(
-  this.client,
-  data.matched_keyword,
-  Object.keys(FilterType)[rule.trigger_metadata.presets[0]] as FilterType,
- ).upsert(
-  {
-   keyword: data.matched_keyword,
-   filterType: Object.keys(FilterType)[rule.trigger_metadata.presets[0]] as FilterType,
-  },
+ const filterType = ['Unknown', ...Object.keys(FilterType)][
+  rule.trigger_metadata.presets[0]
+ ] as FilterType;
+
+ new FilteredWord(this.client, data.matched_keyword, filterType).upsert(
+  { keyword: data.matched_keyword, filterType },
   {},
  );
 }

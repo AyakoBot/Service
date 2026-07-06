@@ -1,8 +1,8 @@
+import { API as CustomAPI } from '@ayako/api';
 import { Cache, logger as Logger } from '@ayako/utility';
 import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core';
 import { REST } from '@discordjs/rest';
 
-import { API as CustomAPI } from '@ayako/api';
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
 
 import type Plugin from './abstracts/Plugin.js';
@@ -16,8 +16,6 @@ export default class Client {
  isDev = process.argv.includes('--dev');
 
  cache = new Cache(0, 1, true);
- // TODO: reenable this
- // cache = new Cache(isDev ? 2 : 0, isDev ? 3 : 1, true);
  logger: typeof Logger = Logger;
 
  private api = new API(
@@ -74,6 +72,7 @@ export default class Client {
     this.user = app;
    })
    .catch((err) => {
+    // eslint-disable-next-line no-console
     console.error(`Failed to fetch application info during client initialization: ${err}`);
    });
 
@@ -86,7 +85,7 @@ export default class Client {
  ) => {
   const plugin = new PluginClass(this);
 
-  const exists = this.plugins.find((p) => p.name === PluginClass.name);
+  const exists = this.plugins.find((p) => p.constructor.name === PluginClass.name);
   if (exists) return;
 
   this.plugins.push(plugin as Plugin<GatewayDispatchEvents, BaseLanguage>);
@@ -105,13 +104,18 @@ export default class Client {
   return setting?.language || 'en-GB';
  };
 
- getAPI = async (_guildId: string) => this.getBaseAPI();
- getBaseAPI = () =>
+ getAPI = async (guildId: string) => this.getBaseAPI(guildId);
+ getCustomAPI = async (_guildId: string): Promise<CustomAPI | null> => null;
+ getBaseAPI = (guildId = 'this should never appear in logs') =>
   new CustomAPI(
    (this.isDev ? process.env.DevToken : process.env.Token)!.replace('Bot ', ''),
    this.logger,
    this.cache,
-   'this should never appear in logs',
+   guildId,
   );
+
+ getTokenAPI = (token: string, guildId = 'register-token-api') =>
+  new CustomAPI(token.replace('Bot ', ''), this.logger, this.cache, guildId);
+
  getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
 }
