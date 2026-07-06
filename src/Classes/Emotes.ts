@@ -228,6 +228,22 @@ class Emotes {
  send = { name: 'send', animated: false, id: '1515134413271466067' };
  webhook = { name: 'webhook', animated: false, id: '1515134479147073688' };
  json = { name: 'json', animated: false, id: '1515134500701733125' };
+
+ // TODO: upload the 14 new assets/icons pngs and replace placeholder ids
+ server = { name: 'server', animated: false, id: '0000000000000000000' };
+ invite = { name: 'invite', animated: false, id: '0000000000000000000' };
+ sticker = { name: 'sticker', animated: false, id: '0000000000000000000' };
+ badge = { name: 'badge', animated: false, id: '0000000000000000000' };
+ banner = { name: 'banner', animated: false, id: '0000000000000000000' };
+ avatar = { name: 'avatar', animated: false, id: '0000000000000000000' };
+ event = { name: 'event', animated: false, id: '0000000000000000000' };
+ soundboard = { name: 'soundboard', animated: false, id: '0000000000000000000' };
+ permissions = { name: 'permissions', animated: false, id: '0000000000000000000' };
+ crown = { name: 'crown', animated: false, id: '0000000000000000000' };
+ boost = { name: 'boost', animated: false, id: '0000000000000000000' };
+ globe = { name: 'globe', animated: false, id: '0000000000000000000' };
+ cpu = { name: 'cpu', animated: false, id: '0000000000000000000' };
+ shield = { name: 'shield', animated: false, id: '0000000000000000000' };
 }
 
 const emotes = new Emotes();

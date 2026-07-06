@@ -21,7 +21,7 @@
  },
  "guide": {
   "progress": "{{done}}/{{total}} required steps done",
-  "complete": "All steps complete — you're good to go!",
+  "complete": "All steps complete - you're good to go!",
   "open": "Open",
   "set": "Set up",
   "review": "Review",

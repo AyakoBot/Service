@@ -6,6 +6,7 @@ import {
 import {
  PermissionFlagsBits,
  type RESTPostAPIChatInputApplicationCommandsJSONBody,
+ type RESTPostAPIContextMenuApplicationCommandsJSONBody,
 } from '@discordjs/core';
 
 import type Client from '../Classes/Client.js';
@@ -42,7 +43,10 @@ const buildSettingsCommand = (plugins: Client['plugins']) => {
 const buildCommandBody = function (
  this: Client,
  only?: Client['plugins'][number],
-): RESTPostAPIChatInputApplicationCommandsJSONBody[] {
+): (
+ | RESTPostAPIChatInputApplicationCommandsJSONBody
+ | RESTPostAPIContextMenuApplicationCommandsJSONBody
+)[] {
  const selected = only ? resolvePluginDependencies.call(this, only) : this.plugins;
 
  const standalone = selected.flatMap((plugin) => plugin.getCommands().commands);
