@@ -67,6 +67,8 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
 
  constructor(client: Client) {
   super(client);
+
+  this.pluginBotToken = process.env.AFK_TOKEN;
  }
 
  getCommands = () => ({

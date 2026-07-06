@@ -72,6 +72,8 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
 
  constructor(client: Client) {
   super(client);
+
+  this.pluginBotToken = process.env.INFO_TOKEN;
  }
 
  getCommands = () => ({
@@ -137,10 +139,7 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
       .addBooleanOption(hideOption()),
     )
     .addSubcommand(
-     subcommand(
-      InfoSubcommand.Sticker,
-      'Display Information about a Sticker or list all Stickers',
-     )
+     subcommand(InfoSubcommand.Sticker, 'Display Information about a Sticker or list all Stickers')
       .addStringOption(
        new SlashCommandStringOption()
         .setName(InfoOption.Sticker)
