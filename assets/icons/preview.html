@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings icon set — preview</title>
+<style>
+ body { margin: 0; font-family: system-ui, sans-serif; }
+ section { padding: 24px; }
+ .dark { background: #313338; color: #dbdee1; }
+ .light { background: #ffffff; color: #313338; }
+ h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; opacity: .7; }
+ .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 14px; }
+ .cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border-radius: 8px; }
+ .dark .cell { background: #2b2d31; }
+ .light .cell { background: #f2f3f5; }
+ .cell img.big { width: 48px; height: 48px; }
+ .cell img.small { width: 20px; height: 20px; }
+ .cell span { font-size: 11px; opacity: .8; word-break: break-all; text-align: center; }
+ .row { display: flex; gap: 10px; align-items: center; }
+</style>
+</head>
+<body>
+<section class="dark"><h2>Discord dark</h2><div class="grid" id="dark"></div></section>
+<section class="light"><h2>Light</h2><div class="grid" id="light"></div></section>
+<script>
+ const icons = [
+  'settings','trash','plus','edit','back','forth','up','prev','next','warning','enabled','disabled','info',
+  'question','role','member','message','emoji','channel-text','channel-voice','channel-category',
+  'channel-news','channel-thread','channel-news-thread','channel-stage','channel-forum','command',
+  'automod','timer','number','hammer','shop','brain','calendar','ticket','log','lock','unlock','tools',
+  'heading','paragraph','author','footer','image','thumbnail','palette','link','fields','save',
+  'send','webhook','json',
+  'tick','cross','tick-with-background','cross-with-background','refresh','loading','gift','bot','invis',
+  'ban','ban-tick','ban-cross','ban-error','ban-update',
+  'muted-tick','muted-cross','muted-error','muted-updated',
+  'timedout-tick','timedout-cross','timedout-error','timedout-updated',
+  'avatar','badge','banner','boost','cpu','crown','event','globe','invite','permissions',
+  'server','shield','soundboard','sticker',
+ ];
+ for (const id of ['dark', 'light']) {
+  const grid = document.getElementById(id);
+  for (const name of icons) {
+   const cell = document.createElement('div');
+   cell.className = 'cell';
+   cell.innerHTML = `<div class="row"><img class="big" src="svgs/${name}.svg"><img class="small" src="svgs/${name}.svg"></div><span>${name}</span>`;
+   grid.appendChild(cell);
+  }
+ }
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <path fill="#C2C9FF" fill-rule="evenodd" d="M12 20.2a8.2 8.2 0 1 1 0-16.4 8.2 8.2 0 0 1 0 16.4Zm0-2.8a5.4 5.4 0 1 0 0-10.8 5.4 5.4 0 0 0 0 10.8Z"/>
+ <g>
+  <path fill="#5865F2" d="M12 3.8A8.2 8.2 0 0 1 20.2 12L17.4 12A5.4 5.4 0 0 0 12 6.6Z"/>
+  <circle fill="#5865F2" cx="12" cy="5.2" r="1.4"/>
+  <circle fill="#5865F2" cx="18.8" cy="12" r="1.4"/>
+  <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/>
+ </g>
+</svg>

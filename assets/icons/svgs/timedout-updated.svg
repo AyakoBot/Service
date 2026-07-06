@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="timedout-updated-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#timedout-updated-cut)">
+  <circle cx="9.7" cy="9.7" r="7.7" fill="#5865F2"/>
+  <circle cx="9.7" cy="9.7" r="5.3" fill="#FFFFFF"/>
+  <rect x="8.8" y="5.7" width="1.8" height="4.9" rx="0.9" fill="#5865F2"/>
+  <rect x="9.2" y="8.8" width="4.1" height="1.8" rx="0.9" fill="#5865F2"/>
+  <circle cx="9.7" cy="9.7" r="1.2" fill="#5865F2"/>
+ </g>
+ <circle cx="18" cy="18" r="5" fill="#5865F2"/>
+ <rect x="17" y="14.2" width="2" height="5" rx="0.6" fill="#FFFFFF" transform="rotate(45 18 18)"/>
+ <path fill="#FFFFFF" d="M17 19.2H19L18.42 21.04Q18 21.88 17.58 21.04Z" transform="rotate(45 18 18)"/>
+</svg>
