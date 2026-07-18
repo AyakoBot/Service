@@ -5,6 +5,7 @@ import type { BaseLang, BaseLanguage } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import type { EmoteName } from '../../Classes/EmoteName.js';
 import type { TableName } from '../../Types/prisma.js';
+import type { CommandMention } from '../../Util/commandMention.js';
 import type { TranslatorType } from '../../Util/translator.js';
 
 import type { EditorType } from './EditorType.js';
@@ -55,6 +56,7 @@ export interface SettingsField<Row = Record<string, unknown>> {
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
+ ms?: boolean;
  headerToggle?: boolean;
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
@@ -151,6 +153,7 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
+ ms?: boolean;
  headerToggle?: boolean;
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
@@ -209,7 +212,7 @@ export interface SettingsGuideAdvertDef<T = DefaultTranslator> {
 
 export interface SettingsGuideDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  title: (t: T) => string;
- intro?: (t: T) => string;
+ intro?: (t: T, mention: CommandMention) => string;
  advert: SettingsGuideAdvertDef<T>;
  sections: SettingsGuideSectionDef<Row, T>[];
 }

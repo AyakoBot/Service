@@ -12,6 +12,7 @@ import {
 import { TextInputStyle } from 'discord-api-types/v10';
 
 import { formatDurationSeconds } from '../../../Util/durationSeconds.js';
+import formatDuration from '../../../Util/formatDuration.js';
 import { EditorType } from '../EditorType.js';
 import { FieldArity } from '../SettingsSchema.js';
 import type { SettingsField } from '../SettingsSchema.js';
@@ -76,7 +77,11 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
     .setRequired(Boolean(field.required));
 
    if (field.editor === EditorType.Duration) {
-    input.setPlaceholder('e.g. 30m, 2h, 1h 30m').setValue(formatDurationSeconds(Number(value)));
+    input
+     .setPlaceholder('e.g. 30m, 2h, 1h 30m')
+     .setValue(
+      field.ms ? formatDuration(Number(value)) : formatDurationSeconds(Number(value)),
+     );
    } else {
     input.setValue(value === undefined || value === null ? '' : String(value));
    }

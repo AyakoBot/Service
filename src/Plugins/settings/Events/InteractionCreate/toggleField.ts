@@ -49,9 +49,32 @@ export default async function (
   }
  }
 
+ let persisted: unknown = next;
+ if (field.transform) {
+  const result = await field.transform(next, {
+   client: this.client,
+   plugin: resolved.plugin,
+   guildId: cmd.guild_id,
+   rowId: id.rowId,
+  });
+
+  if ('error' in result) {
+   const t = await this.t(cmd.guild_id);
+   await reRender.call(this, cmd, id);
+   await followUpWarning.call(
+    this,
+    cmd,
+    t.navigator.validationFailed({ field: field.label, reason: result.error }),
+   );
+   return;
+  }
+
+  persisted = result.value;
+ }
+
  await this.tableClient(resolved.schema.table).updateMany({
   where: { id: id.rowId, guild: cmd.guild_id },
-  data: { [field.column]: next },
+  data: { [field.column]: persisted },
  });
 
  await reRender.call(this, cmd, id);

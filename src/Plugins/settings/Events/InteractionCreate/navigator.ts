@@ -9,6 +9,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { commandMentions } from '../../../../Util/commandMention.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGuidePage } from '../../Util/buildGuidePage.js';
@@ -180,7 +181,12 @@ export const renderGuide = async function (
  const resolved = this.resolveSchema(id.settingName);
  if (!resolved) return;
 
- const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+ const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const schema = globalSchemaTranslator(
+  await resolved.plugin.t(cmd.guild_id),
+  resolved.schema,
+  await commandMentions.call(api),
+ );
  if (!schema.guide) return;
 
  const row = await this.tableClient(resolved.schema.table).findFirst({
@@ -189,7 +195,6 @@ export const renderGuide = async function (
  if (!row) return;
 
  const t = await this.t(cmd.guild_id);
- const api = await resolved.plugin.getAPI(cmd.guild_id);
  const emotes = this.client.emojis.for(api);
  const actionState = await guideActionState.call(this, {
   guide: schema.guide,

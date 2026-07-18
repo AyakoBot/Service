@@ -14,6 +14,7 @@ import { ButtonStyle, ChannelType } from 'discord-api-types/v10';
 
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { formatDurationSeconds } from '../../../Util/durationSeconds.js';
+import formatDuration from '../../../Util/formatDuration.js';
 import { EditorType } from '../EditorType.js';
 import { FieldArity, type SettingsField, type ShowIfResult } from '../SettingsSchema.js';
 
@@ -147,7 +148,11 @@ export const renderInlineField = (
   }
   default: {
    const durationText =
-    field.editor === EditorType.Duration ? formatDurationSeconds(Number(value)) : null;
+    field.editor === EditorType.Duration
+     ? field.ms
+       ? formatDuration(Number(value))
+       : formatDurationSeconds(Number(value))
+     : null;
    const preview = field.secret
     ? ''
     : durationText !== null

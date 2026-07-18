@@ -2,6 +2,7 @@ import { type APIModalSubmitInteraction } from 'discord-api-types/v10';
 
 import { parseDurationSeconds } from '../../../../Util/durationSeconds.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
+import parseDuration from '../../../../Util/parseDuration.js';
 import { EditorType } from '../../EditorType.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsField } from '../../SettingsSchema.js';
@@ -47,14 +48,14 @@ export default async function (
 
  let value: unknown;
  if (field.editor === EditorType.Duration) {
-  const seconds = parseDurationSeconds(raw ?? '');
-  if (seconds === null) {
+  const parsed = field.ms ? parseDuration(raw ?? '') : parseDurationSeconds(raw ?? '');
+  if (parsed === null) {
    const t = await this.t(cmd.guild_id);
    await reRender.call(this, cmd, id);
    await followUpWarning.call(this, cmd, t.base.errors.invalidDuration());
    return;
   }
-  value = seconds;
+  value = parsed;
  } else if (field.editor === EditorType.Number && raw !== undefined && raw !== '') {
   const parsed = Number(raw);
   if (Number.isNaN(parsed)) {

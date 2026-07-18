@@ -1,3 +1,4 @@
+import { plainCommand, type CommandMention } from '../../../Util/commandMention.js';
 import type { DefaultTranslator, SettingsSchema, SettingsSchemaDef } from '../SettingsSchema.js';
 
 const fieldDescription = (
@@ -15,6 +16,7 @@ const fieldDescription = (
 export const globalSchemaTranslator = (
  t: DefaultTranslator,
  def: SettingsSchemaDef,
+ mention: CommandMention = plainCommand,
 ): SettingsSchema => {
  const { rowSummary } = def;
 
@@ -55,6 +57,7 @@ export const globalSchemaTranslator = (
     channelTypes: f.channelTypes,
     required: f.required,
     secret: f.secret,
+    ms: f.ms,
     headerToggle: f.headerToggle,
     showIf: f.showIf,
     validate: f.validate,
@@ -64,7 +67,7 @@ export const globalSchemaTranslator = (
   guide: def.guide
    ? {
       title: def.guide.title(t),
-      intro: def.guide.intro?.(t),
+      intro: def.guide.intro?.(t, mention),
       advert: {
        text: def.guide.advert.text(t),
        buttonLabel: def.guide.advert.buttonLabel(t),
