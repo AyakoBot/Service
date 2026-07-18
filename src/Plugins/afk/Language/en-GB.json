@@ -7,7 +7,7 @@
   "set": "-# `{{user.username}}` went AFK",
   "removed": "Welcome Back!\n-# You've been AFK since {{time}}",
   "isAFK": "<@{{user}}> is AFK since {{since}}{{text}}",
-  "disabled": "-# Setting AFK is turned off on this Server.\nAsk an admin to turn it back on with </settings afk:{{cmdId}}>"
+  "disabled": "-# Setting AFK is turned off on this Server.\nAsk an admin to turn it back on with {{command}}"
  },
  "settings": {
   "name": "AFK",
