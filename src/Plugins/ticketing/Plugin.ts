@@ -33,7 +33,7 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
-import { TicketRoute } from './Classes/Routes.js';
+import { tagCommandName, TicketRoute } from './Classes/Routes.js';
 import channelDelete from './Events/ChannelDelete/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
@@ -283,7 +283,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  getCommands = () => ({
   commands: [
    new SlashCommandBuilder()
-    .setName('tag')
+    .setName(tagCommandName)
     .setDescription('Post a saved snippet into the current ticket, or open the snippet toolkit')
     .addStringOption((option) =>
      option
@@ -1156,7 +1156,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
   ],
- } satisfies SettingsSchemaDef<TicketSetting, TicketTranslator> as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<TicketSetting, TicketTranslator> as unknown as SettingsSchemaDef;
 
  snippetsSchema = {
   table: 'snippets',

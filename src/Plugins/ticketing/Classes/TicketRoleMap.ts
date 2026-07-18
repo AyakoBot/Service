@@ -1,4 +1,3 @@
-import DBEntry from '../../../Classes/abstracts/DBEntry.js';
 import type Client from '../../../Classes/Client.js';
 
 import { MoveDirection } from './Enums.js';
@@ -8,16 +7,19 @@ export interface RoleMapEntry {
  label: string;
 }
 
-export default class TicketRoleMap extends DBEntry<'ticketRoleMap'> {
+export default class TicketRoleMap {
  guild: string;
+ private client: Client;
 
  constructor(client: Client, guild: string) {
-  super(client, 'ticketRoleMap', { where: { guild } });
+  this.client = client;
   this.guild = guild;
  }
 
  async list(): Promise<RoleMapEntry[]> {
-  const row = await this.get();
+  const row = await this.client.db.client.ticketRoleMap.findUnique({
+   where: { guild: this.guild },
+  });
   if (!row) return [];
 
   const length = Math.min(row.roleMapRoles.length, row.roleMapLabels.length);
@@ -72,10 +74,11 @@ export default class TicketRoleMap extends DBEntry<'ticketRoleMap'> {
   const roleMapRoles = entries.map((entry) => entry.role);
   const roleMapLabels = entries.map((entry) => entry.label);
 
-  await this.upsert(
-   { guild: this.guild, roleMapRoles, roleMapLabels },
-   { roleMapRoles, roleMapLabels },
-  );
+  await this.client.db.client.ticketRoleMap.upsert({
+   where: { guild: this.guild },
+   create: { guild: this.guild, roleMapRoles, roleMapLabels },
+   update: { roleMapRoles, roleMapLabels },
+  });
 
   return entries;
  }

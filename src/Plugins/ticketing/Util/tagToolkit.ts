@@ -17,8 +17,9 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../Classes/Constants.js';
 import { Colors } from '../../../Types/index.js';
+import commandMention from '../../../Util/commandMention.js';
 import { PageDirection } from '../Classes/Enums.js';
-import { TicketRoute } from '../Classes/Routes.js';
+import { tagCommandName, TicketRoute } from '../Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
 
 export const pageSize = 5;
@@ -106,9 +107,10 @@ export const buildToolkit = async function (
   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
  );
 
+ const command = await commandMention.call(api, tagCommandName);
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `-# ${t.base.t.Page()} ${page + 1}/${pageCount}\n-# ${t.tag.commandReference()}`,
+   `-# ${t.base.t.Page()} ${page + 1}/${pageCount}\n-# ${t.tag.commandReference({ command })}`,
   ),
  );
 

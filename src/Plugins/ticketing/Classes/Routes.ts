@@ -1,3 +1,5 @@
+export const tagCommandName = 'tag';
+
 export enum TicketRoute {
  Create = 'tickets/create',
  Claim = 'tickets/claim',

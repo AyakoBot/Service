@@ -1,7 +1,6 @@
 import type { TicketSetting, TicketTier } from '@ayako/database';
 import { TicketPlacementMode } from '@ayako/database';
 
-import DBEntry from '../../../Classes/abstracts/DBEntry.js';
 import type Client from '../../../Classes/Client.js';
 import type { FindManyArgs } from '../../../Types/prisma.js';
 
@@ -24,11 +23,12 @@ const lifecycleTagCount = (settings: TicketSetting) =>
   [...settings.createTags, ...settings.claimTags, ...settings.closeTags].map(trunc).filter(Boolean),
  ).size;
 
-export default class TicketTierEntry extends DBEntry<'ticketTier'> {
+export default class TicketTierEntry {
  settingsId: string;
+ private client: Client;
 
  constructor(client: Client, settingsId: string) {
-  super(client, 'ticketTier', { where: { id: '0' } });
+  this.client = client;
   this.settingsId = settingsId;
  }
 

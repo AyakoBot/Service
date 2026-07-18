@@ -12,6 +12,15 @@ import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
+import {
+ arm,
+ dataKey,
+ disarm,
+ isArmed,
+ scanDataKeys,
+ stripDataPrefix,
+ stripMarkerPrefix,
+} from '../../../Util/schedule.js';
 import type BaseTicket from '../Classes/BaseTicket.js';
 import { TicketRoute } from '../Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
@@ -25,15 +34,6 @@ import {
  remindKey,
  ticketKey,
 } from './keys.js';
-import {
- arm,
- dataKey,
- disarm,
- isArmed,
- scanDataKeys,
- stripDataPrefix,
- stripMarkerPrefix,
-} from './Schedule.js';
 
 type TicketRow = Ticket & { settings: TicketSetting };
 type Translator = Awaited<ReturnType<TicketPlugin['t']>>;

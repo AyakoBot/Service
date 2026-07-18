@@ -1,16 +1,11 @@
 import type { Snippets } from '@ayako/database';
 
-import DBEntry from '../../../Classes/abstracts/DBEntry.js';
 import type Client from '../../../Classes/Client.js';
 import type { FindManyArgs } from '../../../Types/prisma.js';
 
 import { SnippetErrors } from './Enums.js';
 
-export default class Snippet extends DBEntry<'snippets'> {
- constructor(client: Client, id: string) {
-  super(client, 'snippets', { where: { id } });
- }
-
+export default class Snippet {
  static all(client: Client, guild: string) {
   return client.db.findMany('snippets', {
    where: { guild },

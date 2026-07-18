@@ -4,6 +4,7 @@ import {
  type APIApplicationCommandOptionChoice,
 } from 'discord-api-types/v10';
 
+import { tagCommandName } from '../../Classes/Routes.js';
 import Snippet from '../../Classes/Snippet.js';
 import type TicketPlugin from '../../Plugin.js';
 import { resolveTicketByChannel, resolveTicketByStaffThread } from '../../Util/resolveTicket.js';
@@ -12,7 +13,7 @@ export default async function (
  this: TicketPlugin,
  cmd: APIApplicationCommandAutocompleteInteraction,
 ) {
- if (!cmd.guild_id || cmd.data.name !== 'tag') return;
+ if (!cmd.guild_id || cmd.data.name !== tagCommandName) return;
 
  const api = await this.getAPI(cmd.guild_id);
  const respond = (choices: APIApplicationCommandOptionChoice[]) =>

@@ -1,14 +1,16 @@
 import type { TicketPanel as TicketPanelRow } from '@ayako/database';
 
-import DBEntry from '../../../Classes/abstracts/DBEntry.js';
 import type Client from '../../../Classes/Client.js';
-import type { FindManyArgs } from '../../../Types/prisma.js';
+import type { FindManyArgs, UpdateData } from '../../../Types/prisma.js';
 
-export default class TicketPanel extends DBEntry<'ticketPanel'> {
+export default class TicketPanel {
  guild: string;
+ private client: Client;
+ private where: { id: string };
 
  constructor(client: Client, guild: string, id: string) {
-  super(client, 'ticketPanel', { where: { id } });
+  this.client = client;
+  this.where = { id };
   this.guild = guild;
  }
 
@@ -35,11 +37,15 @@ export default class TicketPanel extends DBEntry<'ticketPanel'> {
   });
  }
 
+ update(data: UpdateData<'ticketPanel'>): Promise<TicketPanelRow> {
+  return this.client.db.client.ticketPanel.update({ where: this.where, data });
+ }
+
  setMessage(message: string | null): Promise<TicketPanelRow> {
   return this.update({ message });
  }
 
  remove(): Promise<TicketPanelRow> {
-  return this.delete();
+  return this.client.db.client.ticketPanel.delete({ where: this.where });
  }
 }

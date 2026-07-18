@@ -11,7 +11,7 @@ import {
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import { MoveDirection } from '../../Classes/Enums.js';
-import { TicketRoute } from '../../Classes/Routes.js';
+import { tagCommandName, TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 
 import autocomplete from './autocomplete.js';
@@ -74,7 +74,7 @@ const command = async function (this: TicketPlugin, cmd: APIApplicationCommandIn
  if (cmd.data.type !== ApplicationCommandType.ChatInput) return;
 
  switch (cmd.data.name) {
-  case 'tag': {
+  case tagCommandName: {
    tag.call(this, cmd);
    break;
   }
