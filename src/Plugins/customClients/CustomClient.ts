@@ -1,19 +1,30 @@
 import { API, type RequestHandlerError, type RequestHandlerErrorType } from '@ayako/api';
+import type { CustomClient as CustomClientRow } from '@ayako/database';
 
-import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
+import type { UpdateData } from '../../Types/prisma.js';
 import { checkToken, TokenCheckResult } from '../../Util/tokenCheck.js';
 
 import CustomClientsPlugin from './Plugin.js';
 
-export default class CustomClient extends DBEntry<'customClient'> {
+export default class CustomClient {
  apiCache: Map<string, API> = new Map();
  plugin: CustomClientsPlugin;
+ private client: Client;
+ private where: { guildId: string };
 
  constructor(client: Client, guildId: string) {
-  super(client, 'customClient', { where: { guildId } });
-
+  this.client = client;
+  this.where = { guildId };
   this.plugin = client.plugins.find((p) => p instanceof CustomClientsPlugin) as CustomClientsPlugin;
+ }
+
+ get(): Promise<CustomClientRow | null> {
+  return this.client.db.client.customClient.findUnique({ where: this.where });
+ }
+
+ update(data: UpdateData<'customClient'>): Promise<CustomClientRow> {
+  return this.client.db.client.customClient.update({ where: this.where, data });
  }
 
  getBotIdForGuildId = async (guildId: string) => {
@@ -61,7 +72,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
 
   if (status === TokenCheckResult.Invalid) {
    this.apiCache.delete(guildId);
-   await this.db.client.customClient.update({
+   await this.client.db.client.customClient.update({
     where: { guildId },
     data: { token: null },
    });
@@ -138,7 +149,7 @@ export default class CustomClient extends DBEntry<'customClient'> {
  };
 
  getGuildIdFromDB = async (api: API): Promise<string[] | null> => {
-  const entries = await this.db.client.customClient.findMany({
+  const entries = await this.client.db.client.customClient.findMany({
    where: { appId: api.botId, token: { not: null } },
   });
 

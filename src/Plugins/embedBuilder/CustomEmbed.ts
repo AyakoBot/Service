@@ -1,15 +1,17 @@
 import type { CustomEmbed as CustomEmbedRow, Prisma } from '@ayako/database';
 import type { APIEmbed } from 'discord-api-types/v10';
 
-import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
 import type { FindManyArgs } from '../../Types/prisma.js';
 
-export default class CustomEmbed extends DBEntry<'customEmbed'> {
+export default class CustomEmbed {
  guild: string;
+ private client: Client;
+ private where: { id: string };
 
  constructor(client: Client, guild: string, id: string) {
-  super(client, 'customEmbed', { where: { id } });
+  this.client = client;
+  this.where = { id };
   this.guild = guild;
  }
 
@@ -45,10 +47,13 @@ export default class CustomEmbed extends DBEntry<'customEmbed'> {
  }
 
  setEmbed(embed: APIEmbed): Promise<CustomEmbedRow> {
-  return this.update({ embed: embed as unknown as Prisma.InputJsonValue });
+  return this.client.db.client.customEmbed.update({
+   where: this.where,
+   data: { embed: embed as unknown as Prisma.InputJsonValue },
+  });
  }
 
  remove(): Promise<CustomEmbedRow> {
-  return this.delete();
+  return this.client.db.client.customEmbed.delete({ where: this.where });
  }
 }

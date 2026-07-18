@@ -1,16 +1,18 @@
 import type { CustomComponents as CustomComponentsRow, Prisma } from '@ayako/database';
 
-import DBEntry from '../../Classes/abstracts/DBEntry.js';
 import type Client from '../../Classes/Client.js';
 import type { FindManyArgs } from '../../Types/prisma.js';
 
 import type { WipTree } from './Util/componentTree.js';
 
-export default class CustomComponents extends DBEntry<'customComponents'> {
+export default class CustomComponents {
  guild: string;
+ private client: Client;
+ private where: { id: string };
 
  constructor(client: Client, guild: string, id: string) {
-  super(client, 'customComponents', { where: { id } });
+  this.client = client;
+  this.where = { id };
   this.guild = guild;
  }
 
@@ -52,6 +54,6 @@ export default class CustomComponents extends DBEntry<'customComponents'> {
  }
 
  remove(): Promise<CustomComponentsRow> {
-  return this.delete();
+  return this.client.db.client.customComponents.delete({ where: this.where });
  }
 }
