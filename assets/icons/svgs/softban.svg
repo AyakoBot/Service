@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="softban-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#softban-cut)">
+  <rect fill="#C2C9FF" x="8" y="10.6" width="7.4" height="2.15" rx="1.05" transform="rotate(45 11.65 11.65)"/>
+  <rect fill="#5865F2" x="4.3" y="5.9" width="7.4" height="4.1" rx="1.25" transform="rotate(-45 7.95 7.95)"/>
+ </g>
+ <circle cx="18" cy="18" r="5" fill="#5865F2"/>
+ <path fill="#FFFFFF" d="M21.1 18a3.1 3.1 0 1 1-3.1-3.1v1.6a1.5 1.5 0 1 0 1.5 1.5Z"/>
+ <path fill="#FFFFFF" d="M18.2 13.9v3.6l3-1.8Z"/>
+</svg>
