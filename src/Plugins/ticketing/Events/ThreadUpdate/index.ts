@@ -48,6 +48,7 @@ export default async function (
   origin: 'TicketLogNameGuard',
   reason: 'Notifying log thread rename revert',
  })
+  .setAPI(api)
   .setContent(t.logs.nameGuard())
   .setSendTo([{ channel: thread.id, guildId: dbTicket.settings.guild }])
   .send();

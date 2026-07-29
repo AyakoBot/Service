@@ -92,7 +92,7 @@ const forumPostOrEdit = async function (
    { origin: this.name, reason: 'Reviving ticket panel post' },
   );
   const edited = await payload
-   .edit(currentMessage, currentMessage, guildId)
+   .edit(currentMessage, currentMessage, guildId, api)
    .catch((error: Error) => {
     this.nonFatalError(error, 'renderPanel.editForumPost');
     return null;
@@ -145,15 +145,20 @@ const postOrEdit = async function (
   return forumPostOrEdit.call(this, guildId, channelId, currentMessage, payload, postName);
  }
 
+ const api = await this.getAPI(guildId);
+
  if (currentMessage) {
-  const edited = await payload.edit(channelId, currentMessage, guildId).catch((error: Error) => {
-   this.nonFatalError(error, 'renderPanel.edit');
-   return null;
-  });
+  const edited = await payload
+   .edit(channelId, currentMessage, guildId, api)
+   .catch((error: Error) => {
+    this.nonFatalError(error, 'renderPanel.edit');
+    return null;
+   });
   if (edited && !(edited instanceof RequestHandlerError)) return currentMessage;
  }
 
  const sent = await payload
+  .setAPI(api)
   .setSendTo([{ channel: channelId, guildId }])
   .send()
   .then((messages) => messages[0])

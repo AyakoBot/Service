@@ -106,11 +106,10 @@ export default class SendMessageCache {
 
   const payloads = entry.payloads.map((p) => p.getAPIPayload());
   const flags = payloads.reduce((acc, p) => acc | (p.flags ?? 0), 0) || undefined;
+  const api = entry.payloads.find((p) => p.api)?.api ?? (await this.client.getAPI(entry.guildId));
 
   try {
-   const apiMessage = await (
-    await this.client.getAPI(entry.guildId)
-   ).channels
+   const apiMessage = await api.channels
     .createMessage(
      entry.channelId,
      {
@@ -150,7 +149,7 @@ export default class SendMessageCache {
    entry.deferreds.forEach((d) => d.resolve(rMessage));
   } catch (error) {
    logger.error('[SendMessageCache] 2 Failed to send message to', entry.channelId, error);
-   (await this.client.getAPI(entry.guildId)).emit('error', error);
+   api.emit('error', error);
    entry.deferreds.forEach((d) => d.reject(error));
   }
  };

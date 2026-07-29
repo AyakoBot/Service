@@ -486,7 +486,10 @@ export default abstract class BaseTicketLogger {
 
   const targets = [...new Set([...logChannels.map((c) => c.id), ...transcriptChannels])];
 
-  payload.setSendTo(targets.map((channel) => ({ channel, guildId: ticket.settings.guild }))).send();
+  payload
+   .setAPI(await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken))
+   .setSendTo(targets.map((channel) => ({ channel, guildId: ticket.settings.guild })))
+   .send();
 
   return true;
  }

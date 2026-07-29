@@ -874,7 +874,12 @@ export default class BaseTicket extends BaseTicketLogger {
   const staffThreadId = await this.getStaffThreadId();
   const payload = await this.buildStatusSurface(false, staffThreadId);
 
-  const modify = await payload.edit(ticket.channel, ticket.surfaceMessage, ticket.settings.guild);
+  const modify = await payload.edit(
+   ticket.channel,
+   ticket.surfaceMessage,
+   ticket.settings.guild,
+   await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken),
+  );
   if (modify instanceof RequestHandlerError) {
    this.plugin.nonFatalError(modify, this.refreshSurface.name);
   }
@@ -946,6 +951,7 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const msg = await payload
+   .setAPI(await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken))
    .setSendTo([{ channel: ticket.channel, guildId: ticket.settings.guild }])
    .send()
    .then((m) => m[0]);
@@ -1103,7 +1109,7 @@ export default class BaseTicket extends BaseTicketLogger {
     { origin: BaseTicket.name, reason: 'Editing mirrored message' },
    );
   } else {
-   await payload.edit(mirror.channelId, mirror.messageId, ticket.settings.guild);
+   await payload.edit(mirror.channelId, mirror.messageId, ticket.settings.guild, api);
   }
  }
 

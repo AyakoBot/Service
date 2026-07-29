@@ -36,6 +36,7 @@ export class MessagePayload {
  avatarURL: string | null = null;
  webhookId: string | null = null;
  webhookToken: string | undefined = undefined;
+ api: CustomAPI | null = null;
 
  mergeTimeout: number = 0;
  sendTo: SendTo[] = [];
@@ -56,6 +57,11 @@ export class MessagePayload {
  setWebhook({ webhookId, webhookToken }: { webhookId: string; webhookToken?: string }) {
   this.webhookId = webhookId;
   this.webhookToken = webhookToken;
+  return this;
+ }
+
+ setAPI(api: CustomAPI | null) {
+  this.api = api;
   return this;
  }
 
