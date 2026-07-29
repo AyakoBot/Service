@@ -164,7 +164,23 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    await this.updateMessage(cmd, this.getLeaveUpdatePayload());
 
    await this.setDbEntryLeft();
+   await this.renameLeftChannel();
    await this.refreshSurface();
+  }
+
+  async renameLeftChannel() {
+   const ticket = await this.getTicket();
+   const t = await this.plugin.t(ticket.settings.guild);
+   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
+   const renamed = await api.channels.edit(
+    ticket.channel,
+    { name: await this.creatorChannelName(t.closedByUser()) },
+    { origin: DMTicket.name, reason: 'Renaming ticket channel after user left' },
+   );
+   if (renamed instanceof RequestHandlerError) {
+    this.plugin.nonFatalError(renamed, this.renameLeftChannel.name);
+   }
   }
 
   getLeaveUpdatePayload() {
