@@ -47,7 +47,8 @@ model TicketSetting {
  denyUsers String[] @db.VarChar
  denyRoles String[] @db.VarChar
 
- dmEnabled Boolean @default(false)
+ dmEnabled     Boolean @default(false)
+ dmInstantOpen Boolean @default(false)
 
  panelChannel     String? @db.VarChar
  panelMessage     String? @db.VarChar

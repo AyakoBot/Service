@@ -319,7 +319,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   async *create(
    dbOpts: { settingsId: string; userId: string },
    createOpts: {
-    cmd: APIMessageComponentInteraction;
+    cmd?: APIMessageComponentInteraction;
     userId: string;
     roleIds: string[];
     username: string;

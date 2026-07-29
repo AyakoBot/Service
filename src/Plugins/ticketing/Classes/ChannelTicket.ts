@@ -409,7 +409,7 @@ export default class ChannelTicket extends BaseTicket {
  async *create(
   dbOpts: { settingsId: string; userId: string },
   createOpts: {
-   cmd: APIMessageComponentInteraction;
+   cmd?: APIMessageComponentInteraction;
    userId: string;
    roleIds: string[];
    username: string;
@@ -436,11 +436,15 @@ export default class ChannelTicket extends BaseTicket {
    await this.createStaffThread(surfaceId);
 
    const replyPayload = await this.getCreateReplyPayload(channel.id, surfaceId);
-   await this.replyMessage(
-    createOpts.cmd,
-    replyPayload,
-    ChannelTicketErrors.create_CantReplyMessage,
-   );
+   if (createOpts.cmd) {
+    await this.replyMessage(
+     createOpts.cmd,
+     replyPayload,
+     ChannelTicketErrors.create_CantReplyMessage,
+    );
+   } else {
+    await this.relayToDm(replyPayload);
+   }
 
    return this;
   } finally {

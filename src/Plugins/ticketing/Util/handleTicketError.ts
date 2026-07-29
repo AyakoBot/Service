@@ -30,7 +30,7 @@ export default async function (
  return true;
 }
 
-const getErrorMessage = function (
+export const getErrorMessage = function (
  this: Client,
  t: Awaited<ReturnType<TicketPlugin['t']>>,
  error: Error,
