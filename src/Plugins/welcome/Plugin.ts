@@ -1,4 +1,5 @@
 import type { WelcomeSetting } from '@ayako/database';
+import { LogLevel } from '@ayako/utility';
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
 import { ChannelType } from 'discord-api-types/v10';
@@ -143,6 +144,10 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
 
  constructor(client: Client) {
   super(client);
+
+  this.pluginBotToken = process.env.WELCOME_TOKEN;
+  this.logger.setLevel(LogLevel.silly);
+
   assertSchemaValid(this.settingsSchema);
  }
 
@@ -399,8 +404,5 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
     },
    ],
   },
- } satisfies SettingsSchemaDef<
-  WelcomeSetting,
-  WelcomeTranslator
- > as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<WelcomeSetting, WelcomeTranslator> as unknown as SettingsSchemaDef;
 }
