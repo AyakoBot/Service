@@ -195,7 +195,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
 
-  this.pluginBotKey = 'TICKET_TOKEN';
+  this.pluginBotToken = process.env.TICKET_TOKEN;
 
   this.logger.setLevel(LogLevel.silly);
   assertSchemaValid(this.settingsSchema);
