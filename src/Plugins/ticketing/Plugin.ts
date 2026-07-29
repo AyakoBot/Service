@@ -195,7 +195,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
 
-  this.pluginBotToken = process.env.TICKET_TOKEN;
+  this.pluginBotKey = 'TICKET_TOKEN';
 
   this.logger.setLevel(LogLevel.silly);
   assertSchemaValid(this.settingsSchema);
@@ -856,6 +856,10 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.dmInstantOpen(),
       description: (t: TicketTranslator) => t.settings.descriptions.dmInstantOpen(),
+      showIf: (row) => ({
+       ok: Boolean(row.botToken),
+       reason: en.settings.reasons.customBotOnly,
+      }),
      },
     ],
     actions: [
