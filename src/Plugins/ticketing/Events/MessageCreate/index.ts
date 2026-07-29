@@ -28,7 +28,14 @@ export default async function (this: TicketPlugin, msg: MessageCreatePayload) {
  }
 
  if (!msg.guild_id && !dmTicket) {
-  await intakeGreet.call(this, msg.author.id, msg.channel_id, msg.content || '', msg.recipientId);
+  await intakeGreet.call(
+   this,
+   msg.author.id,
+   msg.channel_id,
+   msg.content || '',
+   msg.attachments.map((attachment) => attachment.url),
+   msg.recipientId,
+  );
  }
 
  const channelTicket = await resolveTicketByChannel.call(this.client, msg.channel_id);

@@ -34,12 +34,18 @@ const kindLabel = (settings: TicketSetting, fallback: string) =>
 export const buildGreetingPayload = async function (
  this: TicketPlugin,
  firstMessage: string,
+ attachmentUrls: string[] = [],
 ) {
  const t = await this.t(undefined);
 
- const description = firstMessage.trim()
-  ? `${t.intake.greeting()}\n\n${quote(firstMessage)}`
-  : t.intake.greeting();
+ const quoted = [
+  firstMessage.trim() ? quote(firstMessage) : '',
+  ...attachmentUrls.map((url) => `> ${url}`),
+ ]
+  .filter(Boolean)
+  .join('\n');
+
+ const description = quoted ? `${t.intake.greeting()}\n\n${quoted}` : t.intake.greeting();
 
  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
   new ButtonBuilder()

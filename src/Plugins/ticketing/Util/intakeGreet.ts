@@ -11,6 +11,7 @@ export default async function (
  userId: string,
  dmChannelId: string,
  firstMessage: string,
+ attachmentUrls: string[],
  recipientId?: string,
 ) {
  const candidates = await getSharedTicketGuilds.call(this.client, userId);
@@ -19,7 +20,7 @@ export default async function (
  const api = await resolveDmBotApi.call(this, candidates, recipientId);
  if (!api) return;
 
- const payload = await buildGreetingPayload.call(this, firstMessage);
+ const payload = await buildGreetingPayload.call(this, firstMessage, attachmentUrls);
  const sent = await api.channels.createDirectMessage(dmChannelId, payload.getAPIPayload(), {
   origin: this.name,
   reason: 'Sending ticket intake greeting',

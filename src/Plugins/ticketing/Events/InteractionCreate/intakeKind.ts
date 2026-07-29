@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import { ComponentType, type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import { BaseTicketErrors } from '../../Classes/Enums.js';
@@ -5,7 +6,30 @@ import type TicketPlugin from '../../Plugin.js';
 import { buildEndPayload, buildExistingPayload } from '../../Util/buildIntakePayload.js';
 import getOpenableKinds, { type OpenableKind } from '../../Util/getOpenableKinds.js';
 import isUnderLimit from '../../Util/isUnderLimit.js';
+import { resolveDmBotApi } from '../../Util/resolveDmBotApi.js';
 import startTicketCreate from '../../Util/startTicketCreate.js';
+
+const clearIntakeComponents = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+ guildId: string,
+ kind: OpenableKind,
+) {
+ const api =
+  (await resolveDmBotApi.call(
+   this,
+   [{ guildId, kinds: [kind.settings] }],
+   cmd.application_id,
+  )) ?? this.client.getBaseAPI();
+
+ const cleared = await api.channels.editDirectMessage(
+  cmd.channel.id,
+  cmd.message.id,
+  { components: [] },
+  { origin: this.name, reason: 'Removing intake components after click' },
+ );
+ if (cleared instanceof RequestHandlerError) this.nonFatalError(cleared, 'intake.clearComponents');
+};
 
 export const startKind = async function (
  this: TicketPlugin,
@@ -19,6 +43,8 @@ export const startKind = async function (
   (await buildExistingPayload.call(this, guildId, limit.ticketId)).update(cmd);
   return;
  }
+
+ await clearIntakeComponents.call(this, cmd, guildId, kind);
 
  const member = await this.client.cache.members.get(guildId, userId);
  const user = await this.client.cache.users.get(userId);
