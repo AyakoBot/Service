@@ -131,12 +131,13 @@ export default class ChannelTicket extends BaseTicket {
   if (await this.isClosed()) return this;
 
   const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   await this.markClosed(api.botId, reason);
 
   const channel = await this.getChannel(ticket.channel);
 
-  await this.closeChannel(api, channel);
+  await this.closeChannel(api, channel, t.autoClosed());
   await this.revokeChannelAccess(api, channel);
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
@@ -172,7 +173,7 @@ export default class ChannelTicket extends BaseTicket {
   return !ChannelTicket.threadTypes.includes(channel.type);
  }
 
- async closeChannel(api: API, _channel: RChannel | RThread) {
+ async closeChannel(api: API, _channel: RChannel | RThread, statusPrefix?: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
@@ -184,7 +185,7 @@ export default class ChannelTicket extends BaseTicket {
   const modify = await api.channels.edit(
    ticket.channel,
    {
-    name: await this.creatorChannelName(t.closed()),
+    name: await this.creatorChannelName(statusPrefix ?? t.closed()),
     parent_id: archiveCategory?.id || undefined,
     permission_overwrites:
      archiveCategory?.permission_overwrites?.map((o) => ({

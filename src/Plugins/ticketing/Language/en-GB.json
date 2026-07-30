@@ -65,6 +65,7 @@
  "reportAbuse": "Please report abuse to the Ayako Support-Team",
  "closed": "Closed by staff",
  "closedByUser": "Closed by user",
+ "autoClosed": "Auto-closed",
  "opened": "Opened",
  "archived": "Archived",
  "claimTicket": "Claim Ticket",

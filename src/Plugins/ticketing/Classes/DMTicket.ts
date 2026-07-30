@@ -382,10 +382,10 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    return superCreate;
   }
 
-  async closeChannel(api: API, channel: RChannel | RThread) {
+  async closeChannel(api: API, channel: RChannel | RThread, statusPrefix?: string) {
    this.plugin.logger.logLocation(LogLevel.silly);
 
-   const superClose = await super.closeChannel(api, channel);
+   const superClose = await super.closeChannel(api, channel, statusPrefix);
    await this.unpinStartMessage();
 
    return superClose;

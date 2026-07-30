@@ -94,7 +94,7 @@ export default class ThreadTicket extends ChannelTicket {
   return remove ? [remove] : [];
  }
 
- async closeChannel(api: API, _channel: RChannel | RThread) {
+ async closeChannel(api: API, _channel: RChannel | RThread, statusPrefix?: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
@@ -105,7 +105,7 @@ export default class ThreadTicket extends ChannelTicket {
   const modify = await api.channels.edit(
    ticket.channel,
    {
-    name: await this.creatorChannelName(t.closed()),
+    name: await this.creatorChannelName(statusPrefix ?? t.closed()),
     locked: true,
    },
    { origin: ThreadTicket.name, reason: 'Closing ticket thread channel' },
