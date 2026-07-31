@@ -21,7 +21,7 @@ import type TicketPlugin from '../Plugin.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 
 import BaseTicket from './BaseTicket.js';
-import { ChannelTicketErrors } from './Enums.js';
+import { ChannelTicketErrors, TicketThreadPrefix } from './Enums.js';
 
 export default class ChannelTicket extends BaseTicket {
  static threadTypes = [
@@ -562,7 +562,7 @@ export default class ChannelTicket extends BaseTicket {
 
   const ticket = await this.getTicket();
   const threads = await this.client.cache.threads.getAll(ticket.settings.guild, parentId);
-  return threads?.find((th) => th.name === `staff-${this.id}`) || null;
+  return threads?.find((th) => th.name === `${TicketThreadPrefix.Staff}${this.id}`) || null;
  }
 
  async getStaffThreadId(): Promise<string | null> {
@@ -590,7 +590,7 @@ export default class ChannelTicket extends BaseTicket {
   const intro = await this.getStaffIntroPayload();
   const thread = await this.createNamedThread(
    parentId,
-   `staff-${this.id}`,
+   `${TicketThreadPrefix.Staff}${this.id}`,
    this.staffThreadType(),
    intro,
   );

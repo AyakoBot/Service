@@ -39,13 +39,21 @@ export interface RowGuardContext {
  guildId: string;
 }
 
+export interface SettingsFieldVirtual<Row = Record<string, unknown>> {
+ read: (row: Row, ctx: RowGuardContext) => Promise<unknown>;
+ write: (value: unknown, row: Row, ctx: RowGuardContext) => Promise<ShowIfResult>;
+}
+
 export type RowGuard<Row = Record<string, unknown>> = (
  row: Row,
  ctx: RowGuardContext,
 ) => Promise<ShowIfResult>;
 
+export type RowChangeHook = (ctx: TransformContext) => Promise<void>;
+
 export interface SettingsField<Row = Record<string, unknown>> {
  column: keyof Row & string;
+ virtual?: SettingsFieldVirtual<Row>;
  editor: EditorType;
  label: string;
  description?: string;
@@ -143,6 +151,7 @@ export interface SettingsSchema<Row = Record<string, unknown>> {
 
 export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  column: keyof Row & string;
+ virtual?: SettingsFieldVirtual<Row>;
  editor: EditorType;
  label: (t: T) => string;
  description?: (t: T) => string;
@@ -226,6 +235,7 @@ export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTra
  rowLabel: (t: T, row: Row) => string;
  rowSummary?: (t: T, row: Row) => string;
  canDelete?: RowGuard<Row>;
+ onChange?: RowChangeHook;
  groups: SettingsGroupDef<Row, T>[];
  guide?: SettingsGuideDef<Row, T>;
 }
@@ -253,9 +263,29 @@ export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
     `[settings] group '${group.id}' on table '${schema.table}' has ${group.fields.length} fields; max is 10 fields per modal.`,
    );
   }
+
+  group.fields.forEach((field) => {
+   if (
+    field.virtual &&
+    (typeof field.virtual.read !== 'function' || typeof field.virtual.write !== 'function')
+   ) {
+    throw new Error(
+     `[settings] field '${field.column}' in group '${group.id}' on table '${schema.table}' is virtual and must define both 'read' and 'write'.`,
+    );
+   }
+   if (field.virtual && field.required) {
+    throw new Error(
+     `[settings] field '${field.column}' in group '${group.id}' on table '${schema.table}' is virtual and cannot be required; required-ness is computed from stored row values.`,
+    );
+   }
+  });
  });
 
  const columns = new Set(schema.groups.flatMap((group) => group.fields.map((f) => f.column)));
+
+ const virtualColumns = new Set(
+  schema.groups.flatMap((group) => group.fields.filter((f) => f.virtual).map((f) => f.column)),
+ );
 
  schema.guide?.sections.forEach((section) => {
   section.steps.forEach((step) => {
@@ -267,6 +297,11 @@ export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
    if (step.column && !columns.has(step.column)) {
     throw new Error(
      `[settings] guide section '${section.id}' on table '${schema.table}' references unknown column '${step.column}'.`,
+    );
+   }
+   if (step.column && virtualColumns.has(step.column)) {
+    throw new Error(
+     `[settings] guide section '${section.id}' on table '${schema.table}' references virtual column '${step.column}'; virtual fields cannot be guide steps.`,
     );
    }
   });

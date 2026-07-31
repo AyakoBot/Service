@@ -43,6 +43,7 @@ import threadDelete from './Events/ThreadDelete/index.js';
 import threadUpdate from './Events/ThreadUpdate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import TicketReminders from './Reminders/TicketReminders.js';
+import { BotProfilePart, botProfileImageTransform, botProfileVirtual } from './Util/botProfile.js';
 import { botTokenTransform } from './Util/botTokenTransform.js';
 import { presenceEmojiTransform } from './Util/presenceEmojiTransform.js';
 import { systemDisplayLabel } from './Util/systemLabel.js';
@@ -57,6 +58,11 @@ type Events =
  | GatewayDispatchEvents.ThreadDelete;
 type APILanguage = typeof en;
 type TicketTranslator = TranslatorType<APILanguage> & { base: BaseLang };
+type TicketVirtualColumns = {
+ profileNick: string | null;
+ profileAvatar: string | null;
+ profileBanner: string | null;
+};
 
 export enum TicketGroups {
  General = 'general',
@@ -195,7 +201,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  constructor(client: Client) {
   super(client);
 
-  this.pluginBotToken = process.env.TICKET_TOKEN;
+  this.pluginBotKey = 'TICKET_TOKEN';
 
   this.logger.setLevel(LogLevel.silly);
   assertSchemaValid(this.settingsSchema);
@@ -679,6 +685,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       ],
      },
      {
+      column: 'transcriptChannels',
+      editor: EditorType.Channels,
+      label: (t: TicketTranslator) => t.settings.fields.transcriptChannels(),
+      description: (t: TicketTranslator) => t.settings.descriptions.transcriptChannels(),
+      channelTypes: [ChannelType.GuildText],
+      arity: FieldArity.Multi,
+     },
+     {
       column: 'allowCreatorClose',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.allowCreatorClose(),
@@ -850,16 +864,16 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.dmEnabled(),
       description: (t: TicketTranslator) => t.settings.descriptions.dmEnabled(),
+      showIf: (row) => ({
+       ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
+       reason: en.settings.reasons.dmOnly,
+      }),
      },
      {
       column: 'dmInstantOpen',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.dmInstantOpen(),
       description: (t: TicketTranslator) => t.settings.descriptions.dmInstantOpen(),
-      showIf: (row) => ({
-       ok: Boolean(row.botToken),
-       reason: en.settings.reasons.customBotOnly,
-      }),
      },
     ],
     actions: [
@@ -902,14 +916,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.tagClaimer(),
       description: (t: TicketTranslator) => t.settings.descriptions.tagClaimer(),
-     },
-     {
-      column: 'transcriptChannels',
-      editor: EditorType.Channels,
-      label: (t: TicketTranslator) => t.settings.fields.transcriptChannels(),
-      description: (t: TicketTranslator) => t.settings.descriptions.transcriptChannels(),
-      channelTypes: [ChannelType.GuildText],
-      arity: FieldArity.Multi,
      },
     ],
    },
@@ -993,6 +999,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.BotIdentity,
     label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
+    description: (t: TicketTranslator) => t.settings.profileSharedNote(),
     emote: EmoteName.Lock,
     fields: [
      {
@@ -1050,6 +1057,40 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       showIf: (row) => ({
        ok: row.presenceType === PresenceActivityType.Custom,
        reason: en.settings.reasons.customStatusOnly,
+      }),
+     },
+     {
+      column: 'profileNick',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.profileNick(),
+      description: (t: TicketTranslator) => t.settings.descriptions.profileNick(),
+      arity: FieldArity.Single,
+      virtual: botProfileVirtual(BotProfilePart.Nick),
+     },
+     {
+      column: 'profileAvatar',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.profileAvatar(),
+      description: (t: TicketTranslator) => t.settings.descriptions.profileAvatar(),
+      arity: FieldArity.Single,
+      transform: botProfileImageTransform,
+      virtual: botProfileVirtual(BotProfilePart.Avatar),
+      showIf: (row) => ({
+       ok: Boolean(row.botToken),
+       reason: en.settings.reasons.customBotOnly,
+      }),
+     },
+     {
+      column: 'profileBanner',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.profileBanner(),
+      description: (t: TicketTranslator) => t.settings.descriptions.profileBanner(),
+      arity: FieldArity.Single,
+      transform: botProfileImageTransform,
+      virtual: botProfileVirtual(BotProfilePart.Banner),
+      showIf: (row) => ({
+       ok: Boolean(row.botToken),
+       reason: en.settings.reasons.customBotOnly,
       }),
      },
     ],
@@ -1166,7 +1207,10 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
   ],
- } satisfies SettingsSchemaDef<TicketSetting, TicketTranslator> as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<
+  TicketSetting & TicketVirtualColumns,
+  TicketTranslator
+ > as unknown as SettingsSchemaDef;
 
  snippetsSchema = {
   table: 'snippets',

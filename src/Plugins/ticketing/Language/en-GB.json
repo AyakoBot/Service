@@ -230,6 +230,8 @@
   "inviteBotNoToken": "No custom bot is set for this system yet. Add a bot token first.",
   "inviteBotText": "Invite the custom bot using the button below.",
   "presenceEmojiNotFound": "No emoji `:{{name}}:` in this server. Use a Unicode emoji, or a custom emoji from this server.",
+  "profileSharedNote": "This profile belongs to the bot that runs this system, not to the system itself. Systems sharing that bot share these values; a system with its own bot token has its own separate profile.",
+  "profileWriteFailed": "Discord rejected the profile change. Check the value is valid (nicknames are capped at 32 characters) and that the bot may change its nickname here.",
   "groups": {
    "general": "General",
    "channels": "Channels",
@@ -289,7 +291,10 @@
    "allowTakeClaim": "Allow take-claim",
    "staffTierRoles": "Staff priority tiers",
    "ticketLimitTotal": "Total open ticket limit",
-   "ticketLimitKind": "Per-kind open ticket limit"
+   "ticketLimitKind": "Per-kind open ticket limit",
+   "profileNick": "Bot nickname",
+   "profileAvatar": "Bot avatar",
+   "profileBanner": "Bot banner"
   },
   "descriptions": {
    "panelEditor": "Create, edit, and post the \"Start Ticket\" panels for this server",
@@ -339,7 +344,10 @@
    "allowTakeClaim": "Let a higher-tier staff member take a ticket that another staff member has already claimed.",
    "staffTierRoles": "Staff priority tiers, lowest to highest. A member's tier is the highest of these roles they have.",
    "ticketLimitTotal": "The most open tickets one user can have on this whole server at the same time. Use 0 for no limit.",
-   "ticketLimitKind": "The most open tickets one user can have from this kind at the same time. Use 0 for no limit."
+   "ticketLimitKind": "The most open tickets one user can have from this kind at the same time. Use 0 for no limit.",
+   "profileNick": "The name this bot shows under in this server. Shared with every ticket system using the same bot. Leave empty to use its default name.",
+   "profileAvatar": "A Discord CDN image link for this bot's avatar in this server. Leave empty to remove it.",
+   "profileBanner": "A Discord CDN image link for this bot's banner in this server. Leave empty to remove it."
   },
   "durations": {
    "off": "Off",
@@ -415,7 +423,6 @@
   "ticketNotFound": "Couldn't find the Ticket, it might have been deleted already",
   "settingsNotFound": "Couldn't find the Ticket-System settings for this Server",
   "cantSendMessage": "Couldn't send Message into Channel",
-
   "create.cantCreateChannel": "Couldn't create a Ticket-Channel",
   "create.cantUpdatePermissions": "Couldn't update the Ticket-Channel permissions",
   "create.ticketExists": "A Ticket already exists for you",
@@ -431,7 +438,6 @@
   "create.cantGenerateMessageUrlNoDm": "Couldn't generate a Message URL because there is no DM Channel",
   "create.limitKindReached": "You already have {{count}} open Ticket(s) of this kind, which is the limit. Please use or close an existing one first",
   "create.limitTotalReached": "You already have {{count}} open Ticket(s) on this Server, which is the limit. Please use or close an existing one first",
-
   "claim.cantEditChannel": "Couldn't edit the Ticket-Channel",
   "claim.cantEditMessage": "Couldn't edit the initial Message in the Ticket-Channel",
   "claim.ticketAlreadyClosed": "The Ticket is already closed",
@@ -439,26 +445,21 @@
   "claim.creatorCannotClaim": "The Ticket creator can't claim their own Ticket",
   "claim.userNotStaff": "You are not in the Support-Team and can't claim Tickets",
   "claim.ticketNotOpened": "The Ticket is not opened and can't be claimed",
-
   "close.cantEditInitMessage": "Couldn't edit the initial Message in the Ticket-Channel",
   "close.cantEditChannel": "Couldn't edit the Ticket-Channel",
   "close.cantReplyMessage": "Couldn't send the closing Message in the Ticket-Channel",
   "close.ticketAlreadyClosed": "The Ticket is already closed",
   "close.userNotStaff": "You are not in the Support-Team and can't close Tickets",
-
   "unclaim.ticketNotClaimed": "The Ticket is not claimed and can't be unclaimed",
   "unclaim.userNotStaff": "You are not in the Support-Team and can't unclaim Tickets",
-
   "take.ticketNotClaimed": "The Ticket is not claimed, so there is nothing to take over",
   "take.alreadyClaimer": "You already claimed this Ticket",
   "take.notAllowed": "You can't take over this Ticket. You need a higher staff tier than the person who claimed it, and take-claim must be turned on.",
-
   "escalate.ticketClosed": "The Ticket is already closed and can't be escalated",
   "escalate.userNotStaff": "You are not in the Support-Team and can't escalate Tickets",
   "escalate.tierNotFound": "That escalation tier could not be found. It may have been removed.",
   "escalate.cannotReach": "You can't escalate this Ticket to that tier. You may only escalate to tiers you can claim.",
   "escalate.noTiers": "No escalation tiers are configured for this Ticket system yet.",
-
   "delete.cantUpdateMessage": "Couldn't update the Message in the Ticket-Channel",
   "delete.cantDeleteChannel": "Couldn't delete the Ticket-Channel",
   "delete.ticketNotFound": "Couldn't find the Ticket",

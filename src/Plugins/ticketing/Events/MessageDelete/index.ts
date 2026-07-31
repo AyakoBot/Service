@@ -17,10 +17,7 @@ export default async function (
  if (staffTicket) {
   const staffSettings = (await staffTicket.getTicket()).settings;
   const api = await this.getAPI(staffSettings.guild, staffSettings.botToken);
-  const times = await this.client.cache.messages.getTimes(msg.id);
-  const cached = times.length
-   ? await this.client.cache.messages.getAt(Math.max(...times), msg.id)
-   : null;
+  const cached = await this.client.cache.messages.getLatest(msg.id);
   if (cached?.author_id === api.botId) return;
 
   staffTicket.messageDeleted(cached, true);

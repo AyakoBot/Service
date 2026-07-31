@@ -10,6 +10,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import guideActionState from '../../Util/guideActionState.js';
+import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 export interface RenderPageArgs {
  settingName: string;
@@ -40,6 +41,14 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
 
  const t = await this.t(cmd.guild_id);
  const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const displayRow = {
+  ...row,
+  ...(await resolveVirtualFields(group.fields, row, {
+   client: this.client,
+   plugin: resolved.plugin,
+   guildId: cmd.guild_id,
+  })),
+ };
  const emotes = this.client.emojis.for(api);
  const actionState = schema.guide
   ? await guideActionState.call(this, {
@@ -54,7 +63,7 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
   schema,
   group,
   rowId,
-  row,
+  row: displayRow,
   hideUnavail,
   actionState,
   t,

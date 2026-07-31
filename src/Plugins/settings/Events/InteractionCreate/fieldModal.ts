@@ -5,6 +5,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { buildFieldModal } from '../../Util/buildFieldModal.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 export default async function (
  this: SettingsPlugin,
@@ -25,12 +26,21 @@ export default async function (
  });
  if (!row) return;
 
+ const displayRow = {
+  ...row,
+  ...(await resolveVirtualFields([field], row, {
+   client: this.client,
+   plugin: resolved.plugin,
+   guildId: cmd.guild_id,
+  })),
+ };
+
  const modal = buildFieldModal(
   id.settingName,
   id.rowId,
   id.groupId,
   field,
-  row,
+  displayRow,
   Boolean(id.hideUnavail),
   id.guideFlags,
   id.guideSection,

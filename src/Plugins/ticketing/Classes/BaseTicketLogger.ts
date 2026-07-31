@@ -37,7 +37,7 @@ import {
  TicketContextType,
 } from '../Util/transcriptContext.js';
 
-import { BaseTicketLoggerErrors } from './Enums.js';
+import { BaseTicketLoggerErrors, TicketThreadPrefix } from './Enums.js';
 
 type Translator = Awaited<ReturnType<TicketPlugin['t']>>;
 
@@ -535,7 +535,9 @@ export default abstract class BaseTicketLogger {
   );
   if (!existingThreads) return this.createLogThread(threadOrChannelId);
 
-  const forumThreads = existingThreads.find((t) => t.name === `log-${ticket.id}`);
+  const forumThreads = existingThreads.find(
+   (t) => t.name === `${TicketThreadPrefix.Log}${ticket.id}`,
+  );
   if (!forumThreads) return this.createLogThread(threadOrChannelId);
 
   return forumThreads;
@@ -566,7 +568,12 @@ export default abstract class BaseTicketLogger {
      : []),
    ]);
 
-  return this.createNamedThread(channelId, `log-${ticket.id}`, ChannelType.PublicThread, payload);
+  return this.createNamedThread(
+   channelId,
+   `${TicketThreadPrefix.Log}${ticket.id}`,
+   ChannelType.PublicThread,
+   payload,
+  );
  }
 
  buildReplyPrefixContainer(label: string, prefixes: string[]) {
@@ -810,11 +817,11 @@ export default abstract class BaseTicketLogger {
 
   const ticket = await this.getTicket();
   const t = await this.plugin.t(guildId);
-  const messages = await this.client.cache.messages.getAll(guildId, channelId);
+  const messages = await this.client.cache.messages.getAllLatest(guildId, channelId);
 
   const staffThreadId = await this.getStaffThreadId();
   const staffMessages = staffThreadId
-   ? await this.client.cache.messages.getAll(guildId, staffThreadId)
+   ? await this.client.cache.messages.getAllLatest(guildId, staffThreadId)
    : [];
 
   const tagged = [

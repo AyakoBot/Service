@@ -1132,10 +1132,7 @@ export default class BaseTicket extends BaseTicketLogger {
  async propagateDelete(originalId: string) {
   const ticket = await this.getTicket();
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
-  const times = await this.client.cache.messages.getTimes(originalId);
-  const cached = times.length
-   ? await this.client.cache.messages.getAt(Math.max(...times), originalId)
-   : null;
+  const cached = await this.client.cache.messages.getLatest(originalId);
 
   if (cached && cached.author_id === api.botId) return;
 

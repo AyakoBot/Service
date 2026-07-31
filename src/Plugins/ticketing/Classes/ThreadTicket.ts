@@ -1,6 +1,6 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
-import { TicketPlacementMode, TicketType } from '@ayako/database';
+import { TicketPlacementMode } from '@ayako/database';
 import type { TicketTier } from '@ayako/database';
 import { LogLevel, txtFileWriter, type RChannel, type RThread } from '@ayako/utility';
 import {
@@ -19,7 +19,7 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import { Colors } from '../../../Types/index.js';
-import TicketPlugin from '../Plugin.js';
+import type TicketPlugin from '../Plugin.js';
 import { threadArchiveMinutes } from '../Util/threadArchiveDuration.js';
 
 import BaseTicket, { SurfaceState } from './BaseTicket.js';
@@ -33,23 +33,6 @@ export default class ThreadTicket extends ChannelTicket {
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
   super(client, ticketId, plugin);
   this.channelTicket = new ChannelTicket(client, ticketId, plugin);
- }
-
- static async findTicketByThreadChannelId(client: Client, channelId: string) {
-  const entry = await client.db.client.ticket.findFirst({
-   where: { dm: channelId },
-   include: { settings: true },
-  });
-  if (!entry) return null;
-
-  const ticketPlugin = client.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
-  if (!ticketPlugin) throw new Error('TicketPlugin not found');
-
-  if (entry.settings.type !== TicketType.Thread) {
-   throw new Error('Ticket found, but it is not a ThreadTicket');
-  }
-
-  return new ThreadTicket(client, String(entry.id), ticketPlugin);
  }
 
  async deleteChannel() {

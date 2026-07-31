@@ -62,6 +62,7 @@ export const globalSchemaTranslator = (
     showIf: f.showIf,
     validate: f.validate,
     transform: f.transform,
+    virtual: f.virtual,
    })),
   })),
   guide: def.guide

@@ -4,9 +4,11 @@ import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { isUnset } from '../../Util/isUnset.js';
+import persistFieldValue from '../../Util/persistFieldValue.js';
+import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 import { followUpWarning } from './followUpWarning.js';
-import { reRender } from './navigator.js';
+import { notifyRowChange, reRender } from './navigator.js';
 
 export default async function (
  this: SettingsPlugin,
@@ -27,7 +29,16 @@ export default async function (
  });
  if (!row) return;
 
- const next = !row[field.column];
+ const displayRow = {
+  ...row,
+  ...(await resolveVirtualFields([field], row, {
+   client: this.client,
+   plugin: resolved.plugin,
+   guildId: cmd.guild_id,
+  })),
+ };
+
+ const next = !displayRow[field.column];
 
  if (field.headerToggle && next) {
   const missing = schema.groups
@@ -72,10 +83,27 @@ export default async function (
   persisted = result.value;
  }
 
- await this.tableClient(resolved.schema.table).updateMany({
-  where: { id: id.rowId, guild: cmd.guild_id },
-  data: { [field.column]: persisted },
+ const written = await persistFieldValue.call(this, {
+  field,
+  value: persisted,
+  row,
+  table: resolved.schema.table,
+  rowId: id.rowId,
+  guildId: cmd.guild_id,
+  owner: resolved.plugin,
  });
 
+ if (!written.ok) {
+  const t = await this.t(cmd.guild_id);
+  await reRender.call(this, cmd, id);
+  await followUpWarning.call(
+   this,
+   cmd,
+   t.navigator.validationFailed({ field: field.label, reason: written.reason ?? '' }),
+  );
+  return;
+ }
+
  await reRender.call(this, cmd, id);
+ await notifyRowChange.call(this, resolved, cmd.guild_id, id.rowId);
 }

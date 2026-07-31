@@ -8,9 +8,10 @@ import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsField } from '../../SettingsSchema.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import persistFieldValue from '../../Util/persistFieldValue.js';
 
 import { followUpWarning } from './followUpWarning.js';
-import { reRender } from './navigator.js';
+import { notifyRowChange, reRender } from './navigator.js';
 
 const readValue = (field: SettingsField, raw: string | undefined): unknown => {
  if (field.secret) return raw === undefined || raw === '' ? undefined : raw;
@@ -111,10 +112,27 @@ export default async function (
   persisted = result.value;
  }
 
- await this.tableClient(resolved.schema.table).updateMany({
-  where: { id: id.rowId, guild: cmd.guild_id },
-  data: { [field.column]: persisted },
+ const written = await persistFieldValue.call(this, {
+  field,
+  value: persisted,
+  row,
+  table: resolved.schema.table,
+  rowId: id.rowId,
+  guildId: cmd.guild_id,
+  owner: resolved.plugin,
  });
 
+ if (!written.ok) {
+  const t = await this.t(cmd.guild_id);
+  await reRender.call(this, cmd, id);
+  await followUpWarning.call(
+   this,
+   cmd,
+   t.navigator.validationFailed({ field: field.label, reason: written.reason ?? '' }),
+  );
+  return;
+ }
+
  await reRender.call(this, cmd, id);
+ await notifyRowChange.call(this, resolved, cmd.guild_id, id.rowId);
 }
