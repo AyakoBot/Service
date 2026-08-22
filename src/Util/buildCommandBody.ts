@@ -28,6 +28,8 @@ const buildSettingsCommand = (plugins: Client['plugins']) => {
   });
  });
 
+ if (!byCategory.size) return null;
+
  byCategory.forEach((subcommands, category) => {
   const group = new SlashCommandSubcommandGroupBuilder()
    .setName(category)
@@ -51,7 +53,9 @@ const buildCommandBody = function (
 
  const standalone = selected.flatMap((plugin) => plugin.getCommands().commands);
 
- return [buildSettingsCommand(selected), ...standalone].map((command) => command.toJSON());
+ return [buildSettingsCommand(selected), ...standalone]
+  .filter((command) => command !== null)
+  .map((command) => command.toJSON());
 };
 
 export default buildCommandBody;

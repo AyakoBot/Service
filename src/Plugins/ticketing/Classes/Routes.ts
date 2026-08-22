@@ -5,7 +5,6 @@ export enum TicketRoute {
  Claim = 'tickets/claim',
  Unclaim = 'tickets/unclaim',
  Take = 'tickets/take',
- UserInfo = 'info/user',
  Escalate = 'tickets/escalate',
  EscalateTo = 'tickets/escalateTo',
  Close = 'tickets/close',

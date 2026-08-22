@@ -123,74 +123,36 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
 
  eventHandlers = {
   MESSAGE_DELETE: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.channel_id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    messageDelete.call(this, data);
   },
   MESSAGE_UPDATE: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.author?.id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    messageUpdate.call(this, data);
   },
   MESSAGE_CREATE: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.author.id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
-
    if (!this.isEnabled()) return;
 
    messageCreate.call(this, data);
   },
   INTERACTION_CREATE: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.user?.id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
   },
   THREAD_UPDATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    threadUpdate.call(this, data);
   },
   CHANNEL_DELETE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    channelDelete.call(this, data);
   },
   THREAD_DELETE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    threadDelete.call(this, data);

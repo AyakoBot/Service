@@ -4,6 +4,7 @@ import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
+import { TokenBreaker } from '../Util/tokenBreaker.js';
 
 import type Plugin from './abstracts/Plugin.js';
 import type { BaseLanguage } from './abstracts/Plugin.js';
@@ -17,6 +18,7 @@ export default class Client {
  isDev = process.argv.includes('--dev');
 
  cache = new Cache(0, 1, true);
+ tokenBreaker = new TokenBreaker(this.cache);
  logger: typeof Logger = Logger;
 
  private api = new API(
@@ -29,8 +31,9 @@ export default class Client {
  db: Database;
  user: APIApplication | null = null;
 
- debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405', '1518697272525979648', '1499475512911859763'];
+ debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405', '1518697272525979648', '1499475512911859763', '1468552297473904777'];
  debugUsers = ['318453143476371456', '564052925828038658', '669915074458025984', '1463063234343862437'];
+ cutoverFeatures = ['Ticketing', 'Info'];
 
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;

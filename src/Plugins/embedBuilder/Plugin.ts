@@ -54,25 +54,11 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
 
  eventHandlers = {
   INTERACTION_CREATE: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.user?.id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
   },
   MESSAGE_CREATE: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.author.id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
    if (!this.isEnabled()) return;
 
    messageCreate.call(this, data);
