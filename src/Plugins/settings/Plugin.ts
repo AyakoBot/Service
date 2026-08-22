@@ -6,6 +6,7 @@ import type Client from '../../Classes/Client.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import type { ResolvedSchema, SettingsDelegate } from './SettingsSchema.js';
+import cutoverGate from './Util/cutoverGate.js';
 
 type Events = GatewayDispatchEvents.InteractionCreate;
 type APILanguage = typeof en;
@@ -29,13 +30,7 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
 
  eventHandlers = {
   [GatewayDispatchEvents.InteractionCreate]: (data) => {
-   if (
-    !data.guild_id
-     ? !this.client.debugUsers.includes(data.user?.id || '')
-     : !this.client.debugGuilds.includes(data.guild_id || '')
-   ) {
-    return; // TODO: remove
-   }
+   if (!cutoverGate.call(this, data)) return; // TODO: remove
 
    interactionCreate.call(this, data);
   },
