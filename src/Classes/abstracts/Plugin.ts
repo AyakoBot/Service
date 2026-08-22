@@ -16,7 +16,9 @@ import merge from 'lodash.merge';
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
-import { checkToken, TokenCheckResult } from '../../Util/tokenCheck.js';
+import { isBotPresent } from '../../Util/botPresence.js';
+import { gateToken, TokenGate } from '../../Util/tokenBreaker.js';
+import { checkToken } from '../../Util/tokenCheck.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
 import type Client from '../Client.js';
 
@@ -78,7 +80,7 @@ export default abstract class Plugin<
  settingsSchema?: SettingsSchemaDef;
  logger = new ScopedLogger();
 
- protected pluginBotToken?: string;
+ protected pluginBotKey?: string;
  private pluginApiCache: Map<string, API> = new Map();
  private overrideApiCache: Map<string, { cipher: string; api: API }> = new Map();
 
@@ -94,7 +96,8 @@ export default abstract class Plugin<
   this.client = client;
  }
 
- getPluginBotToken = (): string | undefined => this.pluginBotToken;
+ getPluginBotToken = (): string | undefined =>
+  (this.pluginBotKey ? process.env[this.pluginBotKey] : undefined);
 
  invalidateGuildAPI = (guildId: string) => {
   this.overrideApiCache.delete(guildId);
@@ -115,15 +118,17 @@ export default abstract class Plugin<
 
    if (token) {
     const api = new API(token, this.logger, this.client.cache, guildId);
-    const status = await checkToken(api, guildId);
+    const gate = await gateToken(this.client.tokenBreaker, guildId, api.botId, Date.now(), () =>
+     checkToken(api, guildId),
+    );
 
-    if (status === TokenCheckResult.OK) {
+    if (gate === TokenGate.Use) {
      this.overrideApiCache.set(guildId, { cipher: overrideCipher, api });
      return api;
     }
 
     this.overrideApiCache.delete(guildId);
-    if (status === TokenCheckResult.Invalid) {
+    if (gate === TokenGate.Invalid) {
      this.invalidateGuildAPI(guildId);
      await this.invalidateToken?.(overrideCipher);
     }
@@ -133,25 +138,16 @@ export default abstract class Plugin<
   const globalApi = await this.client.getCustomAPI(guildId);
   if (globalApi) return globalApi;
 
-  const token = this.getPluginBotToken();
-  if (token) {
-   const cached = this.pluginApiCache.get(guildId);
-   if (cached) return cached;
-
-   const api = new API(token, this.logger, this.client.cache, guildId);
-   const status = await checkToken(api, guildId);
-
-   if (status === TokenCheckResult.OK) {
-    this.pluginApiCache.set(guildId, api);
-    return api;
+  if (this.pluginBotKey && (await isBotPresent(this.client.cache, guildId, this.pluginBotKey))) {
+   let api = this.pluginApiCache.get(guildId);
+   if (!api) {
+    const token = this.getPluginBotToken();
+    if (token) {
+     api = new API(token, this.logger, this.client.cache, guildId);
+     this.pluginApiCache.set(guildId, api);
+    }
    }
-
-   if (status === TokenCheckResult.Invalid) {
-    this.nonFatalError(
-     new Error(`${this.name} plugin bot token failed validation`),
-     `${this.name} getAPI plugin token`,
-    );
-   }
+   if (api) return api;
   }
 
   return this.client.getBaseAPI(guildId);

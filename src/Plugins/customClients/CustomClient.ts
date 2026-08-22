@@ -3,7 +3,8 @@ import type { CustomClient as CustomClientRow } from '@ayako/database';
 
 import type Client from '../../Classes/Client.js';
 import type { UpdateData } from '../../Types/prisma.js';
-import { checkToken, TokenCheckResult } from '../../Util/tokenCheck.js';
+import { gateToken, TokenGate } from '../../Util/tokenBreaker.js';
+import { checkToken } from '../../Util/tokenCheck.js';
 
 import CustomClientsPlugin from './Plugin.js';
 
@@ -63,14 +64,16 @@ export default class CustomClient {
   if (!entry || !entry.token) return null;
 
   const api = new API(entry.token, this.plugin.logger, this.client.cache, guildId);
-  const status = await checkToken(api, guildId);
+  const gate = await gateToken(this.client.tokenBreaker, guildId, api.botId, Date.now(), () =>
+   checkToken(api, guildId),
+  );
 
-  if (status === TokenCheckResult.OK) {
+  if (gate === TokenGate.Use) {
    this.apiCache.set(guildId, api);
    return api;
   }
 
-  if (status === TokenCheckResult.Invalid) {
+  if (gate === TokenGate.Invalid) {
    this.apiCache.delete(guildId);
    await this.client.db.client.customClient.update({
     where: { guildId },

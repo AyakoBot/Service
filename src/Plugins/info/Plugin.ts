@@ -80,7 +80,7 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
  constructor(client: Client) {
   super(client);
 
-  this.pluginBotToken = process.env.INFO_TOKEN;
+  this.pluginBotKey = 'INFO_TOKEN';
  }
 
  getCommands = () => ({

@@ -4,6 +4,7 @@ import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
+import { TokenBreaker } from '../Util/tokenBreaker.js';
 
 import type Plugin from './abstracts/Plugin.js';
 import type { BaseLanguage } from './abstracts/Plugin.js';
@@ -17,6 +18,7 @@ export default class Client {
  isDev = process.argv.includes('--dev');
 
  cache = new Cache(0, 1, true);
+ tokenBreaker = new TokenBreaker(this.cache);
  logger: typeof Logger = Logger;
 
  private api = new API(

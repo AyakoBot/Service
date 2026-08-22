@@ -145,7 +145,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
  constructor(client: Client) {
   super(client);
 
-  this.pluginBotToken = process.env.WELCOME_TOKEN;
+  this.pluginBotKey = 'WELCOME_TOKEN';
   this.logger.setLevel(LogLevel.silly);
 
   assertSchemaValid(this.settingsSchema);
