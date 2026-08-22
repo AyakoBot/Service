@@ -25,6 +25,7 @@ import constants from '../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../Types/index.js';
 import fetchMessages from '../../../Util/fetchMessages.js';
+import { InfoRoute } from '../../info/Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
 import {
  cloneMessageIntoContainer,
@@ -797,7 +798,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const buttons: ButtonBuilder[] = [
    new ButtonBuilder()
     .setStyle(ButtonStyle.Secondary)
-    .setCustomId(this.plugin.getRoute(TicketRoute.UserInfo, ticket.user))
+    .setCustomId(this.plugin.getRoute(InfoRoute.User, ticket.user))
     .setLabel(t.userInfo()),
   ];
 

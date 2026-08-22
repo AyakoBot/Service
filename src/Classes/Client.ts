@@ -31,7 +31,7 @@ export default class Client {
 
  debugGuilds = ['298954459172700181', '669893888856817665', '672546390915940405', '1518697272525979648', '1499475512911859763', '1468552297473904777'];
  debugUsers = ['318453143476371456', '564052925828038658', '669915074458025984', '1463063234343862437'];
- cutoverFeatures = ['Ticketing'];
+ cutoverFeatures = ['Ticketing', 'Info'];
 
  sendMessageCache: SendMessageCache;
  jobCache: typeof JobCache.prototype;

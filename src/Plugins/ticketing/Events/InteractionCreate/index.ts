@@ -47,7 +47,6 @@ import take from './take.js';
 import { tierDel, tierManageOpen, tierMove, tierPage } from './tierManage.js';
 import { tierAdd, tierEdit, tierSave } from './tierModal.js';
 import unclaim from './unclaim.js';
-import userInfo from './userInfo.js';
 
 export default async function (
  this: TicketPlugin,
@@ -102,10 +101,6 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
   }
   case TicketRoute.Take: {
    take.call(this, cmd, args);
-   break;
-  }
-  case TicketRoute.UserInfo: {
-   userInfo.call(this, cmd, args);
    break;
   }
   case TicketRoute.Escalate: {

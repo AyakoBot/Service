@@ -63,7 +63,14 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
   [GatewayDispatchEvents.InteractionCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.InteractionCreate>,
   ) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (
+    !this.client.cutoverFeatures.includes(this.name) &&
+    (!data.guild_id
+     ? !this.client.debugUsers.includes(data.user?.id || '')
+     : !this.client.debugGuilds.includes(data.guild_id))
+   ) {
+    return; // TODO: remove
+   }
 
    if (!this.isEnabled()) return;
    InteractionCreate.call(this, data);
