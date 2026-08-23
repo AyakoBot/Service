@@ -12,6 +12,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import { commandMentions } from '../../../../Util/commandMention.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
+import type { ResolvedSchema } from '../../SettingsSchema.js';
 import { buildGuidePage } from '../../Util/buildGuidePage.js';
 import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
@@ -142,6 +143,19 @@ export const openFromCommand = async function (
   cmd,
   respond: RespondMode.Reply,
  });
+};
+
+export const notifyRowChange = async function (
+ this: SettingsPlugin,
+ resolved: ResolvedSchema,
+ guildId: string,
+ rowId: string,
+) {
+ if (!resolved.schema.onChange) return;
+
+ await resolved.schema
+  .onChange({ client: this.client, plugin: resolved.plugin, guildId, rowId })
+  .catch((error: Error) => resolved.plugin.nonFatalError(error, 'settings.onChange'));
 };
 
 export const reRender = async function (
