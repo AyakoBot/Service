@@ -1,4 +1,3 @@
-import type { RUser } from '@ayako/utility';
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import type {
  APIApplicationCommandInteraction,
@@ -11,7 +10,7 @@ import type InfoPlugin from '../../Plugin.js';
 import { badgeList, hasNitroIndicator } from '../../Util/badges.js';
 import { getHide, respond, respondError } from '../../Util/respond.js';
 
-const memberScanCap = 3000;
+const scanPage = 2000;
 
 export default async function (
  this: InfoPlugin,
@@ -27,27 +26,47 @@ export default async function (
  const api = await this.getAPI(cmd.guild_id);
  const emotes = this.client.emojis.for(api);
 
- const members = await this.client.cache.members.getAll(cmd.guild_id);
- const users = (
-  await Promise.all(
-   members.slice(0, memberScanCap).map((member) => this.client.cache.users.get(member.user_id)),
-  )
- ).filter((user): user is RUser => Boolean(user));
+ const counts = new Map<bigint, number>(badgeList.map((badge) => [badge.flag, 0]));
+ let nitroCount = 0;
+ let scanned = 0;
+ let cursor = '0';
 
- if (!users.length) {
+ do {
+  const [next, fields] = (await this.client.cache.cacheDb.call(
+   'HSCAN',
+   this.client.cache.members.keystore(cmd.guild_id),
+   cursor,
+   'COUNT',
+   scanPage,
+   'NOVALUES',
+  )) as [string, string[]];
+  cursor = next;
+
+  const users = await Promise.all(
+   fields.map((field) => this.client.cache.users.get(field.slice(field.lastIndexOf(':') + 1))),
+  );
+
+  for (const user of users) {
+   if (!user) continue;
+
+   scanned += 1;
+   const flags = BigInt(user.public_flags ?? user.flags ?? 0);
+   for (const badge of badgeList) {
+    if ((flags & badge.flag) !== badge.flag) continue;
+    counts.set(badge.flag, (counts.get(badge.flag) ?? 0) + 1);
+   }
+
+   if (!user.bot && hasNitroIndicator(user)) nitroCount += 1;
+  }
+ } while (cursor !== '0');
+
+ if (!scanned) {
   respondError.call(this, cmd, t.badges.none());
   return;
  }
 
- const counts = badgeList.map((badge) => ({
-  badge,
-  count: users.filter(
-   (user) => (BigInt(user.public_flags ?? user.flags ?? 0) & badge.flag) === badge.flag,
-  ).length,
- }));
- const nitroCount = users.filter((user) => !user.bot && hasNitroIndicator(user)).length;
-
- const lines = counts
+ const lines = badgeList
+  .map((badge) => ({ badge, count: counts.get(badge.flag) ?? 0 }))
   .filter(({ count }) => count > 0)
   .map(
    ({ badge, count }) =>
@@ -63,7 +82,7 @@ export default async function (
    [
     `## ${textEmote(emotes.badge)} ${t.badges.title()}`,
     lines.length ? lines.join('\n') : t.badges.none(),
-    `-# ${t.badges.scanned({ count: String(users.length) })}`,
+    `-# ${t.badges.scanned({ count: String(scanned) })}`,
    ].join('\n'),
   ),
  );

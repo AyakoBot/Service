@@ -174,7 +174,7 @@
  },
  "badges": {
   "title": "Badges in this Server",
-  "scanned": "Based on {{count}} cached members",
+  "scanned": "Based on {{count}} cached users",
   "none": "No badge data available."
  },
  "servers": {
