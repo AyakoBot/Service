@@ -24,6 +24,7 @@ const { default: pluginEmbedBuilder } = await import('./Plugins/embedBuilder/Plu
 const { default: pluginComponentBuilder } = await import('./Plugins/componentBuilder/Plugin.js');
 const { default: pluginInfo } = await import('./Plugins/info/Plugin.js');
 const { default: pluginWelcome } = await import('./Plugins/welcome/Plugin.js');
+const { default: syncCustomBotCommands } = await import('./Util/syncCustomBotCommands.js');
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');
@@ -73,6 +74,10 @@ client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
 logger.log('[Startup] Syncing application emojis');
 await client.emojis.init();
 logger.log('[Startup] Application emojis synced');
+
+logger.log('[Startup] Syncing custom bot commands');
+await syncCustomBotCommands.call(client);
+logger.log('[Startup] Custom bot commands synced');
 
 process.on('SIGINT', () => {
  logger.log('[Shutdown] Received SIGINT signal');

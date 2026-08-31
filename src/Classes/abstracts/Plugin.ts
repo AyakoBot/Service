@@ -87,6 +87,8 @@ export default abstract class Plugin<
  invalidateToken?: (cipher: string) => Promise<void>;
 
  getEmojiSyncTokens?: () => Promise<string[]>;
+ customBotsAreGlobal?: boolean;
+ getCustomBotTargets?: () => Promise<Array<{ token: string; guildId: string }>>;
 
  onEmojiSyncTokenInvalid?: (token: string) => Promise<void>;
 
