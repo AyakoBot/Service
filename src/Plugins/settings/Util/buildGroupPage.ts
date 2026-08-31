@@ -16,6 +16,7 @@ import type { SettingsField, SettingsGroup, SettingsSchema } from '../SettingsSc
 import { guideProgress, type GuideActionState } from './buildGuidePage.js';
 import { encodeSettingsId, SettingsAction } from './customId.js';
 import { isUnset } from './isUnset.js';
+import { clampDescription } from './renderField.js';
 import { renderInlineField } from './renderInlineField.js';
 import { buttonEmoji, textEmote } from './settingsEmotes.js';
 
@@ -230,7 +231,7 @@ export const buildGroupPage = ({
      label: groupHasUnsetRequired(g, row) ? `${g.label} ${t.navigator.incomplete()}` : g.label,
      value: g.id,
      default: g.id === group.id,
-     description: g.description,
+     description: g.description ? clampDescription(g.description) : undefined,
      emoji: buttonEmoji(g.emote ? emotes.get(g.emote) : emotes.settings),
     })),
    );

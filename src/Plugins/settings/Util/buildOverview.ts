@@ -12,12 +12,15 @@ import type { SettingsSchema } from '../SettingsSchema.js';
 import { encodeSettingsId, SettingsAction } from './customId.js';
 import { buttonEmoji } from './settingsEmotes.js';
 
+const overviewRowLimit = 8;
+
 export interface OverviewOptions {
  title: string;
  description?: string;
  createLabel: string;
  editLabel: string;
  emptyText: string;
+ overflowText: (count: string) => string;
  settingName: string;
  schema: SettingsSchema;
  rows: Record<string, unknown>[];
@@ -30,6 +33,7 @@ export const buildOverview = ({
  createLabel,
  editLabel,
  emptyText,
+ overflowText,
  settingName,
  schema,
  rows,
@@ -54,7 +58,7 @@ export const buildOverview = ({
  if (rows.length === 0) {
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(emptyText));
  } else {
-  rows.slice(0, 20).forEach((row) => {
+  rows.slice(0, overviewRowLimit).forEach((row) => {
    const section = new SectionBuilder().addTextDisplayComponents(
     new TextDisplayBuilder().setContent(schema.rowLabel(row)),
    );
@@ -82,9 +86,11 @@ export const buildOverview = ({
    container.addSectionComponents(section);
   });
 
-  if (rows.length > 20) {
+  if (rows.length > overviewRowLimit) {
    container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(`-# ${rows.length - 20} more not shown`),
+    new TextDisplayBuilder().setContent(
+     `-# ${overflowText(String(rows.length - overviewRowLimit))}`,
+    ),
    );
   }
  }

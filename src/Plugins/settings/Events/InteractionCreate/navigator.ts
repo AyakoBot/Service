@@ -76,6 +76,7 @@ const sendOverview = async function (
   createLabel: t.navigator.create(),
   editLabel: t.base.t.Edit(),
   emptyText: t.navigator.overviewEmpty(),
+  overflowText: (count: string) => t.navigator.overviewMore({ count }),
   settingName,
   schema,
   rows,

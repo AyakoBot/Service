@@ -17,7 +17,8 @@
   "activateBlocked": "Set {{fields}} before you turn this on.",
   "deleteTitle": "Delete \"{{label}}\"?",
   "deleteWarning": "This permanently removes this configuration. It can't be undone.",
-  "confirmDelete": "Delete permanently"
+  "confirmDelete": "Delete permanently",
+  "overviewMore": "{{count}} more not shown"
  },
  "guide": {
   "progress": "{{done}}/{{total}} required steps done",

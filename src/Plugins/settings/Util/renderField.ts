@@ -22,7 +22,7 @@ import { ComponentKind, resolveComponentKind } from './resolveComponentKind.js';
 
 const labelDescLimit = 100;
 
-const clampDescription = (description: string): string => {
+export const clampDescription = (description: string): string => {
  if (description.length <= labelDescLimit) return description;
  return `${description.slice(0, labelDescLimit - 1)}…`;
 };
