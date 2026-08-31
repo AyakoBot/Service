@@ -14,8 +14,17 @@ import {
  SatelliteChannel,
  type RedisWrapperInterface,
 } from '@ayako/utility';
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { ChannelType, PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
+import {
+ ContextMenuCommandBuilder,
+ SlashCommandBuilder,
+ SlashCommandSubcommandBuilder,
+} from '@discordjs/builders';
+import {
+ ApplicationCommandType,
+ ChannelType,
+ PermissionFlagsBits,
+ type GatewayDispatchEvents,
+} from '@discordjs/core';
 
 import Plugin, {
  idSelector,
@@ -33,7 +42,7 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
-import { tagCommandName, TicketRoute } from './Classes/Routes.js';
+import { forceOpenCommandName, tagCommandName, TicketRoute } from './Classes/Routes.js';
 import channelDelete from './Events/ChannelDelete/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
@@ -76,6 +85,8 @@ export enum TicketGroups {
  Inactivity = 'inactivity',
  RemindTargets = 'remindTargets',
  BotIdentity = 'botIdentity',
+ Presence = 'presence',
+ Profile = 'profile',
  Escalation = 'escalation',
  Limits = 'limits',
 }
@@ -203,6 +214,23 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   });
  };
 
+ getCustomBotTargets = async (): Promise<Array<{ token: string; guildId: string }>> => {
+  const rows = await this.client.db.client.ticketSetting.findMany({
+   where: { botToken: { not: null } },
+   select: { botToken: true, guild: true },
+  });
+
+  return rows.flatMap((row) => {
+   if (!row.botToken) return [];
+
+   try {
+    return [{ token: decrypt(row.botToken), guildId: row.guild }];
+   } catch {
+    return [];
+   }
+  });
+ };
+
  getEmojiSyncTokens = async (): Promise<string[]> => {
   const rows = await this.client.db.client.ticketSetting.findMany({
    where: { botToken: { not: null } },
@@ -260,6 +288,9 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       .setRequired(false)
       .setAutocomplete(true),
     ),
+   new ContextMenuCommandBuilder()
+    .setName(forceOpenCommandName)
+    .setType(ApplicationCommandType.User),
   ],
   settings: [
    {
@@ -511,8 +542,10 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
        column: 'presenceText',
        label: (t: TicketTranslator) => t.settings.fields.presenceText(),
        showIf: (row) => ({
-        ok: Boolean(row.botToken),
-        reason: en.settings.reasons.customBotOnly,
+        ok: Boolean(row.botToken) && Boolean(row.presenceType),
+        reason: row.botToken
+         ? en.settings.reasons.presenceTypeUnset
+         : en.settings.reasons.customBotOnly,
        }),
       },
      ],
@@ -591,6 +624,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.General,
     label: (t: TicketTranslator) => t.settings.groups.general(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.general(),
     fields: [
      {
       column: 'active',
@@ -665,6 +699,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Channels,
     label: (t: TicketTranslator) => t.settings.groups.channels(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.channels(),
     emote: EmoteName.ChannelText,
     fields: [
      {
@@ -706,6 +741,10 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.archiveDuration(),
       description: (t: TicketTranslator) => t.settings.descriptions.archiveDuration(),
       arity: FieldArity.Single,
+      showIf: (row) => ({
+       ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
+       reason: en.settings.reasons.threadTypeOnly,
+      }),
       options: [
        {
         value: ThreadArchiveDuration.OneHour,
@@ -738,6 +777,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Staff,
     label: (t: TicketTranslator) => t.settings.groups.staff(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.staff(),
     emote: EmoteName.Member,
     fields: [
      {
@@ -770,16 +810,23 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.staffThreadsChannel(),
       description: (t: TicketTranslator) => t.settings.descriptions.staffThreadsChannel(),
       channelTypes: [ChannelType.GuildText],
-      showIf: (row) => ({
-       ok: Boolean(row.staffThreads),
-       reason: en.settings.reasons.staffThreadsOff,
-      }),
+      showIf: (row) => {
+       const threadType = [TicketType.Thread, TicketType.dmToThread].includes(row.type);
+
+       return {
+        ok: threadType && Boolean(row.staffThreads),
+        reason: threadType
+         ? en.settings.reasons.staffThreadsOff
+         : en.settings.reasons.threadTypeOnly,
+       };
+      },
      },
     ],
    },
    {
     id: TicketGroups.Notifications,
     label: (t: TicketTranslator) => t.settings.groups.notifications(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.notifications(),
     emote: EmoteName.Info,
     fields: [
      {
@@ -801,6 +848,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Dm,
     label: (t: TicketTranslator) => t.settings.groups.dm(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.dm(),
     emote: EmoteName.Message,
     showIf: (row) => ({
      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
@@ -819,6 +867,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Panel,
     label: (t: TicketTranslator) => t.settings.groups.panel(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.panel(),
     emote: EmoteName.Message,
     fields: [
      {
@@ -836,6 +885,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.dmInstantOpen(),
       description: (t: TicketTranslator) => t.settings.descriptions.dmInstantOpen(),
+      showIf: (row) => {
+       const dmType = [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type);
+
+       if (!dmType) return { ok: false, reason: en.settings.reasons.dmOnly };
+       if (!row.dmEnabled) return { ok: false, reason: en.settings.reasons.dmIntakeOff };
+
+       return { ok: Boolean(row.botToken), reason: en.settings.reasons.customBotOnly };
+      },
      },
     ],
     actions: [
@@ -850,6 +907,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Forum,
     label: (t: TicketTranslator) => t.settings.groups.forum(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.forum(),
     emote: EmoteName.ChannelForum,
     fields: [
      {
@@ -884,6 +942,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Reminders,
     label: (t: TicketTranslator) => t.settings.groups.reminders(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.reminders(),
     emote: EmoteName.Timer,
     fields: [
      {
@@ -919,6 +978,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Inactivity,
     label: (t: TicketTranslator) => t.settings.groups.inactivity(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.inactivity(),
     emote: EmoteName.Timer,
     fields: [
      {
@@ -940,6 +1000,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.RemindTargets,
     label: (t: TicketTranslator) => t.settings.groups.remindTargets(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.remindTargets(),
     emote: EmoteName.Member,
     fields: [
      {
@@ -961,7 +1022,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.BotIdentity,
     label: (t: TicketTranslator) => t.settings.groups.botIdentity(),
-    description: (t: TicketTranslator) => t.settings.profileSharedNote(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.botIdentity(),
     emote: EmoteName.Lock,
     fields: [
      {
@@ -973,6 +1034,30 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       secret: true,
       transform: botTokenTransform,
      },
+    ],
+    actions: [
+     {
+      customId: TicketRoute.InviteBot,
+      label: (t: TicketTranslator) => t.settings.inviteBotLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.inviteBot(),
+      buttonLabel: (t: TicketTranslator) => t.base.t.Invite(),
+      emote: EmoteName.Bot,
+     },
+     {
+      customId: TicketRoute.ClearBotToken,
+      label: (t: TicketTranslator) => t.settings.clearTokenLabel(),
+      description: (t: TicketTranslator) => t.settings.descriptions.clearToken(),
+      buttonLabel: (t: TicketTranslator) => t.base.t.Clear(),
+      emote: EmoteName.Trash,
+     },
+    ],
+   },
+   {
+    id: TicketGroups.Presence,
+    label: (t: TicketTranslator) => t.settings.groups.presence(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.presence(),
+    emote: EmoteName.Bot,
+    fields: [
      {
       column: 'presenceType',
       editor: EditorType.PresenceActivityType,
@@ -1008,7 +1093,12 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.String,
       label: (t: TicketTranslator) => t.settings.fields.presenceText(),
       description: (t: TicketTranslator) => t.settings.descriptions.presenceText(),
-      showIf: (row) => ({ ok: Boolean(row.botToken), reason: en.settings.reasons.customBotOnly }),
+      showIf: (row) => ({
+       ok: Boolean(row.botToken) && Boolean(row.presenceType),
+       reason: row.botToken
+        ? en.settings.reasons.presenceTypeUnset
+        : en.settings.reasons.customBotOnly,
+      }),
      },
      {
       column: 'presenceEmoji',
@@ -1017,10 +1107,20 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.presenceEmoji(),
       description: (t: TicketTranslator) => t.settings.descriptions.presenceEmoji(),
       showIf: (row) => ({
-       ok: row.presenceType === PresenceActivityType.Custom,
-       reason: en.settings.reasons.customStatusOnly,
+       ok: Boolean(row.botToken) && row.presenceType === PresenceActivityType.Custom,
+       reason: row.botToken
+        ? en.settings.reasons.customStatusOnly
+        : en.settings.reasons.customBotOnly,
       }),
      },
+    ],
+   },
+   {
+    id: TicketGroups.Profile,
+    label: (t: TicketTranslator) => t.settings.groups.profile(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.profile(),
+    emote: EmoteName.Image,
+    fields: [
      {
       column: 'profileNick',
       editor: EditorType.String,
@@ -1056,26 +1156,11 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       }),
      },
     ],
-    actions: [
-     {
-      customId: TicketRoute.InviteBot,
-      label: (t: TicketTranslator) => t.settings.inviteBotLabel(),
-      description: (t: TicketTranslator) => t.settings.descriptions.inviteBot(),
-      buttonLabel: (t: TicketTranslator) => t.base.t.Invite(),
-      emote: EmoteName.Bot,
-     },
-     {
-      customId: TicketRoute.ClearBotToken,
-      label: (t: TicketTranslator) => t.settings.clearTokenLabel(),
-      description: (t: TicketTranslator) => t.settings.descriptions.clearToken(),
-      buttonLabel: (t: TicketTranslator) => t.base.t.Clear(),
-      emote: EmoteName.Trash,
-     },
-    ],
    },
    {
     id: TicketGroups.Escalation,
     label: (t: TicketTranslator) => t.settings.groups.escalation(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.escalation(),
     emote: EmoteName.Tools,
     fields: [
      {
@@ -1119,6 +1204,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    {
     id: TicketGroups.Limits,
     label: (t: TicketTranslator) => t.settings.groups.limits(),
+    description: (t: TicketTranslator) => t.settings.groupDescriptions.limits(),
     emote: EmoteName.Member,
     fields: [
      {

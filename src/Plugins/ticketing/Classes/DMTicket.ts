@@ -17,6 +17,7 @@ import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
+import { settingsBotId } from '../Util/resolveDmBotApi.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 
 import type { SurfaceState } from './BaseTicket.js';
@@ -28,6 +29,9 @@ import DmToThreadTicket from './DmToThreadTicket.js';
 import { DMTicketErrors } from './Enums.js';
 import { TicketRoute } from './Routes.js';
 
+const intakeLookbackLimit = 10;
+const intakeLookbackMs = 60 * 60 * 1000;
+
 /* eslint-disable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any */
 type AbstractCtor<T = {}> = new (...args: any[]) => T;
 /* eslint-enable @typescript-eslint/no-empty-object-type, @typescript-eslint/no-explicit-any */
@@ -35,6 +39,68 @@ type AbstractCtor<T = {}> = new (...args: any[]) => T;
 // eslint-disable-next-line func-style, @typescript-eslint/naming-convention
 export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: TBase) {
  abstract class DMTicket extends Base {
+  async handleMissingDm(cmd?: APIMessageComponentInteraction): Promise<boolean> {
+   const ticket = await this.getTicket();
+   if (ticket.starterDm) return false;
+   if (await this.isClosed()) return false;
+
+   const t = await this.plugin.t(ticket.settings.guild);
+   const note = t.forceOpen.dmClosedNote();
+
+   const payload = new MessagePayload(this.client, {
+    origin: DMTicket.name,
+    reason: 'Reporting a failed ticket DM',
+   }).setContent(ticket.claimer ? `<@${ticket.claimer}> ${note}` : note);
+
+   if (ticket.claimer) payload.setAllowedMentionsUsers([ticket.claimer]);
+
+   await this.sendMessage(payload).catch((error: Error) =>
+    this.plugin.nonFatalError(error, 'handleMissingDm'),
+   );
+
+   if (cmd) {
+    await this.ackEphemeral(cmd, () => note).catch((error: Error) =>
+     this.plugin.nonFatalError(error, 'handleMissingDm'),
+    );
+   }
+
+   await this.autoClose({ reason: note, heading: t.forceOpen.closedUnreachable() }).catch(
+    (error: Error) => this.plugin.nonFatalError(error, 'handleMissingDm'),
+   );
+
+   return true;
+  }
+
+  async relayIntake(cmd?: APIMessageComponentInteraction): Promise<void> {
+   if (!cmd || cmd.guild_id) return;
+
+   const ticket = await this.getTicket();
+   if (!ticket.dm || cmd.channel.id !== ticket.dm) return;
+
+   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+   const fetched = await api.channels.getDirectMessages(
+    ticket.dm,
+    { before: cmd.message.id, limit: intakeLookbackLimit },
+    { origin: DMTicket.name, reason: 'Relaying the intake message into the ticket' },
+   );
+   if (!fetched || fetched instanceof RequestHandlerError) return;
+
+   const floor = Date.now() - intakeLookbackMs;
+   const intake: APIMessage[] = [];
+
+   for (const message of fetched) {
+    if (message.author.id !== ticket.user) break;
+    if (new Date(message.timestamp).getTime() < floor) break;
+
+    intake.unshift(message);
+   }
+
+   for (const message of intake) {
+    const rMsg = this.client.cache.messages.apiToR(message, '@me');
+    if (rMsg) await this.messageSent(rMsg);
+   }
+  }
+
   static async findTicketByDMChannelId(
    client: Client,
    channelId: string,
@@ -92,6 +158,9 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   }
 
   async relayToDm(payload: MessagePayload): Promise<void> {
+   const ticket = await this.getTicket();
+   if (ticket.opener) return;
+
    await this.forwardToDmChannel(payload).catch(() => null);
   }
 
@@ -257,21 +326,33 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
 
+   const guild = await this.client.cache.guilds.get(ticket.settings.guild);
+   const buttons = new ActionRowBuilder().setComponents(
+    new ButtonBuilder()
+     .setCustomId(this.plugin.getRoute(TicketRoute.Leave))
+     .setLabel(t.leaveTicket())
+     .setStyle(ButtonStyle.Danger),
+   );
+
+   if (ticket.opener) {
+    buttons.addComponents(
+     new ButtonBuilder()
+      .setCustomId(this.plugin.getRoute(TicketRoute.ForceBlock))
+      .setLabel(t.forceOpen.blockButton())
+      .setStyle(ButtonStyle.Secondary),
+    );
+   }
+
    return new MessagePayload(this.client, {
     origin: DMTicket.name,
     reason: 'Sending initial message in DM for ticket',
    })
-    .setContent(t.startChatting())
-    .setComponents([
-     new ActionRowBuilder()
-      .setComponents(
-       new ButtonBuilder()
-        .setCustomId(this.plugin.getRoute(TicketRoute.Leave))
-        .setLabel(t.leaveTicket())
-        .setStyle(ButtonStyle.Danger),
-      )
-      .toJSON() as APIMessageTopLevelComponent,
-    ]);
+    .setContent(
+     ticket.opener
+      ? t.forceOpen.openedDm({ guild: guild?.name || ticket.settings.guild })
+      : t.startChatting(),
+    )
+    .setComponents([buttons.toJSON() as APIMessageTopLevelComponent]);
   }
 
   async setStarterDm(msgId: string | null): Promise<Ticket & { settings: TicketSetting }> {
@@ -333,7 +414,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   }
 
   async *create(
-   dbOpts: { settingsId: string; userId: string },
+   dbOpts: { settingsId: string; userId: string; opener?: string },
    createOpts: {
     cmd?: APIMessageComponentInteraction;
     userId: string;
@@ -345,25 +426,28 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
 
    await this.enforceCreateLimits(dbOpts.settingsId, dbOpts.userId);
 
-   const hasDmTicket = await this.hasDmTicket(dbOpts.userId);
+   const settings = await this.getTicketSettings(dbOpts.settingsId);
+   const botId = settingsBotId.call(this.plugin, settings);
+   const hasDmTicket = await this.hasDmTicket(dbOpts.userId, botId);
    if (hasDmTicket) throw new Error(DMTicketErrors.create_UserAlreadyInDmTicket);
 
    const create = super.create(dbOpts, createOpts);
    return yield* create;
   }
 
-  async hasDmTicket(userId: string) {
+  async hasDmTicket(userId: string, botId: string | null) {
    this.plugin.logger.logLocation(LogLevel.silly);
 
-   const existing = await this.client.db.client.ticket.findFirst({
+   const existing = await this.client.db.client.ticket.findMany({
     where: {
      user: userId,
      dm: { not: null },
      state: { in: [TicketState.opened, TicketState.claimed] },
     },
+    include: { settings: true },
    });
 
-   return !!existing;
+   return existing.some((entry) => settingsBotId.call(this.plugin, entry.settings) === botId);
   }
 
   async createChannel(api: API, username: string, settingsId: string) {
@@ -372,12 +456,14 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    await this.setDmChannel();
    const superCreate = await super.createChannel(api, username, settingsId);
 
-   const initDmPayload = await this.getInitDmPayload();
-   const dmMessage = await this.forwardToDmChannel(initDmPayload);
-   if (!dmMessage) throw new Error(DMTicketErrors.cantSendMessage);
+   const dmMessage = await this.forwardToDmChannel(await this.getInitDmPayload()).catch(
+    () => null,
+   );
 
-   await this.setStarterDm(dmMessage.id);
-   await this.pinMessage(dmMessage);
+   if (dmMessage) {
+    await this.setStarterDm(dmMessage.id);
+    await this.pinMessage(dmMessage);
+   }
 
    return superCreate;
   }
@@ -425,15 +511,21 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    return superClose;
   }
 
-  async autoClose({ reason }: { reason?: string }): Promise<this> {
-   await super.autoClose({ reason });
+  async autoClose({ reason, heading }: { reason?: string; heading?: string }): Promise<this> {
+   await super
+    .autoClose({ reason, heading })
+    .catch((error: Error) => this.plugin.nonFatalError(error, 'autoClose'));
 
-   await this.forwardToDmChannel(await this.getCloseDmPayload(reason)).catch((error: Error) =>
-    this.plugin.nonFatalError(error, 'autoClose'),
-   );
+   const ticket = await this.getTicket();
 
-   const initialMessage = await this.editInitialMessage(this.getLeaveUpdatePayload());
-   if (initialMessage) await this.unpinMessage();
+   if (ticket.starterDm) {
+    await this.forwardToDmChannel(await this.getCloseDmPayload(reason)).catch((error: Error) =>
+     this.plugin.nonFatalError(error, 'autoClose'),
+    );
+
+    const initialMessage = await this.editInitialMessage(this.getLeaveUpdatePayload());
+    if (initialMessage) await this.unpinMessage();
+   }
 
    await this.setDbEntryLeft();
 

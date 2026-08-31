@@ -422,7 +422,7 @@ export default class BaseTicket extends BaseTicketLogger {
   return newTicket;
  }
 
- async autoClose({ reason }: { reason?: string }) {
+ async autoClose({ reason, heading }: { reason?: string; heading?: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) return this;
 
@@ -430,13 +430,13 @@ export default class BaseTicket extends BaseTicketLogger {
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   await this.markClosed(api.botId, reason);
 
-  await this.postAutoCloseNotice(api.botId, reason);
+  await this.postAutoCloseNotice(api.botId, reason, heading);
   await this.refreshSurface();
 
   return this;
  }
 
- async postAutoCloseNotice(actorId: string, reason?: string) {
+ async postAutoCloseNotice(actorId: string, reason?: string, heading?: string) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
@@ -448,7 +448,7 @@ export default class BaseTicket extends BaseTicketLogger {
     new SectionBuilder()
      .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-       `${constants.formatters.getEmote(emotes.lock)} ${t.hasClosedThreadInactive()}`,
+       `${constants.formatters.getEmote(emotes.lock)} ${heading ?? t.hasClosedThreadInactive()}`,
       ),
      )
      .setButtonAccessory(
@@ -502,7 +502,7 @@ export default class BaseTicket extends BaseTicketLogger {
  }
 
  async *create(
-  dbOpts: { settingsId: string; userId: string },
+  dbOpts: { settingsId: string; userId: string; opener?: string },
   createOpts: { userId: string; roleIds: string[] },
  ) {
   this.plugin.logger.logLocation(LogLevel.silly);
@@ -513,14 +513,16 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const settings = await this.getTicketSettings(dbOpts.settingsId);
 
-  if (settings.denyUsers.includes(createOpts.userId)) {
-   throw new Error(BaseTicketErrors.create_UserDenied);
-  }
-  if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
-   throw new Error(BaseTicketErrors.create_RoleDenied);
+  if (!dbOpts.opener) {
+   if (settings.denyUsers.includes(createOpts.userId)) {
+    throw new Error(BaseTicketErrors.create_UserDenied);
+   }
+   if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
+    throw new Error(BaseTicketErrors.create_RoleDenied);
+   }
   }
 
-  const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId);
+  const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId, dbOpts.opener);
   this.dbTicket = preparedEntry;
   this.plugin.logger.logLocation(LogLevel.debug);
 
@@ -576,6 +578,7 @@ export default class BaseTicket extends BaseTicketLogger {
  async prepareEntry(
   userId: string,
   settingsId: string,
+  opener?: string,
  ): Promise<Prisma.TicketGetPayload<{ include: { settings: true } }>> {
   this.id = String(Date.now());
   this.plugin.logger.logLocation(LogLevel.silly);
@@ -587,6 +590,7 @@ export default class BaseTicket extends BaseTicketLogger {
     user: userId,
     settings: { connect: { id: settingsId } },
     state: TicketState.prepared,
+    opener,
    },
    include: { settings: true },
   });
@@ -606,8 +610,16 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const preparedTicket = await this.getTicket();
 
+  const { opener } = preparedTicket;
+
   this.dbTicket = await this.db.ticket.update({
-   data: { channel: dbOpts.channelId, user: dbOpts.userId, state: TicketState.opened },
+   data: {
+    channel: dbOpts.channelId,
+    user: dbOpts.userId,
+    state: opener ? TicketState.claimed : TicketState.opened,
+    claimer: opener ?? null,
+    claimedAt: opener ? new Date() : null,
+   },
    where: { id: preparedTicket.id },
    include: { settings: true },
   });

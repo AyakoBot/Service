@@ -43,7 +43,7 @@
  "startTicket": "Start Ticket",
  "setupCreated": "Created a new Ticket-System. Run `/settings` to configure it before enabling it.",
  "notActive": "Ticketing-System not found or not disabled",
- "startChatting": "Please tell us why you opened this Ticket. The Ticket Team will reply soon.\n-# From now on, every message you send goes to the Support Team until the Ticket is closed or you leave it.",
+ "startChatting": "Your Ticket is open. The Ticket Team will reply soon.\n-# From now on, every message you send goes to the Support Team until the Ticket is closed or you leave it.",
  "openDMs": "Failed to send DM. Please open your DMs in the Servers Privacy Settings.",
  "cantCreateChannel": "Couldn't create a Ticket-Channel",
  "closeTicket": "Close Ticket",
@@ -213,7 +213,12 @@
   "limitReached": "You already have an open ticket of this kind. Use the button below to go back to it.",
   "goToExisting": "Go to my ticket",
   "existingHere": "Here is your open ticket:",
-  "existingGone": "That ticket is no longer open."
+  "existingGone": "That ticket is no longer open.",
+  "unreachableNotice": "You have an open ticket in a conversation this bot can no longer reach. Close it below to free up your slot.",
+  "unreachableButton": "Close stuck ticket",
+  "unreachableClosed": "That ticket is closed. You can open a new one below.",
+  "unreachableReason": "Closed by the user: the ticket DM was no longer reachable",
+  "unreachableCloseFailed": "That ticket could not be closed. Please try again."
  },
  "settings": {
   "systemLabel": "Ticket system {{id}}",
@@ -226,11 +231,10 @@
   "dmOff": "DM intake off",
   "inviteBotLabel": "Invite the bot",
   "clearTokenLabel": "Clear the bot token",
-  "botTokenCleared": "Custom bot token removed. This system now runs under the main bot.",
+  "botTokenCleared": "Custom bot token removed. This system now runs under the default bot.",
   "inviteBotNoToken": "No custom bot is set for this system yet. Add a bot token first.",
   "inviteBotText": "Invite the custom bot using the button below.",
   "presenceEmojiNotFound": "No emoji `:{{name}}:` in this server. Use a Unicode emoji, or a custom emoji from this server.",
-  "profileSharedNote": "This profile belongs to the bot that runs this system, not to the system itself. Systems sharing that bot share these values; a system with its own bot token has its own separate profile.",
   "profileWriteFailed": "Discord rejected the profile change. Check the value is valid (nicknames are capped at 32 characters) and that the bot may change its nickname here.",
   "groups": {
    "general": "General",
@@ -246,7 +250,8 @@
    "botIdentity": "Bot Identity",
    "presence": "Presence",
    "escalation": "Escalation Tiers",
-   "limits": "Limits & Take-Claim"
+   "limits": "Limits & Take-Claim",
+   "profile": "Profile"
   },
   "fields": {
    "type": "Ticket type",
@@ -335,7 +340,7 @@
    "remindUsers": "Users pinged by the unclaimed reminder. If empty, the mention users are used, then staff users.",
    "botToken": "Run this ticket system under a different bot. The token is stored safely and never shown again.",
    "inviteBot": "Generate an invite link for the configured custom bot",
-   "clearToken": "Remove the custom bot so this system falls back to the main bot",
+   "clearToken": "Remove the custom bot so this system falls back to the default bot",
    "presenceType": "What the custom bot's status shows - Playing, Listening to, Watching, Competing in, or a free-form Custom status.",
    "presenceText": "The status text. For Custom it is the status itself; otherwise it follows the verb, e.g. \"Listening to <text>\".",
    "presenceEmoji": "Emoji shown before a Custom status. Use a standard emoji or a custom one in <:name:id> form.",
@@ -368,7 +373,9 @@
    "forumModeOnly": "Unified-forum placement only",
    "takeClaimOff": "Enable take-claim first",
    "customBotOnly": "Set a custom bot token first",
-   "customStatusOnly": "Custom status type only"
+   "customStatusOnly": "Custom status type only",
+   "presenceTypeUnset": "Set an activity type first",
+   "dmIntakeOff": "Enable DM intake first"
   },
   "optionDescriptions": {
    "channel": "Each ticket gets its own text channel under a category",
@@ -386,7 +393,28 @@
    "watching": "Watching",
    "competing": "Competing",
    "custom": "Custom status"
-  }
+  },
+  "groupDescriptions": {
+   "general": "Name this system, pick how tickets open, and choose where transcripts go.",
+   "channels": "Where tickets are created, archived, and logged.",
+   "staff": "Who handles tickets. Staff can claim, reply, and close.",
+   "notifications": "Ping your team the moment a ticket opens.",
+   "dm": "Relay each ticket into its creator's DMs; staff reply with a prefix.",
+   "panel": "Build the panel members press, and let them open tickets by DM.",
+   "forum": "Tag ticket posts as they are created, claimed, and closed.",
+   "reminders": "Nudge staff about unclaimed or stale tickets.",
+   "inactivity": "Warn ticket creators and auto-close tickets that go quiet.",
+   "remindTargets": "Who gets pinged when a ticket goes unclaimed.",
+   "botIdentity": "Run this system under your own bot instead of the main one.",
+   "presence": "Set the status your bot displays while it runs this system.",
+   "profile": "Set the nickname, avatar, and banner your bot wears here.",
+   "escalation": "Set up the tiers a ticket can move up to, and where those tickets go.",
+   "limits": "Cap open tickets and control who can open or take them."
+  },
+  "clearTokenWarn": "Remove the custom bot from this system? It will run under the default bot instead.",
+  "clearTokenWarnTickets": "Remove the custom bot from this system? {{count}} open DM ticket(s) live in DMs with that bot and will become unreachable. Their users can close them by messaging the new bot.",
+  "clearTokenConfirmLabel": "Remove bot",
+  "clearTokenCancelled": "Cancelled. The custom bot is unchanged."
  },
  "logs": {
   "logExplain": "Start your message with a reply prefix to send it to the ticket creator. Messages with no prefix stay staff-only.",
@@ -465,5 +493,29 @@
   "delete.ticketNotFound": "Couldn't find the Ticket",
   "delete.onlyStaffCanDelete": "Only the Support-Team can delete Tickets",
   "delete.ticketNotClosed": "The Ticket is not closed and can't be deleted"
+ },
+ "forceOpen": {
+  "dmClosedNote": "The Ticket DM could not be delivered. This member has their DMs closed or does not accept DMs from this bot.",
+  "blockedNote": "This member has blocked new Tickets from this server for the time being. Repeated attempts could get the app reported for unsolicited DMs.",
+  "openedDm": "The team of {{guild}} opened a Ticket with you. Anything you send here goes to them until the Ticket is closed or you leave it.",
+  "blockButton": "Leave and block for 24h",
+  "blockWarning": "Are you sure? This server team will not be able to reach you here for 24 hours. They will be told you blocked new Tickets, though not for how long. This may affect how your case is handled.",
+  "blockConfirm": "Leave and block",
+  "blocked": "You left the Ticket. This server cannot open new Tickets with you for 24 hours.",
+  "pickSystem": "Pick the Ticket System to open with {{user}}",
+  "opened": "Ticket opened with {{user}} => {{url}}",
+  "noSystems": "No Ticket System here can force-open a Ticket. What is blocking each one:",
+  "targetInvalid": "Tickets can only be force-opened with a member of this server, and not with a bot or yourself.",
+  "targetHasTicket": "{{user}} already has an open Ticket with this System bot. Close it before opening another.",
+  "blockCancelled": "Nothing changed. You are still in the Ticket.",
+  "blockNotActive": "the System is disabled",
+  "blockNotDmType": "not a DM-based System, so it never DMs the member",
+  "blockNoCustomBot": "no custom bot token set, which force-opening requires",
+  "blockNotStaff": "you are not staff in it",
+  "blockBotUnavailable": "its custom bot is not reachable in this server",
+  "openedBy": "{{user}} opened this Ticket and is assigned to it.",
+  "closedUnreachable": "Closed the Ticket because the member could not be reached",
+  "closedByMember": "The member left the Ticket",
+  "blockedStaffNote": "They also blocked new Tickets from this server for the time being."
  }
 }

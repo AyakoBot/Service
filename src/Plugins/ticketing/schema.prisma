@@ -101,6 +101,9 @@ model Ticket {
  claimer   String?   @db.VarChar
  claimedAt DateTime?
 
+ // Staff member who force-opened this Ticket; null means the creator opened it themselves
+ opener String? @db.VarChar
+
  priority      TicketPriority @default(None)
  lastMessageAt DateTime?
  remindAt      Decimal?       @db.Decimal
@@ -114,6 +117,16 @@ model Ticket {
  @@index(dm)
  @@index(channel)
  @@index(tierId)
+ @@index(opener)
+}
+
+model TicketForceBlock {
+ guild String   @db.VarChar
+ user  String   @db.VarChar
+ until DateTime
+
+ @@id([guild, user])
+ @@index(until)
 }
 
 model TicketPanel {

@@ -20,7 +20,7 @@ const clearIntakeComponents = async function (
    this,
    [{ guildId, kinds: [kind.settings] }],
    cmd.application_id,
-  )) ?? this.client.getBaseAPI();
+  )) ?? this.getPluginAPI();
 
  const cleared = await api.channels.editDirectMessage(
   cmd.channel.id,

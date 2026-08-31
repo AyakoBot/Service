@@ -6,12 +6,18 @@ import type TicketPlugin from '../Plugin.js';
 
 import type { CandidateGuild } from './getSharedTicketGuilds.js';
 
-const safeBotId = (cipher: string): string | null => {
+export const safeBotId = (cipher: string): string | null => {
  try {
   return getBotIdFromToken(decrypt(cipher));
  } catch {
   return null;
  }
+};
+
+export const settingsBotId = function (this: TicketPlugin, settings: TicketSetting): string | null {
+ if (!settings.botToken) return this.getPluginAPI().botId;
+
+ return safeBotId(settings.botToken);
 };
 
 export const findDmBotSetting = (
@@ -35,7 +41,7 @@ export const resolveDmBotApi = async function (
  candidates: CandidateGuild[],
  recipientId: string | undefined,
 ): Promise<API | null> {
- if (!recipientId) return this.client.getBaseAPI();
+ if (!recipientId) return this.getPluginAPI();
 
  const match = findDmBotSetting(candidates, recipientId);
  if (match?.setting.botToken) return this.getAPI(match.guildId, match.setting.botToken);

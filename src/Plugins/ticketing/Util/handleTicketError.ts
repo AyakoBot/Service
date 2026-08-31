@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import type {
  APIMessageComponentInteraction,
  APIModalSubmitInteraction,
@@ -35,6 +36,17 @@ export const getErrorMessage = function (
  t: Awaited<ReturnType<TicketPlugin['t']>>,
  error: Error,
 ) {
+ const message = getBaseMessage.call(this, t, error);
+ const detail = getErrorDetail(error);
+
+ return detail ? `${message} - ${detail}` : message;
+};
+
+const getBaseMessage = function (
+ this: Client,
+ t: Awaited<ReturnType<TicketPlugin['t']>>,
+ error: Error,
+) {
  const plugin = this.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;
 
  switch (error.message) {
@@ -60,4 +72,10 @@ export const getErrorMessage = function (
    return `${t.base.errors.unknownError()} - ${error.message}`;
   }
  }
+};
+
+const getErrorDetail = (error: Error) => {
+ if (!(error.cause instanceof RequestHandlerError)) return null;
+
+ return error.cause.errorMessage?.replace(/\s+/g, ' ').trim() || null;
 };

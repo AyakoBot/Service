@@ -35,6 +35,8 @@ export const buildGreetingPayload = async function (
  this: TicketPlugin,
  firstMessage: string,
  attachmentUrls: string[] = [],
+ stuckTicketId?: string,
+ prefix?: string,
 ) {
  const t = await this.t(undefined);
 
@@ -45,11 +47,29 @@ export const buildGreetingPayload = async function (
   .filter(Boolean)
   .join('\n');
 
- const description = quoted ? `${t.intake.greeting()}\n\n${quoted}` : t.intake.greeting();
+ const description = [
+  prefix,
+  t.intake.greeting(),
+  stuckTicketId ? t.intake.unreachableNotice() : undefined,
+  quoted,
+ ]
+  .filter(Boolean)
+  .join('\n\n');
 
- const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+ const row = new ActionRowBuilder<ButtonBuilder>();
+
+ if (stuckTicketId) {
+  row.addComponents(
+   new ButtonBuilder()
+    .setStyle(ButtonStyle.Danger)
+    .setCustomId(this.getRoute(TicketRoute.IntakeUnreachable, stuckTicketId))
+    .setLabel(t.intake.unreachableButton()),
+  );
+ }
+
+ row.addComponents(
   new ButtonBuilder()
-   .setStyle(ButtonStyle.Primary)
+   .setStyle(stuckTicketId ? ButtonStyle.Secondary : ButtonStyle.Primary)
    .setCustomId(this.getRoute(TicketRoute.IntakeOpen))
    .setLabel(t.intake.openButton()),
  );

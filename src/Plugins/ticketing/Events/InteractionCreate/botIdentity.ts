@@ -1,3 +1,4 @@
+import { TicketState } from '@ayako/database';
 import { decrypt, getBotIdFromToken } from '@ayako/utility';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import {
@@ -8,6 +9,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
 
@@ -24,6 +26,14 @@ const reply = function (
   .reply(cmd);
 };
 
+const update = function (this: TicketPlugin, cmd: APIMessageComponentInteraction, content: string) {
+ new MessagePayload(this.client, { origin: this.name, reason: 'Bot identity action' })
+  .setContent(content)
+  .setComponents([])
+  .setFlags(MessageFlags.Ephemeral)
+  .update(cmd);
+};
+
 export const clearBotToken = async function (
  this: TicketPlugin,
  cmd: APIMessageComponentInteraction,
@@ -33,6 +43,47 @@ export const clearBotToken = async function (
  if (!(await authorizeManage.call(this, cmd))) return;
 
  const [settingsId] = args;
+ if (!settingsId) return;
+
+ const t = await this.t(cmd.guild_id);
+
+ const stranded = await this.client.db.client.ticket.count({
+  where: {
+   settingsId,
+   dm: { not: null },
+   state: { in: [TicketState.opened, TicketState.claimed] },
+  },
+ });
+
+ const warning = stranded
+  ? t.settings.clearTokenWarnTickets({ count: String(stranded) })
+  : t.settings.clearTokenWarn();
+
+ const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+  new ButtonBuilder()
+   .setStyle(ButtonStyle.Danger)
+   .setLabel(t.settings.clearTokenConfirmLabel())
+   .setCustomId(this.getRoute(TicketRoute.ClearBotTokenConfirm, settingsId)),
+  new ButtonBuilder()
+   .setStyle(ButtonStyle.Secondary)
+   .setLabel(t.base.t.Cancel())
+   .setCustomId(this.getRoute(TicketRoute.ClearBotTokenCancel)),
+ );
+
+ reply.call(this, cmd, warning, [buttons.toJSON() as unknown as APIMessageTopLevelComponent]);
+};
+
+export const clearBotTokenConfirm = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+ args: string[],
+) {
+ if (!cmd.guild_id) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const [settingsId] = args;
+ if (!settingsId) return;
+
  const t = await this.t(cmd.guild_id);
 
  await this.client.db.client.ticketSetting.updateMany({
@@ -42,7 +93,17 @@ export const clearBotToken = async function (
  this.invalidateGuildAPI(cmd.guild_id);
  this.reconcileSatellites();
 
- reply.call(this, cmd, t.settings.botTokenCleared());
+ update.call(this, cmd, t.settings.botTokenCleared());
+};
+
+export const clearBotTokenCancel = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+) {
+ if (!cmd.guild_id) return;
+
+ const t = await this.t(cmd.guild_id);
+ update.call(this, cmd, t.settings.clearTokenCancelled());
 };
 
 export const inviteBot = async function (

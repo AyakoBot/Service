@@ -15,7 +15,12 @@ import { tagCommandName, TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 
 import autocomplete from './autocomplete.js';
-import { clearBotToken, inviteBot } from './botIdentity.js';
+import {
+ clearBotToken,
+ clearBotTokenCancel,
+ clearBotTokenConfirm,
+ inviteBot,
+} from './botIdentity.js';
 import claim from './claim.js';
 import close from './close.js';
 import closeReason from './closeReason.js';
@@ -23,10 +28,18 @@ import create from './create.js';
 import del from './delete.js';
 import escalate from './escalate.js';
 import escalateTo from './escalateTo.js';
+import {
+ forceBlock,
+ forceBlockCancel,
+ forceBlockConfirm,
+ forceOpenCommand,
+ forceOpenKind,
+} from './forceOpen.js';
 import intake from './intake.js';
 import intakeExisting from './intakeExisting.js';
 import { intakeKind } from './intakeKind.js';
 import { intakeServer } from './intakeServer.js';
+import intakeUnreachable from './intakeUnreachable.js';
 import keepOpen from './keepOpen.js';
 import leave from './leave.js';
 import { panelEditorOpen, panelPage, panelPost, panelRemove } from './panelEditor.js';
@@ -70,6 +83,10 @@ export default async function (
 }
 
 const command = async function (this: TicketPlugin, cmd: APIApplicationCommandInteraction) {
+ if (cmd.data.type === ApplicationCommandType.User) {
+  forceOpenCommand.call(this, cmd);
+  return;
+ }
  if (cmd.data.type !== ApplicationCommandType.ChatInput) return;
 
  switch (cmd.data.name) {
@@ -247,8 +264,32 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
    intakeExisting.call(this, cmd, args);
    break;
   }
+  case TicketRoute.IntakeUnreachable: {
+   intakeUnreachable.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.ForceBlock: {
+   forceBlock.call(this, cmd);
+   break;
+  }
+  case TicketRoute.ForceBlockConfirm: {
+   forceBlockConfirm.call(this, cmd);
+   break;
+  }
+  case TicketRoute.ForceBlockCancel: {
+   forceBlockCancel.call(this, cmd);
+   break;
+  }
   case TicketRoute.ClearBotToken: {
    clearBotToken.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.ClearBotTokenConfirm: {
+   clearBotTokenConfirm.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.ClearBotTokenCancel: {
+   clearBotTokenCancel.call(this, cmd);
    break;
   }
   case TicketRoute.InviteBot: {
@@ -280,6 +321,10 @@ const select = async function (this: TicketPlugin, cmd: APIMessageComponentInter
   }
   case TicketRoute.IntakeKind: {
    intakeKind.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.ForceOpenKind: {
+   forceOpenKind.call(this, cmd, args);
    break;
   }
 

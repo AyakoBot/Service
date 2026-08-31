@@ -1,4 +1,5 @@
 export const tagCommandName = 'tag';
+export const forceOpenCommandName = 'Open Ticket';
 
 export enum TicketRoute {
  Create = 'tickets/create',
@@ -55,10 +56,17 @@ export enum TicketRoute {
  PanelPick = 'tickets/panelPick',
 
  ClearBotToken = 'tickets/clearBotToken',
+ ClearBotTokenConfirm = 'tickets/clearBotTokenConfirm',
+ ClearBotTokenCancel = 'tickets/clearBotTokenCancel',
  InviteBot = 'tickets/inviteBot',
 
  IntakeOpen = 'tickets/intakeOpen',
  IntakeExisting = 'tickets/intakeExisting',
+ IntakeUnreachable = 'tickets/intakeUnreachable',
+ ForceOpenKind = 'tickets/forceOpenKind',
+ ForceBlock = 'tickets/forceBlock',
+ ForceBlockConfirm = 'tickets/forceBlockConfirm',
+ ForceBlockCancel = 'tickets/forceBlockCancel',
  IntakeServer = 'tickets/intakeServer',
  IntakeKind = 'tickets/intakeKind',
 }

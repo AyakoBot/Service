@@ -126,7 +126,7 @@ export default class ChannelTicket extends BaseTicket {
   return this;
  }
 
- async autoClose({ reason }: { reason?: string }) {
+ async autoClose({ reason, heading }: { reason?: string; heading?: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) return this;
 
@@ -142,7 +142,7 @@ export default class ChannelTicket extends BaseTicket {
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
 
-  await this.postAutoCloseNotice(api.botId, reason);
+  await this.postAutoCloseNotice(api.botId, reason, heading);
   await this.refreshSurface();
 
   return this;
@@ -436,6 +436,10 @@ export default class ChannelTicket extends BaseTicket {
 
    await this.createStaffThread(surfaceId);
 
+   if (await this.handleMissingDm(createOpts.cmd)) return this;
+
+   await this.announceOpener();
+
    const replyPayload = await this.getCreateReplyPayload(channel.id, surfaceId);
    if (createOpts.cmd) {
     await this.replyMessage(
@@ -447,10 +451,38 @@ export default class ChannelTicket extends BaseTicket {
     await this.relayToDm(replyPayload);
    }
 
+   await this.relayIntake(createOpts.cmd);
+
    return this;
   } finally {
    this.deletePreparedEntry();
   }
+ }
+
+ async relayIntake(_cmd?: APIMessageComponentInteraction): Promise<void> {
+  return undefined;
+ }
+
+ async handleMissingDm(_cmd?: APIMessageComponentInteraction): Promise<boolean> {
+  return false;
+ }
+
+ async announceOpener(): Promise<void> {
+  const ticket = await this.getTicket();
+  if (!ticket.opener) return;
+
+  const t = await this.plugin.t(ticket.settings.guild);
+
+  const payload = new MessagePayload(this.client, {
+   origin: ChannelTicket.name,
+   reason: 'Announcing who opened the ticket',
+  })
+   .setContent(t.forceOpen.openedBy({ user: `<@${ticket.opener}>` }))
+   .setAllowedMentionsUsers([ticket.opener]);
+
+  await this.sendMessage(payload).catch((error: Error) =>
+   this.plugin.nonFatalError(error, this.announceOpener.name),
+  );
  }
 
  async postInitialSurface(api: API, channel: RChannel | RThread): Promise<string> {
