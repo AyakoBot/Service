@@ -69,6 +69,17 @@ export default class CustomClientsPlugin extends Plugin<Events, APILanguage> {
   this.invalidateGuildAPI(guildId);
  };
 
+ customBotsAreGlobal = true;
+
+ getCustomBotTargets = async (): Promise<Array<{ token: string; guildId: string }>> => {
+  const rows = await this.client.db.client.customClient.findMany({
+   where: { token: { not: null } },
+   select: { token: true, guildId: true },
+  });
+
+  return rows.flatMap((row) => (row.token ? [{ token: row.token, guildId: row.guildId }] : []));
+ };
+
  getEmojiSyncTokens = async (): Promise<string[]> => {
   const rows = await this.client.db.client.customClient.findMany({
    where: { token: { not: null } },
