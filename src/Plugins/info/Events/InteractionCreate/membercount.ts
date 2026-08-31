@@ -33,5 +33,5 @@ export default async function (this: InfoPlugin, cmd: APIApplicationCommandInter
   ),
  );
 
- respond.call(this, cmd, [container], false);
+ respond.call(this, cmd, [container], true);
 }

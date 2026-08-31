@@ -102,6 +102,6 @@ export default async function (
   this,
   cmd,
   [imageContainer(emotes, t, kind, constants.formatters.user(user), globalUrl, serverUrl)],
-  getHide(sub, false),
+  getHide(sub),
  );
 }
