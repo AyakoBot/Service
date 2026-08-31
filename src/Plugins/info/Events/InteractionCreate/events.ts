@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import { ContainerBuilder, SeparatorBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import {
  GuildScheduledEventEntityType,
@@ -26,7 +27,16 @@ export default async function (
  const api = await this.getAPI(cmd.guild_id);
  const emotes = this.client.emojis.for(api);
 
- const events = await this.client.cache.events.getAll(cmd.guild_id);
+ const cached = await this.client.cache.events.getAll(cmd.guild_id);
+ const resolved = cached.length
+  ? cached
+  : await api.guilds.getScheduledEvents(
+     cmd.guild_id,
+     { with_user_count: true },
+     { origin: this.name, reason: 'Listing scheduled events' },
+    );
+
+ const events = resolved instanceof RequestHandlerError ? [] : resolved;
  if (!events.length) {
   respondError.call(this, cmd, t.events.none());
   return;

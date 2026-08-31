@@ -7,6 +7,7 @@ import {
  type APIApplicationCommandInteractionDataSubcommandOption,
 } from 'discord-api-types/v10';
 
+import pkg from '../../../../../package.json' with { type: 'json' };
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
 import formatDuration from '../../../../Util/formatDuration.js';
@@ -45,6 +46,15 @@ export default async function (
    ]
     .filter((entry): entry is string => entry !== null)
     .join('\n'),
+  ),
+ );
+
+ container.addTextDisplayComponents(
+  new TextDisplayBuilder().setContent(
+   t.bot.base({
+    base: api.botId === process.env.mainId ? ' ' : `(${t.bot.thisBase()}) `,
+    version: pkg.version,
+   }),
   ),
  );
 

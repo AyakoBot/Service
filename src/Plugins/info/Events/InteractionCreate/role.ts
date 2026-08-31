@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import type { RRole } from '@ayako/utility';
 import {
  ActionRowBuilder,
@@ -40,8 +41,16 @@ const identityLines = (emotes: EmoteSet, t: Translator, role: RRole): string[] =
   role.unicode_emoji ? line(emotes.emoji, t.role.unicodeEmoji(), role.unicode_emoji) : null,
  ].filter((entry): entry is string => entry !== null);
 
-const propertyLines = (emotes: EmoteSet, t: Translator, role: RRole): string[] =>
+const propertyLines = (
+ emotes: EmoteSet,
+ t: Translator,
+ role: RRole,
+ memberCount?: number,
+): string[] =>
  [
+  memberCount === undefined
+   ? null
+   : line(emotes.member, t.base.t.Members(), `\`${memberCount}\``),
   line(emotes.up, t.role.position(), `\`${role.position}\``),
   line(emotes.info, t.role.hoisted(), yesNo(emotes, t.base, role.hoist)),
   line(emotes.message, t.base.t.Mentionable(), yesNo(emotes, t.base, role.mentionable)),
@@ -82,6 +91,12 @@ export default async function (
   return;
  }
 
+ const counts = await api.guilds.getRoleMemberCounts(cmd.guild_id, {
+  origin: this.name,
+  reason: 'Showing role member count',
+ });
+ const memberCount = counts instanceof RequestHandlerError ? undefined : counts[role.id];
+
  const container = new ContainerBuilder().setAccentColor(role.color || Colors.Info);
 
  const header = `## ${textEmote(emotes.role)} ${t.role.title()}\n${identityLines(
@@ -103,7 +118,7 @@ export default async function (
   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
  );
  container.addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(propertyLines(emotes, t, role).join('\n')),
+  new TextDisplayBuilder().setContent(propertyLines(emotes, t, role, memberCount).join('\n')),
  );
 
  container.addActionRowComponents(

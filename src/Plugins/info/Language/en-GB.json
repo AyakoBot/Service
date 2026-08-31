@@ -170,7 +170,9 @@
   "memory": "Memory",
   "cpu": "CPU",
   "os": "Operating System",
-  "nodeVersion": "Node.js"
+  "nodeVersion": "Node.js",
+  "base": "Ayako {{base}}is a Discord Bot written in [TypeScript](https://www.typescriptlang.org/) using the [Discord.JS Library](https://discord.js.org/)\n\nIt is currently in Version {{version}} and is under the shepherding of <@318453143476371456> (@Lars_und_so), a Full-Time IT Specialist for Application Development from Germany.\n View [Credits](https://ayakobot.com/credits) for more Information",
+  "thisBase": "The Base of this Bot"
  },
  "badges": {
   "title": "Badges in this Server",

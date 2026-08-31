@@ -1,3 +1,4 @@
+import { RequestHandlerError } from '@ayako/api';
 import { ContainerBuilder, SeparatorBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import {
  SeparatorSpacingSize,
@@ -71,7 +72,15 @@ export default async function (
  const api = await this.getAPI(cmd.guild_id);
  const emotes = this.client.emojis.for(api);
 
- const rules = await this.client.cache.automods.getAll(cmd.guild_id);
+ const cached = await this.client.cache.automods.getAll(cmd.guild_id);
+ const resolved = cached.length
+  ? cached
+  : await api.guilds.getAutoModerationRules(cmd.guild_id, {
+     origin: this.name,
+     reason: 'Listing auto-moderation rules',
+    });
+
+ const rules = resolved instanceof RequestHandlerError ? [] : resolved;
  if (!rules.length) {
   respondError.call(this, cmd, t.automod.none());
   return;
