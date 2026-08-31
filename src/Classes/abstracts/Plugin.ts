@@ -99,6 +99,11 @@ export default abstract class Plugin<
  getPluginBotToken = (): string | undefined =>
   (this.pluginBotKey ? process.env[this.pluginBotKey] : undefined);
 
+ getPluginAPI = (guildId = 'plugin-bot-api'): API => {
+  const token = this.getPluginBotToken();
+  return token ? this.client.getTokenAPI(token, guildId) : this.client.getBaseAPI(guildId);
+ };
+
  invalidateGuildAPI = (guildId: string) => {
   this.overrideApiCache.delete(guildId);
   this.pluginApiCache.delete(guildId);
