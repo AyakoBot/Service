@@ -19,6 +19,15 @@ import {
 } from 'discord-api-types/v10';
 
 import {
+ accessorySegment,
+ childrenOf,
+ countComponents,
+ countText,
+ flattenTree,
+ type WipNode,
+ type WipTree,
+} from '../../../Util/componentBudget.js';
+import {
  customIdLimit,
  galleryItemLimit,
  NodeKind,
@@ -28,12 +37,8 @@ import {
  wipComponentLimit,
 } from '../Classes/Nodes.js';
 
-export type WipTree = APIMessageTopLevelComponent[];
-export type WipNode =
- | APIMessageTopLevelComponent
- | APIComponentInContainer
- | APIComponentInMessageActionRow
- | APIThumbnailComponent;
+export { countComponents, countText, flattenTree, accessorySegment };
+export type { WipNode, WipTree };
 
 export enum BuilderErrorCode {
  TooManyComponents = 'tooManyComponents',
@@ -60,7 +65,6 @@ export type TreeResult =
  | { ok: false; error: BuilderErrorCode };
 
 export const customIdPrefix = 'c-';
-export const accessorySegment = 'a';
 export const textContentLimit = 4000;
 export const wipTextBudget = 3500;
 export const buttonLabelLimit = 80;
@@ -104,17 +108,6 @@ export const kindOf = (node: WipNode): NodeKind | null => {
    return NodeKind.Separator;
   case ComponentType.Container:
    return NodeKind.Container;
-  default:
-   return null;
- }
-};
-
-const childrenOf = (node: WipNode): WipNode[] | null => {
- switch (node.type) {
-  case ComponentType.ActionRow:
-  case ComponentType.Container:
-  case ComponentType.Section:
-   return node.components;
   default:
    return null;
  }
@@ -175,37 +168,6 @@ export const isInteractive = (
    return false;
  }
 };
-
-export const flattenTree = (
- tree: WipTree,
-): { path: string; node: WipNode; depth: number }[] => {
- const out: { path: string; node: WipNode; depth: number }[] = [];
-
- const walk = (node: WipNode, path: string, depth: number) => {
-  if (!node || typeof node !== 'object') return;
-  out.push({ path, node, depth });
-  childrenOf(node)?.forEach((child, index) => walk(child, `${path}.${index}`, depth + 1));
-  if (node.type === ComponentType.Section && node.accessory) {
-   walk(node.accessory, `${path}.${accessorySegment}`, depth + 1);
-  }
- };
-
- tree.forEach((node, index) => walk(node, String(index), 0));
- return out;
-};
-
-export const countComponents = (tree: WipTree): number =>
- flattenTree(tree).length;
-
-export const countText = (tree: WipTree): number =>
- flattenTree(tree).reduce(
-  (total, entry) =>
-   total +
-   (entry.node.type === ComponentType.TextDisplay && typeof entry.node.content === 'string'
-    ? entry.node.content.length
-    : 0),
-  0,
- );
 
 export const collectCustomIds = (tree: WipTree, exceptPath?: string): string[] =>
  flattenTree(tree)
