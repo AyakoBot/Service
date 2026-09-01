@@ -4,7 +4,6 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 import type { DataBaseTables, FindManyArgs, TableName } from '../Types/prisma.js';
 
-import type { ModelDelegate } from './abstracts/DBEntry.js';
 import type { CacheOperationData } from './DatabaseCache.js';
 import { DatabaseCache } from './DatabaseCache.js';
 import type Metrics from './Metrics.js';
@@ -39,9 +38,9 @@ export default class Database {
   tableName: T,
   args: FindManyArgs<T>,
  ): Promise<DataBaseTables[T][]> => {
-  const delegate = (this.client as unknown as Record<string, unknown>)[
-   tableName
-  ] as ModelDelegate<T>;
+  const delegate = (this.client as unknown as Record<string, unknown>)[tableName] as {
+   findMany(args: FindManyArgs<T>): Promise<DataBaseTables[T][]>;
+  };
   return delegate.findMany(args);
  };
 
