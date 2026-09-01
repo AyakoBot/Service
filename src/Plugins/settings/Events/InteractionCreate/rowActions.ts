@@ -12,7 +12,7 @@ import { encodeSettingsId, SettingsAction, type SettingsId } from '../../Util/cu
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { buttonEmoji, textEmote } from '../../Util/settingsEmotes.js';
 
-import { reRender } from './navigator.js';
+import { notifyRowChange, reRender } from './navigator.js';
 
 export const confirmDelete = async function (
  this: SettingsPlugin,
@@ -138,6 +138,8 @@ export const del = async function (
    .reply(cmd);
   return;
  }
+
+ await notifyRowChange.call(this, resolved, cmd.guild_id, id.rowId);
 
  reRender.call(this, cmd, { ...id, rowId: undefined });
 };

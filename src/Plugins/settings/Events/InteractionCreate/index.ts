@@ -12,6 +12,7 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type { ExtractPayload } from '../../../../Types/gateway.js';
+import { settingsCommandName } from '../../../../Util/buildCommandBody.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { hasManageGuild } from '../../Util/authorizeSettings.js';
 import { parseSettingsId, SettingsAction, type SettingsId } from '../../Util/customId.js';
@@ -69,7 +70,7 @@ export default async function (
  switch (cmd.type) {
   case InteractionType.ApplicationCommand: {
    const command = cmd as APIApplicationCommandInteraction;
-   if (command.data.name !== 'settings') return;
+   if (command.data.name !== settingsCommandName) return;
    if (!(await authorize.call(this, command))) return;
    openFromCommand.call(this, command);
    break;

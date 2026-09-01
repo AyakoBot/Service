@@ -29,6 +29,7 @@ const textSingle = new Set<EditorType>([
  EditorType.String,
  EditorType.Number,
  EditorType.Duration,
+ EditorType.Message,
 ]);
 
 const secret = new Set<EditorType>([EditorType.Token, EditorType.BotToken]);

@@ -46,6 +46,9 @@ export enum EditorType {
  TicketPlacementMode = 'ticket-placement-mode',
  TicketTiers = 'ticket-tiers',
  PresenceActivityType = 'presence-activity-type',
+ RolePickerKind = 'role-picker-kind',
+ RolePickerLayout = 'role-picker-layout',
+ StickyRoleMode = 'sticky-role-mode',
 
  GuildId = 'guild-id',
  Id = 'id',

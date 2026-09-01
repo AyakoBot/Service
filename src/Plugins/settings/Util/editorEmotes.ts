@@ -59,6 +59,9 @@ class EditorEmotes {
   [EditorType.TicketPlacementMode]: EmoteName.ChannelForum,
   [EditorType.TicketTiers]: EmoteName.Settings,
   [EditorType.PresenceActivityType]: EmoteName.Member,
+  [EditorType.RolePickerKind]: EmoteName.ReactionRole,
+  [EditorType.RolePickerLayout]: EmoteName.SelfRole,
+  [EditorType.StickyRoleMode]: EmoteName.StickyRole,
 
   [EditorType.GuildId]: undefined,
   [EditorType.Id]: undefined,
