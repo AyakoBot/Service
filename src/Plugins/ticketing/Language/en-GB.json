@@ -299,7 +299,8 @@
    "ticketLimitKind": "Per-kind open ticket limit",
    "profileNick": "Bot nickname",
    "profileAvatar": "Bot avatar",
-   "profileBanner": "Bot banner"
+   "profileBanner": "Bot banner",
+   "profileBio": "Server Bio"
   },
   "descriptions": {
    "panelEditor": "Create, edit, and post the \"Start Ticket\" panels for this server",
@@ -352,7 +353,8 @@
    "ticketLimitKind": "The most open tickets one user can have from this kind at the same time. Use 0 for no limit.",
    "profileNick": "The name this bot shows under in this server. Shared with every ticket system using the same bot. Leave empty to use its default name.",
    "profileAvatar": "A Discord CDN image link for this bot's avatar in this server. Leave empty to remove it.",
-   "profileBanner": "A Discord CDN image link for this bot's banner in this server. Leave empty to remove it."
+   "profileBanner": "A Discord CDN image link for this bot's banner in this server. Leave empty to remove it.",
+   "profileBio": "Short bio on the bot profile in this server. Discord does not report it back, so this box always looks empty even once set."
   },
   "durations": {
    "off": "Off",

@@ -72,6 +72,7 @@ type TicketVirtualColumns = {
  profileNick: string | null;
  profileAvatar: string | null;
  profileBanner: string | null;
+ profileBio: string | null;
 };
 
 export enum TicketGroups {
@@ -1139,10 +1140,6 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       arity: FieldArity.Single,
       transform: botProfileImageTransform,
       virtual: botProfileVirtual(BotProfilePart.Avatar),
-      showIf: (row) => ({
-       ok: Boolean(row.botToken),
-       reason: en.settings.reasons.customBotOnly,
-      }),
      },
      {
       column: 'profileBanner',
@@ -1152,10 +1149,15 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       arity: FieldArity.Single,
       transform: botProfileImageTransform,
       virtual: botProfileVirtual(BotProfilePart.Banner),
-      showIf: (row) => ({
-       ok: Boolean(row.botToken),
-       reason: en.settings.reasons.customBotOnly,
-      }),
+     },
+     {
+      column: 'profileBio',
+      editor: EditorType.String,
+      label: (t: TicketTranslator) => t.settings.fields.profileBio(),
+      description: (t: TicketTranslator) => t.settings.descriptions.profileBio(),
+      arity: FieldArity.Single,
+      multiline: true,
+      virtual: botProfileVirtual(BotProfilePart.Bio),
      },
     ],
    },
