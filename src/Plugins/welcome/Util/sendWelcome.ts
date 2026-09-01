@@ -8,11 +8,16 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
+import interpolate from '../../../Util/interpolate.js';
+import {
+ memberVars,
+ serverVars,
+ type PlaceholderVars,
+} from '../../../Util/placeholderVars.js';
 import type { GreetingKind } from '../Classes/Enums.js';
 import type WelcomePlugin from '../Plugin.js';
 
 import { pickRandomGif } from './gifPool.js';
-import interpolate from './interpolate.js';
 import { getGreetingConfig, type GreetingConfig } from './welcomeConfig.js';
 import {
  gifInUrlSlot,
@@ -20,21 +25,16 @@ import {
  usesMemberCount,
 } from './welcomePlaceholders.js';
 
-type GreetingVars = {
- user: string;
- username: string;
- displayname: string;
- server: string;
- membercount: string;
- gif: string;
-};
-
 type GreetingContent =
  | { embed: APIEmbed; components?: undefined }
  | { embed?: undefined; components: APIMessageTopLevelComponent[] };
 
-const resolveMemberCount = async function (this: WelcomePlugin, guildId: string) {
- const api = await this.getAPI(guildId);
+const resolveMemberCount = async function (
+ this: WelcomePlugin,
+ guildId: string,
+ botToken: string | null,
+) {
+ const api = await this.getAPI(guildId, botToken);
  const guild = await api.guilds.get(
   guildId,
   { with_counts: true },
@@ -51,15 +51,10 @@ const buildVars = async function (
  user: APIUser,
  gif: string | null,
  membercount: string,
-): Promise<GreetingVars> {
- const guild = await this.client.cache.guilds.get(guildId);
-
+): Promise<PlaceholderVars> {
  return {
-  user: `<@${user.id}>`,
-  username: user.username,
-  displayname: user.global_name ?? user.username,
-  server: guild?.name ?? '',
-  membercount,
+  ...memberVars(user),
+  ...(await serverVars.call(this, guildId, membercount)),
   gif: gif ?? '',
  };
 };
@@ -124,7 +119,7 @@ export default async function sendGreeting(
  const content = gifSlotUnfilled ? null : resolved;
 
  const membercount = usesMemberCount(template)
-  ? await resolveMemberCount.call(this, guildId)
+  ? await resolveMemberCount.call(this, guildId, row.botToken)
   : '';
  const vars = await buildVars.call(this, guildId, user, gif, membercount);
  const pings = buildPingContent(config, user);
@@ -133,6 +128,7 @@ export default async function sendGreeting(
   origin: this.name,
   reason: `${kind} greeting`,
  })
+  .setAPI(await this.getAPI(guildId, row.botToken))
   .setAllowedMentionsRoles(config.pingRoles)
   .setAllowedMentionsUsers([...(config.pingJoin ? [user.id] : []), ...config.pingUsers])
   .setSendTo([{ channel: config.channel, guildId }]);

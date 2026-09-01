@@ -12,24 +12,33 @@ const maxUrlLength = 512;
 const stripSignedParams = (url: string) =>
  (isDiscordCdnUrl(url) ? (url.split('?')[0] ?? url) : url);
 
+const isImageUrl = (url: string) => imageExtensions.some((ext) => url.includes(ext));
+
 const convertTenorToGif = (url?: string) =>
  (url && url.includes('tenor.com') && !url.includes('c.tenor.com')
   ? `https://c.tenor.com/${url.split(/\/+/g)[2]?.slice(0, -2)}AC/tenor.gif`
   : url);
 
+export const hasPendingEmbed = (msg: Pick<APIMessage, 'content' | 'embeds'>) =>
+ !msg.embeds?.length && /https?:\/\/\S*(tenor\.com|giphy\.com)\S*/.test(msg.content ?? '');
+
 export const extractGifUrls = (msg: Pick<APIMessage, 'content' | 'embeds' | 'attachments'>) => {
  const contentUrls = (msg.content?.match(urlRegex) ?? []).filter((u) => !u.includes('tenor.com'));
- const videoUrls = (msg.embeds ?? [])
-  .map((e) => convertTenorToGif(e.video?.url))
-  .filter((u): u is string => !!u?.length);
+ const embedUrls = (msg.embeds ?? [])
+  .map((e) =>
+   [convertTenorToGif(e.video?.url), e.image?.url, e.thumbnail?.url]
+    .filter((u): u is string => !!u?.length)
+    .find(isImageUrl),
+  )
+  .filter((u): u is string => !!u);
  const attachmentUrls = (msg.attachments ?? []).map((a) => a.url);
 
  return [
   ...new Set(
-   [...attachmentUrls, ...contentUrls, ...videoUrls]
+   [...attachmentUrls, ...contentUrls, ...embedUrls]
     .map(stripSignedParams)
     .filter((u) => u.length <= maxUrlLength)
-    .filter((u) => imageExtensions.some((ext) => u.includes(ext))),
+    .filter(isImageUrl),
   ),
  ];
 };

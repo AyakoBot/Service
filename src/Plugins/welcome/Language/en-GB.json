@@ -4,7 +4,10 @@
   "overviewDescription": "Welcome and goodbye messages, with an optional random-GIF pool. Save GIFs by right-clicking a message and picking the \"Save GIF\" app command.",
   "groups": {
    "welcome": "Welcome",
-   "goodbye": "Goodbye"
+   "goodbye": "Goodbye",
+   "bot": "Custom Bot",
+   "presence": "Bot Presence",
+   "profile": "Bot Profile"
   },
   "fields": {
    "active": "Enabled",
@@ -13,16 +16,34 @@
    "components": "Saved CV2 Message",
    "pingJoin": "Ping joined User",
    "pingRoles": "Ping Roles",
-   "pingUsers": "Ping Users"
+   "pingUsers": "Ping Users",
+   "botToken": "Custom Bot Token",
+   "presenceType": "Activity Type",
+   "presenceText": "Activity Text",
+   "presenceEmoji": "Status Emoji",
+   "profileNick": "Nickname",
+   "profileAvatar": "Server Avatar",
+   "profileBanner": "Server Banner",
+   "profileBio": "Server Bio"
   },
   "descriptions": {
    "welcomeChannel": "Where welcome messages are sent",
    "goodbyeChannel": "Where goodbye messages are sent",
-   "embed": "The name of a saved embed from the embed builder. Placeholders: {{list}}",
-   "components": "The name of a saved message from the component builder - takes priority over the saved embed. Placeholders: {{list}}",
+   "embed": "The name of a saved embed from the embed builder.",
+   "components": "The name of a saved message from the component builder - takes priority over the saved embed.",
    "pingJoin": "Mention the joining user above the message",
    "pingRoles": "Roles to mention above the message",
-   "pingUsers": "Users to mention above the message"
+   "pingUsers": "Users to mention above the message",
+   "botToken": "Send greetings as your own bot instead of mine. Paste its token from the Discord Developer Portal, then invite that bot to this server.",
+   "presenceType": "What the bot appears to be doing.",
+   "presenceText": "The text shown after the activity type.",
+   "presenceEmoji": "Emoji shown beside a Custom status.",
+   "profileNick": "The nickname the bot uses in this server.",
+   "profileAvatar": "Server-specific avatar. Paste a Discord image link.",
+   "profileBanner": "Server-specific banner. Paste a Discord image link.",
+   "inviteBot": "Get an invite link for your custom bot.",
+   "clearToken": "Remove the custom bot and go back to the default bot.",
+   "profileBio": "Short bio on the bot profile in this server. Discord does not report it back, so this box always looks empty even once set."
   },
   "actions": {
    "testWelcome": "Test Welcome",
@@ -36,7 +57,26 @@
   "test": {
    "sent": "Test message sent.",
    "failed": "Nothing sent - set a channel and make sure the referenced saved message still exists."
-  }
+  },
+  "options": {
+   "playing": "Playing",
+   "listening": "Listening to",
+   "watching": "Watching",
+   "competing": "Competing in",
+   "custom": "Custom"
+  },
+  "reasons": {
+   "customBotOnly": "Set a custom bot token first.",
+   "presenceTypeUnset": "Pick an activity type first.",
+   "customStatusOnly": "Only available with the Custom activity type."
+  },
+  "profileWriteFailed": "I could not update the profile. Check my permissions and try again.",
+  "presenceEmojiNotFound": "No emoji named {{name}} in this server.",
+  "inviteBotLabel": "Invite your bot",
+  "inviteBotText": "Use the button below to add your bot to this server.",
+  "inviteBotNoToken": "Set a custom bot token first.",
+  "clearTokenLabel": "Remove custom bot",
+  "clearTokenDone": "Custom bot removed. Greetings will use the default bot again."
  },
  "guide": {
   "title": "Welcome Setup Guide",
@@ -73,6 +113,11 @@
   "deletePlaceholder": "Delete a GIF",
   "noneFound": "That message has no images I can save.",
   "saved": "Saved {{count}} image(s) to the pool.",
-  "alreadySaved": "That image is already in the pool."
+  "alreadySaved": "That image is already in the pool.",
+  "embedPending": "Discord hasn't loaded this link's preview yet. Wait for the GIF to appear, then try again."
+ },
+ "botToken": {
+  "invalid": "That token was rejected by Discord. Copy it again from the Developer Portal.",
+  "keyMissing": "I could not securely store that token. Please report this."
  }
 }

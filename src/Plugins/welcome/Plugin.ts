@@ -1,5 +1,5 @@
-import type { WelcomeSetting } from '@ayako/database';
-import { LogLevel } from '@ayako/utility';
+import { PresenceActivityType, type WelcomeSetting } from '@ayako/database';
+import { decrypt, LogLevel, SatelliteChannel } from '@ayako/utility';
 import { ContextMenuCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
 import {
  ApplicationCommandType,
@@ -20,6 +20,7 @@ import { EmoteName } from '../../Classes/EmoteName.js';
 import {
  MessagePlaceholder,
  placeholderDoc as buildPlaceholderDoc,
+ withBasePlaceholders,
 } from '../../Util/messagePlaceholders.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
@@ -38,6 +39,13 @@ import guildMemberRemove from './Events/GuildMemberRemove/index.js';
 import guildMemberUpdate from './Events/GuildMemberUpdate/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
+import {
+ BotProfilePart,
+ welcomeBotTokenTransform,
+ welcomePresenceEmojiTransform,
+ welcomeProfileImageTransform,
+ welcomeProfileVirtual,
+} from './Util/botToken.js';
 import { savedRefTransform } from './Util/savedRefTransform.js';
 
 type Events =
@@ -50,17 +58,27 @@ type Events =
 type WelcomeLanguage = typeof en;
 type WelcomeTranslator = TranslatorType<WelcomeLanguage> & { base: BaseLang };
 
+type WelcomeVirtualColumns = {
+ profileNick: string | null;
+ profileAvatar: string | null;
+ profileBanner: string | null;
+ profileBio: string | null;
+};
+
 export enum WelcomeGroups {
  Welcome = 'welcome',
  Goodbye = 'goodbye',
+ Bot = 'bot',
+ Presence = 'presence',
+ Profile = 'profile',
 }
 
 export enum WelcomeGuideFlag {
  WantsGoodbye = 1 << 0,
 }
 
-const welcomePlaceholders = [MessagePlaceholder.Gif];
-const placeholderDoc = buildPlaceholderDoc(...welcomePlaceholders);
+const welcomePlaceholders = withBasePlaceholders(MessagePlaceholder.Gif);
+const placeholderDoc = buildPlaceholderDoc(MessagePlaceholder.Gif);
 
 const greetingChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
 
@@ -84,31 +102,26 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
 
  eventHandlers = {
   GUILD_AUDIT_LOG_ENTRY_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildAuditLogEntryCreate.call(this, data);
   },
   GUILD_MEMBER_ADD: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberAdd.call(this, data);
   },
   GUILD_MEMBER_UPDATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberUpdate.call(this, data);
   },
   GUILD_MEMBER_REMOVE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberRemove.call(this, data);
   },
   INTERACTION_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
@@ -124,6 +137,52 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
 
   assertSchemaValid(this.settingsSchema);
  }
+
+ getEmojiSyncTokens = async (): Promise<string[]> => {
+  const rows = await this.client.db.client.welcomeSetting.findMany({
+   where: { botToken: { not: null } },
+   select: { botToken: true },
+  });
+
+  return [...new Set(rows.map((row) => row.botToken))].flatMap((cipher) => {
+   if (!cipher) return [];
+   try {
+    return [decrypt(cipher)];
+   } catch {
+    return [];
+   }
+  });
+ };
+
+ reconcileSatellites = () => {
+  this.client.cache.cachePub
+   .publish(SatelliteChannel.Reconcile, '')
+   .catch((e: Error) => this.nonFatalError(e, 'reconcileSatellites'));
+ };
+
+ invalidateToken = async (cipher: string): Promise<void> => {
+  await this.client.db.client.welcomeSetting.updateMany({
+   where: { botToken: cipher },
+   data: { botToken: null },
+  });
+ };
+
+ getCustomBotTargets = async (): Promise<Array<{ token: string; guildId: string }>> => {
+  const rows = await this.client.db.client.welcomeSetting.findMany({
+   where: { botToken: { not: null } },
+   select: { guild: true, botToken: true },
+  });
+
+  return rows.flatMap((row) => {
+   if (!row.botToken) return [];
+
+   try {
+    return [{ token: decrypt(row.botToken), guildId: row.guild }];
+   } catch {
+    return [];
+   }
+  });
+ };
 
  onGuildRemoved = async (guildId: string) => {
   await this.client.db.client.welcomeGif.deleteMany({ where: { guild: guildId } });
@@ -315,8 +374,128 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      },
     ],
    },
+   {
+    id: WelcomeGroups.Bot,
+    label: (t: WelcomeTranslator) => t.settings.groups.bot(),
+    fields: [
+     {
+      column: 'botToken',
+      editor: EditorType.BotToken,
+      label: (t: WelcomeTranslator) => t.settings.fields.botToken(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.botToken(),
+      arity: FieldArity.Single,
+      secret: true,
+      transform: welcomeBotTokenTransform,
+     },
+    ],
+   },
+   {
+    id: WelcomeGroups.Presence,
+    label: (t: WelcomeTranslator) => t.settings.groups.presence(),
+    emote: EmoteName.Bot,
+    fields: [
+     {
+      column: 'presenceType',
+      editor: EditorType.PresenceActivityType,
+      label: (t: WelcomeTranslator) => t.settings.fields.presenceType(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.presenceType(),
+      arity: FieldArity.Single,
+      showIf: (row) => ({ ok: Boolean(row.botToken), reason: en.settings.reasons.customBotOnly }),
+      options: [
+       {
+        value: PresenceActivityType.Playing,
+        label: (t: WelcomeTranslator) => t.settings.options.playing(),
+       },
+       {
+        value: PresenceActivityType.Listening,
+        label: (t: WelcomeTranslator) => t.settings.options.listening(),
+       },
+       {
+        value: PresenceActivityType.Watching,
+        label: (t: WelcomeTranslator) => t.settings.options.watching(),
+       },
+       {
+        value: PresenceActivityType.Competing,
+        label: (t: WelcomeTranslator) => t.settings.options.competing(),
+       },
+       {
+        value: PresenceActivityType.Custom,
+        label: (t: WelcomeTranslator) => t.settings.options.custom(),
+       },
+      ],
+     },
+     {
+      column: 'presenceText',
+      editor: EditorType.String,
+      label: (t: WelcomeTranslator) => t.settings.fields.presenceText(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.presenceText(),
+      showIf: (row) => ({
+       ok: Boolean(row.botToken) && Boolean(row.presenceType),
+       reason: row.botToken
+        ? en.settings.reasons.presenceTypeUnset
+        : en.settings.reasons.customBotOnly,
+      }),
+     },
+     {
+      column: 'presenceEmoji',
+      editor: EditorType.String,
+      transform: welcomePresenceEmojiTransform,
+      label: (t: WelcomeTranslator) => t.settings.fields.presenceEmoji(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.presenceEmoji(),
+      showIf: (row) => ({
+       ok: Boolean(row.botToken) && row.presenceType === PresenceActivityType.Custom,
+       reason: row.botToken
+        ? en.settings.reasons.customStatusOnly
+        : en.settings.reasons.customBotOnly,
+      }),
+     },
+    ],
+   },
+   {
+    id: WelcomeGroups.Profile,
+    label: (t: WelcomeTranslator) => t.settings.groups.profile(),
+    emote: EmoteName.Image,
+    fields: [
+     {
+      column: 'profileNick',
+      editor: EditorType.String,
+      label: (t: WelcomeTranslator) => t.settings.fields.profileNick(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.profileNick(),
+      arity: FieldArity.Single,
+      virtual: welcomeProfileVirtual(BotProfilePart.Nick),
+     },
+     {
+      column: 'profileAvatar',
+      editor: EditorType.String,
+      label: (t: WelcomeTranslator) => t.settings.fields.profileAvatar(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.profileAvatar(),
+      arity: FieldArity.Single,
+      transform: welcomeProfileImageTransform,
+      virtual: welcomeProfileVirtual(BotProfilePart.Avatar),
+     },
+     {
+      column: 'profileBanner',
+      editor: EditorType.String,
+      label: (t: WelcomeTranslator) => t.settings.fields.profileBanner(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.profileBanner(),
+      arity: FieldArity.Single,
+      transform: welcomeProfileImageTransform,
+      virtual: welcomeProfileVirtual(BotProfilePart.Banner),
+     },
+     {
+      column: 'profileBio',
+      editor: EditorType.String,
+      label: (t: WelcomeTranslator) => t.settings.fields.profileBio(),
+      description: (t: WelcomeTranslator) => t.settings.descriptions.profileBio(),
+      arity: FieldArity.Single,
+      multiline: true,
+      virtual: welcomeProfileVirtual(BotProfilePart.Bio),
+     },
+    ],
+   },
   ],
   guide: {
+
    title: (t: WelcomeTranslator) => t.guide.title(),
    intro: (t: WelcomeTranslator) => t.guide.intro(),
    advert: {
@@ -387,5 +566,8 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
     },
    ],
   },
- } satisfies SettingsSchemaDef<WelcomeSetting, WelcomeTranslator> as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<
+  WelcomeSetting & WelcomeVirtualColumns,
+  WelcomeTranslator
+ > as unknown as SettingsSchemaDef;
 }
