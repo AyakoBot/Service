@@ -17,6 +17,7 @@ import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import { isBotPresent } from '../../Util/botPresence.js';
+import type { MessagePlaceholder } from '../../Util/messagePlaceholders.js';
 import { gateToken, TokenGate } from '../../Util/tokenBreaker.js';
 import { checkToken } from '../../Util/tokenCheck.js';
 import createTranslator, { type TranslatorType } from '../../Util/translator.js';
@@ -36,6 +37,7 @@ export enum SettingsCategory {
  Channels = 'channels',
  Shop = 'shop',
  Vote = 'vote',
+ Logging = 'logs',
 }
 
 export enum PluginName {
@@ -49,6 +51,27 @@ export enum PluginName {
  ComponentBuilder = 'component-builder',
  Info = 'info',
  Welcome = 'welcome',
+ RP = 'rp',
+ VoiceHubs = 'voice-hubs',
+ Suggestions = 'suggestions',
+ Giveaways = 'giveaways',
+ Reminders = 'reminders',
+ Verification = 'verification',
+ BumpReminders = 'bump-reminders',
+ Management = 'management',
+ Moderation = 'moderation',
+ Leveling = 'leveling',
+ AntiSpam = 'antispam',
+ AntiRaid = 'antiraid',
+ Invites = 'invites',
+ AntiVirus = 'antivirus',
+ VotePunish = 'votepunish',
+ Roles = 'roles',
+ RoleAutomation = 'role-automation',
+ Boosters = 'boosters',
+ Sticky = 'sticky',
+ CustomRoles = 'custom-roles',
+ Logging = 'logging',
 }
 
 export type BaseLanguage = Record<string, unknown>;
@@ -78,6 +101,7 @@ export default abstract class Plugin<
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
  settingsSchema?: SettingsSchemaDef;
+ placeholders?: MessagePlaceholder[];
  logger = new ScopedLogger();
 
  protected pluginBotKey?: string;

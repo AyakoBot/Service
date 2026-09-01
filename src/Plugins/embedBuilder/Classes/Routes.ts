@@ -14,6 +14,7 @@ export enum EmbedBuilderRoute {
  ImportJson = 'embeds/import',
  ImportSave = 'embeds/importSave',
  ExportJson = 'embeds/export',
+ Placeholders = 'embeds/placeholders',
 
  Save = 'embeds/save',
  SaveSubmit = 'embeds/saveSubmit',

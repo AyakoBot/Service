@@ -120,5 +120,11 @@
   "isComponentsV2": "That message uses Components V2 - edit it with the Component Builder instead.",
   "notALink": "That's not a message link.",
   "manageGuildRequired": "You need the Manage Server permission to do that."
+ },
+ "placeholders": {
+  "button": "Placeholders",
+  "title": "Available Placeholders",
+  "intro": "Type these into any text field. They are replaced when the message is sent by the feature listed.",
+  "none": "No feature currently offers placeholders."
  }
 }

@@ -23,7 +23,7 @@ import {
  propertyPick,
 } from './builderActions.js';
 import { editorSave } from './editorModal.js';
-import { exportJson, importOpen, importSave } from './ioFlow.js';
+import { exportJson, importOpen, importSave, placeholders } from './ioFlow.js';
 import { saveOpen, saveSubmit } from './saveFlow.js';
 import {
  editOpen,
@@ -111,6 +111,10 @@ const button = async function (this: EmbedBuilderPlugin, cmd: APIMessageComponen
   }
   case EmbedBuilderRoute.ExportJson: {
    exportJson.call(this, cmd);
+   break;
+  }
+  case EmbedBuilderRoute.Placeholders: {
+   placeholders.call(this, cmd);
    break;
   }
   case EmbedBuilderRoute.Save: {

@@ -29,6 +29,7 @@ import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 import { builderContext, ephemeralNote } from '../../Util/builderContext.js';
 import { parseMarker } from '../../Util/builderState.js';
+import { placeholdersByPlugin } from '../../Util/placeholderList.js';
 import { renderBuilder } from '../../Util/renderBuilder.js';
 
 import { openIntoThread } from './start.js';
@@ -164,6 +165,31 @@ export const exportJson = async function (
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Embed JSON export' })
   .setFiles([txtFileWriter(JSON.stringify(ctx.view.embed, null, 2), 'embed')])
+  .setFlags(MessageFlags.Ephemeral)
+  .reply(cmd);
+};
+
+export const placeholders = async function (
+ this: EmbedBuilderPlugin,
+ cmd: APIMessageComponentInteraction,
+) {
+ const ctx = await builderContext.call(this, cmd);
+ if (!ctx) return;
+
+ const t = await this.t(cmd.guild_id);
+ const groups = placeholdersByPlugin(this.client);
+
+ const body = groups.length
+  ? groups
+     .map(
+      (g) =>
+       `**${g.name}**\n${g.placeholders.map((p) => `\`{{${p}}}\``).join(' ')}`,
+     )
+     .join('\n\n')
+  : t.placeholders.none();
+
+ new MessagePayload(this.client, { origin: this.name, reason: 'Embed placeholders' })
+  .setContent(`### ${t.placeholders.title()}\n-# ${t.placeholders.intro()}\n\n${body}`)
   .setFlags(MessageFlags.Ephemeral)
   .reply(cmd);
 };

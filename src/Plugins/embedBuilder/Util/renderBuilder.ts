@@ -245,6 +245,11 @@ const utilityRow = function (this: EmbedBuilderPlugin, t: Translator, view: Buil
    .setCustomId(this.getRoute(EmbedBuilderRoute.ExportJson))
    .setLabel(t.base.t.Export())
    .setEmoji(buttonEmoji(view.emotes.json)),
+  new ButtonBuilder()
+   .setStyle(ButtonStyle.Secondary)
+   .setCustomId(this.getRoute(EmbedBuilderRoute.Placeholders))
+   .setLabel(t.placeholders.button())
+   .setEmoji(buttonEmoji(view.emotes.info)),
  );
 };
 
