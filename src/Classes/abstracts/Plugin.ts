@@ -135,6 +135,20 @@ export default abstract class Plugin<
   this.pluginApiCache.delete(guildId);
  };
 
+ /* eslint-disable @typescript-eslint/naming-convention */
+ getInteractionAPI = async (cmd: {
+  application_id?: string;
+  guild_id?: string | null;
+ }): Promise<API> => {
+  /* eslint-enable @typescript-eslint/naming-convention */
+  const guildId = cmd.guild_id ?? '';
+  const invoker = cmd.application_id
+   ? this.client.getAppAPI(cmd.application_id, guildId)
+   : null;
+
+  return invoker ?? this.getAPI(guildId);
+ };
+
  getAPI = async (guildId: string, overrideCipher?: string | null): Promise<API> => {
   if (overrideCipher) {
    const cached = this.overrideApiCache.get(guildId);
