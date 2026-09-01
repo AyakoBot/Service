@@ -13,9 +13,11 @@ import type Client from '../Classes/Client.js';
 
 import resolvePluginDependencies from './resolvePluginDependencies.js';
 
+export const settingsCommandName = 'settings';
+
 const buildSettingsCommand = (plugins: Client['plugins']) => {
  const command = new SlashCommandBuilder()
-  .setName('settings')
+  .setName(settingsCommandName)
   .setDescription('Configure ayako for this server')
   .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild);
 
