@@ -15,10 +15,10 @@ import {
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { chunkByLength } from '../../../../Util/fmt.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoRoute } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { chunkByLength } from '../../Util/fmt.js';
 import { getHide, respond, respondError, RespondVia, type Translator } from '../../Util/respond.js';
 
 const listContainer = async function (

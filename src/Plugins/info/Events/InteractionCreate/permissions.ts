@@ -12,6 +12,7 @@ import {
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { nameOf } from '../../../../Util/fmt.js';
 import {
  getChannelOption,
  getRoleOption,
@@ -21,7 +22,6 @@ import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import { PermsTarget } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { nameOf } from '../../Util/fmt.js';
 import { respond, respondError, type Translator } from '../../Util/respond.js';
 
 export enum PermCategory {

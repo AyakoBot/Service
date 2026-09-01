@@ -2,9 +2,9 @@ import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import type { APIApplicationCommandInteraction } from 'discord-api-types/v10';
 
 import { Colors } from '../../../../Types/index.js';
+import { line } from '../../../../Util/fmt.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { line } from '../../Util/fmt.js';
 import { respond, respondError } from '../../Util/respond.js';
 
 export default async function (this: InfoPlugin, cmd: APIApplicationCommandInteraction) {

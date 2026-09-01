@@ -24,6 +24,7 @@ import {
 import constants from '../../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { codeId, line, timeOf, yesNo } from '../../../../Util/fmt.js';
 import getUser from '../../../../Util/getUser.js';
 import { getUserOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
@@ -32,7 +33,6 @@ import { InfoOption } from '../../Classes/Commands.js';
 import { InfoRoute, PermsTarget, RolesTarget } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
 import { userBadgeLines } from '../../Util/badges.js';
-import { codeId, line, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
 
 const newAccountMs = 7 * 24 * 60 * 60 * 1000;

@@ -9,9 +9,9 @@ import {
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { codeId, line, nameOf, yesNo } from '../../../../Util/fmt.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { codeId, line, nameOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
 
 const keywordPreviewCap = 15;

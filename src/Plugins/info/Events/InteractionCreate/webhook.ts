@@ -12,13 +12,13 @@ import type {
 
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
+import { codeId, line, nameOf, timeOf, yesNo } from '../../../../Util/fmt.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { parseWebhookUrl } from '../../../../Util/parseWebhookUrl.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import type InfoPlugin from '../../Plugin.js';
-import { codeId, line, nameOf, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError } from '../../Util/respond.js';
 
 export default async function (

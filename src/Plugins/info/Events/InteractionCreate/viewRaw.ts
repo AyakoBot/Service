@@ -9,8 +9,8 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
+import { containerCharBudget } from '../../../../Util/fmt.js';
 import type InfoPlugin from '../../Plugin.js';
-import { containerCharBudget } from '../../Util/fmt.js';
 
 const zeroWidth = String.fromCharCode(0x200b);
 const escapeCodeBlock = (content: string): string =>

@@ -20,13 +20,13 @@ import {
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { codeId, line, timeOf, yesNo } from '../../../../Util/fmt.js';
 import { getRoleOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import { InfoRoute, PermsTarget } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { codeId, line, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
 
 const identityLines = (emotes: EmoteSet, t: Translator, role: RRole): string[] =>

@@ -19,13 +19,13 @@ import {
 import constants from '../../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { chunkByLength, codeId, line, timeOf, yesNo } from '../../../../Util/fmt.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import { InfoRoute } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { chunkByLength, codeId, line, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, RespondVia, type Translator } from '../../Util/respond.js';
 
 const emojiIdPattern = /^(?:<(?<animated>a)?:(?<name>\w+):)?(?<id>\d{15,21})>?$/;

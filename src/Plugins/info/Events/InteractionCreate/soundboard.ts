@@ -6,9 +6,9 @@ import type {
 
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
+import { chunkByLength, codeId } from '../../../../Util/fmt.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { chunkByLength, codeId } from '../../Util/fmt.js';
 import { getHide, respond, respondError } from '../../Util/respond.js';
 
 export default async function (

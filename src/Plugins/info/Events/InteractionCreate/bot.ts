@@ -10,10 +10,10 @@ import {
 import pkg from '../../../../../package.json' with { type: 'json' };
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
+import { line } from '../../../../Util/fmt.js';
 import formatDuration from '../../../../Util/formatDuration.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { line } from '../../Util/fmt.js';
 import { getHide, respond } from '../../Util/respond.js';
 
 import { resolveUser } from './user.js';

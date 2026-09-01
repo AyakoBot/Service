@@ -19,13 +19,13 @@ import {
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { codeId, line, nameOf, timeOf, yesNo } from '../../../../Util/fmt.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import { InfoRoute, RolesTarget } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { codeId, line, nameOf, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
 
 const acronym = (name: string): string =>

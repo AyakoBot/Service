@@ -8,9 +8,9 @@ import {
 } from 'discord-api-types/v10';
 
 import { Colors } from '../../../../Types/index.js';
+import { codeId, line, nameOf, timeOf } from '../../../../Util/fmt.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { codeId, line, nameOf, timeOf } from '../../Util/fmt.js';
 import { getHide, respond, respondError } from '../../Util/respond.js';
 
 export default async function (

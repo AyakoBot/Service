@@ -15,12 +15,12 @@ import {
 import constants from '../../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { chunkByLength, codeId, line, nameOf, timeOf, yesNo } from '../../../../Util/fmt.js';
 import { getChannelOption } from '../../../../Util/interactionOptions.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import type InfoPlugin from '../../Plugin.js';
-import { chunkByLength, codeId, line, nameOf, timeOf, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
 
 const channelEmote = (emotes: EmoteSet, type: number) =>

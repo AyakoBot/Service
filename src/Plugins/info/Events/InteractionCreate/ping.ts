@@ -3,10 +3,10 @@ import type { APIApplicationCommandInteraction } from 'discord-api-types/v10';
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../../Types/index.js';
+import { line } from '../../../../Util/fmt.js';
 import { snowflakeToMs } from '../../../../Util/snowflakeToMs.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { line } from '../../Util/fmt.js';
 import { respond, type Translator } from '../../Util/respond.js';
 
 const pingContainer = (

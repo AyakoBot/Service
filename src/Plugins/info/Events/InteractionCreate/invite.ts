@@ -7,11 +7,11 @@ import type {
 
 import constants from '../../../../Classes/Constants.js';
 import { Colors } from '../../../../Types/index.js';
+import { line, yesNo } from '../../../../Util/fmt.js';
 import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import type InfoPlugin from '../../Plugin.js';
-import { line, yesNo } from '../../Util/fmt.js';
 import { getHide, respond, respondError } from '../../Util/respond.js';
 
 const invitePattern = /(?:discord(?:app)?\.com\/invite\/|discord\.gg\/)?([\w-]+)$/;

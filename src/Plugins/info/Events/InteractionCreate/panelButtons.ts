@@ -4,10 +4,10 @@ import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-t
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
+import { chunkByLength } from '../../../../Util/fmt.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { RolesTarget } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
-import { chunkByLength } from '../../Util/fmt.js';
 import { respond, respondError, type Translator } from '../../Util/respond.js';
 
 const mentionCap = 100;
