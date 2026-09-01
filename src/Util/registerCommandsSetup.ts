@@ -3,6 +3,8 @@ import { config } from 'dotenv';
 
 import type Client from '../Classes/Client.js';
 
+import { hasMessageContentIntent } from './messageContentIntent.js';
+
 export default async function registerCommandsSetup(tag: string) {
  config({ path: '../../.env', quiet: true });
 
@@ -47,6 +49,22 @@ export default async function registerCommandsSetup(tag: string) {
   logger.error(`${tag} Plugin "${pluginName}" not found`);
   process.exit(1);
  }
+
+ const registerToken = process.argv
+  .find((arg) => arg.startsWith('--token='))
+  ?.slice('--token='.length)
+  .trim();
+
+ const activeToken = registerToken
+  ? (process.env[registerToken] ?? '')
+  : (process.env.Token ?? '');
+
+ const messageContent = activeToken ? await hasMessageContentIntent(activeToken) : true;
+ client.plugins.forEach((plugin) => {
+  if ('hasMessageContent' in plugin) {
+   Object.assign(plugin, { hasMessageContent: messageContent });
+  }
+ });
 
  const body = buildCommandBody.call(client, onlyPlugin);
 

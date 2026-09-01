@@ -1,4 +1,4 @@
-import { RequestHandlerError } from '@ayako/api';
+import { RequestHandlerError, type API } from '@ayako/api';
 import type { RMessage, RUser } from '@ayako/utility';
 import type { APIMessage } from 'discord-api-types/v10';
 
@@ -16,9 +16,10 @@ export default async function (
   abortWhen?: (msg: (RMessage & { user?: RUser }) | APIMessage) => boolean;
  },
  debugInfo: { origin: string; reason: string },
+ overrideApi?: API,
 ) {
  const messages: ((RMessage & { user?: RUser }) | APIMessage)[] = [];
- const api = await this.getAPI(guildId);
+ const api = overrideApi ?? (await this.getAPI(guildId));
  let lastAmount = 0;
 
  const afterFloor = filter.after ? BigInt(filter.after) : null;
