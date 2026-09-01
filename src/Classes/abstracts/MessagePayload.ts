@@ -158,7 +158,7 @@ export class MessagePayload {
    return this;
   }
 
-  this.allowedMentions = { ...this.allowedMentions, users };
+  this.allowedMentions = { ...this.allowedMentions, users: [...new Set(users)] };
   return this;
  }
 
@@ -168,7 +168,7 @@ export class MessagePayload {
    return this;
   }
 
-  this.allowedMentions = { ...this.allowedMentions, roles };
+  this.allowedMentions = { ...this.allowedMentions, roles: [...new Set(roles)] };
   return this;
  }
 
