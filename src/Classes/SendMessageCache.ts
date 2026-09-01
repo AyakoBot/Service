@@ -3,6 +3,7 @@ import { inspect } from 'node:util';
 import { RequestHandlerError } from '@ayako/api';
 import { getPathFromError, logger, type RMessage } from '@ayako/utility';
 import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
+import { MessageFlags } from 'discord-api-types/v10';
 import { scheduleJob, type Job } from 'node-schedule';
 
 import type { MessagePayload } from './abstracts/MessagePayload.js';
@@ -42,6 +43,27 @@ export default class SendMessageCache {
   return { promise, resolve, reject };
  };
 
+ private isCV2 = (payload: MessagePayload): boolean =>
+  Boolean(payload.flags & MessageFlags.IsComponentsV2);
+
+ private appendToEntry = async (
+  entry: Entry,
+  payload: MessagePayload,
+ ): Promise<RMessage | undefined> => {
+  const deferred = this.createDeferred<RMessage | undefined>();
+  entry.payloads.push(payload);
+  entry.deferreds.push(deferred);
+  entry.debugInfo.push({ origin: payload.origin, reason: payload.reason });
+  logger.silly('[SendMessageCache] Added to existing queue, count:', entry.payloads.length);
+
+  if (entry.payloads.length >= 10) {
+   logger.debug('[SendMessageCache] Queue full (10), sending immediately');
+   await this.send(entry);
+  }
+
+  return deferred.promise;
+ };
+
  queueMessage = async (
   rawChannelId: string | Promise<string | undefined>,
   guildId: string | '@me',
@@ -57,19 +79,12 @@ export default class SendMessageCache {
   logger.silly('[SendMessageCache] Queueing message for channel:', channelId);
 
   const existing = this.cache.get(channelId);
-  if (existing) {
-   const deferred = this.createDeferred<RMessage | undefined>();
-   existing.payloads.push(payload);
-   existing.deferreds.push(deferred);
-   existing.debugInfo.push({ origin: payload.origin, reason: payload.reason });
-   logger.silly('[SendMessageCache] Added to existing queue, count:', existing.payloads.length);
-
-   if (existing.payloads.length >= 10) {
-    logger.debug('[SendMessageCache] Queue full (10), sending immediately');
-    await this.send(existing);
-   }
-
-   return deferred.promise;
+  if (existing && this.isCV2(existing.payloads[0]) !== this.isCV2(payload)) {
+   this.cache.delete(channelId);
+   existing.job.cancel();
+   void this.send(existing);
+  } else if (existing) {
+   return this.appendToEntry(existing, payload);
   }
 
   const deferred = this.createDeferred<RMessage | undefined>();
