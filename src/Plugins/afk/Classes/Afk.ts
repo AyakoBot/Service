@@ -11,11 +11,11 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../Classes/Constants.js';
 import { Colors } from '../../../Types/index.js';
+import { getCensoredContent } from '../../../Util/censorContent.js';
 import getUser from '../../../Util/getUser.js';
 import { AfkCommand } from '../Enums.js';
 import type AFKPlugin from '../Plugin.js';
 import canUserExecuteCommand from '../Util/canUserExecuteCommand.js';
-import { getCensoredContent } from '../Util/censorContent.js';
 import { scheduleNoticeDelete } from '../Util/scheduleNoticeDelete.js';
 
 import DBAfk from './DBAfk.js';
