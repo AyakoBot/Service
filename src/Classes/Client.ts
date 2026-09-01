@@ -4,6 +4,7 @@ import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
+import { buildAppIdTokenMap } from '../Util/appIdTokens.js';
 import AutomodQueue from '../Util/automodQueue.js';
 import RoleWriteQueue from '../Util/roleWriteQueue.js';
 import { TokenBreaker } from '../Util/tokenBreaker.js';
@@ -126,6 +127,13 @@ export default class Client {
 
  getTokenAPI = (token: string, guildId = 'register-token-api') =>
   new CustomAPI(token.replace('Bot ', ''), this.logger, this.cache, guildId);
+
+ private appIdTokens = buildAppIdTokenMap();
+
+ getAppAPI = (applicationId: string, guildId: string): CustomAPI | null => {
+  const token = this.appIdTokens.get(applicationId);
+  return token ? this.getTokenAPI(token, guildId) : null;
+ };
 
  getBotIdForGuildId = async (_guildId: string) => this.user?.id || '';
 }
