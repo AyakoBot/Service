@@ -14,3 +14,18 @@ test('rejects non-hex input', () => {
  assert.equal(parseColor('#fff'), null);
  assert.equal(parseColor(''), null);
 });
+
+test('accepts a hash-prefixed six-digit hex instead of dropping it', () => {
+ assert.equal(parseColor('#ff0000'), 0xff0000);
+});
+
+test('rejects a partly-hex value instead of truncating to its valid prefix', () => {
+ assert.equal(parseColor('ff00zz'), null);
+ assert.equal(parseColor('#ff00zz'), null);
+});
+
+test('rejects unanchored junk instead of falling back to a colour', () => {
+ assert.equal(parseColor('zzz'), null);
+ assert.equal(parseColor('zzzza'), null);
+ assert.equal(parseColor('ff0000zz'), null);
+});
