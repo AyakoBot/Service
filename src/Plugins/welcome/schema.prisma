@@ -35,11 +35,16 @@ model WelcomeSetting {
 }
 
 model WelcomeGif {
- guild   String @db.VarChar
- channel String @db.VarChar
- message String @db.VarChar
- url     String @db.Text
+ id    String         @id @db.VarChar // mintId
+ guild String         @db.VarChar
+ kind  WelcomeGifKind
+ url   String         @db.Text
 
- @@id([message, url])
- @@index([guild, channel])
+ @@unique([guild, kind, url])
+ @@index([guild, kind])
+}
+
+enum WelcomeGifKind {
+ welcome
+ goodbye
 }

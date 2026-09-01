@@ -4,7 +4,7 @@ import ephemeralNote from '../../../../Util/ephemeralNote.js';
 import { hasManageGuild } from '../../../settings/Util/authorizeSettings.js';
 import type { GreetingKind } from '../../Classes/Enums.js';
 import type WelcomePlugin from '../../Plugin.js';
-import sendGreeting from '../../Util/sendGreeting.js';
+import sendGreeting from '../../Util/sendWelcome.js';
 
 export default async function (
  this: WelcomePlugin,

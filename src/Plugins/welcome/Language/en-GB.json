@@ -1,7 +1,7 @@
 {
  "settings": {
   "configTitle": "Welcome",
-  "overviewDescription": "Welcome and goodbye messages, with an optional random-GIF pool.",
+  "overviewDescription": "Welcome and goodbye messages, with an optional random-GIF pool. Save GIFs by right-clicking a message and picking the \"Save GIF\" app command.",
   "groups": {
    "welcome": "Welcome",
    "goodbye": "Goodbye"
@@ -13,8 +13,7 @@
    "components": "Saved CV2 Message",
    "pingJoin": "Ping joined User",
    "pingRoles": "Ping Roles",
-   "pingUsers": "Ping Users",
-   "gifChannel": "GIF Channel"
+   "pingUsers": "Ping Users"
   },
   "descriptions": {
    "welcomeChannel": "Where welcome messages are sent",
@@ -23,14 +22,16 @@
    "components": "The name of a saved message from the component builder - takes priority over the saved embed. Placeholders: {{list}}",
    "pingJoin": "Mention the joining user above the message",
    "pingRoles": "Roles to mention above the message",
-   "pingUsers": "Users to mention above the message",
-   "gifChannel": "A random image from this channel is attached to each message. Post GIFs or images there at any time - if the channel is private, make sure I can view it"
+   "pingUsers": "Users to mention above the message"
   },
   "actions": {
    "testWelcome": "Test Welcome",
    "testGoodbye": "Test Goodbye",
    "testDesc": "Sends the real message to the configured channel, treating you as the member",
-   "testButton": "Test"
+   "testButton": "Test",
+   "gifs": "Random GIF Pool",
+   "gifsDesc": "Attach a random saved GIF to every message. Save GIFs by right-clicking any message with an image and picking the \"Save GIF\" app command.",
+   "gifsButton": "Manage GIFs"
   },
   "test": {
    "sent": "Test message sent.",
@@ -45,7 +46,7 @@
   "enableWelcome": "Turn welcome messages on",
   "enableGoodbye": "Turn goodbye messages on",
   "sectionDesc": {
-   "welcome": "Greet members the moment they join. Without a saved embed or CV2 message, a simple default text is used.",
+   "welcome": "Greet members the moment they join. Without a saved embed or CV2 message, a simple default text is used. Saved GIFs are attached automatically, or place one yourself with the gif placeholder.",
    "goodbye": "Send a message when members leave."
   },
   "gates": {
@@ -60,5 +61,18 @@
   "embedNotFound": "No saved embed with that name exists.",
   "componentsNotFound": "No saved CV2 message with that name exists.",
   "manageGuildRequired": "You need the Manage Server permission to do that."
+ },
+ "gifs": {
+  "title": {
+   "welcome": "Welcome GIF Pool",
+   "goodbye": "Goodbye GIF Pool"
+  },
+  "count": "{{total}} saved - page {{page}} of {{pages}}. A random one is attached to every message.",
+  "empty": "Nothing saved yet. Right-click any message with an image and pick the \"Save GIF\" app command.",
+  "entry": "GIF {{index}}",
+  "deletePlaceholder": "Delete a GIF",
+  "noneFound": "That message has no images I can save.",
+  "saved": "Saved {{count}} image(s) to the pool.",
+  "alreadySaved": "That image is already in the pool."
  }
 }

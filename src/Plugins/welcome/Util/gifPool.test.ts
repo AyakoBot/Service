@@ -24,7 +24,7 @@ test('extracts attachment, content, and tenor-converted urls, deduped and filter
  );
 
  assert.deepEqual(urls, [
-  'https://cdn.discordapp.com/attachments/1/2/b.png?ex=abc',
+  'https://cdn.discordapp.com/attachments/1/2/b.png',
   'https://example.com/a.gif',
   'https://c.tenor.com/someIdAC/tenor.gif',
  ]);

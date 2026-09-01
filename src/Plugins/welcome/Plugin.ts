@@ -1,7 +1,13 @@
 import type { WelcomeSetting } from '@ayako/database';
 import { LogLevel } from '@ayako/utility';
-import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
+import { ContextMenuCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
+import {
+ ApplicationCommandType,
+ ApplicationIntegrationType,
+ InteractionContextType,
+ PermissionFlagsBits,
+ type GatewayDispatchEvents,
+} from '@discordjs/core';
 import { ChannelType } from 'discord-api-types/v10';
 
 import Plugin, {
@@ -11,6 +17,10 @@ import Plugin, {
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
+import {
+ MessagePlaceholder,
+ placeholderDoc as buildPlaceholderDoc,
+} from '../../Util/messagePlaceholders.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -19,29 +29,22 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
+import { WelcomeCommand, WelcomeSubcommand } from './Classes/Commands.js';
 import { SavedSource } from './Classes/Enums.js';
 import { WelcomeRoute } from './Classes/Routes.js';
-import channelDelete from './Events/ChannelDelete/index.js';
+import guildAuditLogEntryCreate from './Events/GuildAuditLogEntryCreate/index.js';
 import guildMemberAdd from './Events/GuildMemberAdd/index.js';
 import guildMemberRemove from './Events/GuildMemberRemove/index.js';
 import guildMemberUpdate from './Events/GuildMemberUpdate/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
-import messageCreate from './Events/MessageCreate/index.js';
-import messageDelete from './Events/MessageDelete/index.js';
-import messageDeleteBulk from './Events/MessageDeleteBulk/index.js';
-import threadDelete from './Events/ThreadDelete/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import { savedRefTransform } from './Util/savedRefTransform.js';
 
 type Events =
+ | GatewayDispatchEvents.GuildAuditLogEntryCreate
  | GatewayDispatchEvents.GuildMemberAdd
  | GatewayDispatchEvents.GuildMemberUpdate
  | GatewayDispatchEvents.GuildMemberRemove
- | GatewayDispatchEvents.MessageCreate
- | GatewayDispatchEvents.MessageDelete
- | GatewayDispatchEvents.MessageDeleteBulk
- | GatewayDispatchEvents.ChannelDelete
- | GatewayDispatchEvents.ThreadDelete
  | GatewayDispatchEvents.InteractionCreate;
 
 type WelcomeLanguage = typeof en;
@@ -56,22 +59,17 @@ export enum WelcomeGuideFlag {
  WantsGoodbye = 1 << 0,
 }
 
-const placeholderDoc =
- '`{{user}}` `{{username}}` `{{displayname}}` `{{server}}` `{{membercount}}` `{{gif}}`';
+const welcomePlaceholders = [MessagePlaceholder.Gif];
+const placeholderDoc = buildPlaceholderDoc(...welcomePlaceholders);
 
 const greetingChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
-const gifChannelTypes = [
- ChannelType.GuildText,
- ChannelType.GuildAnnouncement,
- ChannelType.PublicThread,
- ChannelType.PrivateThread,
-];
 
 export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
  name = 'Welcome';
  settingName = PluginName.Welcome;
  dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'WelcomeSetting';
+ placeholders = welcomePlaceholders;
 
  customBotPerms =
   PermissionFlagsBits.ViewChannel |
@@ -85,6 +83,12 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
  };
 
  eventHandlers = {
+  GUILD_AUDIT_LOG_ENTRY_CREATE: (data) => {
+   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (!this.isEnabled()) return;
+
+   guildAuditLogEntryCreate.call(this, data);
+  },
   GUILD_MEMBER_ADD: (data) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
@@ -102,36 +106,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
    if (!this.isEnabled()) return;
 
    guildMemberRemove.call(this, data);
-  },
-  MESSAGE_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
-   if (!this.isEnabled()) return;
-
-   messageCreate.call(this, data);
-  },
-  MESSAGE_DELETE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
-   if (!this.isEnabled()) return;
-
-   messageDelete.call(this, data);
-  },
-  MESSAGE_DELETE_BULK: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
-   if (!this.isEnabled()) return;
-
-   messageDeleteBulk.call(this, data);
-  },
-  CHANNEL_DELETE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
-   if (!this.isEnabled()) return;
-
-   channelDelete.call(this, data);
-  },
-  THREAD_DELETE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
-   if (!this.isEnabled()) return;
-
-   threadDelete.call(this, data);
   },
   INTERACTION_CREATE: (data) => {
    if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
@@ -157,7 +131,20 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
  };
 
  getCommands = () => ({
-  commands: [],
+  commands: [
+   new ContextMenuCommandBuilder()
+    .setName(WelcomeCommand.SaveGifWelcome)
+    .setType(ApplicationCommandType.Message)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .setContexts([InteractionContextType.Guild])
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
+   new ContextMenuCommandBuilder()
+    .setName(WelcomeCommand.SaveGifGoodbye)
+    .setType(ApplicationCommandType.Message)
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .setContexts([InteractionContextType.Guild])
+    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
+  ],
   settings: [
    {
     category: SettingsCategory.Automation,
@@ -165,6 +152,12 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      new SlashCommandSubcommandBuilder()
       .setName(PluginName.Welcome)
       .setDescription('Configure welcome and goodbye messages'),
+     new SlashCommandSubcommandBuilder()
+      .setName(WelcomeSubcommand.WelcomeGifs)
+      .setDescription('Manage the random GIF pool for welcome messages'),
+     new SlashCommandSubcommandBuilder()
+      .setName(WelcomeSubcommand.GoodbyeGifs)
+      .setDescription('Manage the random GIF pool for goodbye messages'),
     ],
    },
   ],
@@ -235,14 +228,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) => t.settings.descriptions.pingUsers(),
       arity: FieldArity.Multi,
      },
-     {
-      column: 'welcomeGifChannel',
-      editor: EditorType.Channel,
-      label: (t: WelcomeTranslator) => t.settings.fields.gifChannel(),
-      description: (t: WelcomeTranslator) => t.settings.descriptions.gifChannel(),
-      arity: FieldArity.Single,
-      channelTypes: gifChannelTypes,
-     },
     ],
     actions: [
      {
@@ -251,6 +236,13 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) => t.settings.actions.testDesc(),
       buttonLabel: (t: WelcomeTranslator) => t.settings.actions.testButton(),
       emote: EmoteName.Send,
+     },
+     {
+      customId: WelcomeRoute.GifsWelcome,
+      label: (t: WelcomeTranslator) => t.settings.actions.gifs(),
+      description: (t: WelcomeTranslator) => t.settings.actions.gifsDesc(),
+      buttonLabel: (t: WelcomeTranslator) => t.settings.actions.gifsButton(),
+      emote: EmoteName.Image,
      },
     ],
    },
@@ -305,14 +297,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) => t.settings.descriptions.pingUsers(),
       arity: FieldArity.Multi,
      },
-     {
-      column: 'goodbyeGifChannel',
-      editor: EditorType.Channel,
-      label: (t: WelcomeTranslator) => t.settings.fields.gifChannel(),
-      description: (t: WelcomeTranslator) => t.settings.descriptions.gifChannel(),
-      arity: FieldArity.Single,
-      channelTypes: gifChannelTypes,
-     },
     ],
     actions: [
      {
@@ -321,6 +305,13 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) => t.settings.actions.testDesc(),
       buttonLabel: (t: WelcomeTranslator) => t.settings.actions.testButton(),
       emote: EmoteName.Send,
+     },
+     {
+      customId: WelcomeRoute.GifsGoodbye,
+      label: (t: WelcomeTranslator) => t.settings.actions.gifs(),
+      description: (t: WelcomeTranslator) => t.settings.actions.gifsDesc(),
+      buttonLabel: (t: WelcomeTranslator) => t.settings.actions.gifsButton(),
+      emote: EmoteName.Image,
      },
     ],
    },
@@ -358,10 +349,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
        label: (t: WelcomeTranslator) => t.settings.fields.pingJoin(),
       },
       {
-       column: 'welcomeGifChannel',
-       label: (t: WelcomeTranslator) => t.settings.fields.gifChannel(),
-      },
-      {
        column: 'welcomeActive',
        label: (t: WelcomeTranslator) => t.guide.enableWelcome(),
        required: true,
@@ -390,10 +377,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       {
        column: 'goodbyeComponents',
        label: (t: WelcomeTranslator) => t.settings.fields.components(),
-      },
-      {
-       column: 'goodbyeGifChannel',
-       label: (t: WelcomeTranslator) => t.settings.fields.gifChannel(),
       },
       {
        column: 'goodbyeActive',
