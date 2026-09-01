@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-channel-status-update-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-channel-status-update-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <rect fill="#C2C9FF" x="2" y="2" width="20" height="20" rx="5"/>
+   <rect fill="#5865F2" x="7.4" y="5.2" width="2.3" height="13.6" rx="1.15" transform="rotate(10 8.55 12)"/>
+   <rect fill="#5865F2" x="12.4" y="5.2" width="2.3" height="13.6" rx="1.15" transform="rotate(10 13.55 12)"/>
+   <rect fill="#5865F2" x="4.8" y="8.3" width="13.8" height="2.3" rx="1.15"/>
+   <rect fill="#5865F2" x="4.8" y="13.4" width="13.8" height="2.3" rx="1.15"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#F0B232"/>
+   <path d="M12 3.6 13.9 10.1 20.4 12 13.9 13.9 12 20.4 10.1 13.9 3.6 12 10.1 10.1Z" fill="#FFFFFF"/>
+ </g>
+</svg>

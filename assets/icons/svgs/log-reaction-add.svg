@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-reaction-add-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-reaction-add-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#C2C9FF" d="M5.6 14h5.4l-5.4 7.5z"/>
+   <rect x="2" y="2" width="20" height="16.5" rx="3.6" fill="#C2C9FF"/>
+   <circle cx="11.5" cy="10.5" r="6" fill="#5865F2"/>
+   <circle cx="9.17" cy="8.5" r="1.07" fill="#FFFFFF"/>
+   <circle cx="13.83" cy="8.5" r="1.07" fill="#FFFFFF"/>
+   <path fill="#FFFFFF" fill-rule="evenodd" d="M8.17 11.17a3.33 3.33 0 0 0 6.66 0 4.17 4.17 0 0 1-6.66 0z"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#3BA55D"/>
+   <rect x="10.4" y="5.5" width="3.2" height="13" rx="1.6" fill="#FFFFFF"/>
+   <rect x="5.5" y="10.4" width="13" height="3.2" rx="1.6" fill="#FFFFFF"/>
+ </g>
+</svg>

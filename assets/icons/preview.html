@@ -25,7 +25,8 @@
 <script>
  const icons = [
   'settings','trash','plus','edit','back','forth','up','upvote','downvote','prev','next','warning','enabled','disabled','info',
-  'question','role','member','message','emoji','channel-text','channel-voice','channel-category',
+  'question','role','separator','reaction-role','self-role','sticky-role','sticky-perm','booster-role',
+  'member','message','emoji','channel-text','channel-voice','channel-category',
   'channel-news','channel-thread','channel-news-thread','channel-stage','channel-forum','command',
   'automod','timer','number','hammer','shop','brain','bulb','calendar','ticket','log','lock','unlock','tools',
   'heading','paragraph','author','footer','image','thumbnail','palette','link','fields','save',
@@ -38,6 +39,19 @@
   'avatar','badge','banner','boost','cpu','crown','event','globe','invite','permissions',
   'server','shield','spam','raid','virus','vote','soundboard','sticker',
   'trophy','podium','xp','curve',
+  'log-automod','log-automod-action','log-automod-rule-create','log-automod-rule-delete','log-automod-rule-update','log-ban','log-ban-add','log-ban-remove',
+  'log-channel','log-channel-create','log-channel-delete','log-channel-status-update','log-channel-update','log-command','log-command-permissions-update','log-deafened',
+  'log-emoji','log-emoji-create','log-emoji-delete','log-emoji-update','log-event','log-guild-update','log-integration','log-integration-create',
+  'log-integration-delete','log-integration-update','log-invite','log-invite-create','log-invite-delete','log-member','log-member-join','log-member-leave',
+  'log-member-prune','log-member-update','log-message','log-message-delete','log-message-delete-bulk','log-message-pin','log-message-unpin','log-message-update',
+  'log-muted','log-neutral','log-onboarding-update','log-poll','log-poll-create','log-poll-end','log-poll-vote-add','log-poll-vote-remove',
+  'log-reaction','log-reaction-add','log-reaction-remove','log-reaction-remove-all','log-reaction-remove-emoji','log-role','log-role-create','log-role-delete',
+  'log-role-update','log-scheduled-event-create','log-scheduled-event-delete','log-scheduled-event-update','log-scheduled-event-user-add','log-scheduled-event-user-remove','log-server','log-server-guide-update',
+  'log-soundboard','log-soundboard-sound-create','log-soundboard-sound-delete','log-soundboard-sound-update','log-stage','log-stage-create','log-stage-delete','log-stage-update',
+  'log-sticker','log-sticker-create','log-sticker-delete','log-sticker-update','log-thread','log-thread-create','log-thread-delete','log-thread-member-join',
+  'log-thread-member-leave','log-thread-update','log-typing','log-typing-start','log-user','log-user-update','log-voice','log-voice-disconnect',
+  'log-voice-effect-send','log-voice-join','log-voice-leave','log-voice-move','log-voice-state-update','log-voice-switch','log-webhook','log-webhook-create',
+  'log-webhook-delete','log-webhook-update',
  ];
  for (const id of ['dark', 'light']) {
   const grid = document.getElementById(id);

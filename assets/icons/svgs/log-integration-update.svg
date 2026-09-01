@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-integration-update-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-integration-update-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <rect x="3" y="3.5" width="8.8" height="17" rx="2.6" fill="#5865F2"/>
+   <circle cx="11.8" cy="12" r="2.6" fill="#5865F2"/>
+   <path fill="#C2C9FF" d="M15.2 3.5H18.4A2.6 2.6 0 0 1 21 6.1V17.9A2.6 2.6 0 0 1 18.4 20.5H15.2A2.6 2.6 0 0 1 12.6 17.9V15.3A3.4 3.4 0 0 0 12.6 8.7V6.1A2.6 2.6 0 0 1 15.2 3.5Z"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#5865F2"/>
+   <g transform="rotate(45 12 12)">
+    <rect x="10.5" y="4.2" width="3" height="11.3" rx="1.5" fill="#FFFFFF"/>
+    <path d="M10.5 16.7h3L12 19.8z" fill="#FFFFFF"/>
+   </g>
+ </g>
+</svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-webhook-delete-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-webhook-delete-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#C2C9FF" fill-rule="evenodd" transform="rotate(-45 9.5 14.5)" d="M6.5 10.5H12.5A4 4 0 0 1 12.5 18.5H6.5A4 4 0 0 1 6.5 10.5ZM6.5 12.7H12.5A1.8 1.8 0 0 1 12.5 16.3H6.5A1.8 1.8 0 0 1 6.5 12.7Z"/>
+   <path fill="#5865F2" fill-rule="evenodd" transform="rotate(-45 14.5 9.5)" d="M11.5 5.5H17.5A4 4 0 0 1 17.5 13.5H11.5A4 4 0 0 1 11.5 5.5ZM11.5 7.7H17.5A1.8 1.8 0 0 1 17.5 11.3H11.5A1.8 1.8 0 0 1 11.5 7.7Z"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#ED4245"/>
+   <g transform="rotate(45 12 12)">
+    <rect x="10.4" y="5.5" width="3.2" height="13" rx="1.6" fill="#FFFFFF"/>
+    <rect x="5.5" y="10.4" width="13" height="3.2" rx="1.6" fill="#FFFFFF"/>
+   </g>
+ </g>
+</svg>

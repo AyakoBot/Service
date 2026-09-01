@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="reaction-role-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#reaction-role-cut)">
+  <g transform="translate(-0.7 -0.7) scale(0.8667)">
+   <path fill="#C2C9FF" d="M6 3h12a2 2 0 0 1 2 2v8q0 5-8 8-8-3-8-8V5a2 2 0 0 1 2-2z"/>
+   <path fill="#5865F2" d="M6 3h12a2 2 0 0 1 2 2v7H4V5a2 2 0 0 1 2-2z"/>
+   <circle cx="12" cy="12" r="2" fill="#FFFFFF"/>
+  </g>
+ </g>
+ <circle cx="18" cy="18" r="5" fill="#5865F2"/>
+ <circle cx="16.1" cy="16.4" r="1" fill="#FFFFFF"/>
+ <circle cx="19.9" cy="16.4" r="1" fill="#FFFFFF"/>
+ <path fill="#FFFFFF" d="M15.4 18.6a2.6 2.6 0 0 0 5.2 0 3.25 3.25 0 0 1-5.2 0z"/>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-reaction-remove-all-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-reaction-remove-all-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#C2C9FF" d="M5.6 14h5.4l-5.4 7.5z"/>
+   <rect x="2" y="2" width="20" height="16.5" rx="3.6" fill="#C2C9FF"/>
+   <circle cx="15" cy="10" r="4.8" fill="#5865F2"/>
+   <circle cx="9" cy="12.7" r="5.6" fill="#C2C9FF"/>
+   <circle cx="9" cy="12.7" r="4.8" fill="#5865F2"/>
+   <circle cx="6.83" cy="10.84" r="0.99" fill="#FFFFFF"/>
+   <circle cx="11.17" cy="10.84" r="0.99" fill="#FFFFFF"/>
+   <path fill="#FFFFFF" fill-rule="evenodd" d="M5.9 13.32a3.1 3.1 0 0 0 6.2 0 3.88 3.88 0 0 1-6.2 0z"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#ED4245"/>
+   <g transform="rotate(45 12 12)">
+    <rect x="10.4" y="5.5" width="3.2" height="13" rx="1.6" fill="#FFFFFF"/>
+    <rect x="5.5" y="10.4" width="13" height="3.2" rx="1.6" fill="#FFFFFF"/>
+   </g>
+ </g>
+</svg>

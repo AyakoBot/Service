@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-message-update-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-message-update-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#5865F2" d="M6 14.5h5.5L4.5 21z"/>
+   <rect fill="#5865F2" x="2.5" y="3.5" width="19" height="13.5" rx="4"/>
+   <rect fill="#FFFFFF" x="6" y="7.6" width="12" height="2.1" rx="1.05"/>
+   <rect fill="#FFFFFF" x="6" y="11.3" width="7.8" height="2.1" rx="1.05"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#5865F2"/>
+   <g transform="rotate(45 12 12)">
+    <rect x="10.5" y="4.2" width="3" height="11.3" rx="1.5" fill="#FFFFFF"/>
+    <path d="M10.5 16.7h3L12 19.8z" fill="#FFFFFF"/>
+   </g>
+ </g>
+</svg>

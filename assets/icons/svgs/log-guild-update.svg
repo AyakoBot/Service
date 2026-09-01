@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-guild-update-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-guild-update-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#5865F2" d="M5 3h14a1.5 1.5 0 0 1 1.5 1.5V11.7c0 4.3-3.1 7.2-8.5 9.3-5.4-2.1-8.5-5-8.5-9.3V4.5A1.5 1.5 0 0 1 5 3Z"/>
+   <rect fill="#C2C9FF" x="3.5" y="7.1" width="17" height="2.9"/>
+   <path fill="#FFFFFF" d="M12 10.9Q12.65 13.25 15 13.9Q12.65 14.55 12 16.9Q11.35 14.55 9 13.9Q11.35 13.25 12 10.9Z"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#5865F2"/>
+   <g transform="rotate(45 12 12)">
+    <rect x="10.5" y="4.2" width="3" height="11.3" rx="1.5" fill="#FFFFFF"/>
+    <path d="M10.5 16.7h3L12 19.8z" fill="#FFFFFF"/>
+   </g>
+ </g>
+</svg>

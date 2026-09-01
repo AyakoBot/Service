@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-channel-create-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-channel-create-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <rect fill="#C2C9FF" x="2" y="2" width="20" height="20" rx="5"/>
+   <rect fill="#5865F2" x="7.4" y="5.2" width="2.3" height="13.6" rx="1.15" transform="rotate(10 8.55 12)"/>
+   <rect fill="#5865F2" x="12.4" y="5.2" width="2.3" height="13.6" rx="1.15" transform="rotate(10 13.55 12)"/>
+   <rect fill="#5865F2" x="4.8" y="8.3" width="13.8" height="2.3" rx="1.15"/>
+   <rect fill="#5865F2" x="4.8" y="13.4" width="13.8" height="2.3" rx="1.15"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#3BA55D"/>
+   <rect x="10.4" y="5.5" width="3.2" height="13" rx="1.6" fill="#FFFFFF"/>
+   <rect x="5.5" y="10.4" width="13" height="3.2" rx="1.6" fill="#FFFFFF"/>
+ </g>
+</svg>

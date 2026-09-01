@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="log-voice-effect-send-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#log-voice-effect-send-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#5865F2" d="M10.6 5.2 7 8.7H4.4c-1 0-1.8.8-1.8 1.8v3c0 1 .8 1.8 1.8 1.8H7l3.6 3.5c.76.74 2.03.2 2.03-.86V6.06c0-1.06-1.27-1.6-2.03-.86z"/>
+   <path fill="#C2C9FF" d="M14.6 9a3 3 0 0 1 0 5.6 5.6 5.6 0 0 0 0-5.6z"/>
+   <path fill="#C2C9FF" d="M17.4 7.2a4.9 4.9 0 0 1 0 7.8 9.2 9.2 0 0 0 0-7.8z"/>
+  </g>
+ </g>
+ <g transform="translate(12 12) scale(0.5)">
+  <circle cx="12" cy="12" r="10" fill="#F0B232"/>
+   <path d="M12 3.6 13.9 10.1 20.4 12 13.9 13.9 12 20.4 10.1 13.9 3.6 12 10.1 10.1Z" fill="#FFFFFF"/>
+ </g>
+</svg>

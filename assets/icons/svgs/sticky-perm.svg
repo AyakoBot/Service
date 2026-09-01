@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+ <mask id="sticky-perm-cut">
+  <rect width="24" height="24" fill="#FFFFFF"/>
+  <circle cx="18" cy="18" r="6.4" fill="#000000"/>
+ </mask>
+ <g mask="url(#sticky-perm-cut)">
+  <g transform="translate(-1.45 -2.01) scale(0.929)">
+   <path fill="#C2C9FF" fill-rule="evenodd" d="M7.5 11V8.7a4.5 4.5 0 0 1 9 0V11h-2.3V8.7a2.2 2.2 0 0 0-4.4 0V11H7.5Z"/>
+   <rect fill="#5865F2" x="4.5" y="10" width="15" height="11" rx="2.2"/>
+   <circle fill="#FFFFFF" cx="12" cy="14.4" r="1.9"/>
+   <path fill="#FFFFFF" d="M11.3 15.6h1.4l0.7 3a0.9 0.9 0 0 1-0.88 1.1h-1.04a0.9 0.9 0 0 1-0.88-1.1l0.7-3Z"/>
+  </g>
+ </g>
+ <circle cx="18" cy="18" r="5" fill="#ED4245"/>
+ <rect x="15.5" y="14.4" width="5" height="1.8" rx="0.9" fill="#FFFFFF"/>
+ <rect x="16.7" y="16.2" width="2.6" height="2.1" fill="#FFFFFF"/>
+ <path fill="#FFFFFF" d="M17.3 18.3h1.4L18 21.2z"/>
+</svg>
