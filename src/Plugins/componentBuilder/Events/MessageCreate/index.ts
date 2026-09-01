@@ -27,7 +27,9 @@ export default async function (
  const thread = await this.client.cache.threads.get(msg.channel_id);
  if (!thread) return;
 
- const api = await this.getAPI(msg.guild_id);
+ const api =
+  (thread.owner_id ? this.client.getAppAPI(thread.owner_id, msg.guild_id) : null) ??
+  (await this.getAPI(msg.guild_id));
  if (thread.owner_id !== api.botId) return;
 
  const messages = await fetchMessages.call(
@@ -36,6 +38,7 @@ export default async function (
   msg.guild_id,
   { amount: 100, abortWhen: (m) => Boolean(parseMarker(m as BuilderMessageLike)) },
   { origin: this.name, reason: 'Locating component builder surface' },
+  api,
  );
 
  const builderMsg = messages.find((m) => parseMarker(m as BuilderMessageLike));
