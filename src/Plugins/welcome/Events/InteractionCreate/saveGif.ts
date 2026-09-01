@@ -8,7 +8,7 @@ import ephemeralNote from '../../../../Util/ephemeralNote.js';
 import { hasManageGuild } from '../../../settings/Util/authorizeSettings.js';
 import type { GreetingKind } from '../../Classes/Enums.js';
 import type WelcomePlugin from '../../Plugin.js';
-import { saveGifs } from '../../Util/gifPool.js';
+import { hasPendingEmbed, saveGifs } from '../../Util/gifPool.js';
 
 export default async function (
  this: WelcomePlugin,
@@ -30,7 +30,11 @@ export default async function (
 
  const { found, added } = await saveGifs.call(this, cmd.guild_id, kind, message);
  if (!found) {
-  ephemeralNote.call(this, cmd, t.gifs.noneFound());
+  ephemeralNote.call(
+   this,
+   cmd,
+   hasPendingEmbed(message) ? t.gifs.embedPending() : t.gifs.noneFound(),
+  );
   return;
  }
 
