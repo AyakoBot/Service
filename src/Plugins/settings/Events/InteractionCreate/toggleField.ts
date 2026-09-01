@@ -41,7 +41,8 @@ export default async function (
  const next = !displayRow[field.column];
 
  if (field.headerToggle && next) {
-  const missing = schema.groups
+  const toggledGroup = schema.groups.find((g) => g.id === id.groupId);
+  const missing = (toggledGroup ? [toggledGroup] : schema.groups)
    .filter((g) => !g.showIf || g.showIf(row).ok)
    .flatMap((g) => g.fields)
    .filter((f) => f.required && (!f.showIf || f.showIf(row).ok) && isUnset(row[f.column]));
