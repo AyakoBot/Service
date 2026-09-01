@@ -18,6 +18,8 @@ import {
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../Types/index.js';
+import interpolate from '../../../Util/interpolate.js';
+import { serverVars } from '../../../Util/placeholderVars.js';
 import { TicketRoute } from '../Classes/Routes.js';
 import TicketPanel from '../Classes/TicketPanel.js';
 import type TicketPlugin from '../Plugin.js';
@@ -37,8 +39,9 @@ export const buildHubPayload = async function (
 ) {
  const t = await this.t(panel.guild);
 
+ const vars = await serverVars.call(this, panel.guild);
  const embed = panel.embed
-  ? (panel.embed as APIEmbed)
+  ? interpolate(panel.embed as APIEmbed, vars)
   : defaultEmbed(t.panel.hubDesc()).toJSON();
 
  const components: APIMessageTopLevelComponent[] = [];

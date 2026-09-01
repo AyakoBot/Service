@@ -34,6 +34,7 @@ import Plugin, {
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
+import { withServerPlaceholders } from '../../Util/messagePlaceholders.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -108,6 +109,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  settingName = PluginName.Ticketing;
  dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'TicketSetting';
+ placeholders = withServerPlaceholders();
 
  customBotPerms =
   PermissionFlagsBits.ViewChannel |
