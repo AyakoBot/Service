@@ -25,10 +25,10 @@ import type Client from '../../../Classes/Client.js';
 import constants from '../../../Classes/Constants.js';
 import type Database from '../../../Classes/Database.js';
 import { Colors } from '../../../Types/index.js';
+import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import getUser from '../../../Util/getUser.js';
+import languageFunctions from '../../../Util/languageFunctions.js';
 import type TicketPlugin from '../Plugin.js';
-import { cloneMessageIntoContainer } from '../Util/cloneMessageIntoContainer.js';
-import languageFunctions from '../Util/languageFunctions.js';
 import {
  encodeContext,
  extractBody,
