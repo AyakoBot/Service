@@ -73,7 +73,7 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
   case ComponentKind.Text: {
    const input = new TextInputBuilder()
     .setCustomId(customId)
-    .setStyle(TextInputStyle.Short)
+    .setStyle(field.multiline ? TextInputStyle.Paragraph : TextInputStyle.Short)
     .setRequired(Boolean(field.required));
 
    if (field.editor === EditorType.Duration) {

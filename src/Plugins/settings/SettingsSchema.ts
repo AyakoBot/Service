@@ -64,6 +64,7 @@ export interface SettingsField<Row = Record<string, unknown>> {
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
+ multiline?: boolean;
  ms?: boolean;
  headerToggle?: boolean;
  showIf?: (row: Row) => ShowIfResult;
@@ -162,6 +163,7 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
+ multiline?: boolean;
  ms?: boolean;
  headerToggle?: boolean;
  showIf?: (row: Row) => ShowIfResult;
