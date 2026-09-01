@@ -4,6 +4,8 @@ import { API, GatewayDispatchEvents, type APIApplication } from '@discordjs/core
 import { REST } from '@discordjs/rest';
 
 import GuildSetting from '../Plugins/settings/GuildSetting.js';
+import AutomodQueue from '../Util/automodQueue.js';
+import RoleWriteQueue from '../Util/roleWriteQueue.js';
 import { TokenBreaker } from '../Util/tokenBreaker.js';
 
 import type Plugin from './abstracts/Plugin.js';
@@ -42,6 +44,8 @@ export default class Client {
  plugins: Plugin<GatewayDispatchEvents, BaseLanguage>[] = [];
 
  emojis = new EmojiRegistry(this);
+ automod = new AutomodQueue(this);
+ roleWrites = new RoleWriteQueue(this);
 
  constructor() {
   this.logger.log('[Client] Initializing Client...');
