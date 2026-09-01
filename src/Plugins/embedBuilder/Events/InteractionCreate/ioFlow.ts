@@ -19,6 +19,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
+import { renderPlaceholderList } from '../../../../Util/messagePlaceholders.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import {
  ComponentBuilderCommand,
@@ -29,7 +30,7 @@ import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 import { builderContext, ephemeralNote } from '../../Util/builderContext.js';
 import { parseMarker } from '../../Util/builderState.js';
-import { placeholdersByPlugin } from '../../Util/placeholderList.js';
+import { placeholderScope, type PlaceholderGroup } from '../../Util/placeholderList.js';
 import { renderBuilder } from '../../Util/renderBuilder.js';
 
 import { openIntoThread } from './start.js';
@@ -81,7 +82,7 @@ export const importOpen = async function (
    ),
   );
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening embed JSON import modal',
@@ -177,19 +178,21 @@ export const placeholders = async function (
  if (!ctx) return;
 
  const t = await this.t(cmd.guild_id);
- const groups = placeholdersByPlugin(this.client);
+ const scope = await placeholderScope(this.client, cmd.application_id, cmd.guild_id ?? '');
 
- const body = groups.length
-  ? groups
-     .map(
-      (g) =>
-       `**${g.name}**\n${g.placeholders.map((p) => `\`{{${p}}}\``).join(' ')}`,
-     )
-     .join('\n\n')
+ const render = (group: PlaceholderGroup) =>
+  `**${group.name}**\n${renderPlaceholderList(group.placeholders)}`;
+
+ const sections = scope.owned.length
+  ? scope.owned.map(render).join('\n\n')
   : t.placeholders.none();
 
+ const footer = scope.others.length
+  ? `\n\n-# ${t.placeholders.otherBots({ list: scope.others.map((g) => g.name).join(', ') })}`
+  : '';
+
  new MessagePayload(this.client, { origin: this.name, reason: 'Embed placeholders' })
-  .setContent(`### ${t.placeholders.title()}\n-# ${t.placeholders.intro()}\n\n${body}`)
+  .setContent(`### ${t.placeholders.title()}\n-# ${t.placeholders.intro()}\n\n${sections}${footer}`)
   .setFlags(MessageFlags.Ephemeral)
   .reply(cmd);
 };

@@ -22,7 +22,7 @@ export default async function (
   .slice(0, 25)
   .map((row) => ({ name: row.name.slice(0, 100), value: row.name.slice(0, 100) }));
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createAutocompleteResponse(
   cmd.id,
   cmd.token,

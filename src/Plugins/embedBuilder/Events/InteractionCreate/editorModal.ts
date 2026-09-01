@@ -76,7 +76,7 @@ export const openEditorModal = async function (
     .setTextInputComponent(textInput),
   );
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening embed property editor',

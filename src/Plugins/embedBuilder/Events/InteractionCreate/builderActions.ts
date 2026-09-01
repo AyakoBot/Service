@@ -148,7 +148,7 @@ export const closeThread = async function (
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  await api.interactions.deferMessageUpdate(cmd.id, cmd.token, undefined, {
   origin: this.name,
   reason: 'Acknowledging builder close',

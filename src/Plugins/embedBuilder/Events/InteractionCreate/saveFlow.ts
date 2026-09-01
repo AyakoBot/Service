@@ -39,7 +39,7 @@ export const saveOpen = async function (
     ),
   );
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening embed save modal',

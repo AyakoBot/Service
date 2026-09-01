@@ -1,6 +1,16 @@
 import type { CustomEmbed as CustomEmbedRow } from '@ayako/database';
-import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { PermissionFlagsBits, type GatewayDispatchEvents } from '@discordjs/core';
+import {
+ ContextMenuCommandBuilder,
+ SlashCommandBuilder,
+ SlashCommandSubcommandBuilder,
+} from '@discordjs/builders';
+import {
+ ApplicationCommandType,
+ ApplicationIntegrationType,
+ InteractionContextType,
+ PermissionFlagsBits,
+ type GatewayDispatchEvents,
+} from '@discordjs/core';
 import type { APIEmbed } from 'discord-api-types/v10';
 
 import Plugin, {
@@ -66,6 +76,8 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
  } as Plugin<Events, APILanguage>['eventHandlers'];
  /* eslint-enable @typescript-eslint/naming-convention */
 
+ hasMessageContent = true;
+
  constructor(client: Client) {
   super(client);
   assertSchemaValid(this.settingsSchema);
@@ -73,6 +85,15 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
 
  getCommands = () => ({
   commands: [
+   ...(this.hasMessageContent
+    ? []
+    : [
+       new ContextMenuCommandBuilder()
+        .setName(EmbedBuilderCommand.ProcessMessage)
+        .setType(ApplicationCommandType.Message)
+        .setContexts([InteractionContextType.Guild])
+        .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
+      ]),
    new SlashCommandBuilder()
     .setName(EmbedBuilderCommand.EmbedBuilder)
     .setDescription('Build, save, send, and edit message embeds')

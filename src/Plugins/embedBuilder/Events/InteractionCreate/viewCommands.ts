@@ -52,7 +52,7 @@ const viewMessage = async function (
   return;
  }
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const message = await api.channels.getMessage(match[2], match[3], {
   origin: this.name,
   reason: 'Fetching message for embed JSON view',

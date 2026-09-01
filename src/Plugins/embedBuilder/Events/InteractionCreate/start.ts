@@ -32,11 +32,12 @@ const selectLimit = 25;
 
 const buildStartSurface = async function (
  this: EmbedBuilderPlugin,
- guildId: string,
+ cmd: APIInteraction,
  selectedId: string | null,
 ) {
+ const guildId = cmd.guild_id as string;
  const t = await this.t(guildId);
- const api = await this.getAPI(guildId);
+ const api = await this.getInteractionAPI(cmd);
  const emotes = this.client.emojis.for(api);
  const saved = await CustomEmbed.all(this.client, guildId);
 
@@ -125,7 +126,7 @@ export const openIntoThread = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const emotes = this.client.emojis.for(api);
 
  const result = await openThread.call(this, cmd, embed);
@@ -148,7 +149,7 @@ export const startOpen = async function (
  cmd: APIApplicationCommandInteraction,
 ) {
  if (!cmd.guild_id) return;
- const payload = await buildStartSurface.call(this, cmd.guild_id, null);
+ const payload = await buildStartSurface.call(this, cmd, null);
  payload.reply(cmd);
 };
 
@@ -166,7 +167,7 @@ export const loadPick = async function (
  if (!cmd.guild_id) return;
  if (cmd.data.component_type !== ComponentType.StringSelect) return;
 
- const payload = await buildStartSurface.call(this, cmd.guild_id, cmd.data.values[0] ?? null);
+ const payload = await buildStartSurface.call(this, cmd, cmd.data.values[0] ?? null);
  payload.update(cmd);
 };
 
@@ -228,6 +229,6 @@ export const deleteSaved = async function (
   return;
  }
 
- const payload = await buildStartSurface.call(this, cmd.guild_id, null);
+ const payload = await buildStartSurface.call(this, cmd, null);
  payload.update(cmd);
 };

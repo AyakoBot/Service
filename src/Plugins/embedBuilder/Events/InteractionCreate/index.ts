@@ -24,6 +24,7 @@ import {
 } from './builderActions.js';
 import { editorSave } from './editorModal.js';
 import { exportJson, importOpen, importSave, placeholders } from './ioFlow.js';
+import processMessage from './processMessage.js';
 import { saveOpen, saveSubmit } from './saveFlow.js';
 import {
  editOpen,
@@ -46,6 +47,9 @@ export default async function (
    const interaction = cmd as APIApplicationCommandInteraction;
    if (interaction.data.name === EmbedBuilderCommand.EmbedBuilder) {
     command.call(this, interaction);
+   }
+   if (interaction.data.name === EmbedBuilderCommand.ProcessMessage) {
+    processMessage.call(this, interaction);
    }
    break;
   }

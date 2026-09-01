@@ -47,6 +47,7 @@ export interface BuilderView {
  selectedField: number | null;
  selectedProperty: EmbedProperty | null;
  canManage: boolean;
+ hasMessageContent: boolean;
  emotes: EmoteSet;
 }
 
@@ -97,6 +98,9 @@ const needsOneList = (t: Translator): string =>
   .map((property) => `\`${propertyLabel(t, property)}\``)
   .join(', ');
 
+const typedHintText = (view: BuilderView, t: Translator) =>
+ (view.hasMessageContent ? t.builder.typedHint() : t.builder.typedViaCommand());
+
 const inputList = (t: Translator, inputs: PropertyInput[]): string =>
  topLevelProperties
   .concat(fieldProperties)
@@ -131,7 +135,7 @@ const headerEmbed = function (this: EmbedBuilderPlugin, t: Translator, view: Bui
   .addFields(
    {
     name: `${textEmote(emotes.paragraph)} ${t.builder.typedHere()}`,
-    value: `${inputList(t, [PropertyInput.Typed])}\n-# ${t.builder.typedHint()}`,
+    value: `${inputList(t, [PropertyInput.Typed])}\n-# ${typedHintText(view, t)}`,
     inline: true,
    },
    {

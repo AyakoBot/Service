@@ -2,6 +2,7 @@ import { getGuildPerms } from '@ayako/utility';
 import { MessageType, type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
+import { botHasMessageContent } from '../../../../Util/botMessageContent.js';
 import fetchMessages from '../../../../Util/fetchMessages.js';
 import { hasManageGuild } from '../../../settings/Util/authorizeSettings.js';
 import { propertyInputs, PropertyInput } from '../../Classes/Properties.js';
@@ -16,7 +17,7 @@ import {
 } from '../../Util/builderState.js';
 import { renderBuilder } from '../../Util/renderBuilder.js';
 
-export default async function (
+export const processBuilderMessage = async function (
  this: EmbedBuilderPlugin,
  msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
 ) {
@@ -27,7 +28,9 @@ export default async function (
  const thread = await this.client.cache.threads.get(msg.channel_id);
  if (!thread) return;
 
- const api = await this.getAPI(msg.guild_id);
+ const api =
+  (thread.owner_id ? this.client.getAppAPI(thread.owner_id, msg.guild_id) : null) ??
+  (await this.getAPI(msg.guild_id));
  if (thread.owner_id !== api.botId) return;
 
  const messages = await fetchMessages.call(
@@ -36,6 +39,7 @@ export default async function (
   msg.guild_id,
   { amount: 100, abortWhen: (m) => Boolean(parseMarker(m as BuilderMessageLike)) },
   { origin: this.name, reason: 'Locating embed builder surface' },
+  api,
  );
 
  const builderMsg = messages.find((m) => parseMarker(m as BuilderMessageLike));
@@ -72,7 +76,15 @@ export default async function (
    selectedField: getSelectedField(surface),
    selectedProperty: null,
    canManage,
+   hasMessageContent: await botHasMessageContent(api),
    emotes: this.client.emojis.for(api),
   })
   .edit(msg.channel_id, surface.id, msg.guild_id, api);
+};
+
+export default async function (
+ this: EmbedBuilderPlugin,
+ msg: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
+) {
+ await processBuilderMessage.call(this, msg);
 }

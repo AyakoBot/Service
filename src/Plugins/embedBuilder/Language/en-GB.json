@@ -32,7 +32,9 @@
   "backToEmbed": "Back to main embed",
   "notSet": "Not set",
   "notYourBuilder": "This builder belongs to someone else.",
-  "editMessage": "Edit Message"
+  "editMessage": "Edit Message",
+  "typedViaCommand": "Right-click your message and pick Apps > \"Embed-Builder: Use this text\"",
+  "typedViaCommandNotice": "### Setting Title or Description\nI can't read message text in this server, so typing alone won't reach the builder.\nSend your text as a normal message, then **right-click it** and pick **Apps > Embed-Builder: Use this text**."
  },
  "modals": {
   "valueLabel": "New value",
@@ -124,7 +126,13 @@
  "placeholders": {
   "button": "Placeholders",
   "title": "Available Placeholders",
-  "intro": "Type these into any text field. They are replaced when the message is sent by the feature listed.",
-  "none": "No feature currently offers placeholders."
+  "intro": "Type these into any text field. They are replaced when the message is sent.",
+  "none": "This bot offers no placeholders.",
+  "otherBots": "More placeholders are available when this command is run with: {{list}}"
+ },
+ "processMessage": {
+  "empty": "That message has no text I can use.",
+  "notYours": "You can only use your own messages here.",
+  "applied": "Applied to the builder."
  }
 }

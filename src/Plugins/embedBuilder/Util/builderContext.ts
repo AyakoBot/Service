@@ -4,6 +4,7 @@ import {
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 
+import { botHasMessageContent } from '../../../Util/botMessageContent.js';
 import ephemeralNote from '../../../Util/ephemeralNote.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
@@ -35,7 +36,7 @@ export const builderContext = async function (
   return null;
  }
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
 
  return {
   message,
@@ -45,6 +46,7 @@ export const builderContext = async function (
    selectedField: getSelectedField(message),
    selectedProperty: getSelectedProperty(message),
    canManage: hasManageGuild(cmd.member?.permissions),
+  hasMessageContent: await botHasMessageContent(api),
    emotes: this.client.emojis.for(api),
   },
  };

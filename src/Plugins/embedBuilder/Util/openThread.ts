@@ -1,6 +1,7 @@
 import { RequestHandlerError, type RequestHandlerErrorType } from '@ayako/api';
 import { ChannelType, type APIEmbed, type APIInteraction } from 'discord-api-types/v10';
 
+import { botHasMessageContent } from '../../../Util/botMessageContent.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
 
@@ -15,7 +16,7 @@ export const openThread = async function (
 ): Promise<string | RequestHandlerError<RequestHandlerErrorType> | null> {
  if (!cmd.guild_id || !cmd.channel || !cmd.member) return null;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const userId = cmd.member.user.id;
 
  const thread = await api.channels.createThread(
@@ -46,6 +47,7 @@ export const openThread = async function (
   selectedField: null,
   selectedProperty: null,
   canManage: hasManageGuild(cmd.member.permissions),
+  hasMessageContent: await botHasMessageContent(api),
   emotes: this.client.emojis.for(api),
  });
 
@@ -56,6 +58,14 @@ export const openThread = async function (
  if (sent instanceof RequestHandlerError) {
   this.nonFatalError(sent, 'openThread.post');
   return null;
+ }
+
+ if (!(await botHasMessageContent(api))) {
+  await api.channels.createMessage(
+   thread.id,
+   { content: t.builder.typedViaCommandNotice() },
+   { origin: this.name, reason: 'Explaining the typed-input command' },
+  );
  }
 
  return thread.id;
