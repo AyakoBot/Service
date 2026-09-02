@@ -21,7 +21,7 @@
     "@discordjs/builders": "^1.14.1",
     "@discordjs/core": "^2.5.0",
     "@discordjs/rest": "^2.6.1",
-    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/adapter-pg": "7.8.0",
     "canvas": "^3.2.3",
     "captcha-canvas": "^3.4.0",
     "discord-api-types": "0.38.49",
