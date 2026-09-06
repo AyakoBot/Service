@@ -246,8 +246,15 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
    new ContextMenuCommandBuilder()
     .setName(InfoCommand.ViewRaw)
     .setType(ApplicationCommandType.Message)
-    .setContexts([InteractionContextType.Guild])
-    .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]),
+    .setContexts([
+     InteractionContextType.Guild,
+     InteractionContextType.BotDM,
+     InteractionContextType.PrivateChannel,
+    ])
+    .setIntegrationTypes([
+     ApplicationIntegrationType.GuildInstall,
+     ApplicationIntegrationType.UserInstall,
+    ]),
    new ContextMenuCommandBuilder()
     .setName(InfoCommand.MessageHistory)
     .setType(ApplicationCommandType.Message)
