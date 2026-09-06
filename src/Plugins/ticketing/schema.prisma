@@ -169,7 +169,7 @@ model TicketTier {
  category        String?       @db.VarChar
  channel         String?       @db.VarChar
  reminderSeconds Decimal       @default(0) @db.Decimal
- settings        TicketSetting @relation(fields: [settingsId], references: [id])
+ settings        TicketSetting @relation(fields: [settingsId], references: [id], onDelete: Cascade)
  Ticket          Ticket[]
 
  @@unique([settingsId, rank])

@@ -3,6 +3,7 @@
 enum TicketErrors1 {
  ticketNotFound = 'ticketNotFound',
  userNotFound = 'userNotFound',
+ memberNotFound = 'memberNotFound',
 }
 
 export const BaseTicketLoggerErrors = { ...TicketErrors1 } as const;
@@ -57,6 +58,7 @@ enum TicketErrors3 {
 
  create_CantCreateChannel = 'create.cantCreateChannel',
  create_CantUpdatePermissions = 'create.cantUpdatePermissions',
+ create_CategoryNotSet = 'create.categoryNotSet',
  create_CantReplyMessage = 'create.cantReplyMessage',
 
  claim_CantEditChannel = 'claim.cantEditChannel',

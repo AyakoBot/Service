@@ -3,14 +3,8 @@ import { RequestHandlerError } from '@ayako/api';
 import { TicketPlacementMode } from '@ayako/database';
 import type { TicketTier } from '@ayako/database';
 import { LogLevel, txtFileWriter, type RChannel, type RThread } from '@ayako/utility';
+import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import {
- ActionRowBuilder,
- ButtonBuilder,
- ContainerBuilder,
- TextDisplayBuilder,
-} from '@discordjs/builders';
-import {
- ButtonStyle,
  ChannelType,
  MessageFlags,
  type APIMessageComponentInteraction,
@@ -25,7 +19,6 @@ import { threadArchiveMinutes } from '../Util/threadArchiveDuration.js';
 import BaseTicket, { SurfaceState } from './BaseTicket.js';
 import ChannelTicket from './ChannelTicket.js';
 import { ThreadTicketErrors } from './Enums.js';
-import { TicketRoute } from './Routes.js';
 
 export default class ThreadTicket extends ChannelTicket {
  channelTicket: ChannelTicket;
@@ -258,15 +251,7 @@ export default class ThreadTicket extends ChannelTicket {
 
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Warning)
-   .addTextDisplayComponents(new TextDisplayBuilder().setContent(t.escalatedAway()))
-   .addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-     new ButtonBuilder()
-      .setStyle(ButtonStyle.Danger)
-      .setCustomId(this.plugin.getRoute(TicketRoute.Delete, this.id))
-      .setLabel(t.base.t.Delete()),
-    ),
-   );
+   .addTextDisplayComponents(new TextDisplayBuilder().setContent(t.escalatedAway()));
 
   const payload = new MessagePayload(this.client, {
    origin: ThreadTicket.name,

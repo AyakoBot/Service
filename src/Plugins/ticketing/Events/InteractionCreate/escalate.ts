@@ -33,10 +33,13 @@ export default async function (
   return;
  }
 
- const picker = await ticket.buildEscalationPicker(userId).catch((e: Error) => {
-  handleTicketError.call(this.client, { guildId: cmd.guild_id!, error: e, cmd });
-  return null;
- });
+ let picker;
+ try {
+  picker = await ticket.buildEscalationPicker(userId);
+ } catch (error) {
+  handleTicketError.call(this.client, { guildId: cmd.guild_id!, error: error as Error, cmd });
+  return;
+ }
 
  if (!picker) {
   const t = await this.t(cmd.guild_id);

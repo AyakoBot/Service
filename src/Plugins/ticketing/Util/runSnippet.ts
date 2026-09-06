@@ -65,7 +65,10 @@ export default async function (
   ? await resolveSnippetVars.call(this.client, snippet.staffText, ctx)
   : '';
 
- if (userText.trim()) await relayUserText.call(this, ticket, staffId, guildId, userText);
+ if (userText.trim() && !(await relayUserText.call(this, ticket, staffId, guildId, userText))) {
+  showError.call(this, cmd, emotes, t.base.t.error(), t.errors.couldntSendDm());
+  return;
+ }
  if (staffText.trim()) await postStaffNote.call(this, ticket, staffId, guildId, staffText);
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Confirming snippet post' })
@@ -94,11 +97,11 @@ const relayUserText = async function (
  const msg = buildSyntheticMessage(staffId, guildId, dbTicket.channel, content);
 
  if (dmTypes.includes(dbTicket.settings.type) && 'cloneToDm' in ticket) {
-  await (ticket as BaseTicket & { cloneToDm: (m: RMessage) => Promise<boolean> }).cloneToDm(msg);
-  return;
+  return (ticket as BaseTicket & { cloneToDm: (m: RMessage) => Promise<boolean> }).cloneToDm(msg);
  }
 
  await ticket.forwardToTicketChannel(msg);
+ return true;
 };
 
 const postStaffNote = async function (

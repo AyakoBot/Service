@@ -53,6 +53,9 @@ const getBaseMessage = function (
   case BaseTicketErrors.userNotFound:
    return t.base.errors.userNotFound();
 
+  case BaseTicketErrors.memberNotFound:
+   return t.base.errors.memberNotFound();
+
   case BaseTicketErrors.create_LimitKindReached:
    return t.errors[BaseTicketErrors.create_LimitKindReached]({
     count: String((error.cause as { count?: number } | undefined)?.count ?? 0),

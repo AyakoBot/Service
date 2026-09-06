@@ -1,7 +1,7 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
 import type { TicketTier } from '@ayako/database';
-import { TicketPlacementMode } from '@ayako/database';
+import { TicketPlacementMode, TicketType } from '@ayako/database';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
  ChannelType,
@@ -45,7 +45,14 @@ export default class ChannelTicket extends BaseTicket {
   await this.replyMessage(data.cmd, deletePayload, ChannelTicketErrors.delete_CantUpdateMessage);
 
   await this.archiveStaffThread();
-  await this.deleteChannel();
+
+  try {
+   await this.deleteChannel();
+  } catch (error) {
+   await this.revertDeleted();
+   throw error;
+  }
+
   await superDel.next();
 
   const ticket = await this.getTicket();
@@ -177,8 +184,8 @@ export default class ChannelTicket extends BaseTicket {
   this.plugin.logger.logLocation(LogLevel.debug);
 
   const ticket = await this.getTicket();
-  const archiveCategory = await this.getChannel(ticket.settings.archiveCategory || '');
-  if (!this.isChannel(archiveCategory)) throw new Error(ChannelTicketErrors.badChannelSupplied);
+  const cached = await this.client.cache.channels.get(ticket.settings.archiveCategory || '');
+  const archiveCategory = cached && this.isChannel(cached) ? cached : null;
 
   const t = await this.plugin.t(ticket.settings.guild);
 
@@ -313,7 +320,11 @@ export default class ChannelTicket extends BaseTicket {
   const ticket = await this.getTicket();
   const target = await this.getTier(data.targetTierId);
 
-  if (ticket.settings.placementMode === TicketPlacementMode.UnifiedForum) {
+  const forumPlacement =
+   ticket.settings.placementMode === TicketPlacementMode.UnifiedForum &&
+   [TicketType.Thread, TicketType.dmToThread].includes(ticket.settings.type);
+
+  if (forumPlacement) {
    await this.retagForTier(target);
    await superEscalate.next({ channelId: ticket.channel });
   } else {
@@ -420,10 +431,13 @@ export default class ChannelTicket extends BaseTicket {
   const superCreate = super.create(dbOpts, createOpts);
   await superCreate.next();
 
+  let createdChannelId: string | null = null;
+
   try {
    const ticketSettings = await this.getTicketSettings(dbOpts.settingsId);
    const api = await this.plugin.getAPI(ticketSettings.guild, ticketSettings.botToken);
    const channel = await this.createChannel(api, createOpts.username, dbOpts.settingsId);
+   createdChannelId = channel.id;
 
    await superCreate.next({ channelId: channel.id });
 
@@ -454,8 +468,29 @@ export default class ChannelTicket extends BaseTicket {
    await this.relayIntake(createOpts.cmd);
 
    return this;
-  } finally {
-   this.deletePreparedEntry();
+  } catch (error) {
+   await this.rollbackCreate(createdChannelId).catch(() => null);
+   throw error;
+  }
+ }
+
+ async rollbackCreate(channelId: string | null) {
+  this.plugin.logger.logLocation(LogLevel.debug);
+
+  const ticket = await this.getTicket();
+  await this.db.ticket.deleteMany({ where: { id: this.id } });
+  this.dbTicket = null;
+
+  if (!channelId) return;
+
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const deleted = await api.channels.delete(channelId, {
+   origin: ChannelTicket.name,
+   reason: 'Rolling back a failed ticket creation',
+  });
+
+  if (deleted instanceof RequestHandlerError) {
+   this.plugin.nonFatalError(deleted, 'ticketCreateRollback');
   }
  }
 
@@ -520,6 +555,10 @@ export default class ChannelTicket extends BaseTicket {
  async createChannel(api: API, username: string, settingsId: string): Promise<RChannel | RThread> {
   this.plugin.logger.logLocation(LogLevel.debug);
   const ticketSettings = await this.getTicketSettings(settingsId);
+  if (!ticketSettings.category) {
+   throw new Error(ChannelTicketErrors.create_CategoryNotSet);
+  }
+
   const name = await this.creatorChannelName(undefined, username);
 
   const channel = await api.guilds.createChannel(

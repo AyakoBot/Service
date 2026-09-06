@@ -24,11 +24,9 @@ export default async function (
  }
 
  if (!cmd.member) {
-  const t = await this.t(cmd.guild_id || cmd.guild?.id);
-
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: new Error(t.base.errors.memberNotFound(), { cause: user }),
+   error: new Error(BaseTicketErrors.memberNotFound, { cause: user }),
    cmd,
   });
   return;
@@ -39,11 +37,9 @@ export default async function (
  });
 
  if (!ticketSettings) {
-  const t = await this.t(cmd.guild_id || cmd.guild?.id);
-
   handleTicketError.call(this.client, {
    guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: new Error(t.errors[BaseTicketErrors.create_SettingsNotFound](), { cause: args[0] }),
+   error: new Error(BaseTicketErrors.create_SettingsNotFound, { cause: args[0] }),
    cmd,
   });
   return;

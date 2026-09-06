@@ -501,6 +501,17 @@ export default class BaseTicket extends BaseTicketLogger {
   await this.plugin.reminders.armForState(this.dbTicket);
  }
 
+ async revertDeleted() {
+  this.dbTicket = await this.db.ticket.update({
+   where: { id: this.id },
+   data: { state: TicketState.closed },
+   include: { settings: true },
+  });
+
+  await this.plugin.reminders.armForState(this.dbTicket);
+  await this.refreshSurface();
+ }
+
  async *create(
   dbOpts: { settingsId: string; userId: string; opener?: string },
   createOpts: { userId: string; roleIds: string[] },
@@ -512,6 +523,7 @@ export default class BaseTicket extends BaseTicketLogger {
   await this.enforceCreateLimits(dbOpts.settingsId, dbOpts.userId);
 
   const settings = await this.getTicketSettings(dbOpts.settingsId);
+  if (!settings.active) throw new Error(BaseTicketErrors.create_SettingsInactive);
 
   if (!dbOpts.opener) {
    if (settings.denyUsers.includes(createOpts.userId)) {
@@ -528,27 +540,12 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const { channelId }: { channelId: string } = yield;
 
-  try {
-   await this.createDbEntry({ ...dbOpts, channelId });
-
-   this.plugin.logger.logLocation(LogLevel.debug);
-   this.handleBaseLog({ type: LogType.TicketCreated, data: { userId: dbOpts.userId } });
-
-   return this;
-  } finally {
-   await this.deletePreparedEntry();
-  }
- }
-
- async deletePreparedEntry() {
-  const ticket = await this.getTicket();
-  if (ticket.state !== TicketState.prepared) {
-   this.plugin.logger.logLocation(LogLevel.silly);
-   return;
-  }
+  await this.createDbEntry({ ...dbOpts, channelId });
 
   this.plugin.logger.logLocation(LogLevel.debug);
-  this.db.ticket.delete({ where: { id: ticket.id } }).then();
+  this.handleBaseLog({ type: LogType.TicketCreated, data: { userId: dbOpts.userId } });
+
+  return this;
  }
 
  async enforceCreateLimits(settingsId: string, userId: string) {
@@ -598,15 +595,6 @@ export default class BaseTicket extends BaseTicketLogger {
 
  async createDbEntry(dbOpts: { settingsId: string; userId: string; channelId: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
-
-  const settings = await this.db.ticketSetting.findUnique({
-   where: { id: dbOpts.settingsId },
-   // eslint-disable-next-line @typescript-eslint/naming-convention
-   include: { Ticket: { where: { user: dbOpts.userId } } },
-  });
-  if (!settings) throw new Error(BaseTicketErrors.create_SettingsNotFound);
-  if (!settings.channel) throw new Error(BaseTicketErrors.create_SettingsChannelNotFound);
-  if (!settings.active) throw new Error(BaseTicketErrors.create_SettingsInactive);
 
   const preparedTicket = await this.getTicket();
 

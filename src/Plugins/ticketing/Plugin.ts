@@ -601,15 +601,21 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    return t.settings.systemSummary({ type: typeLabels[row.type], status, dm });
   },
   canDelete: async (row, ctx) => {
+   const where = { settingsId: String(row.id) };
    const open = await ctx.client.db.client.ticket.findMany({
-    where: {
-     settingsId: String(row.id),
-     state: { in: [TicketState.opened, TicketState.claimed] },
-    },
+    where: { ...where, state: { in: [TicketState.opened, TicketState.claimed] } },
    });
-   if (!open.length) return { ok: true };
+   const archived = open.length ? 0 : await ctx.client.db.client.ticket.count({ where });
+   if (!open.length && !archived) return { ok: true };
 
    const t = (await ctx.plugin.t(ctx.guildId)) as unknown as TicketTranslator;
+
+   if (!open.length) {
+    return {
+     ok: false,
+     reason: t.settings.deleteBlockedArchived({ count: String(archived) }),
+    };
+   }
 
    const max = 20;
    const shown = open.slice(0, max).map((ticket) => `- <#${ticket.channel}>`);
@@ -1173,6 +1179,10 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.placementMode(),
       description: (t: TicketTranslator) => t.settings.descriptions.placementMode(),
       arity: FieldArity.Single,
+      showIf: (row) => ({
+       ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
+       reason: en.settings.reasons.threadTypeOnly,
+      }),
       options: [
        {
         value: TicketPlacementMode.SeparateSpaces,

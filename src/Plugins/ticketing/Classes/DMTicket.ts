@@ -177,7 +177,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   async leave(cmd: APIMessageComponentInteraction) {
    this.plugin.logger.logLocation(LogLevel.silly);
    if (cmd.message.embeds.length) {
-    this.leaveSure(cmd);
+    await this.leaveSure(cmd);
     return;
    }
 
@@ -501,7 +501,9 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   async *close(data: { userId: string; cmd: APIModalSubmitInteraction; reason?: string }) {
    const superClose = yield* super.close(data);
 
-   await this.forwardToDmChannel(await this.getCloseDmPayload(data.reason, data.userId));
+   await this.forwardToDmChannel(await this.getCloseDmPayload(data.reason, data.userId)).catch(
+    (error: Error) => this.plugin.nonFatalError(error, 'close'),
+   );
 
    const initialMessage = await this.editInitialMessage(this.getLeaveUpdatePayload());
    if (initialMessage) await this.unpinMessage();
