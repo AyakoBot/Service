@@ -3,13 +3,14 @@ import { logger, type RChannel, type RMessage, type RThread, type RUser } from '
 import { EmbedBuilder } from '@discordjs/builders';
 import { type CreateMessageOptions, type DescriptiveRawFile } from '@discordjs/core';
 import {
+ ComponentType,
+ MessageFlags,
  MessageReferenceType,
  type AllowedMentionsTypes,
  type APIAllowedMentions,
  type APIEmbed,
  type APIInteraction,
  type APIMessageTopLevelComponent,
- type MessageFlags,
  type RESTAPIMessageReference,
 } from 'discord-api-types/v10';
 
@@ -20,6 +21,8 @@ type SendTo = {
  channel: RUser | RChannel | RThread | RUser[] | RChannel[] | RThread[] | string | string[];
  guildId: string;
 };
+
+const componentLimit = 40;
 
 export class MessagePayload {
  private client: typeof Client.prototype;
@@ -248,11 +251,31 @@ export class MessagePayload {
     ? MessagePayload.setAuthorURL(this.embeds)
     : this.embeds || undefined,
    flags: this.flags || undefined,
-   components: this.components || undefined,
+   components: this.withFileComponents() || undefined,
    files: this.files.length ? this.files : undefined,
    allowed_mentions: this.getAllowedMentions(),
    message_reference: this.messageReference,
   };
+ }
+
+ private withFileComponents(): APIMessageTopLevelComponent[] | null {
+  if (!(this.flags & MessageFlags.IsComponentsV2) || !this.files.length) return this.components;
+
+  const existing = this.components ?? [];
+  const referenced = JSON.stringify(existing);
+  const unreferenced = this.files
+   .filter((file) => !referenced.includes(`attachment://${file.name}`))
+   .map(
+    (file) =>
+     ({
+      type: ComponentType.File,
+      file: { url: `attachment://${file.name}` },
+     }) as APIMessageTopLevelComponent,
+   );
+
+  if (!unreferenced.length) return this.components;
+
+  return [...existing, ...unreferenced].slice(0, componentLimit);
  }
 
  private static setAuthorURL(embeds: APIEmbed[]) {

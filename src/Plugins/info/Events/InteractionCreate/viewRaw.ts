@@ -9,12 +9,8 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
-import { containerCharBudget } from '../../../../Util/fmt.js';
 import type InfoPlugin from '../../Plugin.js';
-
-const zeroWidth = String.fromCharCode(0x200b);
-const escapeCodeBlock = (content: string): string =>
- content.replaceAll('```', `\`${zeroWidth}\`\``);
+import { fitJsonBlock } from '../../Util/jsonBlock.js';
 
 export default async function (this: InfoPlugin, cmd: APIApplicationCommandInteraction) {
  if (cmd.data.type !== ApplicationCommandType.Message) return;
@@ -24,35 +20,21 @@ export default async function (this: InfoPlugin, cmd: APIApplicationCommandInter
  if (!message) return;
 
  const json = JSON.stringify(message, null, 2);
+ const preview = fitJsonBlock(json);
 
  const payload = new MessagePayload(this.client, {
   origin: this.name,
   reason: 'Raw message view',
- }).setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral);
-
- if (json.length > containerCharBudget) {
-  payload
-   .setComponents([
-    new ContainerBuilder()
-     .setAccentColor(Colors.Ephemeral)
-     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-       `\`\`\`json\n${escapeCodeBlock(json.slice(0, 200))}…\n\`\`\``,
-      ),
-     )
-     .toJSON(),
-   ])
-   .setFiles([txtFileWriter(json, 'Raw_Message')]);
- } else {
-  payload.setComponents([
+ })
+  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
+  .setComponents([
    new ContainerBuilder()
     .setAccentColor(Colors.Ephemeral)
-    .addTextDisplayComponents(
-     new TextDisplayBuilder().setContent(`\`\`\`json\n${escapeCodeBlock(json)}\n\`\`\``),
-    )
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(preview.content))
     .toJSON(),
   ]);
- }
+
+ if (preview.truncated) payload.setFiles([txtFileWriter(json, 'Raw_Message')]);
 
  payload.reply(cmd);
 }
