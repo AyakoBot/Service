@@ -5,6 +5,7 @@ import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { SettingsAction } from '../../Util/customId.js';
 import type { SettingsId } from '../../Util/customId.js';
+import { dbErrorText } from '../../Util/dbErrorText.js';
 
 import { renderGuide } from './navigator.js';
 import { renderPage } from './renderPage.js';
@@ -34,8 +35,12 @@ export default async function (
  if (created instanceof Error) {
   this.nonFatalError(created, 'settingsCreate');
 
+  const detail = dbErrorText(created);
+
   new MessagePayload(this.client, { origin: this.name, reason: 'Settings create' })
-   .setContent(t.base.errors.unknownError())
+   .setContent(
+    detail ? t.base.errors.actionFailed({ error: detail }) : t.base.errors.unknownError(),
+   )
    .setFlags(MessageFlags.Ephemeral)
    .reply(cmd);
   return;

@@ -9,6 +9,7 @@ import {
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { encodeSettingsId, SettingsAction, type SettingsId } from '../../Util/customId.js';
+import { dbErrorText } from '../../Util/dbErrorText.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { buttonEmoji, textEmote } from '../../Util/settingsEmotes.js';
 
@@ -132,8 +133,12 @@ export const del = async function (
  if (deleted instanceof Error) {
   this.nonFatalError(deleted, 'settingsDelete');
 
+  const detail = dbErrorText(deleted);
+
   new MessagePayload(this.client, { origin: this.name, reason: 'Settings delete failed' })
-   .setContent(t.base.errors.unknownError())
+   .setContent(
+    detail ? t.base.errors.actionFailed({ error: detail }) : t.base.errors.unknownError(),
+   )
    .setFlags(MessageFlags.Ephemeral)
    .reply(cmd);
   return;

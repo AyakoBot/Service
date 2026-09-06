@@ -41,8 +41,10 @@ export default async function (
  const next = !displayRow[field.column];
 
  if (field.headerToggle && next) {
-  const toggledGroup = schema.groups.find((g) => g.id === id.groupId);
-  const missing = (toggledGroup ? [toggledGroup] : schema.groups)
+  const gated = schema.groups.filter((g) => g.fields.some((f) => f.headerToggle)).map((g) => g.id);
+  const owner = schema.groups.find((g) => g.fields.some((f) => f.column === field.column));
+  const missing = schema.groups
+   .filter((g) => g.id === owner?.id || !gated.includes(g.id))
    .filter((g) => !g.showIf || g.showIf(row).ok)
    .flatMap((g) => g.fields)
    .filter((f) => f.required && (!f.showIf || f.showIf(row).ok) && isUnset(row[f.column]));
