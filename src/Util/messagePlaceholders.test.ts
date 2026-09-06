@@ -1,12 +1,24 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { MessagePlaceholder, placeholderDoc } from './messagePlaceholders.js';
+import {
+ basePlaceholders,
+ MessagePlaceholder,
+ placeholderDoc,
+ renderPlaceholderList,
+} from './messagePlaceholders.js';
 
-test('placeholderDoc lists the shared set plus the plugin extras', () => {
- assert.equal(
-  placeholderDoc(MessagePlaceholder.Gif),
-  '`{{user}}` `{{username}}` `{{displayname}}` `{{server}}` `{{membercount}}` `{{gif}}`',
- );
- assert.equal(placeholderDoc().includes('{{gif}}'), false);
+test('placeholderDoc appends the plugin extras after the shared base set', () => {
+ const base = placeholderDoc();
+
+ assert.equal(base, renderPlaceholderList(basePlaceholders));
+ assert.equal(base.includes('{{gif}}'), false);
+ assert.equal(placeholderDoc(MessagePlaceholder.Gif), `${base} \`{{gif}}\``);
+});
+
+test('the shared base set covers both the member and the server placeholders', () => {
+ assert.equal(basePlaceholders.includes(MessagePlaceholder.User), true);
+ assert.equal(basePlaceholders.includes(MessagePlaceholder.Membercount), true);
+ assert.equal(basePlaceholders.includes(MessagePlaceholder.Gif), false);
+ assert.equal(basePlaceholders.includes(MessagePlaceholder.Days), false);
 });
