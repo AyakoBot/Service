@@ -340,6 +340,7 @@
  },
  "errors": {
   "unknownError": "An unknown error occurred",
+  "actionFailed": "That didn't work:\n```\n{{error}}\n```",
   "invalidDuration": "That's not a valid duration. Try something like `2h`, `30m`, or `1h 30m`.",
   "invalidNumber": "That's not a valid number. Enter a plain number like `5`.",
   "invalidColor": "Color is not a valid HEX Code",
