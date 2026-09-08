@@ -808,8 +808,13 @@ export default abstract class BaseTicketLogger {
   return null;
  }
 
+ matchingPrefix(content: string, prefixes: string[]) {
+  return prefixes.find((p) => content.toLowerCase().startsWith(p.toLowerCase()));
+ }
+
  removeSendMessagePrefixes(content: string, prefixes: string[]) {
-  return content.replace(new RegExp(`^(${prefixes.join('|')})`), '').trim();
+  const prefix = this.matchingPrefix(content, prefixes);
+  return (prefix ? content.slice(prefix.length) : content).trim();
  }
 
  async getTranscript(channelId: string, guildId: string) {

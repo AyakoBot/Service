@@ -972,9 +972,7 @@ export default class BaseTicket extends BaseTicketLogger {
 
  async startsWithPrefix(content: string) {
   const ticket = await this.getTicket();
-  return ticket.settings.sendMessagePrefixes.some((p) =>
-   content.toLowerCase().startsWith(p.toLowerCase()),
-  );
+  return !!this.matchingPrefix(content, ticket.settings.sendMessagePrefixes);
  }
 
  async staffReply(msg: RMessage) {
