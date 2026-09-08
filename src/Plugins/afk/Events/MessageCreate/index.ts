@@ -1,4 +1,5 @@
 import type { GatewayDispatchEvents } from '@discordjs/core';
+import { MessageType } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import Afk from '../../Classes/Afk.js';
@@ -12,6 +13,7 @@ export default async function (
 ) {
  if (!data.guild_id) return;
  if (data.author.bot) return;
+ if (data.type !== MessageType.Default && data.type !== MessageType.Reply) return;
 
  const msg = this.client.cache.messages.apiToR(data, data.guild_id);
  if (!msg.author_id) return;
