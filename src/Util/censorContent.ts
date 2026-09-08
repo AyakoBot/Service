@@ -85,7 +85,7 @@ const applyPresetKeywords = async function (
  let content = input;
 
  presetKeywords?.forEach((p) => {
-  content = content.replace(new RegExp(p.keyword, 'g'), '[...]');
+  content = content.replaceAll(p.keyword, '[...]');
  });
 
  return content;
@@ -121,11 +121,11 @@ const applyRules = (input: string, rules: ApplicableRule[]): string => {
      'gi',
     ),
    )
-   ?.filter((m) => m.length)
    ?.map((m) => m.trim())
+   ?.filter((m) => m.length)
    ?.forEach((m) => {
     if ((r.trigger_metadata.allow_list || []).includes(m)) return;
-    content = content.replace(new RegExp(m, 'g'), '[...]');
+    content = content.replaceAll(m, '[...]');
    });
  });
 
