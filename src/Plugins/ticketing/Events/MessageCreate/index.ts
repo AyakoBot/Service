@@ -10,6 +10,7 @@ import {
  resolveTicketByLogThread,
  resolveTicketByStaffThread,
 } from '../../Util/resolveTicket.js';
+import { snippetTrigger } from '../../Util/snippetTrigger.js';
 
 type MessageCreateData = ExtractPayload<GatewayDispatchEvents.MessageCreate>;
 type MessageCreatePayload =
@@ -19,6 +20,7 @@ type MessageCreatePayload =
 export default async function (this: TicketPlugin, msg: MessageCreatePayload) {
  if (msg.author.bot) return;
  if (msg.type !== MessageType.Default && msg.type !== MessageType.Reply) return;
+ if (await snippetTrigger.call(this, msg)) return;
 
  const rMsg = this.client.cache.messages.apiToR(msg, msg.guild_id || '@me');
 

@@ -37,11 +37,14 @@ export default async function (
  const reason = findModalValue(cmd.data.components, 'reason');
 
  const close = ticket.close({ cmd, userId, reason });
- close.next().catch((e: Error) =>
-  handleTicketError.call(this.client, {
-   guildId: (cmd.guild?.id || cmd.guild_id)!,
-   error: e,
-   cmd,
-  }),
- );
+ close
+  .next()
+  .then(() => ticket.deleteAfterClose(userId))
+  .catch((e: Error) =>
+   handleTicketError.call(this.client, {
+    guildId: (cmd.guild?.id || cmd.guild_id)!,
+    error: e,
+    cmd,
+   }),
+  );
 }

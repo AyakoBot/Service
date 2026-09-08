@@ -5,6 +5,28 @@ import type { FindManyArgs } from '../../../Types/prisma.js';
 
 import { SnippetErrors } from './Enums.js';
 
+export interface SnippetData {
+ name: string;
+ trigger?: string | null;
+ userText?: string | null;
+ staffText?: string | null;
+ kinds: string[];
+}
+
+const assertFilled = (data: SnippetData) => {
+ if (!data.userText?.trim() && !data.staffText?.trim()) {
+  throw new Error(SnippetErrors.emptySnippet);
+ }
+};
+
+const writeData = (data: SnippetData) => ({
+ name: data.name,
+ trigger: data.trigger?.trim() || null,
+ userText: data.userText?.trim() || null,
+ staffText: data.staffText?.trim() || null,
+ kinds: data.kinds,
+});
+
 export default class Snippet {
  static all(client: Client, guild: string) {
   return client.db.findMany('snippets', {
@@ -17,54 +39,25 @@ export default class Snippet {
   return client.db.client.snippets.findUnique({ where: { guild_name: { guild, name } } });
  }
 
+ static async byTrigger(client: Client, guild: string, trigger: string): Promise<Snippets | null> {
+  return client.db.client.snippets.findUnique({ where: { guild_trigger: { guild, trigger } } });
+ }
+
  static async byId(client: Client, id: string): Promise<Snippets | null> {
   return client.db.client.snippets.findUnique({ where: { id } });
  }
 
- static async update(
-  client: Client,
-  id: string,
-  data: { name: string; userText?: string | null; staffText?: string | null; kinds: string[] },
- ): Promise<Snippets> {
-  if (!data.userText?.trim() && !data.staffText?.trim()) {
-   throw new Error(SnippetErrors.emptySnippet);
-  }
+ static async update(client: Client, id: string, data: SnippetData): Promise<Snippets> {
+  assertFilled(data);
 
-  return client.db.client.snippets.update({
-   where: { id },
-   data: {
-    name: data.name,
-    userText: data.userText?.trim() || null,
-    staffText: data.staffText?.trim() || null,
-    kinds: data.kinds,
-   },
-  });
+  return client.db.client.snippets.update({ where: { id }, data: writeData(data) });
  }
 
- static async create(
-  client: Client,
-  guild: string,
-  data: { name: string; userText?: string | null; staffText?: string | null; kinds: string[] },
- ): Promise<Snippets> {
-  if (!data.userText?.trim() && !data.staffText?.trim()) {
-   throw new Error(SnippetErrors.emptySnippet);
-  }
+ static async create(client: Client, guild: string, data: SnippetData): Promise<Snippets> {
+  assertFilled(data);
 
-  return client.db.client.snippets.upsert({
-   where: { guild_name: { guild, name: data.name } },
-   create: {
-    id: String(Date.now()),
-    guild,
-    name: data.name,
-    userText: data.userText?.trim() || null,
-    staffText: data.staffText?.trim() || null,
-    kinds: data.kinds,
-   },
-   update: {
-    userText: data.userText?.trim() || null,
-    staffText: data.staffText?.trim() || null,
-    kinds: data.kinds,
-   },
+  return client.db.client.snippets.create({
+   data: { id: String(Date.now()), guild, ...writeData(data) },
   });
  }
 }

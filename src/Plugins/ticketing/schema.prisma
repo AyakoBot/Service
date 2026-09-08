@@ -35,6 +35,7 @@ model TicketSetting {
  sendMessagePrefixes String[]   @db.Text
 
  allowCreatorClose Boolean @default(false)
+ deleteOnClose     Boolean @default(false)
 
  staffThreads        Boolean @default(false)
  staffThreadsChannel String? @db.VarChar
@@ -144,11 +145,13 @@ model Snippets {
  id        Decimal  @id @db.Decimal
  guild     String   @db.VarChar
  name      String   @db.VarChar
+ trigger   String?  @db.VarChar
  userText  String?  @db.Text
  staffText String?  @db.Text
  kinds     String[] @db.VarChar
 
  @@unique([guild, name])
+ @@unique([guild, trigger])
  @@index(guild)
 }
 

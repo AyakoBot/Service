@@ -139,14 +139,18 @@
   "fields": {
    "userText": "User text (relayed to the creator)",
    "staffText": "Staff text (internal note)",
-   "kinds": "Ticket kinds (comma-separated, optional)"
+   "kinds": "Ticket kinds (comma-separated, optional)",
+   "trigger": "Trigger (e.g. .tag1, optional)"
   },
   "errors": {
    "noTicket": "Run this in a Ticket channel to post a snippet.",
    "notFound": "That snippet could not be found.",
    "manageGuildRequired": "You need the Manage Server permission to author snippets.",
    "nameRequired": "A snippet name is required.",
-   "emptySnippet": "A snippet needs user text, staff text, or both."
+   "emptySnippet": "A snippet needs user text, staff text, or both.",
+   "nameExists": "A snippet named `{{name}}` already exists. Pick a different name.",
+   "triggerExists": "The trigger `{{trigger}}` is already used by another snippet.",
+   "triggerPrefixConflict": "The trigger `{{trigger}}` starts with a staff-reply prefix, so staff replies would be ambiguous. Pick a different trigger."
   }
  },
  "roleMap": {
@@ -258,6 +262,7 @@
    "type": "Ticket type",
    "logMode": "Log mode",
    "allowCreatorClose": "Allow creator to close",
+   "deleteOnClose": "Closing deletes ticket",
    "category": "Ticket category",
    "channel": "Thread host channel",
    "archiveCategory": "Archive category",
@@ -310,6 +315,7 @@
    "type": "Type of configuration to apply to tickets",
    "logMode": "Whether logs are posted to a channel or grouped into a thread",
    "allowCreatorClose": "Let the ticket creator close their own ticket",
+   "deleteOnClose": "Start deleting the ticket automatically once it is closed, so staff do not press Delete separately",
    "category": "The category ticket-channels will be created under",
    "channel": "The channel ticket-threads will be created in",
    "archiveCategory": "The category closed ticket-channels are moved to",

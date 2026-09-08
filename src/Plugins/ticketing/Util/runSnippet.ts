@@ -9,10 +9,12 @@ import constants from '../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { Colors } from '../../../Types/index.js';
 import type BaseTicket from '../Classes/BaseTicket.js';
+import { SnippetErrors } from '../Classes/Enums.js';
 import type TicketPlugin from '../Plugin.js';
 
 import resolveSnippetVars from './resolveSnippetVars.js';
 import { resolveTicketByChannel, resolveTicketByStaffThread } from './resolveTicket.js';
+import { snippetErrorText } from './snippetErrorText.js';
 
 const dmTypes = [TicketType.dmToChannel, TicketType.dmToThread];
 
@@ -34,15 +36,13 @@ const buildSyntheticMessage = (
   embeds: [],
  }) as unknown as RMessage;
 
-export default async function (
+export const postSnippet = async function (
  this: TicketPlugin,
- cmd: APIInteraction,
  snippet: Snippets,
  channelId: string,
  staffId: string,
  guildId: string,
-) {
- const t = await this.t(guildId);
+): Promise<SnippetErrors | null> {
  const api = await this.getAPI(guildId);
  const emotes = this.client.emojis.for(api);
 
@@ -50,10 +50,7 @@ export default async function (
   (await resolveTicketByChannel.call(this.client, channelId)) ||
   (await resolveTicketByStaffThread.call(this.client, channelId));
 
- if (!ticket) {
-  showError.call(this, cmd, emotes, t.base.t.error(), t.tag.errors.noTicket());
-  return;
- }
+ if (!ticket) return SnippetErrors.noTicket;
 
  const dbTicket = await ticket.getTicket();
  const ctx = { guildId, staffId, ticket: dbTicket, emotes };
@@ -66,10 +63,32 @@ export default async function (
   : '';
 
  if (userText.trim() && !(await relayUserText.call(this, ticket, staffId, guildId, userText))) {
-  showError.call(this, cmd, emotes, t.base.t.error(), t.errors.couldntSendDm());
-  return;
+  return SnippetErrors.dmFailed;
  }
  if (staffText.trim()) await postStaffNote.call(this, ticket, staffId, guildId, staffText);
+
+ return null;
+};
+
+export default async function (
+ this: TicketPlugin,
+ cmd: APIInteraction,
+ snippet: Snippets,
+ channelId: string,
+ staffId: string,
+ guildId: string,
+) {
+ const t = await this.t(guildId);
+ const api = await this.getAPI(guildId);
+ const emotes = this.client.emojis.for(api);
+
+ const failure = await postSnippet.call(this, snippet, channelId, staffId, guildId);
+
+ if (failure) {
+  const vars = { name: snippet.name, trigger: snippet.trigger || '' };
+  showError.call(this, cmd, emotes, t.base.t.error(), snippetErrorText(t, failure, vars));
+  return;
+ }
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Confirming snippet post' })
   .setComponents([

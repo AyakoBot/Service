@@ -72,7 +72,8 @@ export const buildToolkit = async function (
 
  slice.forEach((snippet) => {
   const body = preview(snippet);
-  const label = `**${snippet.name}**${body ? `\n-# ${body}` : ''}`;
+  const trigger = snippet.trigger ? ` \`${snippet.trigger}\`` : '';
+  const label = `**${snippet.name}**${trigger}${body ? `\n-# ${body}` : ''}`;
 
   if (opts.manage) {
    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(label));

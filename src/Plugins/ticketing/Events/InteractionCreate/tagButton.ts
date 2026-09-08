@@ -142,6 +142,13 @@ const buildSnippetModal = (
   .setMaxLength(80);
  if (snippet) nameInput.setValue(snippet.name);
 
+ const triggerInput = new TextInputBuilder()
+  .setCustomId('trigger')
+  .setStyle(TextInputStyle.Short)
+  .setRequired(false)
+  .setMaxLength(32);
+ if (snippet?.trigger) triggerInput.setValue(snippet.trigger);
+
  const userInput = new TextInputBuilder()
   .setCustomId('userText')
   .setStyle(TextInputStyle.Paragraph)
@@ -165,6 +172,7 @@ const buildSnippetModal = (
   .setTitle(snippet ? t.tag.editTitle() : t.tag.addTitle())
   .addLabelComponents(
    new LabelBuilder().setLabel(t.base.t.name()).setTextInputComponent(nameInput),
+   new LabelBuilder().setLabel(t.tag.fields.trigger()).setTextInputComponent(triggerInput),
    new LabelBuilder().setLabel(t.tag.fields.userText()).setTextInputComponent(userInput),
    new LabelBuilder().setLabel(t.tag.fields.staffText()).setTextInputComponent(staffInput),
    new LabelBuilder().setLabel(t.tag.fields.kinds()).setTextInputComponent(kindsInput),

@@ -422,6 +422,15 @@ export default class BaseTicket extends BaseTicketLogger {
   return newTicket;
  }
 
+ async deleteAfterClose(userId: string) {
+  const ticket = await this.getTicket();
+  if (!ticket.settings.deleteOnClose) return;
+  if (!(await this.canUserDelete(userId).catch(() => false))) return;
+
+  const del = this.delete({ userId });
+  await del.next();
+ }
+
  async autoClose({ reason, heading }: { reason?: string; heading?: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) return this;
@@ -1064,12 +1073,16 @@ export default class BaseTicket extends BaseTicketLogger {
   const cachedHit = cached.find(matches);
   if (cachedHit) return cachedHit.id;
 
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
   const fetched = await fetchMessages.call(
    this.client,
    channelId,
    guildId,
    { amount: 500, isDm, after: after || undefined, abortWhen: matches },
    { origin: BaseTicket.name, reason: 'Locating mirrored message' },
+   api,
   );
   const hit = fetched.find(matches);
   return hit?.id || null;

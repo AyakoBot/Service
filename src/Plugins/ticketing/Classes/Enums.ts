@@ -99,6 +99,10 @@ export enum SnippetErrors {
  notFound = 'snippet.notFound',
  emptySnippet = 'snippet.emptySnippet',
  nameRequired = 'snippet.nameRequired',
+ nameExists = 'snippet.nameExists',
+ triggerExists = 'snippet.triggerExists',
+ triggerPrefixConflict = 'snippet.triggerPrefixConflict',
+ dmFailed = 'snippet.dmFailed',
 }
 
 export enum TierErrors {

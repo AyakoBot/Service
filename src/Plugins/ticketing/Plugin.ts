@@ -703,6 +703,12 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       label: (t: TicketTranslator) => t.settings.fields.allowCreatorClose(),
       description: (t: TicketTranslator) => t.settings.descriptions.allowCreatorClose(),
      },
+     {
+      column: 'deleteOnClose',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.deleteOnClose(),
+      description: (t: TicketTranslator) => t.settings.descriptions.deleteOnClose(),
+     },
     ],
    },
    {
