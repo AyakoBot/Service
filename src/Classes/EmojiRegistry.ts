@@ -231,7 +231,11 @@ export default class EmojiRegistry {
     await Promise.all(
      tokens.map(async (token) => {
       const api = this.client.getTokenAPI(token, 'emoji-registry');
-      await this.ensure(api);
+      await this.ensure(api).catch((error: Error) =>
+       this.client.logger.error(
+        `[EmojiRegistry] Failed to sync app ${api.botId}: ${error.message}`,
+       ),
+      );
       if (!this.invalidApps.has(api.botId)) return;
 
       this.client.logger.warn(
@@ -277,6 +281,13 @@ export default class EmojiRegistry {
 
    this.client.logger.error(
     `[EmojiRegistry] Failed to fetch emojis for app ${api.botId} (status: ${status ?? 'unknown'})`,
+   );
+   return;
+  }
+
+  if (!Array.isArray(existing?.items)) {
+   this.client.logger.error(
+    `[EmojiRegistry] Unexpected emoji payload for app ${api.botId}: ${JSON.stringify(existing)}`,
    );
    return;
   }
