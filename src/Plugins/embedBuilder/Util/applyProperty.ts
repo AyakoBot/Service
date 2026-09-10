@@ -1,6 +1,7 @@
 import type { APIEmbed } from 'discord-api-types/v10';
 
 import { parseColor } from '../../../Util/parseColor.js';
+import parseUrl from '../../../Util/parseHttpUrl.js';
 import { EmbedProperty, propertyLengths } from '../Classes/Properties.js';
 
 export enum ApplyErrorCode {
@@ -18,15 +19,6 @@ const clampedValue = (property: EmbedProperty, value: string | null): string | n
  if (!value) return null;
  const max = propertyLengths[property];
  return max ? value.slice(0, max) : value;
-};
-
-const parseUrl = (value: string): string | null => {
- try {
-  const url = new URL(value);
-  return ['http:', 'https:'].includes(url.protocol) ? url.toString() : null;
- } catch {
-  return null;
- }
 };
 
 export enum TimestampToken {
