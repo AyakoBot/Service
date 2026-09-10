@@ -1,6 +1,6 @@
 import { inspect } from 'node:util';
 
-import { RequestHandlerError } from '@ayako/api';
+import { RequestHandlerError, type API as CustomAPI } from '@ayako/api';
 import { getPathFromError, logger, type RMessage } from '@ayako/utility';
 import type { APIAllowedMentions, CreateMessageOptions } from '@discordjs/core';
 import { MessageFlags } from 'discord-api-types/v10';
@@ -119,11 +119,13 @@ export default class SendMessageCache {
 
   logger.debug('[SendMessageCache] Sending', entry.payloads.length, 'payloads to', entry.channelId);
 
-  const payloads = entry.payloads.map((p) => p.getAPIPayload());
-  const flags = payloads.reduce((acc, p) => acc | (p.flags ?? 0), 0) || undefined;
-  const api = entry.payloads.find((p) => p.api)?.api ?? (await this.client.getAPI(entry.guildId));
+  let api: CustomAPI | undefined;
 
   try {
+   const payloads = entry.payloads.map((p) => p.getAPIPayload());
+   const flags = payloads.reduce((acc, p) => acc | (p.flags ?? 0), 0) || undefined;
+   api = entry.payloads.find((p) => p.api)?.api ?? (await this.client.getAPI(entry.guildId));
+
    const apiMessage = await api.channels
     .createMessage(
      entry.channelId,
@@ -156,6 +158,7 @@ export default class SendMessageCache {
     logger.debug('[SendMessageCache] 1 Failed to send message to', entry.channelId);
     logger.debug(inspect(apiMessage));
     logger.debug(inspect(apiMessage.cause));
+    entry.deferreds.forEach((d) => d.resolve(undefined));
     return;
    }
 
@@ -164,8 +167,8 @@ export default class SendMessageCache {
    entry.deferreds.forEach((d) => d.resolve(rMessage));
   } catch (error) {
    logger.error('[SendMessageCache] 2 Failed to send message to', entry.channelId, error);
-   api.emit('error', error);
    entry.deferreds.forEach((d) => d.reject(error));
+   if (api && api.listenerCount('error') > 0) api.emit('error', error);
   }
  };
 

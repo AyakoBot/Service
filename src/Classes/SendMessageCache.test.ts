@@ -52,3 +52,66 @@ test('a CV2 payload never merges into an open embed window', async () => {
   !calls.some((c) => Boolean((c.flags ?? 0) & MessageFlags.IsComponentsV2) && !!c.embeds?.length),
  );
 });
+
+test('a failing send settles rather than hanging its awaiters', async () => {
+ const api = {
+  channels: {
+   createMessage: async () => {
+    throw new Error('Missing Access');
+   },
+  },
+  listenerCount: () => 0,
+  emit: () => undefined,
+ } as unknown as CustomAPI;
+
+ const client = {
+  getAPI: async () => api,
+  cache: { messages: { apiToR: () => undefined } },
+ } as unknown as typeof Client.prototype;
+
+ const cache = new SendMessageCache(client);
+ const payload = new MessagePayload(client, { origin: 'test', reason: 'test' }).setContent('x');
+
+ const settled = await Promise.race([
+  cache.queueMessage('chan', 'guild', payload, 0).then(() => 'settled'),
+  new Promise((resolve) => {
+   setTimeout(() => resolve('hung'), 500).unref();
+  }),
+ ]);
+
+ assert.equal(settled, 'settled');
+});
+
+test('a send that throws outside the request still settles its awaiters', async () => {
+ const api = {
+  channels: { createMessage: async () => ({ id: '1' }) },
+  listenerCount: () => 0,
+  emit: () => undefined,
+ } as unknown as CustomAPI;
+
+ const client = {
+  getAPI: async () => api,
+  cache: {
+   messages: {
+    apiToR: () => {
+     throw new Error('malformed payload');
+    },
+   },
+  },
+ } as unknown as typeof Client.prototype;
+
+ const cache = new SendMessageCache(client);
+ const payload = new MessagePayload(client, { origin: 'test', reason: 'test' }).setContent('x');
+
+ const settled = await Promise.race([
+  cache
+   .queueMessage('chan', 'guild', payload, 0)
+   .then(() => 'resolved')
+   .catch(() => 'rejected'),
+  new Promise((resolve) => {
+   setTimeout(() => resolve('hung'), 500).unref();
+  }),
+ ]);
+
+ assert.equal(settled, 'rejected');
+});
