@@ -49,6 +49,8 @@ export enum EditorType {
  RolePickerKind = 'role-picker-kind',
  RolePickerLayout = 'role-picker-layout',
  StickyRoleMode = 'sticky-role-mode',
+ BumpMatchSource = 'bump-match-source',
+ BumpTemplate = 'bump-template',
 
  GuildId = 'guild-id',
  Id = 'id',

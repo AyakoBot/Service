@@ -62,6 +62,8 @@ class EditorEmotes {
   [EditorType.RolePickerKind]: EmoteName.ReactionRole,
   [EditorType.RolePickerLayout]: EmoteName.SelfRole,
   [EditorType.StickyRoleMode]: EmoteName.StickyRole,
+  [EditorType.BumpMatchSource]: EmoteName.Message,
+  [EditorType.BumpTemplate]: EmoteName.Timer,
 
   [EditorType.GuildId]: undefined,
   [EditorType.Id]: undefined,
