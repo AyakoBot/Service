@@ -27,6 +27,7 @@ import {
  type WipNode,
  type WipTree,
 } from '../../../Util/componentBudget.js';
+import parseUrl from '../../../Util/parseHttpUrl.js';
 import {
  customIdLimit,
  galleryItemLimit,
@@ -426,14 +427,7 @@ export const updateNode = (
  return { ok: true, tree };
 };
 
-export const parseHttpUrl = (value: string): string | null => {
- try {
-  const url = new URL(value);
-  return ['http:', 'https:'].includes(url.protocol) ? url.toString() : null;
- } catch {
-  return null;
- }
-};
+export const parseHttpUrl = parseUrl;
 
 const checkCustomId = (id: unknown, seen: Set<string>): BuilderErrorCode | null => {
  if (typeof id !== 'string' || !id.startsWith(customIdPrefix) || id.length > customIdLimit) {
