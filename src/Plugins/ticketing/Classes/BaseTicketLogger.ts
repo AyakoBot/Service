@@ -89,6 +89,7 @@ export default abstract class BaseTicketLogger {
 
  db: Database['client'];
  dbTicket: (Ticket & { settings: TicketSetting }) | null = null;
+ deleteTranscript: string | null = null;
 
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
   this.client = client;
@@ -235,7 +236,8 @@ export default abstract class BaseTicketLogger {
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
 
-  const transcript = await this.getTranscript(ticket.channel, ticket.settings.guild);
+  const transcript =
+   this.deleteTranscript ?? (await this.getTranscript(ticket.channel, ticket.settings.guild));
 
   payload.setEmbeds([
    new EmbedBuilder()
@@ -501,19 +503,20 @@ export default abstract class BaseTicketLogger {
    ticket.settings.logChannels.map((logChannelId) => this.client.cache.channels.get(logChannelId)),
   );
 
-  const logThreads = await Promise.all(
-   logChannels
-    .map((channel, i) => (!channel ? ticket.settings.logChannels[i] : channel.id))
-    .filter((id): id is string => !!id)
-    .map((id) => this.getLogThread(id)),
-  );
-
   const textChannels = logChannels.filter(
    (c): c is RChannel =>
     !!c &&
     c.type !== ChannelType.GuildForum &&
     c.type !== ChannelType.GuildMedia &&
     c.type !== ChannelType.GuildCategory,
+  );
+
+  const textChannelIds = new Set(textChannels.map((c) => c.id));
+
+  const logThreads = await Promise.all(
+   ticket.settings.logChannels
+    .filter((logChannelId) => !textChannelIds.has(logChannelId))
+    .map((logChannelId) => this.getLogThread(logChannelId)),
   );
 
   return [

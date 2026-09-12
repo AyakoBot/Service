@@ -29,7 +29,8 @@ export const openThread = async function (
   undefined,
   { origin: this.name, reason: 'Creating embed builder thread' },
  );
- if (!thread || thread instanceof RequestHandlerError) return null;
+ if (thread instanceof RequestHandlerError) return thread;
+ if (!thread) return null;
 
  const added = await api.threads.addMember(thread.id, userId, {
   origin: this.name,

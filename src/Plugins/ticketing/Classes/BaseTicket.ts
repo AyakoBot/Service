@@ -492,6 +492,7 @@ export default class BaseTicket extends BaseTicketLogger {
 
   this.plugin.logger.logLocation(LogLevel.debug);
   await this.markDeleted();
+  this.deleteTranscript = await this.getTranscript(ticket.channel, ticket.settings.guild);
 
   yield;
 

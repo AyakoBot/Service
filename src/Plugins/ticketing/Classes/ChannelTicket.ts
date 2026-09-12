@@ -120,6 +120,11 @@ export default class ChannelTicket extends BaseTicket {
   const superClose = super.close({ userId: data.userId, reason: data.reason });
   await superClose.next();
 
+  await this.ackEphemeral(data.cmd, (t) => t.hasClosedThread());
+
+  await superClose.next();
+  await this.refreshSurface();
+
   const ticket = await this.getTicket();
   const channel = await this.getChannel(ticket.channel);
 
@@ -128,11 +133,6 @@ export default class ChannelTicket extends BaseTicket {
   await this.revokeChannelAccess(api, channel);
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
-
-  await superClose.next();
-
-  await this.refreshSurface();
-  await this.ackEphemeral(data.cmd, (t) => t.hasClosedThread());
 
   return this;
  }

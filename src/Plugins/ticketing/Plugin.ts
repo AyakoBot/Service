@@ -733,7 +733,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channel,
       label: (t: TicketTranslator) => t.settings.fields.channel(),
       description: (t: TicketTranslator) => t.settings.descriptions.channel(),
-      channelTypes: [ChannelType.GuildText],
+      channelTypes: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildMedia],
       required: true,
       showIf: (row) => ({
        ok: [TicketType.Thread, TicketType.dmToThread].includes(row.type),
@@ -784,7 +784,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       editor: EditorType.Channels,
       label: (t: TicketTranslator) => t.settings.fields.logChannels(),
       description: (t: TicketTranslator) => t.settings.descriptions.logChannels(),
-      channelTypes: [ChannelType.GuildText],
+      channelTypes: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildMedia],
       arity: FieldArity.Multi,
      },
     ],
