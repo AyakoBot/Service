@@ -12,6 +12,7 @@ import {
 import type Client from '../Classes/Client.js';
 
 import resolvePluginDependencies from './resolvePluginDependencies.js';
+import universalCommands from './universalCommands.js';
 
 export const settingsCommandName = 'settings';
 
@@ -55,9 +56,13 @@ const buildCommandBody = function (
 
  const standalone = selected.flatMap((plugin) => plugin.getCommands().commands);
 
- return [buildSettingsCommand(selected), ...standalone]
+ const bodies = [buildSettingsCommand(selected), ...standalone]
   .filter((command) => command !== null)
   .map((command) => command.toJSON());
+
+ const names = new Set(bodies.map((body) => body.name));
+
+ return [...bodies, ...universalCommands.call(this).filter((body) => !names.has(body.name))];
 };
 
 export default buildCommandBody;

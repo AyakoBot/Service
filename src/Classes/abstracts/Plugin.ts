@@ -10,7 +10,10 @@ import {
  type SlashCommandSubcommandsOnlyBuilder,
 } from '@discordjs/builders';
 import { GatewayDispatchEvents } from '@discordjs/core';
-import type { GatewayGuildDeleteDispatchData } from 'discord-api-types/v10';
+import type {
+ GatewayGuildDeleteDispatchData,
+ RESTPostAPIChatInputApplicationCommandsJSONBody,
+} from 'discord-api-types/v10';
 import merge from 'lodash.merge';
 
 import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
@@ -113,6 +116,7 @@ export default abstract class Plugin<
  getEmojiSyncTokens?: () => Promise<string[]>;
  customBotsAreGlobal?: boolean;
  getCustomBotTargets?: () => Promise<Array<{ token: string; guildId: string }>>;
+ getUniversalCommands?: () => RESTPostAPIChatInputApplicationCommandsJSONBody[];
 
  onEmojiSyncTokenInvalid?: (token: string) => Promise<void>;
 

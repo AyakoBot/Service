@@ -39,7 +39,7 @@ const pingContainer = (
 
 export default async function (this: InfoPlugin, cmd: APIApplicationCommandInteraction) {
  const t = await this.t(cmd.guild_id ?? cmd.locale);
- const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const api = await this.getInteractionAPI(cmd);
  const emotes = this.client.emojis.for(api);
 
  const started = Date.now();

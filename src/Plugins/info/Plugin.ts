@@ -15,6 +15,7 @@ import {
  InteractionContextType,
  PermissionFlagsBits,
 } from '@discordjs/core';
+import type { RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord-api-types/v10';
 
 import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
@@ -263,4 +264,24 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
   ],
   settings: [],
  });
+
+ getUniversalCommands = (): RESTPostAPIChatInputApplicationCommandsJSONBody[] => {
+  const bodies = this.getCommands().commands.map((command) =>
+   command.toJSON(),
+  ) as RESTPostAPIChatInputApplicationCommandsJSONBody[];
+
+  const ping = bodies.find((body) => body.name === InfoCommand.Ping);
+  const info = bodies.find((body) => body.name === InfoCommand.Info);
+  const botOnly = info?.options?.filter((option) => option.name === InfoSubcommand.Bot);
+
+  if (!ping || !info || botOnly?.length !== 1) {
+   this.nonFatalError(
+    new Error('Universal commands missing from the info command surface'),
+    'getUniversalCommands',
+   );
+   return [];
+  }
+
+  return [ping, { ...info, options: botOnly }];
+ };
 }

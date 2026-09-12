@@ -3,8 +3,11 @@ import type { RESTPutAPIApplicationGuildCommandsJSONBody } from 'discord-api-typ
 
 import type Client from '../Classes/Client.js';
 
+import universalCommands from './universalCommands.js';
+
 export default async function (this: Client): Promise<void> {
  const everyCommand = this.plugins.flatMap((plugin) => plugin.getCommands().commands);
+ const universal = universalCommands.call(this);
 
  await Promise.all(
   this.plugins.map(async (plugin) => {
@@ -17,9 +20,15 @@ export default async function (this: Client): Promise<void> {
    if (!targets.length) return;
 
    const source = plugin.customBotsAreGlobal ? everyCommand : plugin.getCommands().commands;
-   const body = source.map((command) =>
+   const own = source.map((command) =>
     command.toJSON(),
    ) as RESTPutAPIApplicationGuildCommandsJSONBody;
+
+   const names = new Set(own.map((command) => command.name));
+   const body: RESTPutAPIApplicationGuildCommandsJSONBody = [
+    ...own,
+    ...universal.filter((command) => !names.has(command.name)),
+   ];
    if (!body.length) return;
 
    const seen = new Set<string>();
