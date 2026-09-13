@@ -89,6 +89,8 @@ export interface DataBaseTables {
  economyItem: PrismaTables.EconomyItem;
  economyPurchase: PrismaTables.EconomyPurchase;
  economyPayout: PrismaTables.EconomyPayout;
+ economyRoleReward: PrismaTables.EconomyRoleReward;
+ economyRoleRewardEligibility: PrismaTables.EconomyRoleRewardEligibility;
  customRole: PrismaTables.CustomRole;
  roleReward: PrismaTables.RoleReward;
  roleRewardEligibility: PrismaTables.RoleRewardEligibility;
