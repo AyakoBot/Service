@@ -31,6 +31,7 @@ import {
  DigestAction,
  mergeCapabilities,
  planDigest,
+ revokeFor,
  selectAnchorRole,
  type DigestPlan,
  type RewardCapabilities,
@@ -103,7 +104,7 @@ export default class RolePerks {
   rows: RoleReward[],
  ): Promise<{ applying: RoleReward[]; plan: DigestPlan }> => {
   const applying = await this.resolveApplying(guildId, roleIds, userId, rows);
-  const plan = planDigest(applying, await this.storedDigest(guildId, userId), rows);
+  const plan = planDigest(applying, await this.storedDigest(guildId, userId));
 
   if (plan.write) await this.writeDigest(guildId, userId, plan.rewards);
 
@@ -114,15 +115,14 @@ export default class RolePerks {
   const rows = await this.rowsFor(guildId);
   if (!rows.length) return;
 
-  const { plan } = await this.digestFor(guildId, userId, roleIds, rows);
-  if (plan.revoke) {
+  const { applying, plan } = await this.digestFor(guildId, userId, roleIds, rows);
+  if (revokeFor(plan.lost, rows, applying)) {
    await this.plugin.roles.revoke(guildId, userId, CustomRolesReason.PrivilegeLost);
   }
 
   if (plan.action !== DigestAction.Changed || !plan.gained.length) return;
 
   const gained = rows.filter((row) => plan.gained.includes(row.id));
-  await this.payout(guildId, userId, gained);
   await this.announce(guildId, userId, gained);
  };
 
@@ -165,14 +165,6 @@ export default class RolePerks {
   );
 
   return true;
- };
-
- private payout = async (guildId: string, userId: string, rows: RoleReward[]): Promise<void> => {
-  await Promise.all(
-   rows
-    .filter((row) => row.currency !== null)
-    .map((row) => this.plugin.payouts.award(guildId, userId, Number(row.currency), row.id)),
-  );
  };
 
  private announce = async (guildId: string, userId: string, rows: RoleReward[]): Promise<void> => {
@@ -221,12 +213,6 @@ export default class RolePerks {
    .filter((row) => row.xpMultiplier !== null)
    .forEach((row) => lines.push(t.rewards.xp({ multiplier: String(row.xpMultiplier) })));
 
-  if (this.plugin.payouts.hasSink()) {
-   rows
-    .filter((row) => row.currency !== null)
-    .forEach((row) => lines.push(t.rewards.currency({ amount: String(row.currency) })));
-  }
-
   return {
    content: lines.join('\n'),
    components: perk ? this.notifyComponents(guildId, t) : null,
@@ -259,7 +245,10 @@ export default class RolePerks {
    return;
   }
 
-  await payload.setContent(message.content).setSendTo([{ channel: dm.id, guildId: '@me' }]).send();
+  await payload
+   .setContent(message.content)
+   .setSendTo([{ channel: dm.id, guildId: '@me' }])
+   .send();
  };
 
  enqueueReconcile = async (guildId: string): Promise<void> => {
@@ -293,12 +282,7 @@ export default class RolePerks {
    return;
   }
 
-  await arm.call(
-   this.client,
-   key,
-   page[page.length - 1].user_id,
-   reconcileChunkDelaySeconds,
-  );
+  await arm.call(this.client, key, page[page.length - 1].user_id, reconcileChunkDelaySeconds);
  };
 
  onScheduleExpired = async (rawKey: string): Promise<void> => {

@@ -13,7 +13,6 @@ import { assertSchemaValid } from '../settings/SettingsSchema.js';
 
 import { customRoleCommand } from './Classes/Commands.js';
 import CustomRoleService from './Classes/CustomRoleService.js';
-import RewardPayouts from './Classes/RewardPayouts.js';
 import RolePerks from './Classes/RolePerks.js';
 import settingsSchema from './Classes/settingsSchema.js';
 import guildMemberRemove from './Events/GuildMemberRemove/index.js';
@@ -46,7 +45,6 @@ export default class CustomRolesPlugin extends Plugin<Events, CustomRolesLanguag
 
  rewards: RolePerks;
  roles: CustomRoleService;
- payouts: RewardPayouts;
 
  settingsSchema = settingsSchema;
 
@@ -89,7 +87,6 @@ export default class CustomRolesPlugin extends Plugin<Events, CustomRolesLanguag
 
   this.rewards = new RolePerks(this);
   this.roles = new CustomRoleService(this);
-  this.payouts = new RewardPayouts(this);
 
   this.client.cache.on('scheduleExpired', (key: unknown) =>
    this.rewards.onScheduleExpired(String(key)),

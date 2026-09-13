@@ -1,11 +1,17 @@
 import { NO_ROLE_POSITION } from '../../../Util/roleHierarchy.js';
+import type { RewardTrigger } from '../../../Util/roleRewards.js';
 
-export interface RewardRowLike {
- id: string;
- active: boolean;
- roles: string[];
- denyRoles: string[];
- denyUsers: string[];
+export {
+ applyingRows,
+ denied,
+ digestAction,
+ planDigest,
+ DigestAction,
+ type DigestPlan,
+ type RewardTrigger,
+} from '../../../Util/roleRewards.js';
+
+export interface RewardRowLike extends RewardTrigger {
  customRole: boolean;
  canSetColor: boolean;
  canSetIcon: boolean;
@@ -24,43 +30,10 @@ export interface RewardCapabilities {
  maxShare: number;
 }
 
-export enum DigestAction {
- Seed = 'seed',
- Unchanged = 'unchanged',
- Changed = 'changed',
-}
-
-export interface DigestPlan {
- action: DigestAction;
- rewards: string[];
- gained: string[];
- lost: string[];
- revoke: boolean;
- write: boolean;
-}
-
 export interface SharedTruncation {
  kept: string[];
  dropped: string[];
 }
-
-export const applyingRows = <T extends RewardRowLike>(
- rows: T[],
- memberRoles: string[],
- userId: string,
-): T[] =>
- rows.filter(
-  (r) =>
-   r.active &&
-   r.roles.some((id) => memberRoles.includes(id)) &&
-   !r.denyRoles.some((id) => memberRoles.includes(id)) &&
-   !r.denyUsers.includes(userId),
- );
-
-export const denied = (rows: RewardRowLike[], memberRoles: string[], userId: string): boolean =>
- rows.some(
-  (r) => r.denyUsers.includes(userId) || r.denyRoles.some((id) => memberRoles.includes(id)),
- );
 
 export const mergeCapabilities = (applying: RewardRowLike[]): RewardCapabilities => ({
  customRole: applying.some((r) => r.customRole),
@@ -86,39 +59,14 @@ export const selectAnchorRole = (
  return anchored[0]?.positionRole ?? null;
 };
 
-export const digestAction = (rewards: string[], stored: string[] | null): DigestAction => {
- if (stored === null) return DigestAction.Seed;
-
- const changed =
-  rewards.some((id) => !stored.includes(id)) || stored.some((id) => !rewards.includes(id));
-
- return changed ? DigestAction.Changed : DigestAction.Unchanged;
-};
-
-export const planDigest = (
- applying: RewardRowLike[],
- stored: string[] | null,
+export const revokeFor = (
+ lost: string[],
  allRows: RewardRowLike[],
-): DigestPlan => {
- const rewards = applying.map((r) => r.id);
- const action = digestAction(rewards, stored);
-
- if (action === DigestAction.Seed) {
-  return { action, rewards, gained: [], lost: [], revoke: false, write: !!rewards.length };
- }
-
- const gained = rewards.filter((id) => !(stored ?? []).includes(id));
- const lost = (stored ?? []).filter((id) => !rewards.includes(id));
-
- if (action === DigestAction.Unchanged) {
-  return { action, rewards, gained, lost, revoke: false, write: false };
- }
-
+ applying: RewardRowLike[],
+): boolean => {
  const byId = new Map(allRows.map((r) => [r.id, r]));
- const revoke =
-  lost.some((id) => byId.get(id)?.customRole === true) && !applying.some((r) => r.customRole);
 
- return { action, rewards, gained, lost, revoke, write: true };
+ return lost.some((id) => byId.get(id)?.customRole === true) && !applying.some((r) => r.customRole);
 };
 
 export const truncateShared = (shared: string[], maxShare: number): SharedTruncation => ({

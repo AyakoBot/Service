@@ -49,7 +49,7 @@ export default {
    id: CustomRolesGroup.Reward,
    label: (t: CustomRolesTranslator) => t.settings.groups.reward(),
    description: (t: CustomRolesTranslator) => t.settings.sections.reward(),
-   emote: EmoteName.Gift,
+   emote: EmoteName.Badge,
    fields: [
     {
      column: 'active',
@@ -84,12 +84,6 @@ export default {
      editor: EditorType.Number,
      label: (t: CustomRolesTranslator) => t.settings.fields.xpMultiplier(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.xpMultiplier(),
-    },
-    {
-     column: 'currency',
-     editor: EditorType.Number,
-     label: (t: CustomRolesTranslator) => t.settings.fields.currency(),
-     description: (t: CustomRolesTranslator) => t.settings.descriptions.currency(),
     },
     {
      column: 'notifyChannel',

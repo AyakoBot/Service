@@ -28,7 +28,6 @@ model RoleReward {
  maxShare       Int     @default(0)
 
  xpMultiplier Decimal? @db.Decimal
- currency     Decimal? @db.Decimal
 
  notifyChannel String? @db.VarChar
 
