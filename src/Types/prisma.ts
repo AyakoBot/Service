@@ -90,6 +90,8 @@ export interface DataBaseTables {
  economyPurchase: PrismaTables.EconomyPurchase;
  economyPayout: PrismaTables.EconomyPayout;
  customRole: PrismaTables.CustomRole;
+ roleReward: PrismaTables.RoleReward;
+ roleRewardEligibility: PrismaTables.RoleRewardEligibility;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
