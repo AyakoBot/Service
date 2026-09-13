@@ -257,7 +257,7 @@ export const resolveUser = async function (
  this: InfoPlugin,
  userId: string,
 ): Promise<RUser | null> {
- const user = await getUser.call(this.client, userId);
+ const user = await getUser.call(this.client, userId, true);
  if (!user || user instanceof RequestHandlerError) return null;
  return user as RUser;
 };
