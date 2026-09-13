@@ -243,6 +243,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'welcomeChannel',
       editor: EditorType.Channel,
+      emote: EmoteName.Send,
       label: (t: WelcomeTranslator) => t.settings.fields.channel(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.welcomeChannel(),
       arity: FieldArity.Single,
@@ -252,6 +253,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'welcomeEmbed',
       editor: EditorType.String,
+      emote: EmoteName.Json,
       label: (t: WelcomeTranslator) => t.settings.fields.embed(),
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.embed({ list: placeholderDoc }),
@@ -261,6 +263,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'welcomeComponents',
       editor: EditorType.String,
+      emote: EmoteName.Command,
       label: (t: WelcomeTranslator) => t.settings.fields.components(),
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.components({ list: placeholderDoc }),
@@ -276,6 +279,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'welcomePingRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.Bell,
       label: (t: WelcomeTranslator) => t.settings.fields.pingRoles(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.pingRoles(),
       arity: FieldArity.Multi,
@@ -318,6 +322,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'goodbyeChannel',
       editor: EditorType.Channel,
+      emote: EmoteName.Send,
       label: (t: WelcomeTranslator) => t.settings.fields.channel(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.goodbyeChannel(),
       arity: FieldArity.Single,
@@ -327,6 +332,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'goodbyeEmbed',
       editor: EditorType.String,
+      emote: EmoteName.Json,
       label: (t: WelcomeTranslator) => t.settings.fields.embed(),
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.embed({ list: placeholderDoc }),
@@ -336,6 +342,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'goodbyeComponents',
       editor: EditorType.String,
+      emote: EmoteName.Command,
       label: (t: WelcomeTranslator) => t.settings.fields.components(),
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.components({ list: placeholderDoc }),
@@ -345,6 +352,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'goodbyePingRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.Bell,
       label: (t: WelcomeTranslator) => t.settings.fields.pingRoles(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.pingRoles(),
       arity: FieldArity.Multi,
@@ -381,6 +389,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'botToken',
       editor: EditorType.BotToken,
+      emote: EmoteName.Lock,
       label: (t: WelcomeTranslator) => t.settings.fields.botToken(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.botToken(),
       arity: FieldArity.Single,
@@ -397,6 +406,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'presenceType',
       editor: EditorType.PresenceActivityType,
+      emote: EmoteName.Activity,
       label: (t: WelcomeTranslator) => t.settings.fields.presenceType(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.presenceType(),
       arity: FieldArity.Single,
@@ -427,6 +437,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'presenceText',
       editor: EditorType.String,
+      emote: EmoteName.Message,
       label: (t: WelcomeTranslator) => t.settings.fields.presenceText(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.presenceText(),
       showIf: (row) => ({
@@ -439,6 +450,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'presenceEmoji',
       editor: EditorType.String,
+      emote: EmoteName.Emoji,
       transform: welcomePresenceEmojiTransform,
       label: (t: WelcomeTranslator) => t.settings.fields.presenceEmoji(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.presenceEmoji(),
@@ -459,6 +471,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'profileNick',
       editor: EditorType.String,
+      emote: EmoteName.Author,
       label: (t: WelcomeTranslator) => t.settings.fields.profileNick(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.profileNick(),
       arity: FieldArity.Single,
@@ -467,6 +480,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'profileAvatar',
       editor: EditorType.String,
+      emote: EmoteName.Avatar,
       label: (t: WelcomeTranslator) => t.settings.fields.profileAvatar(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.profileAvatar(),
       arity: FieldArity.Single,
@@ -476,6 +490,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'profileBanner',
       editor: EditorType.String,
+      emote: EmoteName.Banner,
       label: (t: WelcomeTranslator) => t.settings.fields.profileBanner(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.profileBanner(),
       arity: FieldArity.Single,
@@ -485,6 +500,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      {
       column: 'profileBio',
       editor: EditorType.String,
+      emote: EmoteName.Paragraph,
       label: (t: WelcomeTranslator) => t.settings.fields.profileBio(),
       description: (t: WelcomeTranslator) => t.settings.descriptions.profileBio(),
       arity: FieldArity.Single,
@@ -495,7 +511,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
    },
   ],
   guide: {
-
    title: (t: WelcomeTranslator) => t.guide.title(),
    intro: (t: WelcomeTranslator) => t.guide.intro(),
    advert: {

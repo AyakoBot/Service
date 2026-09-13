@@ -33,6 +33,7 @@ export default {
     {
      column: 'roles',
      editor: EditorType.Roles,
+     emote: EmoteName.Role,
      arity: FieldArity.Multi,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.roles(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.roles(),
@@ -40,6 +41,7 @@ export default {
     {
      column: 'denyRoles',
      editor: EditorType.Roles,
+     emote: EmoteName.DenyRole,
      arity: FieldArity.Multi,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.denyRoles(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.denyRoles(),
@@ -47,6 +49,7 @@ export default {
     {
      column: 'denyUsers',
      editor: EditorType.Users,
+     emote: EmoteName.DenyUser,
      arity: FieldArity.Multi,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.denyUsers(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.denyUsers(),
@@ -54,6 +57,7 @@ export default {
     {
      column: 'currency',
      editor: EditorType.Number,
+     emote: EmoteName.Gift,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.currency(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.currency(),
     },

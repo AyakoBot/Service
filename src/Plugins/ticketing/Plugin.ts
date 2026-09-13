@@ -256,16 +256,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
    select: { botToken: true },
   });
 
-  const dead = [...new Set(rows.map((row) => row.botToken))].filter(
-   (cipher): cipher is string => {
-    if (!cipher) return false;
-    try {
-     return decrypt(cipher) === token;
-    } catch {
-     return false;
-    }
-   },
-  );
+  const dead = [...new Set(rows.map((row) => row.botToken))].filter((cipher): cipher is string => {
+   if (!cipher) return false;
+   try {
+    return decrypt(cipher) === token;
+   } catch {
+    return false;
+   }
+  });
 
   await Promise.all(dead.map((cipher) => this.invalidateToken(cipher)));
  };
@@ -581,9 +579,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
        label: (t: TicketTranslator) => t.guide.goLive.panel(),
        description: (t: TicketTranslator) => t.guide.goLive.panelDesc(),
        required: (row) =>
-        !(
-         [TicketType.dmToChannel, TicketType.dmToThread].includes(row.type) && row.dmEnabled
-        ),
+        !([TicketType.dmToChannel, TicketType.dmToThread].includes(row.type) && row.dmEnabled),
       },
      ],
     },
@@ -644,6 +640,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'name',
       editor: EditorType.String,
+      emote: EmoteName.Heading,
       label: (t: TicketTranslator) => t.base.t.name(),
       description: (t: TicketTranslator) => t.settings.descriptions.name(),
       arity: FieldArity.Single,
@@ -651,6 +648,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'type',
       editor: EditorType.TicketType,
+      emote: EmoteName.Ticket,
       label: (t: TicketTranslator) => t.settings.fields.type(),
       description: (t: TicketTranslator) => t.settings.descriptions.type(),
       arity: FieldArity.Single,
@@ -681,6 +679,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'logMode',
       editor: EditorType.TicketLogMode,
+      emote: EmoteName.Log,
       label: (t: TicketTranslator) => t.settings.fields.logMode(),
       description: (t: TicketTranslator) => t.settings.descriptions.logMode(),
       arity: FieldArity.Single,
@@ -692,6 +691,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'transcriptChannels',
       editor: EditorType.Channels,
+      emote: EmoteName.Json,
       label: (t: TicketTranslator) => t.settings.fields.transcriptChannels(),
       description: (t: TicketTranslator) => t.settings.descriptions.transcriptChannels(),
       channelTypes: [ChannelType.GuildText],
@@ -720,6 +720,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'category',
       editor: EditorType.Category,
+      emote: EmoteName.ChannelCategory,
       label: (t: TicketTranslator) => t.settings.fields.category(),
       description: (t: TicketTranslator) => t.settings.descriptions.category(),
       required: true,
@@ -731,6 +732,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'channel',
       editor: EditorType.Channel,
+      emote: EmoteName.ChannelThread,
       label: (t: TicketTranslator) => t.settings.fields.channel(),
       description: (t: TicketTranslator) => t.settings.descriptions.channel(),
       channelTypes: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildMedia],
@@ -743,6 +745,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'archiveCategory',
       editor: EditorType.Category,
+      emote: EmoteName.Save,
       label: (t: TicketTranslator) => t.settings.fields.archiveCategory(),
       description: (t: TicketTranslator) => t.settings.descriptions.archiveCategory(),
       showIf: (row) => ({
@@ -753,6 +756,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'archiveDuration',
       editor: EditorType.ThreadAutoArchiveDuration,
+      emote: EmoteName.Timer,
       label: (t: TicketTranslator) => t.settings.fields.archiveDuration(),
       description: (t: TicketTranslator) => t.settings.descriptions.archiveDuration(),
       arity: FieldArity.Single,
@@ -782,6 +786,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'logChannels',
       editor: EditorType.Channels,
+      emote: EmoteName.Log,
       label: (t: TicketTranslator) => t.settings.fields.logChannels(),
       description: (t: TicketTranslator) => t.settings.descriptions.logChannels(),
       channelTypes: [ChannelType.GuildText, ChannelType.GuildForum, ChannelType.GuildMedia],
@@ -798,6 +803,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'staffRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.Role,
       label: (t: TicketTranslator) => t.settings.fields.staffRoles(),
       description: (t: TicketTranslator) => t.settings.descriptions.staffRoles(),
       arity: FieldArity.Multi,
@@ -805,6 +811,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'staffUsers',
       editor: EditorType.Users,
+      emote: EmoteName.Member,
       label: (t: TicketTranslator) => t.settings.fields.staffUsers(),
       description: (t: TicketTranslator) => t.settings.descriptions.staffUsers(),
       arity: FieldArity.Multi,
@@ -822,6 +829,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'staffThreadsChannel',
       editor: EditorType.Channel,
+      emote: EmoteName.Lock,
       label: (t: TicketTranslator) => t.settings.fields.staffThreadsChannel(),
       description: (t: TicketTranslator) => t.settings.descriptions.staffThreadsChannel(),
       channelTypes: [ChannelType.GuildText],
@@ -847,6 +855,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'mentionRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.Bell,
       label: (t: TicketTranslator) => t.settings.fields.mentionRoles(),
       description: (t: TicketTranslator) => t.settings.descriptions.mentionRoles(),
       arity: FieldArity.Multi,
@@ -854,6 +863,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'mentionUsers',
       editor: EditorType.Users,
+      emote: EmoteName.Member,
       label: (t: TicketTranslator) => t.settings.fields.mentionUsers(),
       description: (t: TicketTranslator) => t.settings.descriptions.mentionUsers(),
       arity: FieldArity.Multi,
@@ -873,6 +883,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'sendMessagePrefixes',
       editor: EditorType.Strings,
+      emote: EmoteName.Dm,
       label: (t: TicketTranslator) => t.settings.fields.sendMessagePrefixes(),
       description: (t: TicketTranslator) => t.settings.descriptions.sendMessagePrefixes(),
       arity: FieldArity.Multi,
@@ -928,6 +939,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'createTags',
       editor: EditorType.Strings,
+      emote: EmoteName.TagAdd,
       label: (t: TicketTranslator) => t.settings.fields.createTags(),
       description: (t: TicketTranslator) => t.settings.descriptions.createTags(),
       arity: FieldArity.Multi,
@@ -935,6 +947,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'claimTags',
       editor: EditorType.Strings,
+      emote: EmoteName.TagClaim,
       label: (t: TicketTranslator) => t.settings.fields.claimTags(),
       description: (t: TicketTranslator) => t.settings.descriptions.claimTags(),
       arity: FieldArity.Multi,
@@ -942,6 +955,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'closeTags',
       editor: EditorType.Strings,
+      emote: EmoteName.TagClose,
       label: (t: TicketTranslator) => t.settings.fields.closeTags(),
       description: (t: TicketTranslator) => t.settings.descriptions.closeTags(),
       arity: FieldArity.Multi,
@@ -963,6 +977,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'remindUnclaimedAfter',
       editor: EditorType.Duration,
+      emote: EmoteName.Timer,
       label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindUnclaimedAfter(),
       arity: FieldArity.Single,
@@ -970,6 +985,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'remindUnclaimedEvery',
       editor: EditorType.Duration,
+      emote: EmoteName.Refresh,
       label: (t: TicketTranslator) => t.settings.fields.remindUnclaimedEvery(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindUnclaimedEvery(),
       arity: FieldArity.Single,
@@ -977,6 +993,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'remindStaleAfter',
       editor: EditorType.Duration,
+      emote: EmoteName.Timedout,
       label: (t: TicketTranslator) => t.settings.fields.remindStaleAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindStaleAfter(),
       arity: FieldArity.Single,
@@ -984,6 +1001,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'remindStaleEvery',
       editor: EditorType.Duration,
+      emote: EmoteName.Refresh,
       label: (t: TicketTranslator) => t.settings.fields.remindStaleEvery(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindStaleEvery(),
       arity: FieldArity.Single,
@@ -999,6 +1017,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'inactivityWarnAfter',
       editor: EditorType.Duration,
+      emote: EmoteName.Warning,
       label: (t: TicketTranslator) => t.settings.fields.inactivityWarnAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.inactivityWarnAfter(),
       arity: FieldArity.Single,
@@ -1006,6 +1025,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'inactivityCloseAfter',
       editor: EditorType.Duration,
+      emote: EmoteName.Unlock,
       label: (t: TicketTranslator) => t.settings.fields.inactivityCloseAfter(),
       description: (t: TicketTranslator) => t.settings.descriptions.inactivityCloseAfter(),
       arity: FieldArity.Single,
@@ -1021,6 +1041,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'remindRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.Bell,
       label: (t: TicketTranslator) => t.settings.fields.remindRoles(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindRoles(),
       arity: FieldArity.Multi,
@@ -1028,6 +1049,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'remindUsers',
       editor: EditorType.Users,
+      emote: EmoteName.Member,
       label: (t: TicketTranslator) => t.settings.fields.remindUsers(),
       description: (t: TicketTranslator) => t.settings.descriptions.remindUsers(),
       arity: FieldArity.Multi,
@@ -1043,6 +1065,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'botToken',
       editor: EditorType.BotToken,
+      emote: EmoteName.Lock,
       label: (t: TicketTranslator) => t.settings.fields.botToken(),
       description: (t: TicketTranslator) => t.settings.descriptions.botToken(),
       arity: FieldArity.Single,
@@ -1076,6 +1099,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'presenceType',
       editor: EditorType.PresenceActivityType,
+      emote: EmoteName.Activity,
       label: (t: TicketTranslator) => t.settings.fields.presenceType(),
       description: (t: TicketTranslator) => t.settings.descriptions.presenceType(),
       arity: FieldArity.Single,
@@ -1106,6 +1130,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'presenceText',
       editor: EditorType.String,
+      emote: EmoteName.Message,
       label: (t: TicketTranslator) => t.settings.fields.presenceText(),
       description: (t: TicketTranslator) => t.settings.descriptions.presenceText(),
       showIf: (row) => ({
@@ -1118,6 +1143,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'presenceEmoji',
       editor: EditorType.String,
+      emote: EmoteName.Emoji,
       transform: presenceEmojiTransform,
       label: (t: TicketTranslator) => t.settings.fields.presenceEmoji(),
       description: (t: TicketTranslator) => t.settings.descriptions.presenceEmoji(),
@@ -1139,6 +1165,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'profileNick',
       editor: EditorType.String,
+      emote: EmoteName.Author,
       label: (t: TicketTranslator) => t.settings.fields.profileNick(),
       description: (t: TicketTranslator) => t.settings.descriptions.profileNick(),
       arity: FieldArity.Single,
@@ -1147,6 +1174,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'profileAvatar',
       editor: EditorType.String,
+      emote: EmoteName.Avatar,
       label: (t: TicketTranslator) => t.settings.fields.profileAvatar(),
       description: (t: TicketTranslator) => t.settings.descriptions.profileAvatar(),
       arity: FieldArity.Single,
@@ -1156,6 +1184,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'profileBanner',
       editor: EditorType.String,
+      emote: EmoteName.Banner,
       label: (t: TicketTranslator) => t.settings.fields.profileBanner(),
       description: (t: TicketTranslator) => t.settings.descriptions.profileBanner(),
       arity: FieldArity.Single,
@@ -1165,6 +1194,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'profileBio',
       editor: EditorType.String,
+      emote: EmoteName.Paragraph,
       label: (t: TicketTranslator) => t.settings.fields.profileBio(),
       description: (t: TicketTranslator) => t.settings.descriptions.profileBio(),
       arity: FieldArity.Single,
@@ -1182,6 +1212,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'placementMode',
       editor: EditorType.TicketPlacementMode,
+      emote: EmoteName.Sliders,
       label: (t: TicketTranslator) => t.settings.fields.placementMode(),
       description: (t: TicketTranslator) => t.settings.descriptions.placementMode(),
       arity: FieldArity.Single,
@@ -1203,6 +1234,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'forumChannel',
       editor: EditorType.Channel,
+      emote: EmoteName.ChannelForum,
       label: (t: TicketTranslator) => t.settings.fields.forumChannel(),
       description: (t: TicketTranslator) => t.settings.descriptions.forumChannel(),
       channelTypes: [ChannelType.GuildForum],
@@ -1236,6 +1268,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'staffTierRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.Podium,
       label: (t: TicketTranslator) => t.settings.fields.staffTierRoles(),
       description: (t: TicketTranslator) => t.settings.descriptions.staffTierRoles(),
       arity: FieldArity.Multi,
@@ -1247,6 +1280,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'ticketLimitTotal',
       editor: EditorType.Number,
+      emote: EmoteName.Ceiling,
       label: (t: TicketTranslator) => t.settings.fields.ticketLimitTotal(),
       description: (t: TicketTranslator) => t.settings.descriptions.ticketLimitTotal(),
       arity: FieldArity.Single,
@@ -1254,6 +1288,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'ticketLimitKind',
       editor: EditorType.Number,
+      emote: EmoteName.Number,
       label: (t: TicketTranslator) => t.settings.fields.ticketLimitKind(),
       description: (t: TicketTranslator) => t.settings.descriptions.ticketLimitKind(),
       arity: FieldArity.Single,
@@ -1261,6 +1296,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'denyRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.DenyRole,
       label: (t: TicketTranslator) => t.settings.fields.denyRoles(),
       description: (t: TicketTranslator) => t.settings.descriptions.denyRoles(),
       arity: FieldArity.Multi,
@@ -1268,6 +1304,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'denyUsers',
       editor: EditorType.Users,
+      emote: EmoteName.DenyUser,
       label: (t: TicketTranslator) => t.settings.fields.denyUsers(),
       description: (t: TicketTranslator) => t.settings.descriptions.denyUsers(),
       arity: FieldArity.Multi,
@@ -1293,6 +1330,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'name',
       editor: EditorType.String,
+      emote: EmoteName.Heading,
       label: (t: TicketTranslator) => t.base.t.name(),
       arity: FieldArity.Single,
       required: true,
@@ -1300,18 +1338,21 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'userText',
       editor: EditorType.Message,
+      emote: EmoteName.Dm,
       label: (t: TicketTranslator) => t.tag.fields.userText(),
       arity: FieldArity.Single,
      },
      {
       column: 'staffText',
       editor: EditorType.Message,
+      emote: EmoteName.Message,
       label: (t: TicketTranslator) => t.tag.fields.staffText(),
       arity: FieldArity.Single,
      },
      {
       column: 'kinds',
       editor: EditorType.Strings,
+      emote: EmoteName.Fields,
       label: (t: TicketTranslator) => t.tag.fields.kinds(),
       arity: FieldArity.Multi,
      },

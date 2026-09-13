@@ -161,6 +161,7 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
      {
       column: 'name',
       editor: EditorType.String,
+      emote: EmoteName.Heading,
       label: (t: ComponentBuilderTranslator) => t.base.t.name(),
       description: (t: ComponentBuilderTranslator) => t.settings.descriptions.name(),
       arity: FieldArity.Single,

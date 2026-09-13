@@ -145,8 +145,7 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
   multiRow: true,
   title: (t: EmbedBuilderTranslator) => t.settings.configTitle(),
   overviewDescription: (t: EmbedBuilderTranslator) => t.settings.overviewDescription(),
-  rowLabel: (t: EmbedBuilderTranslator, row: CustomEmbedRow) =>
-   row.name || t.settings.unnamed(),
+  rowLabel: (t: EmbedBuilderTranslator, row: CustomEmbedRow) => row.name || t.settings.unnamed(),
   rowSummary: (t: EmbedBuilderTranslator, row: CustomEmbedRow) => {
    const embed = (row.embed ?? {}) as APIEmbed;
    const state = isSendable(embed) ? t.settings.stateReady() : t.settings.stateEmpty();
@@ -162,6 +161,7 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
      {
       column: 'name',
       editor: EditorType.String,
+      emote: EmoteName.Heading,
       label: (t: EmbedBuilderTranslator) => t.base.t.name(),
       description: (t: EmbedBuilderTranslator) => t.settings.descriptions.name(),
       arity: FieldArity.Single,
