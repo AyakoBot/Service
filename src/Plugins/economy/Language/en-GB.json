@@ -7,7 +7,8 @@
    "earning": "Earning",
    "filters": "Filters",
    "transfers": "Transfers",
-   "identity": "Identity"
+   "identity": "Identity",
+   "rewards": "Role Rewards"
   },
   "fields": {
    "active": "Active",
@@ -68,6 +69,26 @@
    "transferDailyMax": "Most a member can transfer per day; zero means no limit.",
    "transferTax": "Percentage taken from each transfer.",
    "botToken": "Bot token used for this feature."
+  },
+  "rewards": {
+   "configTitle": "Economy Role Rewards",
+   "overviewDescription": "Pay a one-off currency bonus the first time a Member qualifies for a Reward. Each Reward pays once per Member, so re-gaining a qualifying Role does not pay again.",
+   "rowLabel": "Reward {{id}}",
+   "rowSummary": "{{count}} qualifying Roles",
+   "section": "Who qualifies for this Reward, and how much currency it pays out.",
+   "fields": {
+    "roles": "Qualifying Roles",
+    "denyRoles": "Denied Roles",
+    "denyUsers": "Denied Members",
+    "currency": "Payout"
+   },
+   "descriptions": {
+    "active": "Whether this Reward is evaluated at all. Turning it off stops any further payouts from it.",
+    "roles": "Holding any one of these Roles qualifies a Member for this Reward.",
+    "denyRoles": "Holding any one of these Roles disqualifies a Member, even if they hold a qualifying Role.",
+    "denyUsers": "These Users never qualify for this Reward, even while holding a qualifying Role.",
+    "currency": "How much currency to pay the first time a Member qualifies. Set 0 to pay nothing."
+   }
   }
  },
  "log": {

@@ -18,7 +18,6 @@ import Plugin, {
 import type Client from '../../Classes/Client.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 import type { TranslatorType } from '../../Util/translator.js';
-import type CustomRolesPlugin from '../customRoles/Plugin.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
  assertSchemaValid,
@@ -29,8 +28,11 @@ import {
 import { EconomyCommand, EconomyOption, EconomySubcommand } from './Classes/Commands.js';
 import EconomyBank from './Classes/EconomyBank.js';
 import EconomyLogger from './Classes/EconomyLogger.js';
-import { EconomyGroups, LedgerReason, SpendResult } from './Classes/Enums.js';
+import EconomyRewards from './Classes/EconomyRewards.js';
+import { EconomyGroups } from './Classes/Enums.js';
+import rewardsSchema from './Classes/rewardsSchema.js';
 import channelDelete from './Events/ChannelDelete/index.js';
+import guildMemberUpdate from './Events/GuildMemberUpdate/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
 import messageDelete from './Events/MessageDelete/index.js';
@@ -41,10 +43,11 @@ type Events =
  | GatewayDispatchEvents.MessageCreate
  | GatewayDispatchEvents.MessageDelete
  | GatewayDispatchEvents.ChannelDelete
+ | GatewayDispatchEvents.GuildMemberUpdate
  | GatewayDispatchEvents.InteractionCreate;
 
 type EconomyLanguage = typeof en;
-type EconomyTranslator = TranslatorType<EconomyLanguage> & { base: BaseLang };
+export type EconomyTranslator = TranslatorType<EconomyLanguage> & { base: BaseLang };
 
 const amountOption = (required: boolean, min: number = 1) =>
  new SlashCommandIntegerOption()
@@ -68,7 +71,7 @@ const reasonOption = () =>
 export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
  name = 'Economy';
  settingName = PluginName.Economy;
- dependencies = [PluginName.Settings, PluginName.CustomRoles];
+ dependencies = [PluginName.Settings];
  tableName = 'EconomySetting';
 
  customBotPerms =
@@ -79,6 +82,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
 
  bank: EconomyBank;
  economyLog: EconomyLogger;
+ rewards: EconomyRewards;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -108,6 +112,13 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
 
    channelDelete.call(this, data);
   },
+  [GatewayDispatchEvents.GuildMemberUpdate]: (
+   data: ExtractPayload<GatewayDispatchEvents.GuildMemberUpdate>,
+  ) => {
+   if (!this.isEnabled()) return;
+
+   guildMemberUpdate.call(this, data);
+  },
   [GatewayDispatchEvents.InteractionCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.InteractionCreate>,
   ) => {
@@ -122,52 +133,17 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
 
   this.bank = new EconomyBank(this);
   this.economyLog = new EconomyLogger(this);
+  this.rewards = new EconomyRewards(this);
 
   this.pluginBotKey = 'ECONOMY_TOKEN';
   this.logger.setLevel(LogLevel.silly);
 
-  this.registerPayoutSink();
   assertSchemaValid(this.settingsSchema);
+  assertSchemaValid(this.rewardsSchema);
  }
 
  symbolOf = (settings: EconomySetting): string =>
   settings.currencyEmote || settings.currencyName || '';
-
- private registerPayoutSink = () => {
-  const owner = this.client.plugins.find(
-   (plugin) => plugin.settingName === PluginName.CustomRoles,
-  ) as CustomRolesPlugin | undefined;
-
-  if (!owner) {
-   this.nonFatalError(
-    new Error('Custom roles plugin is not registered; role reward currency stays dormant'),
-    'registerPayoutSink',
-   );
-   return;
-  }
-
-  owner.payouts.registerSink({ award: this.awardRoleReward });
- };
-
- private awardRoleReward = async (
-  guildId: string,
-  userId: string,
-  amount: number,
-  key: string,
- ): Promise<void> => {
-  const paid = Math.max(0, Math.floor(amount));
-  if (!paid) return;
-
-  const result = await this.bank.awardPayout(guildId, userId, paid, key);
-  if (result !== SpendResult.Ok) return;
-
-  await this.economyLog.record({
-   guildId,
-   userId,
-   amount: paid,
-   reason: LedgerReason.RoleReward,
-  });
- };
 
  getEmojiSyncTokens = async (): Promise<string[]> => {
   const rows = await this.client.db.client.economySetting.findMany({
@@ -281,6 +257,8 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    },
   ],
  });
+
+ rewardsSchema = rewardsSchema;
 
  settingsSchema = {
   table: 'economySetting',

@@ -4,6 +4,7 @@ export enum EconomyGroups {
  Transfers = 'transfers',
  Filters = 'filters',
  Identity = 'identity',
+ Rewards = 'rewards',
 }
 
 export enum LedgerReason {
