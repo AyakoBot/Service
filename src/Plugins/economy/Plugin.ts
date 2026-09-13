@@ -369,12 +369,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       description: (t: EconomyTranslator) => t.settings.descriptions.messageCooldown(),
      },
      {
-      column: 'messageMinWords',
-      editor: EditorType.Number,
-      label: (t: EconomyTranslator) => t.settings.fields.messageMinWords(),
-      description: (t: EconomyTranslator) => t.settings.descriptions.messageMinWords(),
-     },
-     {
       column: 'messageDailyCap',
       editor: EditorType.Number,
       label: (t: EconomyTranslator) => t.settings.fields.messageDailyCap(),
