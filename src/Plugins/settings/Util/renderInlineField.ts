@@ -36,7 +36,10 @@ const heading = (field: SettingsField, prefix: string): string => {
 };
 
 const editorPrefix = (emotes: EmoteSet, field: SettingsField, value?: unknown): string => {
- const emote = editorEmotes.forEditor(emotes, field.editor, value);
+ const emote = field.emote
+  ? emotes.get(field.emote)
+  : editorEmotes.forEditor(emotes, field.editor, value);
+
  return emote ? textEmote(emote) : '';
 };
 

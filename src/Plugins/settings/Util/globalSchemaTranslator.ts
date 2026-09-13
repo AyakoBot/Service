@@ -44,6 +44,7 @@ export const globalSchemaTranslator = (
    fields: g.fields.map((f) => ({
     column: f.column,
     editor: f.editor,
+    emote: f.emote,
     label: f.label(t),
     description: f.description?.(t),
     arity: f.arity,

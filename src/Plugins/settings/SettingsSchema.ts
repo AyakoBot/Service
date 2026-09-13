@@ -55,6 +55,7 @@ export interface SettingsField<Row = Record<string, unknown>> {
  column: keyof Row & string;
  virtual?: SettingsFieldVirtual<Row>;
  editor: EditorType;
+ emote?: EmoteName;
  label: string;
  description?: string;
  arity?: FieldArity;
@@ -154,6 +155,7 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  column: keyof Row & string;
  virtual?: SettingsFieldVirtual<Row>;
  editor: EditorType;
+ emote?: EmoteName;
  label: (t: T) => string;
  description?: (t: T) => string;
  arity?: FieldArity;
