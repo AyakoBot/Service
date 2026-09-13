@@ -4,7 +4,7 @@ import { RESTJSONErrorCodes } from 'discord-api-types/v10';
 
 import { getCensoredContent } from '../../../../Util/censorContent.js';
 import { guildRoleLimit } from '../../../../Util/roleConstants.js';
-import { isErrorCode } from '../../../moderation/Util/sentinel.js';
+import { isErrorCode } from '../../../../Util/sentinel.js';
 import { ROLE_NAME_LIMIT } from '../../Classes/Commands.js';
 import { CustomRolesReason, origin } from '../../constants.js';
 import type CustomRolesPlugin from '../../Plugin.js';
