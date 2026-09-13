@@ -128,7 +128,6 @@ export default class EconomyBank {
  earnFromMessage = async (ctx: EarnContext): Promise<number> => {
   const settings = await this.settings(ctx.guildId);
   if (!settings.active || settings.frozen || !settings.messageActive) return 0;
-  if (settings.messageMinWords > 0 && ctx.words < settings.messageMinWords) return 0;
 
   const epoch = dayEpoch();
   const row = await this.row(ctx.guildId, ctx.userId);

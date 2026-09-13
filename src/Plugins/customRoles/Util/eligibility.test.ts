@@ -59,13 +59,19 @@ test('selectAnchorRole picks the anchor resolving to the highest cached position
  const positions: Record<string, number> = { low: 2, high: 9 };
  const rows = [row({ id: 'a', positionRole: 'low' }), row({ id: 'b', positionRole: 'high' })];
 
- assert.strictEqual(selectAnchorRole(rows, (id) => positions[id] ?? -1), 'high');
+ assert.strictEqual(
+  selectAnchorRole(rows, (id) => positions[id] ?? -1),
+  'high',
+ );
 });
 
 test('selectAnchorRole breaks a position tie by row id ascending', () => {
  const rows = [row({ id: 'b2', positionRole: 'X' }), row({ id: 'a1', positionRole: 'Y' })];
 
- assert.strictEqual(selectAnchorRole(rows, () => 5), 'Y');
+ assert.strictEqual(
+  selectAnchorRole(rows, () => 5),
+  'Y',
+ );
 });
 
 test('selectAnchorRole ignores rows with no anchor or an unresolvable anchor', () => {
@@ -75,7 +81,10 @@ test('selectAnchorRole ignores rows with no anchor or an unresolvable anchor', (
   selectAnchorRole(rows, () => -1),
   null,
  );
- assert.strictEqual(selectAnchorRole([row({ id: 'c' })], () => 5), null);
+ assert.strictEqual(
+  selectAnchorRole([row({ id: 'c' })], () => 5),
+  null,
+ );
 });
 
 test('revokeFor revokes only when a customRole-bearing row leaves the set', () => {

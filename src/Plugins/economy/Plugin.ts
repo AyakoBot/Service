@@ -37,7 +37,15 @@ import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
 import messageDelete from './Events/MessageDelete/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
+import { BotProfilePart, botProfileImageTransform, botProfileVirtual } from './Util/botProfile.js';
 import { economyBotTokenTransform } from './Util/botToken.js';
+
+type EconomyVirtualColumns = {
+ profileNick: string | null;
+ profileAvatar: string | null;
+ profileBanner: string | null;
+ profileBio: string | null;
+};
 
 type Events =
  | GatewayDispatchEvents.MessageCreate
@@ -478,8 +486,46 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       secret: true,
       transform: economyBotTokenTransform,
      },
+     {
+      column: 'profileNick',
+      editor: EditorType.String,
+      label: (t: EconomyTranslator) => t.settings.fields.profileNick(),
+      description: (t: EconomyTranslator) => t.settings.descriptions.profileNick(),
+      arity: FieldArity.Single,
+      virtual: botProfileVirtual(BotProfilePart.Nick),
+     },
+     {
+      column: 'profileAvatar',
+      editor: EditorType.String,
+      label: (t: EconomyTranslator) => t.settings.fields.profileAvatar(),
+      description: (t: EconomyTranslator) => t.settings.descriptions.profileAvatar(),
+      arity: FieldArity.Single,
+      transform: botProfileImageTransform,
+      virtual: botProfileVirtual(BotProfilePart.Avatar),
+     },
+     {
+      column: 'profileBanner',
+      editor: EditorType.String,
+      label: (t: EconomyTranslator) => t.settings.fields.profileBanner(),
+      description: (t: EconomyTranslator) => t.settings.descriptions.profileBanner(),
+      arity: FieldArity.Single,
+      transform: botProfileImageTransform,
+      virtual: botProfileVirtual(BotProfilePart.Banner),
+     },
+     {
+      column: 'profileBio',
+      editor: EditorType.String,
+      label: (t: EconomyTranslator) => t.settings.fields.profileBio(),
+      description: (t: EconomyTranslator) => t.settings.descriptions.profileBio(),
+      arity: FieldArity.Single,
+      multiline: true,
+      virtual: botProfileVirtual(BotProfilePart.Bio),
+     },
     ],
    },
   ],
- } satisfies SettingsSchemaDef<EconomySetting, EconomyTranslator> as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<
+  EconomySetting & EconomyVirtualColumns,
+  EconomyTranslator
+ > as unknown as SettingsSchemaDef;
 }

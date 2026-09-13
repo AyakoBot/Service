@@ -11,13 +11,17 @@ test('maps every bot token to its application id', () => {
   Token: `Bot ${tokenFor('650691698409734151')}`,
   TICKET_TOKEN: tokenFor('1459543361898676447'),
   WELCOME_TOKEN: tokenFor('1544065213983236226'),
+  ECONOMY_TOKEN: tokenFor('1548690887884931102'),
+  CUSTOM_ROLES_TOKEN: tokenFor('1548692420357783593'),
   DATABASE_URL: 'postgres://nope',
   SOME_SECRET: 'not-a-token',
  } as NodeJS.ProcessEnv);
 
  assert.equal(map.get('1544065213983236226'), tokenFor('1544065213983236226'));
  assert.equal(map.get('1459543361898676447'), tokenFor('1459543361898676447'));
- assert.equal(map.size, 3);
+ assert.equal(map.get('1548690887884931102'), tokenFor('1548690887884931102'));
+ assert.equal(map.get('1548692420357783593'), tokenFor('1548692420357783593'));
+ assert.equal(map.size, 5);
 });
 
 test('accepts 17 to 19 digit application ids', () => {

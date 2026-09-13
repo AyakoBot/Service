@@ -88,6 +88,8 @@ export default class CustomRolesPlugin extends Plugin<Events, CustomRolesLanguag
   this.rewards = new RolePerks(this);
   this.roles = new CustomRoleService(this);
 
+  this.pluginBotKey = 'CUSTOM_ROLES_TOKEN';
+
   this.client.cache.on('scheduleExpired', (key: unknown) =>
    this.rewards.onScheduleExpired(String(key)),
   );

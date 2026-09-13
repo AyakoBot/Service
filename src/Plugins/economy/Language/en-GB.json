@@ -38,7 +38,11 @@
    "transferMax": "Maximum transfer",
    "transferDailyMax": "Daily transfer cap",
    "transferTax": "Transfer tax",
-   "botToken": "Bot token"
+   "botToken": "Bot token",
+   "profileNick": "Bot nickname",
+   "profileAvatar": "Bot avatar",
+   "profileBanner": "Bot banner",
+   "profileBio": "Server Bio"
   },
   "descriptions": {
    "active": "Turn the currency system on or off for this server.",
@@ -68,7 +72,11 @@
    "transferMax": "Largest amount a transfer can be; zero means no limit.",
    "transferDailyMax": "Most a member can transfer per day; zero means no limit.",
    "transferTax": "Percentage taken from each transfer.",
-   "botToken": "Bot token used for this feature."
+   "botToken": "Bot token used for this feature.",
+   "profileNick": "The name this bot shows under in this server. Shared with every feature using the same bot. Leave empty to use its default name.",
+   "profileAvatar": "A Discord CDN image link for this bot's avatar in this server. Leave empty to remove it.",
+   "profileBanner": "A Discord CDN image link for this bot's banner in this server. Leave empty to remove it.",
+   "profileBio": "Short bio on the bot profile in this server. Discord does not report it back, so this box always looks empty even once set."
   },
   "rewards": {
    "configTitle": "Economy Role Rewards",
@@ -89,7 +97,8 @@
     "denyUsers": "These Users never qualify for this Reward, even while holding a qualifying Role.",
     "currency": "How much currency to pay the first time a Member qualifies. Set 0 to pay nothing."
    }
-  }
+  },
+  "profileWriteFailed": "Discord rejected the profile change. Check the value is valid (nicknames are capped at 32 characters) and that the bot may change its nickname here."
  },
  "log": {
   "title": "Balance change",

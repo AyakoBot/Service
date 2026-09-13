@@ -25,7 +25,6 @@ model EconomySetting {
  messageActive   Boolean @default(false)
  messageAmount   Int     @default(1)
  messageCooldown Int     @default(60)
- messageMinWords Int     @default(0)
  messageDailyCap Int     @default(0)
  minTenureHours  Int     @default(0)
 
@@ -143,4 +142,29 @@ model EconomyRoleRewardEligibility {
 enum ShopItemKind {
  command
  message
+}
+
+model EconomyRoleReward {
+ id    String @id @db.VarChar
+ guild String @db.VarChar
+
+ active    Boolean  @default(false)
+ roles     String[] @db.VarChar
+ denyRoles String[] @db.VarChar
+ denyUsers String[] @db.VarChar
+
+ currency Int @default(0)
+
+ @@index(guild)
+}
+
+model EconomyRoleRewardEligibility {
+ guild   String   @db.VarChar
+ user    String   @db.VarChar
+ rewards String[] @db.VarChar
+
+ updatedAt DateTime @updatedAt
+
+ @@id([guild, user])
+ @@index(guild)
 }
