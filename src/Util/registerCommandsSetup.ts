@@ -19,6 +19,8 @@ export default async function registerCommandsSetup(tag: string) {
  const { default: pluginEmbedBuilder } = await import('../Plugins/embedBuilder/Plugin.js');
  const { default: pluginComponentBuilder } = await import('../Plugins/componentBuilder/Plugin.js');
  const { default: pluginInfo } = await import('../Plugins/info/Plugin.js');
+ const { default: pluginCustomRoles } = await import('../Plugins/customRoles/Plugin.js');
+ const { default: pluginEconomy } = await import('../Plugins/economy/Plugin.js');
  const { default: pluginWelcome } = await import('../Plugins/welcome/Plugin.js');
  const { default: buildCommandBody } = await import('./buildCommandBody.js');
 
@@ -32,6 +34,8 @@ export default async function registerCommandsSetup(tag: string) {
  client.registerPlugin(pluginEmbedBuilder);
  client.registerPlugin(pluginComponentBuilder);
  client.registerPlugin(pluginInfo);
+ client.registerPlugin(pluginCustomRoles);
+ client.registerPlugin(pluginEconomy);
  client.registerPlugin(pluginWelcome);
 
  const pluginName = process.argv
