@@ -1,0 +1,91 @@
+{
+ "rewards": {
+  "desc": "You unlocked a new Role-Reward in **{{server}}**.",
+  "customRole": "You can now create your own Custom-Role with {{command}}.",
+  "xp": "You now earn **{{multiplier}}x** XP.",
+  "currency": "You received **{{amount}}** currency."
+ },
+ "customRole": {
+  "notEnabled": "Custom-Roles are not enabled in this Server.",
+  "cantSet": "You don't qualify to own a Custom-Role.",
+  "cantSetIcon": "You don't qualify to set an Icon on your Custom-Role.",
+  "cantSetColor": "You don't qualify to set a solid Colour on your Custom-Role.",
+  "cantSetGradient": "You don't qualify to set a Gradient on your Custom-Role.",
+  "cantSetHolo": "You don't qualify to set the Holographic Style on your Custom-Role.",
+  "create": "{{role}} was created.",
+  "edit": "{{role}} was edited.",
+  "deleted": "**{{role}}** was deleted.",
+  "alreadyExists": "You already have a Custom-Role. You can rename it with {{command}}.",
+  "notExists": "You don't have a Custom-Role yet, create one with {{command}}.",
+  "createButton": "Create your Custom-Role",
+  "gradientNeedsTwo": "A Gradient needs two Colours — give both, or pick two Roles to take them from.",
+  "iconModalTitle": "Custom-Role Icon",
+  "iconModalEmoji": "Emoji",
+  "iconModalUrl": "Discord CDN Link",
+  "limits": "__Applying limits:__\n-# Can set Role-Icon {{icon}} at {{iconCommand}}\n-# Can set Role-Colour {{color}} at {{colorCommand}}\n-# Can set Role-Gradient {{gradient}} at {{gradientCommand}}\n-# Can set Role-Holographic {{holo}} at {{holoCommand}}"
+ },
+ "share": {
+  "title": "Custom-Role Sharing",
+  "desc": "You can share your Custom-Role with {{amount}} Members of this Server.\nPick them below.\n-# If an Admin lowers the maximum share amount, Members are removed from the end of the list.",
+  "placeholder": "Shared Users",
+  "cantShare": "You don't qualify to share your Custom-Role.",
+  "noRole": "You don't have a Custom-Role to share.",
+  "notFound": "The Role you are trying to claim does not exist anymore.",
+  "notAllowed": "You are not allowed to claim this Role.",
+  "claimed": "You have claimed the Custom-Role {{role}}\n-# You can unequip it by running this Command again.",
+  "unequip": "You have unequipped the Custom-Role {{role}}"
+ },
+ "errors": {
+  "iconsNotAvailable": "Role icons need Server Boost Level 2 in this Server.",
+  "gradientsNotAvailable": "Gradient role colours need the enhanced role colours perk (3 boosts) in this Server.",
+  "holographicNotAvailable": "Holographic role colours need the enhanced role colours perk (3 boosts) in this Server.",
+  "roleCapReached": "This Server has reached Discord's limit of 250 Roles.",
+  "repositionFailed": "I could not move your Custom-Role into position — check my own Role's position.",
+  "noIconInput": "Give an Emoji or a Discord CDN link to use as the Icon."
+ },
+ "settings": {
+  "configTitle": "Custom Roles",
+  "overviewDescription": "No matter how many Custom-Roles a User qualifies for, they can only ever create 1 Custom-Role. However if they qualify for multiple Custom-Roles and one of them allows them to set an Icon and/or Color while the other doesn't, they will be able to set an Icon and/or Color",
+  "rowLabel": "Reward {{id}}",
+  "rowSummary": "{{count}} qualifying Roles",
+  "groups": {
+   "reward": "Reward",
+   "customRole": "Custom Role"
+  },
+  "sections": {
+   "reward": "Who qualifies for this Reward, and what they get for it.",
+   "customRole": "The Custom-Role perk this Reward unlocks, and what its owner may change about it."
+  },
+  "fields": {
+   "roles": "Qualifying Roles",
+   "denyRoles": "Denied Roles",
+   "denyUsers": "Denied Members",
+   "xpMultiplier": "XP Multiplier",
+   "currency": "Currency",
+   "notifyChannel": "Notification Channel",
+   "customRole": "Custom-Role",
+   "canSetColor": "Allow setting a Color",
+   "canSetIcon": "Allow setting an Icon",
+   "canSetGradient": "Allow setting a Gradient",
+   "canSetHolo": "Allow setting Holographic",
+   "positionRole": "Position Anchor",
+   "maxShare": "Share Limit"
+  },
+  "descriptions": {
+   "active": "Whether this Reward is evaluated at all. Turning it off revokes every perk it granted.",
+   "roles": "Holding any one of these Roles qualifies a Member for this Reward.",
+   "denyRoles": "Holding any one of these Roles disqualifies a Member, even if they hold a qualifying Role. Deny lists apply to keeping a perk, not only to gaining it.",
+   "denyUsers": "These Users never qualify for this Reward, even while holding a qualifying Role.",
+   "xpMultiplier": "Multiplies the XP qualifying Members earn. Two changes against the old behaviour: reward multipliers are now averaged together with your Role multipliers and the result multiplies the roll, instead of being summed and added to the server multiplier; and the multiplier now also applies to Voice XP and to a Member's very first message, neither of which it reached before.",
+   "currency": "Currency paid once, the first time a Member qualifies for this Reward. Recorded until an economy is available; nothing is paid out today.",
+   "notifyChannel": "Where the unlock notification is posted. Leave empty to send it as a DM instead.",
+   "customRole": "Whether qualifying Members may own a Custom-Role. A Member only ever owns one, no matter how many Rewards they qualify for.",
+   "canSetColor": "Whether the owner may pick a solid colour for their Custom-Role.",
+   "canSetIcon": "Whether the owner may set an icon on their Custom-Role. Requires the Role Icons Server feature.",
+   "canSetGradient": "Whether the owner may set a two-colour gradient. Requires the Enhanced Role Colors Server feature.",
+   "canSetHolo": "Whether the owner may set the holographic style. Requires the Enhanced Role Colors Server feature.",
+   "positionRole": "The Custom-Role is kept directly below this Role. When several Rewards apply, the highest of their anchors wins.",
+   "maxShare": "How many other Members the owner may share their Custom-Role with, 0 to 25. Lowering this drops the most recently added Members first and strips the Role from them."
+  }
+ }
+}

@@ -1,0 +1,68 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model RoleReward {
+ id    String @id @db.VarChar
+ guild String @db.VarChar
+
+ active    Boolean  @default(false)
+ roles     String[] @db.VarChar
+ denyRoles String[] @db.VarChar
+ denyUsers String[] @db.VarChar
+
+ customRole     Boolean @default(false)
+ canSetColor    Boolean @default(true)
+ canSetIcon     Boolean @default(true)
+ canSetGradient Boolean @default(true)
+ canSetHolo     Boolean @default(false)
+ positionRole   String? @db.VarChar
+ maxShare       Int     @default(0)
+
+ xpMultiplier Decimal? @db.Decimal
+ currency     Decimal? @db.Decimal
+
+ notifyChannel String? @db.VarChar
+
+ @@index(guild)
+}
+
+enum RoleColorStyle {
+ solid
+ gradient
+ holographic
+}
+
+model CustomRole {
+ guild String   @db.VarChar
+ user  String   @db.VarChar
+ role  String   @db.VarChar
+ shared String[] @db.VarChar
+
+ style          RoleColorStyle @default(solid)
+ primaryColor   Int?
+ secondaryColor Int?
+ tertiaryColor  Int?
+
+ @@id([guild, user])
+ @@index(guild)
+ @@index(role)
+}
+
+model RoleRewardEligibility {
+ guild   String   @db.VarChar
+ user    String   @db.VarChar
+ rewards String[] @db.VarChar
+ updatedAt DateTime @updatedAt
+
+ @@id([guild, user])
+ @@index(guild)
+}
