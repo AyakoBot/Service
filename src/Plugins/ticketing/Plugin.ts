@@ -370,7 +370,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Staff,
      label: (t: TicketTranslator) => t.settings.groups.staff(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.staff(),
-     emote: EmoteName.Member,
+     emote: EmoteName.Crown,
      steps: [
       {
        column: 'staffRoles',
@@ -387,7 +387,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Dm,
      label: (t: TicketTranslator) => t.settings.groups.dm(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.dm(),
-     emote: EmoteName.Message,
+     emote: EmoteName.Dm,
      showIf: (row) => ({
       ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
       reason: en.settings.reasons.dmOnly,
@@ -427,7 +427,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Reminders,
      label: (t: TicketTranslator) => t.settings.groups.reminders(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.reminders(),
-     emote: EmoteName.Timer,
+     emote: EmoteName.Bell,
      gate: {
       flag: TicketGuideFlag.WantsReminders,
       question: (t: TicketTranslator) => t.guide.gates.reminders(),
@@ -463,7 +463,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
      id: TicketGroups.Inactivity,
      label: (t: TicketTranslator) => t.settings.groups.inactivity(),
      description: (t: TicketTranslator) => t.guide.sectionDesc.inactivity(),
-     emote: EmoteName.Warning,
+     emote: EmoteName.Timer,
      gate: {
       flag: TicketGuideFlag.WantsAutoClose,
       question: (t: TicketTranslator) => t.guide.gates.autoClose(),
@@ -793,7 +793,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     id: TicketGroups.Staff,
     label: (t: TicketTranslator) => t.settings.groups.staff(),
     description: (t: TicketTranslator) => t.settings.groupDescriptions.staff(),
-    emote: EmoteName.Member,
+    emote: EmoteName.Crown,
     fields: [
      {
       column: 'staffRoles',
@@ -864,7 +864,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     id: TicketGroups.Dm,
     label: (t: TicketTranslator) => t.settings.groups.dm(),
     description: (t: TicketTranslator) => t.settings.groupDescriptions.dm(),
-    emote: EmoteName.Message,
+    emote: EmoteName.Dm,
     showIf: (row) => ({
      ok: [TicketType.dmToThread, TicketType.dmToChannel].includes(row.type),
      reason: en.settings.reasons.dmOnly,
@@ -883,7 +883,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     id: TicketGroups.Panel,
     label: (t: TicketTranslator) => t.settings.groups.panel(),
     description: (t: TicketTranslator) => t.settings.groupDescriptions.panel(),
-    emote: EmoteName.Message,
+    emote: EmoteName.Fields,
     fields: [
      {
       column: 'dmEnabled',
@@ -958,7 +958,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     id: TicketGroups.Reminders,
     label: (t: TicketTranslator) => t.settings.groups.reminders(),
     description: (t: TicketTranslator) => t.settings.groupDescriptions.reminders(),
-    emote: EmoteName.Timer,
+    emote: EmoteName.Bell,
     fields: [
      {
       column: 'remindUnclaimedAfter',
@@ -1225,7 +1225,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     id: TicketGroups.Limits,
     label: (t: TicketTranslator) => t.settings.groups.limits(),
     description: (t: TicketTranslator) => t.settings.groupDescriptions.limits(),
-    emote: EmoteName.Member,
+    emote: EmoteName.Number,
     fields: [
      {
       column: 'allowTakeClaim',

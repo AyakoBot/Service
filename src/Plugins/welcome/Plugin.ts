@@ -508,7 +508,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      id: WelcomeGroups.Welcome,
      label: (t: WelcomeTranslator) => t.settings.groups.welcome(),
      description: (t: WelcomeTranslator) => t.guide.sectionDesc.welcome(),
-     emote: EmoteName.Member,
+     emote: EmoteName.Wave,
      steps: [
       {
        column: 'welcomeChannel',
@@ -538,7 +538,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
      id: WelcomeGroups.Goodbye,
      label: (t: WelcomeTranslator) => t.settings.groups.goodbye(),
      description: (t: WelcomeTranslator) => t.guide.sectionDesc.goodbye(),
-     emote: EmoteName.Message,
+     emote: EmoteName.Leave,
      gate: {
       flag: WelcomeGuideFlag.WantsGoodbye,
       question: (t: WelcomeTranslator) => t.guide.gates.goodbye(),
