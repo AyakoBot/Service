@@ -9,6 +9,9 @@ import {
  type ShowIfResult,
  type TransformContext,
 } from '../../settings/SettingsSchema.js';
+import { createCrossAdvert } from '../../../Util/crossAdvert.js';
+import { PluginBotKey } from '../../../Util/pluginBotKey.js';
+import { PluginName } from '../../../Classes/abstracts/Plugin.js';
 import type CustomRolesPlugin from '../Plugin.js';
 import type { CustomRolesTranslator } from '../Plugin.js';
 
@@ -20,6 +23,29 @@ export enum CustomRolesGroup {
 export const MAX_SHARE_LIMIT = 25;
 
 const notifyChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
+
+const buyPriceAdvert = createCrossAdvert<RoleReward>({
+ partner: PluginName.Economy,
+ partnerKey: PluginBotKey.Economy,
+ advert: async (plugin, stored) => {
+  const t = await (plugin as CustomRolesPlugin).t(undefined);
+
+  return Number(stored) > 0 ? t.settings.crossAds.economyBuyDormant() : t.settings.crossAds.economyBuy();
+ },
+ unavailable: async (plugin) =>
+  (await (plugin as CustomRolesPlugin).t(undefined)).settings.crossAds.economyMissing(),
+ read: async (row) => (row.buyPrice > 0 ? row.buyPrice : null),
+ write: async (value, row, ctx) => {
+  const price = Math.max(0, Math.floor(Number(value) || 0));
+
+  await ctx.client.db.client.roleReward.updateMany({
+   where: { id: row.id, guild: row.guild },
+   data: { buyPrice: price },
+  });
+
+  return { ok: true };
+ },
+});
 
 const wantsCustomRole = (row: RoleReward): ShowIfResult => ({ ok: row.customRole });
 
@@ -64,6 +90,15 @@ export default {
      arity: FieldArity.Multi,
      label: (t: CustomRolesTranslator) => t.settings.fields.roles(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.roles(),
+    },
+    {
+     column: 'buyPrice',
+     editor: EditorType.Number,
+     label: (t: CustomRolesTranslator) => t.settings.fields.buyPrice(),
+     description: (t: CustomRolesTranslator) => t.settings.descriptions.buyPrice(),
+     arity: FieldArity.Single,
+     emote: EmoteName.Shop,
+     virtual: buyPriceAdvert,
     },
     {
      column: 'denyRoles',

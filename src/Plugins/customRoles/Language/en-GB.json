@@ -67,7 +67,8 @@
    "canSetGradient": "Allow setting a Gradient",
    "canSetHolo": "Allow setting Holographic",
    "positionRole": "Position Anchor",
-   "maxShare": "Share Limit"
+   "maxShare": "Share Limit",
+   "buyPrice": "Purchase price"
   },
   "descriptions": {
    "active": "Whether this Reward is evaluated at all. Turning it off revokes every perk it granted.",
@@ -82,7 +83,13 @@
    "canSetGradient": "Whether the owner may set a two-colour gradient. Requires the Enhanced Role Colors Server feature.",
    "canSetHolo": "Whether the owner may set the holographic style. Requires the Enhanced Role Colors Server feature.",
    "positionRole": "The Custom-Role is kept directly below this Role. When several Rewards apply, the highest of their anchors wins.",
-   "maxShare": "How many other Members the owner may share their Custom-Role with, 0 to 25. Lowering this drops the most recently added Members first and strips the Role from them."
+   "maxShare": "How many other Members the owner may share their Custom-Role with, 0 to 25. Lowering this drops the most recently added Members first and strips the Role from them.",
+   "buyPrice": "What a Member pays in server currency to unlock this Reward. Zero means it cannot be bought."
+  },
+  "crossAds": {
+   "economyBuy": "Let Members buy this Reward with server currency using Ayako Economy",
+   "economyBuyDormant": "A price is set but Ayako Economy is not in this Server, so nothing can be bought",
+   "economyMissing": "Add Ayako Economy to this Server before setting a purchase price."
   }
  }
 }
