@@ -15,6 +15,12 @@ export enum MessagePlaceholder {
 
  Gif = 'gif',
  Days = 'days',
+
+ Prize = 'prize',
+ Time = 'time',
+ Winners = 'winners',
+ Entries = 'entries',
+ Host = 'host',
 }
 
 export const serverPlaceholders = [

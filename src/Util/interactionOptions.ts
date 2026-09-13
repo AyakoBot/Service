@@ -6,8 +6,12 @@ import {
  type APIApplicationCommandInteractionDataSubcommandOption,
 } from 'discord-api-types/v10';
 
+type OptionCarrier =
+ | APIApplicationCommandInteraction
+ | APIApplicationCommandAutocompleteInteraction;
+
 export const getSubcommand = (
- cmd: APIApplicationCommandInteraction,
+ cmd: OptionCarrier,
 ): APIApplicationCommandInteractionDataSubcommandOption | null => {
  if (!('options' in cmd.data)) return null;
  const top = cmd.data.options?.[0];
@@ -16,13 +20,27 @@ export const getSubcommand = (
 };
 
 export const getSubcommandGroup = (
- cmd: APIApplicationCommandInteraction,
+ cmd: OptionCarrier,
 ): APIApplicationCommandInteractionDataSubcommandGroupOption | null => {
  if (!('options' in cmd.data)) return null;
  const top = cmd.data.options?.[0];
  if (!top || top.type !== ApplicationCommandOptionType.SubcommandGroup) return null;
  return top;
 };
+
+export const getGroupSubcommand = (
+ cmd: OptionCarrier,
+): APIApplicationCommandInteractionDataSubcommandOption | null => {
+ const group = getSubcommandGroup(cmd);
+ const leaf = group?.options?.[0];
+ if (!leaf || leaf.type !== ApplicationCommandOptionType.Subcommand) return null;
+ return leaf;
+};
+
+export const hasOption = (
+ sub: APIApplicationCommandInteractionDataSubcommandOption,
+ name: string,
+): boolean => !!sub.options?.some((o) => o.name === name);
 
 export const getIntegerOption = (
  sub: APIApplicationCommandInteractionDataSubcommandOption,
@@ -75,17 +93,26 @@ export const getRoleOption = (
  return option && option.type === ApplicationCommandOptionType.Role ? option.value : null;
 };
 
-export const findFocusedString = (
- options: APIApplicationCommandAutocompleteInteraction['data']['options'],
-): string => {
+type FocusedOption = { name: string; value: string };
+type FocusedOptions = APIApplicationCommandAutocompleteInteraction['data']['options'];
+
+export const findFocusedOption = (options: FocusedOptions): FocusedOption | null => {
  for (const option of options ?? []) {
-  if (option.type === ApplicationCommandOptionType.Subcommand) {
-   const nested = option.options?.find(
-    (o) => o.type === ApplicationCommandOptionType.String && o.focused,
-   );
-   if (nested && nested.type === ApplicationCommandOptionType.String) return nested.value;
+  if (
+   option.type === ApplicationCommandOptionType.Subcommand ||
+   option.type === ApplicationCommandOptionType.SubcommandGroup
+  ) {
+   const nested = findFocusedOption(option.options as FocusedOptions);
+   if (nested) return nested;
   }
-  if (option.type === ApplicationCommandOptionType.String && option.focused) return option.value;
+
+  if (option.type === ApplicationCommandOptionType.String && option.focused) {
+   return { name: option.name, value: option.value };
+  }
  }
- return '';
+
+ return null;
 };
+
+export const findFocusedString = (options: FocusedOptions): string =>
+ findFocusedOption(options)?.value ?? '';

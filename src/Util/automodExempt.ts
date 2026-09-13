@@ -4,10 +4,10 @@ import { PermissionFlagsBits } from '@discordjs/core';
 
 import type Client from '../Classes/Client.js';
 
-export interface AutomodWhitelists {
- wlUserIds?: string[];
- wlRoleIds?: string[];
- wlChannelIds?: string[];
+export interface AutomodAllowLists {
+ allowUsers?: string[];
+ allowRoles?: string[];
+ allowChannels?: string[];
 }
 
 export interface AutomodMessage {
@@ -57,7 +57,7 @@ export const isAdministrator = async function (
 export default async function (
  this: { client: Client },
  data: AutomodMessage,
- feature: AutomodWhitelists,
+ feature: AutomodAllowLists,
 ): Promise<boolean> {
  if (data.author.bot) return true;
  if (!data.guild_id) return true;
@@ -68,15 +68,15 @@ export default async function (
   return true;
  }
 
- if (feature.wlUserIds?.includes(data.author.id)) return true;
+ if (feature.allowUsers?.includes(data.author.id)) return true;
 
- if (feature.wlRoleIds?.length && roleIds.some((id) => feature.wlRoleIds!.includes(id))) {
+ if (feature.allowRoles?.length && roleIds.some((id) => feature.allowRoles!.includes(id))) {
   return true;
  }
 
- if (feature.wlChannelIds?.length) {
+ if (feature.allowChannels?.length) {
   const chain = await resolveChannelChain.call(this.client.cache, data.channel_id);
-  if (chain.some((id) => feature.wlChannelIds!.includes(id))) return true;
+  if (chain.some((id) => feature.allowChannels!.includes(id))) return true;
  }
 
  return false;
