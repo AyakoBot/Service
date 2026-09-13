@@ -1,0 +1,121 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model EconomySetting {
+ id    String @id @db.VarChar
+ guild String @db.VarChar
+
+ active        Boolean @default(false)
+ frozen        Boolean @default(false)
+ currencyName  String? @db.VarChar
+ currencyEmote String? @db.VarChar
+
+ startBalance Int @default(0)
+ maxBalance   Int @default(0)
+
+ messageActive   Boolean @default(false)
+ messageAmount   Int     @default(1)
+ messageCooldown Int     @default(60)
+ messageMinWords Int     @default(0)
+ messageDailyCap Int     @default(0)
+ minTenureHours  Int     @default(0)
+
+ transferActive   Boolean @default(false)
+ transferMin      Int     @default(1)
+ transferMax      Int     @default(0)
+ transferDailyMax Int     @default(0)
+ transferTax      Int     @default(0)
+
+ confirmBuy        Boolean @default(true)
+ balancePublic     Boolean @default(true)
+ leaderboardPublic Boolean @default(true)
+
+ denyChannels  String[] @db.VarChar
+ denyRoles     String[] @db.VarChar
+ denyUsers     String[] @db.VarChar
+ allowChannels String[] @db.VarChar
+ allowRoles    String[] @db.VarChar
+ allowUsers    String[] @db.VarChar
+
+ logChannels String[] @db.VarChar
+
+ botToken String? @db.VarChar
+
+ @@unique(guild)
+}
+
+model EconomyBalance {
+ guild   String @db.VarChar
+ user    String @db.VarChar
+ balance Int    @default(0)
+
+ earnedToday      Int @default(0)
+ earnedEpoch      Int @default(0)
+ transferredToday Int @default(0)
+ transferredEpoch Int @default(0)
+
+ firstSeenAt DateTime @default(now())
+
+ @@id([guild, user])
+ @@index([guild, balance])
+}
+
+model EconomyItem {
+ id    String @id @db.VarChar
+ guild String @db.VarChar
+
+ label  String  @db.VarChar
+ price  Int     @default(0)
+ active Boolean @default(false)
+ kind   ShopItemKind @default(command)
+
+ addRoles     String[] @db.VarChar
+ removeRoles  String[] @db.VarChar
+ replyText    String?  @db.Text
+ grantBalance Int      @default(0)
+
+ buttonText  String? @db.VarChar
+ buttonEmote String? @db.VarChar
+ message     String? @db.VarChar
+ channel     String? @db.VarChar
+
+ @@index([guild, active])
+}
+
+model EconomyPurchase {
+ id    String @id @db.VarChar
+ guild String @db.VarChar
+ user  String @db.VarChar
+ item  String @db.VarChar
+ price Int
+
+ boughtAt DateTime @default(now())
+
+ @@unique([guild, user, item])
+ @@index([guild, user])
+}
+
+model EconomyPayout {
+ key    String @id @db.VarChar
+ guild  String @db.VarChar
+ user   String @db.VarChar
+ amount Int
+
+ paidAt DateTime @default(now())
+
+ @@index([guild, user])
+}
+
+enum ShopItemKind {
+ command
+ message
+}

@@ -1,0 +1,160 @@
+{
+ "settings": {
+  "configTitle": "Currency settings",
+  "overviewDescription": "Configure how this server's currency works, including earning, transfers and the role shop.",
+  "groups": {
+   "general": "General",
+   "earning": "Earning",
+   "filters": "Filters",
+   "transfers": "Transfers",
+   "identity": "Identity"
+  },
+  "fields": {
+   "active": "Active",
+   "frozen": "Frozen",
+   "currencyName": "Currency name",
+   "currencyEmote": "Currency icon",
+   "startBalance": "Start balance",
+   "maxBalance": "Max balance",
+   "confirmBuy": "Confirm purchase",
+   "balancePublic": "Public balance",
+   "leaderboardPublic": "Public leaderboard",
+   "logChannels": "Log channels",
+   "messageActive": "Chat earning",
+   "messageAmount": "Per-message amount",
+   "messageCooldown": "Message cooldown",
+   "messageMinWords": "Minimum words",
+   "messageDailyCap": "Daily cap",
+   "minTenureHours": "Minimum tenure",
+   "denyChannels": "Denied Channels",
+   "denyRoles": "Denied Roles",
+   "denyUsers": "Denied Members",
+   "allowChannels": "Allowed Channels",
+   "allowRoles": "Allowed Roles",
+   "allowUsers": "Allowed Members",
+   "transferActive": "Transfers",
+   "transferMin": "Minimum transfer",
+   "transferMax": "Maximum transfer",
+   "transferDailyMax": "Daily transfer cap",
+   "transferTax": "Transfer tax",
+   "botToken": "Bot token"
+  },
+  "descriptions": {
+   "active": "Turn the currency system on or off for this server.",
+   "frozen": "Pause all earning and spending without losing configuration.",
+   "currencyName": "The name members will see for this server's currency.",
+   "currencyEmote": "The icon shown next to amounts of the currency.",
+   "startBalance": "The amount every member begins with.",
+   "maxBalance": "The highest balance a member can hold; zero means no limit.",
+   "confirmBuy": "Ask members to confirm before completing a shop purchase.",
+   "balancePublic": "Let anyone view another member's balance.",
+   "leaderboardPublic": "Let anyone view the server leaderboard.",
+   "logChannels": "Channels that receive balance change logs.",
+   "messageActive": "Reward members for sending messages.",
+   "messageAmount": "How much a qualifying message earns.",
+   "messageCooldown": "Seconds a member must wait between earning messages.",
+   "messageMinWords": "Minimum words a message needs to earn currency.",
+   "messageDailyCap": "Most a member can earn per day from chatting; zero means no limit.",
+   "minTenureHours": "Hours a member must have been known to this server before they can earn, as an anti-alt measure.",
+   "denyChannels": "Channels where earning is blocked.",
+   "denyRoles": "Roles whose members cannot earn.",
+   "denyUsers": "Members who cannot earn.",
+   "allowChannels": "If set, only these channels allow earning.",
+   "allowRoles": "If set, only these roles can earn.",
+   "allowUsers": "If set, only these members can earn.",
+   "transferActive": "Allow members to send currency to each other.",
+   "transferMin": "Smallest amount a transfer can be.",
+   "transferMax": "Largest amount a transfer can be; zero means no limit.",
+   "transferDailyMax": "Most a member can transfer per day; zero means no limit.",
+   "transferTax": "Percentage taken from each transfer.",
+   "botToken": "Bot token used for this feature."
+  }
+ },
+ "log": {
+  "title": "Balance change",
+  "amount": "Amount",
+  "reason": "Reason",
+  "executor": "Changed by"
+ },
+ "reasons": {
+  "message": "Chat message",
+  "role-reward": "Role reward",
+  "purchase": "Shop purchase",
+  "transfer-out": "Transfer sent",
+  "transfer-in": "Transfer received",
+  "admin-give": "Administrator grant",
+  "admin-take": "Administrator deduction",
+  "admin-set": "Administrator set",
+  "admin-reset": "Administrator reset",
+  "refund": "Refund"
+ },
+ "botToken": {
+  "invalid": "That bot token is not valid.",
+  "keyMissing": "This bot cannot store tokens securely right now. Contact the bot owner."
+ },
+ "balance": {
+  "title": "Balance",
+  "yours": "Your balance is {{amount}} {{symbol}}",
+  "theirs": "{{user}}'s balance is {{amount}} {{symbol}}",
+  "rank": "Rank {{rank}}",
+  "private": "This member's balance is private."
+ },
+ "shop": {
+  "title": "Role shop",
+  "empty": "The shop is empty.",
+  "priced": "{{price}} {{symbol}}",
+  "free": "Free",
+  "buy": "Buy",
+  "owned": "Owned",
+  "equip": "Equip",
+  "unequip": "Unequip",
+  "equipped": "Equipped {{label}}",
+  "unequipped": "Unequipped {{label}}",
+  "bought": "You bought {{label}}",
+  "confirm": "Buy {{label}} for {{price}} {{symbol}}?",
+  "insufficient": "You need {{price}} {{symbol}} but only have {{balance}} {{symbol}}",
+  "rolesBlocked": "This bot cannot hand out that role."
+ },
+ "inventory": {
+  "title": "Inventory",
+  "empty": "You own nothing from the shop yet."
+ },
+ "board": {
+  "title": "Leaderboard",
+  "empty": "No one has earned anything yet.",
+  "you": "You are rank {{rank}}"
+ },
+ "pay": {
+  "disabled": "Transfers are disabled here.",
+  "self": "You cannot send currency to yourself.",
+  "tooLow": "The minimum transfer is {{min}} {{symbol}}",
+  "tooHigh": "The maximum transfer is {{max}} {{symbol}}",
+  "capReached": "You can only send {{remaining}} {{symbol}} more today",
+  "insufficient": "You do not have enough currency.",
+  "confirm": "Send {{amount}} {{symbol}} to {{user}}?",
+  "sent": "Sent {{amount}} {{symbol}} to {{user}}",
+  "taxed": "A tax of {{tax}} {{symbol}} was taken",
+  "botTarget": "You cannot send currency to a bot."
+ },
+ "admin": {
+  "given": "Gave {{amount}} {{symbol}} to {{user}}",
+  "taken": "Took {{amount}} {{symbol}} from {{user}}",
+  "setTo": "Set {{user}}'s balance to {{amount}} {{symbol}}",
+  "reset": "Reset {{user}}'s balance",
+  "frozen": "The currency system is now frozen.",
+  "unfrozen": "The currency system is no longer frozen."
+ },
+ "earn": {
+  "title": "Earnings",
+  "today": "Earned {{earned}} of {{cap}} {{symbol}} today",
+  "uncapped": "Earned {{earned}} {{symbol}} today",
+  "cooldown": "Please wait {{seconds}} seconds before earning again"
+ },
+ "errors": {
+  "inactive": "The currency system is not active here.",
+  "frozen": "The currency system is currently frozen.",
+  "noItem": "That item does not exist.",
+  "notOwned": "You do not own that item.",
+  "hierarchy": "This bot cannot manage that role."
+ }
+}
