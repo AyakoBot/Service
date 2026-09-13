@@ -84,6 +84,12 @@ export interface DataBaseTables {
  customComponents: PrismaTables.CustomComponents;
  welcomeSetting: PrismaTables.WelcomeSetting;
  welcomeGif: PrismaTables.WelcomeGif;
+ economySetting: PrismaTables.EconomySetting;
+ economyBalance: PrismaTables.EconomyBalance;
+ economyItem: PrismaTables.EconomyItem;
+ economyPurchase: PrismaTables.EconomyPurchase;
+ economyPayout: PrismaTables.EconomyPayout;
+ customRole: PrismaTables.CustomRole;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
