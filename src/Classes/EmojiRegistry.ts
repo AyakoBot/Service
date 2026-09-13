@@ -212,7 +212,8 @@ export default class EmojiRegistry {
   if (cached) return cached;
 
   const set = buildEmoteSet((name) => this.resolve(api.botId, name));
-  this.sets.set(api.botId, set);
+  if (this.byApp.has(api.botId)) this.sets.set(api.botId, set);
+
   return set;
  };
 
@@ -238,9 +239,7 @@ export default class EmojiRegistry {
       );
       if (!this.invalidApps.has(api.botId)) return;
 
-      this.client.logger.warn(
-       `[EmojiRegistry] Pruning invalid stored token for app ${api.botId}`,
-      );
+      this.client.logger.warn(`[EmojiRegistry] Pruning invalid stored token for app ${api.botId}`);
       await plugin
        .onEmojiSyncTokenInvalid?.(token)
        .catch((error: Error) =>
