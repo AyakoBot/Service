@@ -21,6 +21,7 @@ export enum EditorType {
  Message = 'message',
  ShopType = 'shoptype',
  FormulaType = 'formulatype',
+ ButtonStyle = 'button-style',
  Emote = 'emote',
  Emotes = 'emotes',
  Command = 'command',

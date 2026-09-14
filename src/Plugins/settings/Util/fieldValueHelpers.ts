@@ -20,6 +20,9 @@ export const asOptions = (field: SettingsField): { label: string; value: string 
  return [];
 };
 
+export const hasDynamicOptions = (field: SettingsField): boolean =>
+ typeof field.options === 'function';
+
 export type EntitySelectBuilder =
  | RoleSelectMenuBuilder
  | UserSelectMenuBuilder

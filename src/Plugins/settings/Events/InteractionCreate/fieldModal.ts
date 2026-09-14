@@ -5,6 +5,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { buildFieldModal } from '../../Util/buildFieldModal.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
+import { resolveFieldOptions } from '../../Util/resolveFieldOptions.js';
 import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 export default async function (
@@ -18,7 +19,11 @@ export default async function (
  if (!resolved) return;
 
  const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
- const field = schema.groups.flatMap((g) => g.fields).find((f) => f.column === id.column);
+ const raw = schema.groups.flatMap((g) => g.fields).find((f) => f.column === id.column);
+ if (!raw) return;
+
+ const ctx = { client: this.client, plugin: resolved.plugin, guildId: cmd.guild_id };
+ const [field] = await resolveFieldOptions([raw], ctx);
  if (!field) return;
 
  const row = await this.tableClient(resolved.schema.table).findFirst({
@@ -28,11 +33,7 @@ export default async function (
 
  const displayRow = {
   ...row,
-  ...(await resolveVirtualFields([field], row, {
-   client: this.client,
-   plugin: resolved.plugin,
-   guildId: cmd.guild_id,
-  })),
+  ...(await resolveVirtualFields([field], row, ctx)),
  };
 
  const modal = buildFieldModal(

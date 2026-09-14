@@ -6,12 +6,12 @@ const fieldDescription = (
  t: DefaultTranslator,
  column?: string,
 ): string | undefined =>
- (column
+ column
   ? def.groups
      .flatMap((g) => g.fields)
      .find((f) => f.column === column)
      ?.description?.(t)
-  : undefined);
+  : undefined;
 
 export const globalSchemaTranslator = (
  t: DefaultTranslator,
@@ -32,6 +32,8 @@ export const globalSchemaTranslator = (
    id: g.id,
    label: g.label(t),
    description: g.description?.(t),
+   footer: g.footer ? (row) => g.footer!(t, row) : undefined,
+   availableIf: g.availableIf,
    emote: g.emote,
    showIf: g.showIf,
    actions: g.actions?.map((a) => ({
@@ -58,8 +60,10 @@ export const globalSchemaTranslator = (
     channelTypes: f.channelTypes,
     required: f.required,
     secret: f.secret,
+    multiline: f.multiline,
     ms: f.ms,
     headerToggle: f.headerToggle,
+    separator: f.separator,
     showIf: f.showIf,
     validate: f.validate,
     transform: f.transform,

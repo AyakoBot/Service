@@ -21,7 +21,7 @@ class EditorEmotes {
   [EditorType.Mention]: undefined,
   [EditorType.Mentions]: undefined,
   [EditorType.Boolean]: (emotes: EmoteSet, value: boolean) =>
-   (value ? emotes.enabled : emotes.disabled),
+   value ? emotes.enabled : emotes.disabled,
   [EditorType.Duration]: EmoteName.Timer,
   [EditorType.String]: undefined,
   [EditorType.Language]: undefined,
@@ -33,6 +33,7 @@ class EditorEmotes {
   [EditorType.BotToken]: EmoteName.Lock,
   [EditorType.Message]: EmoteName.Message,
   [EditorType.ShopType]: EmoteName.Shop,
+  [EditorType.ButtonStyle]: EmoteName.Palette,
   [EditorType.FormulaType]: EmoteName.Brain,
   [EditorType.Emote]: EmoteName.Emoji,
   [EditorType.Emotes]: EmoteName.Emoji,

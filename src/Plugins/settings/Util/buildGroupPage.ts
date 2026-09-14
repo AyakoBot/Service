@@ -37,6 +37,7 @@ export interface BuildGroupPageArgs {
  rowId: string;
  row: Record<string, unknown>;
  hideUnavail: boolean;
+ groupUnavailable?: string;
  actionState?: GuideActionState;
  t: SettingsTranslator;
  emotes: EmoteSet;
@@ -65,6 +66,7 @@ export const buildGroupPage = ({
  rowId,
  row,
  hideUnavail,
+ groupUnavailable,
  actionState,
  t,
  emotes,
@@ -86,9 +88,7 @@ export const buildGroupPage = ({
    .setLabel(on ? t.navigator.enabled() : t.navigator.disabled())
    .setEmoji(buttonEmoji(on ? emotes.enabled : emotes.disabled));
 
- const headerToggleField = schema.groups
-  .flatMap((g) => g.fields)
-  .find((field) => field.headerToggle);
+ const headerToggleField = group.fields.find((field) => field.headerToggle);
 
  const headerToggle = headerToggleField
   ? toggleButton(Boolean(row[headerToggleField.column])).setCustomId(
@@ -137,42 +137,44 @@ export const buildGroupPage = ({
 
  const groupHeading = `## ${textEmote(
   group.emote ? emotes.get(group.emote) : emotes.settings,
- )} ${group.label}${
-  group.description ? `\n-# ${group.description}` : ''
- }`;
+ )} ${group.label}${group.description ? `\n-# ${group.description}` : ''}`;
  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(groupHeading));
 
  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
 
- group.fields
-  .filter((field) => !field.headerToggle)
-  .forEach((field) => {
-   const visible = field.showIf ? field.showIf(row) : { ok: true };
-   if (!visible.ok && hideUnavail) return;
+ if (groupUnavailable) {
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(groupUnavailable));
+ } else {
+  group.fields
+   .filter((field) => !field.headerToggle)
+   .forEach((field) => {
+    const visible = field.showIf ? field.showIf(row) : { ok: true };
+    if (!visible.ok && hideUnavail) return;
 
-   renderInlineField(
-    container,
-    emotes,
-    field,
-    row,
-    (action, column) => idFor(action, group.id, column),
-    {
-     enabled: t.navigator.enabled(),
-     disabled: t.navigator.disabled(),
-     change: t.navigator.change(),
-    },
-    visible,
-   );
-  });
+    if (field.separator) container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
 
- if (group.actions?.length) {
+    renderInlineField(
+     container,
+     emotes,
+     field,
+     row,
+     (action, column) => idFor(action, group.id, column),
+     {
+      enabled: t.navigator.enabled(),
+      disabled: t.navigator.disabled(),
+      change: t.navigator.change(),
+     },
+     visible,
+    );
+   });
+ }
+
+ if (!groupUnavailable && group.actions?.length) {
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
   group.actions.forEach((action) => {
    const actionText = `### ${
     action.emote ? `${textEmote(emotes.get(action.emote))} ` : ''
-   }${action.label}${
-    action.description ? `\n-# ${action.description}` : ''
-   }`;
+   }${action.label}${action.description ? `\n-# ${action.description}` : ''}`;
    container.addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(new TextDisplayBuilder().setContent(actionText))
@@ -186,9 +188,9 @@ export const buildGroupPage = ({
   });
  }
 
- const hasUnavailable = group.fields.some(
-  (field) => !field.headerToggle && !isFieldAvailable(field, row),
- );
+ const hasUnavailable =
+  !groupUnavailable &&
+  group.fields.some((field) => !field.headerToggle && !isFieldAvailable(field, row));
 
  if (hasUnavailable) {
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
@@ -211,6 +213,13 @@ export const buildGroupPage = ({
        }),
       ),
     ),
+  );
+ }
+
+ if (group.footer) {
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+  container.addTextDisplayComponents(
+   new TextDisplayBuilder().setContent(`-# ${group.footer(row)}`),
   );
  }
 

@@ -47,8 +47,13 @@ export default class SettingsPlugin extends Plugin<Events, APILanguage> {
 
  resolveSchema = (settingName: string): ResolvedSchema | null => {
   const plugin = this.client.plugins.find((p) => p.settingName === settingName);
-  if (!plugin || !plugin.settingsSchema) return null;
-  return { plugin, schema: plugin.settingsSchema };
+  if (plugin?.settingsSchema) return { plugin, schema: plugin.settingsSchema };
+
+  const owner = this.client.plugins.find((p) => p.extraSchemas?.[settingName]);
+  const schema = owner?.extraSchemas?.[settingName];
+  if (!owner || !schema) return null;
+
+  return { plugin: owner, schema };
  };
 
  tableClient = (table: string): SettingsDelegate =>

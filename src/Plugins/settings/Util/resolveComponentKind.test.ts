@@ -24,6 +24,7 @@ test('text editors => text', () => {
  assert.equal(resolveComponentKind(EditorType.String, FieldArity.Single, 0), ComponentKind.Text);
  assert.equal(resolveComponentKind(EditorType.Duration, FieldArity.Single, 0), ComponentKind.Text);
  assert.equal(resolveComponentKind(EditorType.Number, FieldArity.Single, 0), ComponentKind.Text);
+ assert.equal(resolveComponentKind(EditorType.Emote, FieldArity.Single, 0), ComponentKind.Text);
  assert.equal(
   resolveComponentKind(EditorType.Strings, FieldArity.Multi, 0),
   ComponentKind.TextMulti,

@@ -30,6 +30,7 @@ const textSingle = new Set<EditorType>([
  EditorType.Number,
  EditorType.Duration,
  EditorType.Message,
+ EditorType.Emote,
 ]);
 
 const secret = new Set<EditorType>([EditorType.Token, EditorType.BotToken]);

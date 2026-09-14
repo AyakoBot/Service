@@ -10,6 +10,7 @@ import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import guideActionState from '../../Util/guideActionState.js';
+import { resolveFieldOptions } from '../../Util/resolveFieldOptions.js';
 import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 export interface RenderPageArgs {
@@ -41,13 +42,14 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
 
  const t = await this.t(cmd.guild_id);
  const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const guardCtx = { client: this.client, plugin: resolved.plugin, guildId: cmd.guild_id };
+ const availability = group.availableIf ? await group.availableIf(row, guardCtx) : { ok: true };
+ const groupUnavailable = availability.ok ? undefined : availability.reason;
+ const fields = groupUnavailable ? group.fields : await resolveFieldOptions(group.fields, guardCtx);
+
  const displayRow = {
   ...row,
-  ...(await resolveVirtualFields(group.fields, row, {
-   client: this.client,
-   plugin: resolved.plugin,
-   guildId: cmd.guild_id,
-  })),
+  ...(groupUnavailable ? {} : await resolveVirtualFields(group.fields, row, guardCtx)),
  };
  const emotes = this.client.emojis.for(api);
  const actionState = schema.guide
@@ -61,10 +63,11 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  const page = buildGroupPage({
   settingName,
   schema,
-  group,
+  group: { ...group, fields },
   rowId,
   row: displayRow,
   hideUnavail,
+  groupUnavailable,
   actionState,
   t,
   emotes,

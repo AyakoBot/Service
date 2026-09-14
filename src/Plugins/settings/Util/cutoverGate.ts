@@ -40,16 +40,24 @@ export const targetSettingName = (cmd: APIInteraction): string | undefined => {
  }
 };
 
+const ownerOf = function (this: SettingsPlugin, settingName: string) {
+ const direct = this.client.plugins.find((p) => p.settingName === settingName);
+ if (direct) return direct;
+
+ return this.client.plugins.find((p) => p.extraSchemas?.[settingName]);
+};
+
 export default function (this: SettingsPlugin, cmd: APIInteraction): boolean {
+ const settingName = targetSettingName(cmd);
+ const plugin = settingName ? ownerOf.call(this, settingName) : undefined;
+
+ if (plugin?.pilotGuilds) return plugin.pilotGuilds.includes(cmd.guild_id ?? '');
+
  const isDebug = !cmd.guild_id
   ? this.client.debugUsers.includes(cmd.user?.id || '')
   : this.client.debugGuilds.includes(cmd.guild_id);
  if (isDebug) return true;
 
- const settingName = targetSettingName(cmd);
- if (!settingName) return false;
-
- const plugin = this.client.plugins.find((p) => p.settingName === settingName);
  if (!plugin) return false;
 
  return this.client.cutoverFeatures.includes(plugin.name);

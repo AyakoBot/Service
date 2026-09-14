@@ -40,6 +40,7 @@ export interface RowGuardContext {
 }
 
 export interface SettingsFieldVirtual<Row = Record<string, unknown>> {
+ prose?: boolean;
  read: (row: Row, ctx: RowGuardContext) => Promise<unknown>;
  write: (value: unknown, row: Row, ctx: RowGuardContext) => Promise<ShowIfResult>;
 }
@@ -51,6 +52,14 @@ export type RowGuard<Row = Record<string, unknown>> = (
 
 export type RowChangeHook = (ctx: TransformContext) => Promise<void>;
 
+export interface SettingsOption {
+ label: string;
+ value: string;
+ description?: string;
+}
+
+export type OptionsResolver = (ctx: RowGuardContext) => Promise<SettingsOption[]>;
+
 export interface SettingsField<Row = Record<string, unknown>> {
  column: keyof Row & string;
  virtual?: SettingsFieldVirtual<Row>;
@@ -59,15 +68,14 @@ export interface SettingsField<Row = Record<string, unknown>> {
  label: string;
  description?: string;
  arity?: FieldArity;
- options?:
-  | { label: string; value: string; description?: string }[]
-  | (() => Promise<{ label: string; value: string; description?: string }[]>);
+ options?: SettingsOption[] | OptionsResolver;
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
  multiline?: boolean;
  ms?: boolean;
  headerToggle?: boolean;
+ separator?: boolean;
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
  transform?: FieldTransform;
@@ -87,6 +95,8 @@ export interface SettingsGroup<Row = Record<string, unknown>> {
  description?: string;
  emote?: EmoteName;
  showIf?: (row: Row) => ShowIfResult;
+ footer?: (row: Row) => string;
+ availableIf?: RowGuard<Row>;
  fields: SettingsField<Row>[];
  actions?: SettingsGroupAction[];
 }
@@ -97,8 +107,7 @@ export interface SettingsGuideStepAction<Row = Record<string, unknown>> {
 }
 
 export type SettingsGuideStepRequired<Row = Record<string, unknown>> =
- | boolean
- | ((row: Row) => boolean);
+ boolean | ((row: Row) => boolean);
 
 export interface SettingsGuideStep<Row = Record<string, unknown>> {
  column?: keyof Row & string;
@@ -160,14 +169,14 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  description?: (t: T) => string;
  arity?: FieldArity;
  options?:
-  | { label: (t: T) => string; value: string; description?: (t: T) => string }[]
-  | (() => Promise<{ label: string; value: string; description?: string }[]>);
+  { label: (t: T) => string; value: string; description?: (t: T) => string }[] | OptionsResolver;
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
  multiline?: boolean;
  ms?: boolean;
  headerToggle?: boolean;
+ separator?: boolean;
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
  transform?: FieldTransform;
@@ -187,6 +196,8 @@ export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTran
  description?: (t: T) => string;
  emote?: EmoteName;
  showIf?: (row: Row) => ShowIfResult;
+ footer?: (t: T, row: Row) => string;
+ availableIf?: RowGuard<Row>;
  fields: SettingsFieldDef<Row, T>[];
  actions?: SettingsGroupActionDef<T>[];
 }

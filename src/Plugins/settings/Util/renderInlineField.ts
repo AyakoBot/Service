@@ -1,5 +1,4 @@
-import type { ContainerBuilder ,
- ChannelSelectMenuBuilder } from '@discordjs/builders';
+import type { ContainerBuilder, ChannelSelectMenuBuilder } from '@discordjs/builders';
 import {
  ActionRowBuilder,
  ButtonBuilder,
@@ -168,7 +167,9 @@ export const renderInlineField = (
           : ''
         : value === undefined || value === null || value === ''
           ? ''
-          : `\n> \`${String(value)}\``;
+          : field.virtual?.prose && typeof value === 'string'
+            ? `\n> ${value}`
+            : `\n> \`${String(value)}\``;
    container.addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(
