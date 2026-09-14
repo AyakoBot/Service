@@ -105,6 +105,13 @@ export default abstract class Plugin<
  abstract eventHandlers: GatewayEventHandlers<E>;
  abstract languageFiles: LanguageFiles<L>;
  settingsSchema?: SettingsSchemaDef;
+
+ extraSchemas?: Record<string, SettingsSchemaDef>;
+
+ pilotGuilds?: string[]; // TODO: remove
+
+ isPilotGuild = (guildId?: string | null): boolean =>
+  !this.pilotGuilds || this.pilotGuilds.includes(guildId ?? '');
  placeholders?: MessagePlaceholder[];
  logger = new ScopedLogger();
 
@@ -128,7 +135,7 @@ export default abstract class Plugin<
  }
 
  getPluginBotToken = (): string | undefined =>
-  (this.pluginBotKey ? process.env[this.pluginBotKey] : undefined);
+  this.pluginBotKey ? process.env[this.pluginBotKey] : undefined;
 
  getPluginAPI = (guildId = 'plugin-bot-api'): API => {
   const token = this.getPluginBotToken();
@@ -147,9 +154,7 @@ export default abstract class Plugin<
  }): Promise<API> => {
   /* eslint-enable @typescript-eslint/naming-convention */
   const guildId = cmd.guild_id ?? '';
-  const invoker = cmd.application_id
-   ? this.client.getAppAPI(cmd.application_id, guildId)
-   : null;
+  const invoker = cmd.application_id ? this.client.getAppAPI(cmd.application_id, guildId) : null;
 
   return invoker ?? this.getAPI(guildId);
  };
@@ -255,9 +260,7 @@ export default abstract class Plugin<
 
  abstract getCommands(): {
   commands: (
-   | SlashCommandOptionsOnlyBuilder
-   | SlashCommandSubcommandsOnlyBuilder
-   | ContextMenuCommandBuilder
+   SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder | ContextMenuCommandBuilder
   )[];
   settings: { category: SettingsCategory | null; commands: SlashCommandSubcommandBuilder[] }[];
  };
