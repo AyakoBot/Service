@@ -22,7 +22,6 @@ model EconomySetting {
  startBalance Int @default(0)
  maxBalance   Int @default(0)
 
- messageActive   Boolean @default(false)
  messageAmount   Int     @default(1)
  messageCooldown Int     @default(60)
  messageDailyCap Int     @default(0)
@@ -34,7 +33,6 @@ model EconomySetting {
  transferDailyMax Int     @default(0)
  transferTax      Int     @default(0)
 
- confirmBuy        Boolean @default(true)
  balancePublic     Boolean @default(true)
  leaderboardPublic Boolean @default(true)
 
@@ -125,7 +123,64 @@ model EconomyRoleReward {
 
  currency Int @default(0)
 
+ buyPrice         Int      @default(0) // 0 = not for sale
+ purchaseRoles    String[] @db.VarChar
+ customRoleReward String?  @db.VarChar // @crossplugin(custom-roles) RoleReward unlocked by buying this
+
+ shopType ShopSurface @default(panel)
+
+ panelChannel String? @db.VarChar
+ panelMessage String? @db.VarChar
+
+ panelEmbed      String? @db.VarChar
+ panelComponents String? @db.VarChar
+
+ panelButtonText  String?         @db.VarChar
+ panelButtonEmote String?         @db.VarChar
+ panelButtonStyle ShopButtonStyle @default(primary)
+
+ payEvery        Int         @default(0) // 0 = none
+ repeating       Boolean     @default(true)
+ recurringAmount Int         @default(0)
+ curve           PayoutCurve @default(linear)
+ curveModifier   Int         @default(100)
+
  @@index(guild)
+}
+
+enum ShopSurface {
+ command
+ panel
+}
+
+enum ShopButtonStyle {
+ primary
+ secondary
+ success
+ danger
+}
+
+enum PayoutCurve {
+ logarithmic
+ linear
+ quadratic
+ cubic
+ polynomial
+ exponential
+}
+
+model EconomyRoleRewardProgress {
+ guild  String @db.VarChar
+ user   String @db.VarChar
+ reward String @db.VarChar
+
+ grantedAt    DateTime  @default(now())
+ payouts      Int       @default(0)
+ nextPayoutAt DateTime?
+
+ @@id([guild, user, reward])
+ @@index([nextPayoutAt])
+ @@index([guild, user])
 }
 
 model EconomyRoleRewardEligibility {

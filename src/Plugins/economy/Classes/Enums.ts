@@ -1,3 +1,7 @@
+export enum EconomySettingName {
+ Rewards = 'economy-rewards',
+}
+
 export enum EconomyGroups {
  General = 'general',
  Earning = 'earning',
@@ -5,6 +9,8 @@ export enum EconomyGroups {
  Filters = 'filters',
  Identity = 'identity',
  Rewards = 'rewards',
+ Payout = 'payout',
+ Shop = 'shop',
 }
 
 export enum LedgerReason {
@@ -25,6 +31,7 @@ export enum SpendResult {
  Insufficient = 'insufficient',
  AlreadyOwned = 'already-owned',
  Frozen = 'frozen',
+ RolesBlocked = 'roles-blocked',
 }
 
 export enum EconomyKey {

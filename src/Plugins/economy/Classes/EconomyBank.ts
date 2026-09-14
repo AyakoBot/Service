@@ -83,7 +83,10 @@ export default class EconomyBank {
 
  setBalance = async (guildId: string, userId: string, amount: number): Promise<number> => {
   const settings = await this.settings(guildId);
-  const target = Math.max(0, settings.maxBalance > 0 ? Math.min(amount, settings.maxBalance) : amount);
+  const target = Math.max(
+   0,
+   settings.maxBalance > 0 ? Math.min(amount, settings.maxBalance) : amount,
+  );
 
   const updated = await this.client.db.client.economyBalance.upsert({
    where: { guild_user: { guild: guildId, user: userId } },
@@ -127,7 +130,7 @@ export default class EconomyBank {
 
  earnFromMessage = async (ctx: EarnContext): Promise<number> => {
   const settings = await this.settings(ctx.guildId);
-  if (!settings.active || settings.frozen || !settings.messageActive) return 0;
+  if (!settings.active || settings.frozen || settings.messageAmount <= 0) return 0;
 
   const epoch = dayEpoch();
   const row = await this.row(ctx.guildId, ctx.userId);

@@ -11,11 +11,13 @@ import { GatewayDispatchEvents, PermissionFlagsBits } from '@discordjs/core';
 import { ChannelType } from 'discord-api-types/v10';
 
 import Plugin, {
+ idSelector,
  PluginName,
  SettingsCategory,
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
+import { EmoteName } from '../../Classes/EmoteName.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
@@ -29,7 +31,9 @@ import { EconomyCommand, EconomyOption, EconomySubcommand } from './Classes/Comm
 import EconomyBank from './Classes/EconomyBank.js';
 import EconomyLogger from './Classes/EconomyLogger.js';
 import EconomyRewards from './Classes/EconomyRewards.js';
-import { EconomyGroups } from './Classes/Enums.js';
+import EconomyShop from './Classes/EconomyShop.js';
+import ShopPanel from './Classes/ShopPanel.js';
+import { EconomyGroups, EconomySettingName } from './Classes/Enums.js';
 import rewardsSchema from './Classes/rewardsSchema.js';
 import channelDelete from './Events/ChannelDelete/index.js';
 import guildMemberUpdate from './Events/GuildMemberUpdate/index.js';
@@ -79,7 +83,9 @@ const reasonOption = () =>
 export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
  name = 'Economy';
  settingName = PluginName.Economy;
- dependencies = [PluginName.Settings];
+
+ pilotGuilds = ['1465149479995965613', '1518697272525979648']; // TODO: remove
+ dependencies = [PluginName.Settings, PluginName.ComponentBuilder];
  tableName = 'EconomySetting';
 
  customBotPerms =
@@ -91,6 +97,8 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
  bank: EconomyBank;
  economyLog: EconomyLogger;
  rewards: EconomyRewards;
+ shop: EconomyShop;
+ shopPanel: ShopPanel;
 
  /* eslint-disable @typescript-eslint/naming-convention */
  languageFiles = {
@@ -102,6 +110,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.MessageCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
   ) => {
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    messageCreate.call(this, data);
@@ -109,6 +118,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.MessageDelete]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageDelete>,
   ) => {
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    messageDelete.call(this, data);
@@ -116,6 +126,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.ChannelDelete]: (
    data: ExtractPayload<GatewayDispatchEvents.ChannelDelete>,
   ) => {
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    channelDelete.call(this, data);
@@ -123,6 +134,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.GuildMemberUpdate]: (
    data: ExtractPayload<GatewayDispatchEvents.GuildMemberUpdate>,
   ) => {
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberUpdate.call(this, data);
@@ -130,6 +142,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.InteractionCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.InteractionCreate>,
   ) => {
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
@@ -142,12 +155,20 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   this.bank = new EconomyBank(this);
   this.economyLog = new EconomyLogger(this);
   this.rewards = new EconomyRewards(this);
+  this.shop = new EconomyShop(this);
+  this.shopPanel = new ShopPanel(this);
 
   this.pluginBotKey = 'ECONOMY_TOKEN';
   this.logger.setLevel(LogLevel.silly);
 
+  this.client.cache.on('scheduleExpired', (key: unknown) =>
+   this.rewards.onScheduleExpired(String(key)),
+  );
+
+  this.rewards.armSweep().catch((error: Error) => this.nonFatalError(error, 'economy.armSweep'));
+
   assertSchemaValid(this.settingsSchema);
-  assertSchemaValid(this.rewardsSchema);
+  assertSchemaValid(rewardsSchema);
  }
 
  symbolOf = (settings: EconomySetting): string =>
@@ -203,6 +224,9 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    new SlashCommandBuilder()
     .setName(EconomyCommand.Baltop)
     .setDescription('Show the richest members of this server'),
+   new SlashCommandBuilder()
+    .setName(EconomyCommand.Shop)
+    .setDescription('Browse the Roles you can buy with server currency'),
    new SlashCommandBuilder()
     .setName(EconomyCommand.Pay)
     .setDescription('Send currency to another member')
@@ -263,10 +287,19 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       .setDescription('Configure the server currency, earning and the role shop'),
     ],
    },
+   {
+    category: SettingsCategory.Roles,
+    commands: [
+     new SlashCommandSubcommandBuilder()
+      .setName(EconomySettingName.Rewards)
+      .setDescription('Reward Members with currency for holding Roles')
+      .addStringOption(idSelector),
+    ],
+   },
   ],
  });
 
- rewardsSchema = rewardsSchema;
+ extraSchemas = { [EconomySettingName.Rewards]: rewardsSchema };
 
  settingsSchema = {
   table: 'economySetting',
@@ -279,6 +312,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    {
     id: EconomyGroups.General,
     label: (t: EconomyTranslator) => t.settings.groups.general(),
+    emote: EmoteName.Sliders,
     fields: [
      {
       column: 'active',
@@ -296,32 +330,30 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'currencyName',
       editor: EditorType.String,
+      emote: EmoteName.Heading,
       label: (t: EconomyTranslator) => t.settings.fields.currencyName(),
       description: (t: EconomyTranslator) => t.settings.descriptions.currencyName(),
      },
      {
       column: 'currencyEmote',
       editor: EditorType.Emote,
+      emote: EmoteName.Emoji,
       label: (t: EconomyTranslator) => t.settings.fields.currencyEmote(),
       description: (t: EconomyTranslator) => t.settings.descriptions.currencyEmote(),
      },
      {
       column: 'startBalance',
       editor: EditorType.Number,
+      emote: EmoteName.Wallet,
       label: (t: EconomyTranslator) => t.settings.fields.startBalance(),
       description: (t: EconomyTranslator) => t.settings.descriptions.startBalance(),
      },
      {
       column: 'maxBalance',
       editor: EditorType.Number,
+      emote: EmoteName.Ceiling,
       label: (t: EconomyTranslator) => t.settings.fields.maxBalance(),
       description: (t: EconomyTranslator) => t.settings.descriptions.maxBalance(),
-     },
-     {
-      column: 'confirmBuy',
-      editor: EditorType.Boolean,
-      label: (t: EconomyTranslator) => t.settings.fields.confirmBuy(),
-      description: (t: EconomyTranslator) => t.settings.descriptions.confirmBuy(),
      },
      {
       column: 'balancePublic',
@@ -338,6 +370,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'logChannels',
       editor: EditorType.Channels,
+      emote: EmoteName.Log,
       label: (t: EconomyTranslator) => t.settings.fields.logChannels(),
       description: (t: EconomyTranslator) => t.settings.descriptions.logChannels(),
       arity: FieldArity.Multi,
@@ -348,35 +381,33 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    {
     id: EconomyGroups.Earning,
     label: (t: EconomyTranslator) => t.settings.groups.earning(),
+    emote: EmoteName.Coin,
     fields: [
-     {
-      column: 'messageActive',
-      editor: EditorType.Boolean,
-      label: (t: EconomyTranslator) => t.settings.fields.messageActive(),
-      description: (t: EconomyTranslator) => t.settings.descriptions.messageActive(),
-      headerToggle: true,
-     },
      {
       column: 'messageAmount',
       editor: EditorType.Number,
+      emote: EmoteName.ChatCoin,
       label: (t: EconomyTranslator) => t.settings.fields.messageAmount(),
       description: (t: EconomyTranslator) => t.settings.descriptions.messageAmount(),
      },
      {
       column: 'messageCooldown',
       editor: EditorType.Number,
+      emote: EmoteName.Timer,
       label: (t: EconomyTranslator) => t.settings.fields.messageCooldown(),
       description: (t: EconomyTranslator) => t.settings.descriptions.messageCooldown(),
      },
      {
       column: 'messageDailyCap',
       editor: EditorType.Number,
+      emote: EmoteName.Calendar,
       label: (t: EconomyTranslator) => t.settings.fields.messageDailyCap(),
       description: (t: EconomyTranslator) => t.settings.descriptions.messageDailyCap(),
      },
      {
       column: 'minTenureHours',
       editor: EditorType.Number,
+      emote: EmoteName.Member,
       label: (t: EconomyTranslator) => t.settings.fields.minTenureHours(),
       description: (t: EconomyTranslator) => t.settings.descriptions.minTenureHours(),
      },
@@ -385,10 +416,12 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    {
     id: EconomyGroups.Filters,
     label: (t: EconomyTranslator) => t.settings.groups.filters(),
+    emote: EmoteName.Funnel,
     fields: [
      {
       column: 'denyChannels',
       editor: EditorType.Channels,
+      emote: EmoteName.DenyChannel,
       label: (t: EconomyTranslator) => t.settings.fields.denyChannels(),
       description: (t: EconomyTranslator) => t.settings.descriptions.denyChannels(),
       arity: FieldArity.Multi,
@@ -396,6 +429,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'denyRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.DenyRole,
       label: (t: EconomyTranslator) => t.settings.fields.denyRoles(),
       description: (t: EconomyTranslator) => t.settings.descriptions.denyRoles(),
       arity: FieldArity.Multi,
@@ -403,6 +437,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'denyUsers',
       editor: EditorType.Users,
+      emote: EmoteName.DenyUser,
       label: (t: EconomyTranslator) => t.settings.fields.denyUsers(),
       description: (t: EconomyTranslator) => t.settings.descriptions.denyUsers(),
       arity: FieldArity.Multi,
@@ -410,6 +445,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'allowChannels',
       editor: EditorType.Channels,
+      emote: EmoteName.AllowChannel,
       label: (t: EconomyTranslator) => t.settings.fields.allowChannels(),
       description: (t: EconomyTranslator) => t.settings.descriptions.allowChannels(),
       arity: FieldArity.Multi,
@@ -417,6 +453,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'allowRoles',
       editor: EditorType.Roles,
+      emote: EmoteName.AllowRole,
       label: (t: EconomyTranslator) => t.settings.fields.allowRoles(),
       description: (t: EconomyTranslator) => t.settings.descriptions.allowRoles(),
       arity: FieldArity.Multi,
@@ -433,6 +470,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    {
     id: EconomyGroups.Transfers,
     label: (t: EconomyTranslator) => t.settings.groups.transfers(),
+    emote: EmoteName.Exchange,
     fields: [
      {
       column: 'transferActive',
@@ -444,24 +482,28 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'transferMin',
       editor: EditorType.Number,
+      emote: EmoteName.Floor,
       label: (t: EconomyTranslator) => t.settings.fields.transferMin(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferMin(),
      },
      {
       column: 'transferMax',
       editor: EditorType.Number,
+      emote: EmoteName.Ceiling,
       label: (t: EconomyTranslator) => t.settings.fields.transferMax(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferMax(),
      },
      {
       column: 'transferDailyMax',
       editor: EditorType.Number,
+      emote: EmoteName.Calendar,
       label: (t: EconomyTranslator) => t.settings.fields.transferDailyMax(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferDailyMax(),
      },
      {
       column: 'transferTax',
       editor: EditorType.Number,
+      emote: EmoteName.Downvote,
       label: (t: EconomyTranslator) => t.settings.fields.transferTax(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferTax(),
      },
@@ -470,10 +512,12 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
    {
     id: EconomyGroups.Identity,
     label: (t: EconomyTranslator) => t.settings.groups.identity(),
+    emote: EmoteName.Bot,
     fields: [
      {
       column: 'botToken',
       editor: EditorType.BotToken,
+      emote: EmoteName.Lock,
       label: (t: EconomyTranslator) => t.settings.fields.botToken(),
       description: (t: EconomyTranslator) => t.settings.descriptions.botToken(),
       arity: FieldArity.Single,
@@ -483,6 +527,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'profileNick',
       editor: EditorType.String,
+      emote: EmoteName.Author,
       label: (t: EconomyTranslator) => t.settings.fields.profileNick(),
       description: (t: EconomyTranslator) => t.settings.descriptions.profileNick(),
       arity: FieldArity.Single,
@@ -491,6 +536,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'profileAvatar',
       editor: EditorType.String,
+      emote: EmoteName.Avatar,
       label: (t: EconomyTranslator) => t.settings.fields.profileAvatar(),
       description: (t: EconomyTranslator) => t.settings.descriptions.profileAvatar(),
       arity: FieldArity.Single,
@@ -500,6 +546,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'profileBanner',
       editor: EditorType.String,
+      emote: EmoteName.Banner,
       label: (t: EconomyTranslator) => t.settings.fields.profileBanner(),
       description: (t: EconomyTranslator) => t.settings.descriptions.profileBanner(),
       arity: FieldArity.Single,
@@ -509,6 +556,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
      {
       column: 'profileBio',
       editor: EditorType.String,
+      emote: EmoteName.Paragraph,
       label: (t: EconomyTranslator) => t.settings.fields.profileBio(),
       description: (t: EconomyTranslator) => t.settings.descriptions.profileBio(),
       arity: FieldArity.Single,
