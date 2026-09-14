@@ -3,6 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
  applyingRows,
+ grantedRows,
+ sellableRow,
+ type PricedTrigger,
  denied,
  digestAction,
  DigestAction,
@@ -143,5 +146,57 @@ describe('planDigest', () => {
   assert.deepEqual(first.lost, ['b']);
   assert.equal(replay.action, DigestAction.Unchanged);
   assert.equal(replay.write, false);
+ });
+});
+
+describe('priced rewards', () => {
+ const row = (over: Partial<PricedTrigger> = {}): PricedTrigger => ({
+  id: 'r1',
+  active: true,
+  roles: [],
+  denyRoles: [],
+  denyUsers: [],
+  buyPrice: 0,
+  ...over,
+ });
+
+ it('a reward with roles and no price is granted on holding the role', () => {
+  const rows = [row({ roles: ['a'] })];
+
+  assert.deepEqual(
+   grantedRows(rows, ['a'], 'u').map((r) => r.id),
+   ['r1'],
+  );
+  assert.equal(sellableRow(rows[0]!, ['a'], 'u'), false);
+ });
+
+ it('a priced reward is never granted for free, even while qualifying', () => {
+  const rows = [row({ roles: ['a'], buyPrice: 50 })];
+
+  assert.deepEqual(grantedRows(rows, ['a'], 'u'), []);
+  assert.equal(sellableRow(rows[0]!, ['a'], 'u'), true);
+ });
+
+ it('a priced reward with roles is not sellable without a qualifying role', () => {
+  assert.equal(sellableRow(row({ roles: ['a'], buyPrice: 50 }), ['b'], 'u'), false);
+ });
+
+ it('a priced reward with no roles is sellable to anyone', () => {
+  assert.equal(sellableRow(row({ buyPrice: 50 }), [], 'u'), true);
+ });
+
+ it('deny lists block a sale even when the member qualifies', () => {
+  assert.equal(
+   sellableRow(row({ roles: ['a'], buyPrice: 50, denyRoles: ['b'] }), ['a', 'b'], 'u'),
+   false,
+  );
+  assert.equal(
+   sellableRow(row({ roles: ['a'], buyPrice: 50, denyUsers: ['u'] }), ['a'], 'u'),
+   false,
+  );
+ });
+
+ it('an inactive priced reward is not sellable', () => {
+  assert.equal(sellableRow(row({ roles: ['a'], buyPrice: 50, active: false }), ['a'], 'u'), false);
  });
 });

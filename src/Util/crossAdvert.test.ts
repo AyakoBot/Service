@@ -105,11 +105,11 @@ test('markers sit on fields, never on a model or enum declaration', () => {
  });
 });
 
-test('customRoles buyPrice is marked and points at economy', () => {
+test('economy customRoleReward is marked and points at customRoles', () => {
  const found = collectMarkers().find(
-  (marker) => marker.plugin === 'customRoles' && marker.field === 'buyPrice',
+  (marker) => marker.plugin === 'economy' && marker.field === 'customRoleReward',
  );
 
- assert.ok(found, 'customRoles/schema.prisma should mark buyPrice with @crossplugin');
- assert.strictEqual(found?.partner, 'economy');
+ assert.ok(found, 'economy/schema.prisma should mark customRoleReward with @crossplugin');
+ assert.strictEqual(found?.partner, 'custom-roles');
 });

@@ -1,6 +1,6 @@
 const baseKeys = ['Token', 'DevToken'];
 
-const appIdOf = (token: string): string | null => {
+export const appIdOf = (token: string): string | null => {
  const [segment] = token.replace('Bot ', '').split('.');
  if (!segment) return null;
 

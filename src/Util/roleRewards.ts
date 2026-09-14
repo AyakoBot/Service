@@ -20,17 +20,36 @@ export interface DigestPlan {
  write: boolean;
 }
 
+export const passesGates = (r: RewardTrigger, memberRoles: string[], userId: string): boolean =>
+ r.active && !r.denyRoles.some((id) => memberRoles.includes(id)) && !r.denyUsers.includes(userId);
+
 export const applyingRows = <T extends RewardTrigger>(
  rows: T[],
  memberRoles: string[],
  userId: string,
 ): T[] =>
  rows.filter(
-  (r) =>
-   r.active &&
-   r.roles.some((id) => memberRoles.includes(id)) &&
-   !r.denyRoles.some((id) => memberRoles.includes(id)) &&
-   !r.denyUsers.includes(userId),
+  (r) => passesGates(r, memberRoles, userId) && r.roles.some((id) => memberRoles.includes(id)),
+ );
+
+export interface PricedTrigger extends RewardTrigger {
+ buyPrice: number;
+}
+
+export const sellableRow = (r: PricedTrigger, memberRoles: string[], userId: string): boolean =>
+ r.buyPrice > 0 &&
+ passesGates(r, memberRoles, userId) &&
+ (!r.roles.length || r.roles.some((id) => memberRoles.includes(id)));
+
+export const grantedRows = <T extends PricedTrigger>(
+ rows: T[],
+ memberRoles: string[],
+ userId: string,
+): T[] =>
+ applyingRows(
+  rows.filter((r) => r.buyPrice <= 0),
+  memberRoles,
+  userId,
  );
 
 export const denied = (rows: RewardTrigger[], memberRoles: string[], userId: string): boolean =>
