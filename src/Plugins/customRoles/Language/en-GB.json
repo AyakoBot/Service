@@ -1,8 +1,7 @@
 {
  "rewards": {
   "desc": "You unlocked a new Role-Reward in **{{server}}**.",
-  "customRole": "You can now create your own Custom-Role with {{command}}.",
-  "xp": "You now earn **{{multiplier}}x** XP."
+  "customRole": "You can now create your own Custom-Role with {{command}}."
  },
  "customRole": {
   "notEnabled": "Custom-Roles are not enabled in this Server.",
@@ -21,7 +20,9 @@
   "iconModalTitle": "Custom-Role Icon",
   "iconModalEmoji": "Emoji",
   "iconModalUrl": "Discord CDN Link",
-  "limits": "__Applying limits:__\n-# Can set Role-Icon {{icon}} at {{iconCommand}}\n-# Can set Role-Colour {{color}} at {{colorCommand}}\n-# Can set Role-Gradient {{gradient}} at {{gradientCommand}}\n-# Can set Role-Holographic {{holo}} at {{holoCommand}}"
+  "limits": "__Applying limits:__\n-# Can set Role-Icon {{icon}} at {{iconCommand}}\n-# Can set Role-Colour {{color}} at {{colorCommand}}\n-# Can set Role-Gradient {{gradient}} at {{gradientCommand}}\n-# Can set Role-Holographic {{holo}} at {{holoCommand}}",
+  "buyPanel": "You can buy Custom-Role access here: {{links}}",
+  "buyCommand": "You can buy Custom-Role access with {{command}}."
  },
  "share": {
   "title": "Custom-Role Sharing",
@@ -49,17 +50,18 @@
   "rowSummary": "{{count}} qualifying Roles",
   "groups": {
    "reward": "Reward",
-   "customRole": "Custom Role"
+   "customRole": "Custom Role",
+   "shop": "Shop"
   },
   "sections": {
    "reward": "Who qualifies for this Reward, and what they get for it.",
-   "customRole": "The Custom-Role perk this Reward unlocks, and what its owner may change about it."
+   "customRole": "The Custom-Role perk this Reward unlocks, and what its owner may change about it.",
+   "shop": "How Members buy this Reward."
   },
   "fields": {
    "roles": "Qualifying Roles",
    "denyRoles": "Denied Roles",
    "denyUsers": "Denied Members",
-   "xpMultiplier": "XP Multiplier",
    "notifyChannel": "Notification Channel",
    "customRole": "Custom-Role",
    "canSetColor": "Allow setting a Color",
@@ -68,14 +70,19 @@
    "canSetHolo": "Allow setting Holographic",
    "positionRole": "Position Anchor",
    "maxShare": "Share Limit",
-   "buyPrice": "Purchase price"
+   "buyPrice": "Purchase price",
+   "shopType": "Shop type",
+   "purchaseRole": "Role granted on purchase",
+   "panelChannel": "Panel channel",
+   "panelButtonText": "Panel button text",
+   "panelButtonEmote": "Panel button icon",
+   "panelButtonStyle": "Panel button style"
   },
   "descriptions": {
    "active": "Whether this Reward is evaluated at all. Turning it off revokes every perk it granted.",
    "roles": "Holding any one of these Roles qualifies a Member for this Reward.",
    "denyRoles": "Holding any one of these Roles disqualifies a Member, even if they hold a qualifying Role. Deny lists apply to keeping a perk, not only to gaining it.",
    "denyUsers": "These Users never qualify for this Reward, even while holding a qualifying Role.",
-   "xpMultiplier": "Multiplies the XP qualifying Members earn. Two changes against the old behaviour: reward multipliers are now averaged together with your Role multipliers and the result multiplies the roll, instead of being summed and added to the server multiplier; and the multiplier now also applies to Voice XP and to a Member's very first message, neither of which it reached before.",
    "notifyChannel": "Where the unlock notification is posted. Leave empty to send it as a DM instead.",
    "customRole": "Whether qualifying Members may own a Custom-Role. A Member only ever owns one, no matter how many Rewards they qualify for.",
    "canSetColor": "Whether the owner may pick a solid colour for their Custom-Role.",
@@ -84,12 +91,48 @@
    "canSetHolo": "Whether the owner may set the holographic style. Requires the Enhanced Role Colors Server feature.",
    "positionRole": "The Custom-Role is kept directly below this Role. When several Rewards apply, the highest of their anchors wins.",
    "maxShare": "How many other Members the owner may share their Custom-Role with, 0 to 25. Lowering this drops the most recently added Members first and strips the Role from them.",
-   "buyPrice": "What a Member pays in server currency to unlock this Reward. Zero means it cannot be bought."
+   "buyPrice": "What a Member pays in server currency to unlock this Reward. Zero means it cannot be bought.",
+   "shopType": "Where Members buy this Reward. Either the Shop command, or a Panel you post yourself.",
+   "purchaseRole": "The Role the buyer receives. Qualifying Roles only decide who is allowed to buy.",
+   "panelChannel": "Pick a Channel and the Panel is posted there right away. This field clears itself.",
+   "panelButtonText": "Label shown on the buy Button.",
+   "panelButtonEmote": "Icon shown on the buy Button.",
+   "panelButtonStyle": "Colour of the buy Button."
   },
   "crossAds": {
-   "economyBuy": "Let Members buy this Reward with server currency using Ayako Economy",
-   "economyBuyDormant": "A price is set but Ayako Economy is not in this Server, so nothing can be bought",
-   "economyMissing": "Add Ayako Economy to this Server before setting a purchase price."
+   "economyBuy": "Let Members buy this Reward with server currency using [Ayako Economy]({{invite}})",
+   "economyBuyDormant": "A price is set but [Ayako Economy]({{invite}}) is not in this Server, so nothing can be bought",
+   "economyMissing": "Add [Ayako Economy]({{invite}}) to this Server before setting a purchase price.",
+   "economySection": "Add [Ayako Economy]({{invite}}) to this Server to sell this Reward for server currency."
+  },
+  "options": {
+   "shopCommand": "Shop command",
+   "shopPanel": "Panel with a Button",
+   "stylePrimary": "Blurple",
+   "styleSecondary": "Grey",
+   "styleSuccess": "Green",
+   "styleDanger": "Red"
+  },
+  "shop": {
+   "footerEmbed": "Change what this Panel says with {{command}}.",
+   "footerComponents": "Change what this Panel says with {{command}}.",
+   "footerEither": "Change what this Panel says with {{embed}} or {{components}}.",
+   "panelTitle": "Custom Roles",
+   "panelBody": "Buy this Reward to unlock your own Custom Role, then shape it with {{command}}.",
+   "posted": "Panel posted in {{channel}}.",
+   "postFailed": "Could not post the Panel in {{channel}}. Check my permissions there.",
+   "needsPrice": "Set a purchase price before posting a Panel."
   }
+ },
+ "buy": {
+  "unavailable": "This Reward is not for sale.",
+  "notQualified": "You do not hold a Role that qualifies you to buy this Reward.",
+  "alreadyOwned": "You already bought this Reward.",
+  "hasCustomRole": "You already have Custom-Role access, so this Reward would give you nothing.",
+  "insufficient": "You cannot afford this Reward.",
+  "frozen": "The server economy is paused right now.",
+  "rolesBlocked": "I could not hand out that Role. Ask an Admin to check my Role position.",
+  "economyMissing": "The server currency is not set up, so nothing can be bought.",
+  "bought": "Purchased. Use {{command}} to set your Custom Role up."
  }
 }

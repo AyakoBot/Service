@@ -27,10 +27,6 @@ model RoleReward {
  positionRole   String? @db.VarChar
  maxShare       Int     @default(0)
 
- xpMultiplier Decimal? @db.Decimal
-
- buyPrice Int @default(0) // @crossplugin(economy) price to buy this Reward; 0 = not for sale
-
  notifyChannel String? @db.VarChar
 
  @@index(guild)

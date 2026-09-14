@@ -7,6 +7,7 @@ import type { APIMessageTopLevelComponent } from 'discord-api-types/v10';
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import { commandMentions } from '../../../Util/commandMention.js';
+import { mintId } from '../../../Util/mintId.js';
 import { NO_ROLE_POSITION, roleIndexFrom } from '../../../Util/roleHierarchy.js';
 import {
  arm,
@@ -56,13 +57,92 @@ export default class RolePerks {
  rowsFor = async (guildId: string): Promise<RoleReward[]> =>
   this.client.db.client.roleReward.findMany({ where: { guild: guildId } });
 
+ private lockedRewards = async (
+  guildId: string,
+  rewardIds: string[],
+ ): Promise<Map<string, string>> => {
+  if (!rewardIds.length) return new Map();
+
+  const gates = await this.client.db.client.economyRoleReward.findMany({
+   where: {
+    guild: guildId,
+    active: true,
+    buyPrice: { gt: 0 },
+    customRoleReward: { in: rewardIds },
+   },
+  });
+
+  return new Map(
+   gates.flatMap((gate) => (gate.customRoleReward ? [[gate.customRoleReward, gate.id]] : [])),
+  );
+ };
+
+ private purchasedIds = async (
+  guildId: string,
+  userId: string,
+  itemIds: string[],
+ ): Promise<string[]> => {
+  if (!itemIds.length) return [];
+
+  const rows = await this.client.db.client.economyPurchase.findMany({
+   where: { guild: guildId, user: userId, item: { in: itemIds } },
+  });
+
+  return rows.map((row) => row.item);
+ };
+
+ private grandfather = async (
+  guildId: string,
+  userId: string,
+  itemIds: string[],
+ ): Promise<string[]> => {
+  const held = await this.client.db.client.customRole.findUnique({
+   where: { guild_user: { guild: guildId, user: userId } },
+  });
+  if (!held) return [];
+
+  await this.client.db.client.economyPurchase.createMany({
+   data: itemIds.map((item) => ({
+    id: mintId(),
+    guild: guildId,
+    user: userId,
+    item,
+    price: 0,
+   })),
+   skipDuplicates: true,
+  });
+
+  return itemIds;
+ };
+
  resolveApplying = async (
   guildId: string,
   roleIds: string[],
   userId: string,
   preloaded?: RoleReward[],
- ): Promise<RoleReward[]> =>
-  applyingRows(preloaded ?? (await this.rowsFor(guildId)), roleIds, userId);
+ ): Promise<RoleReward[]> => {
+  const rows = preloaded ?? (await this.rowsFor(guildId));
+  const applying = applyingRows(rows, roleIds, userId);
+
+  const locks = await this.lockedRewards(
+   guildId,
+   applying.map((row) => row.id),
+  );
+  if (!locks.size) return applying;
+
+  const items = [...new Set(locks.values())];
+  const owned = await this.purchasedIds(guildId, userId, items);
+
+  const missing = items.filter((item) => !owned.includes(item));
+  const inherited = missing.length ? await this.grandfather(guildId, userId, missing) : [];
+  const settled = new Set([...owned, ...inherited]);
+
+  return applying.filter((row) => {
+   const item = locks.get(row.id);
+
+   return !item || settled.has(item);
+  });
+ };
 
  capabilitiesFor = async (
   guildId: string,
@@ -132,13 +212,17 @@ export default class RolePerks {
   roleIds: string[],
   rows: RoleReward[],
  ): Promise<void> => {
-  const { applying } = await this.digestFor(guildId, userId, roleIds, rows);
-  const capabilities = mergeCapabilities(applying);
+  if (!rows.length) return;
 
-  if (!capabilities.customRole) {
+  const { applying, plan } = await this.digestFor(guildId, userId, roleIds, rows);
+
+  if (revokeFor(plan.lost, rows, applying)) {
    await this.plugin.roles.revoke(guildId, userId, CustomRolesReason.PrivilegeLost);
    return;
   }
+
+  const capabilities = mergeCapabilities(applying);
+  if (!capabilities.customRole) return;
 
   await this.plugin.roles.enforceShareCap(guildId, userId, capabilities.maxShare);
  };
@@ -208,10 +292,6 @@ export default class RolePerks {
   const perk = rows.some((row) => row.customRole);
 
   if (perk) lines.push(t.rewards.customRole({ command: mention('custom-role create') }));
-
-  rows
-   .filter((row) => row.xpMultiplier !== null)
-   .forEach((row) => lines.push(t.rewards.xp({ multiplier: String(row.xpMultiplier) })));
 
   return {
    content: lines.join('\n'),
@@ -293,7 +373,7 @@ export default class RolePerks {
 
   const guildId = key.slice(reconcilePrefix.length);
   if (!guildId) return;
-  if (!this.client.debugGuilds.includes(guildId)) return; // TODO: remove
+  if (!this.plugin.isPilotGuild(guildId)) return; // TODO: remove
 
   await this.runChunk(guildId).catch((error: Error) =>
    this.plugin.nonFatalError(error, 'customRoles.reconcile.chunk'),
@@ -309,7 +389,7 @@ export default class RolePerks {
 
    const guildId = key.slice(reconcilePrefix.length);
    if (!guildId) continue;
-   if (!this.client.debugGuilds.includes(guildId)) continue; // TODO: remove
+   if (!this.plugin.isPilotGuild(guildId)) continue; // TODO: remove
 
    await arm.call(this.client, key, await this.cursorFor(key), 1);
   }

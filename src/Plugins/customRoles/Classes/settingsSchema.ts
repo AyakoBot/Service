@@ -9,9 +9,6 @@ import {
  type ShowIfResult,
  type TransformContext,
 } from '../../settings/SettingsSchema.js';
-import { createCrossAdvert } from '../../../Util/crossAdvert.js';
-import { PluginBotKey } from '../../../Util/pluginBotKey.js';
-import { PluginName } from '../../../Classes/abstracts/Plugin.js';
 import type CustomRolesPlugin from '../Plugin.js';
 import type { CustomRolesTranslator } from '../Plugin.js';
 
@@ -23,29 +20,6 @@ export enum CustomRolesGroup {
 export const MAX_SHARE_LIMIT = 25;
 
 const notifyChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
-
-const buyPriceAdvert = createCrossAdvert<RoleReward>({
- partner: PluginName.Economy,
- partnerKey: PluginBotKey.Economy,
- advert: async (plugin, stored) => {
-  const t = await (plugin as CustomRolesPlugin).t(undefined);
-
-  return Number(stored) > 0 ? t.settings.crossAds.economyBuyDormant() : t.settings.crossAds.economyBuy();
- },
- unavailable: async (plugin) =>
-  (await (plugin as CustomRolesPlugin).t(undefined)).settings.crossAds.economyMissing(),
- read: async (row) => (row.buyPrice > 0 ? row.buyPrice : null),
- write: async (value, row, ctx) => {
-  const price = Math.max(0, Math.floor(Number(value) || 0));
-
-  await ctx.client.db.client.roleReward.updateMany({
-   where: { id: row.id, guild: row.guild },
-   data: { buyPrice: price },
-  });
-
-  return { ok: true };
- },
-});
 
 const wantsCustomRole = (row: RoleReward): ShowIfResult => ({ ok: row.customRole });
 
@@ -87,22 +61,15 @@ export default {
     {
      column: 'roles',
      editor: EditorType.Roles,
+     emote: EmoteName.Role,
      arity: FieldArity.Multi,
      label: (t: CustomRolesTranslator) => t.settings.fields.roles(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.roles(),
     },
     {
-     column: 'buyPrice',
-     editor: EditorType.Number,
-     label: (t: CustomRolesTranslator) => t.settings.fields.buyPrice(),
-     description: (t: CustomRolesTranslator) => t.settings.descriptions.buyPrice(),
-     arity: FieldArity.Single,
-     emote: EmoteName.Shop,
-     virtual: buyPriceAdvert,
-    },
-    {
      column: 'denyRoles',
      editor: EditorType.Roles,
+     emote: EmoteName.DenyRole,
      arity: FieldArity.Multi,
      label: (t: CustomRolesTranslator) => t.settings.fields.denyRoles(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.denyRoles(),
@@ -110,19 +77,15 @@ export default {
     {
      column: 'denyUsers',
      editor: EditorType.Users,
+     emote: EmoteName.DenyUser,
      arity: FieldArity.Multi,
      label: (t: CustomRolesTranslator) => t.settings.fields.denyUsers(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.denyUsers(),
     },
     {
-     column: 'xpMultiplier',
-     editor: EditorType.Number,
-     label: (t: CustomRolesTranslator) => t.settings.fields.xpMultiplier(),
-     description: (t: CustomRolesTranslator) => t.settings.descriptions.xpMultiplier(),
-    },
-    {
      column: 'notifyChannel',
      editor: EditorType.Channel,
+     emote: EmoteName.Bell,
      arity: FieldArity.Single,
      channelTypes: notifyChannelTypes,
      label: (t: CustomRolesTranslator) => t.settings.fields.notifyChannel(),
@@ -173,6 +136,7 @@ export default {
     {
      column: 'positionRole',
      editor: EditorType.Role,
+     emote: EmoteName.Anchor,
      arity: FieldArity.Single,
      label: (t: CustomRolesTranslator) => t.settings.fields.positionRole(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.positionRole(),
@@ -181,6 +145,7 @@ export default {
     {
      column: 'maxShare',
      editor: EditorType.Number,
+     emote: EmoteName.Share,
      label: (t: CustomRolesTranslator) => t.settings.fields.maxShare(),
      description: (t: CustomRolesTranslator) => t.settings.descriptions.maxShare(),
      showIf: wantsCustomRole,

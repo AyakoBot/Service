@@ -1,5 +1,5 @@
 import { RequestHandlerError, type API } from '@ayako/api';
-import type { CustomRole, RoleReward } from '@ayako/database';
+import { ShopSurface, type CustomRole, type RoleReward } from '@ayako/database';
 import type { GuildFeature } from '@discordjs/core';
 import {
  MessageFlags,
@@ -9,9 +9,12 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
+import type Client from '../../../Classes/Client.js';
+import constants from '../../../Classes/Constants.js';
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import { commandMentions, type CommandMention } from '../../../Util/commandMention.js';
 import { RoleWritePriority } from '../../../Util/roleWriteQueue.js';
+import { EconomyCommand } from '../../economy/Classes/Commands.js';
 import { textEmote } from '../../settings/Util/settingsEmotes.js';
 import {
  CustomRoleColorSubcommand,
@@ -111,6 +114,30 @@ const actorOf = async function (
  };
 };
 
+const buyHint = async (
+ t: CustomRolesTranslator,
+ client: Client,
+ guildId: string,
+ rewardIds: string[],
+): Promise<string | null> => {
+ if (!rewardIds.length) return null;
+
+ const gates = await client.db.client.economyRoleReward.findMany({
+  where: { guild: guildId, active: true, buyPrice: { gt: 0 }, customRoleReward: { in: rewardIds } },
+ });
+ if (!gates.length) return null;
+
+ const links = gates
+  .filter((gate) => gate.shopType === ShopSurface.panel && gate.panelChannel && gate.panelMessage)
+  .map((gate) => constants.formatters.msgURL(guildId, gate.panelChannel!, gate.panelMessage!));
+
+ if (links.length) return t.customRole.buyPanel({ links: links.join(' ') });
+
+ return gates.some((gate) => gate.shopType === ShopSurface.command)
+  ? t.customRole.buyCommand({ command: `/${EconomyCommand.Shop}` })
+  : null;
+};
+
 export const openSurface = async function (
  this: CustomRolesPlugin,
  cmd: CustomRoleInteraction,
@@ -130,7 +157,21 @@ export const openSurface = async function (
  const capabilities = mergeCapabilities(applying);
 
  if (!capabilities.customRole) {
-  await respondEphemeral.call(this, cmd, t.customRole.cantSet());
+  const hint = await buyHint(
+   t,
+   this.client,
+   guildId,
+   rows.filter((row) => row.customRole).map((row) => row.id),
+  );
+
+  await respondEphemeral.call(
+   this,
+   cmd,
+   hint
+    ? `${t.customRole.cantSet()}
+${hint}`
+    : t.customRole.cantSet(),
+  );
   return null;
  }
 
@@ -167,11 +208,7 @@ export const succeed = async function (
  headline: string,
  notes: string[] = [],
 ): Promise<void> {
- await respondEphemeral.call(
-  this,
-  cmd,
-  `${[headline, ...notes].join('\n')}\n\n${surface.limits}`,
- );
+ await respondEphemeral.call(this, cmd, `${[headline, ...notes].join('\n')}\n\n${surface.limits}`);
 };
 
 export const requireRole = async function (

@@ -33,6 +33,8 @@ export type CustomRolesTranslator = TranslatorType<CustomRolesLanguage> & { base
 export default class CustomRolesPlugin extends Plugin<Events, CustomRolesLanguage> {
  name = 'Custom Roles';
  settingName = PluginName.CustomRoles;
+
+ pilotGuilds = ['1465149479995965613', '1518697272525979648']; // TODO: remove
  tableName = 'roleReward';
 
  dependencies = [PluginName.Settings];
@@ -55,25 +57,25 @@ export default class CustomRolesPlugin extends Plugin<Events, CustomRolesLanguag
 
  eventHandlers = {
   INTERACTION_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
   },
   GUILD_MEMBER_UPDATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberUpdate.call(this, data);
   },
   GUILD_MEMBER_REMOVE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberRemove.call(this, data);
   },
   GUILD_ROLE_DELETE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
+   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildRoleDelete.call(this, data);

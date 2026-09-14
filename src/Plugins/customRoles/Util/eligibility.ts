@@ -3,6 +3,9 @@ import type { RewardTrigger } from '../../../Util/roleRewards.js';
 
 export {
  applyingRows,
+ passesGates,
+ sellableRow,
+ grantedRows,
  denied,
  digestAction,
  planDigest,

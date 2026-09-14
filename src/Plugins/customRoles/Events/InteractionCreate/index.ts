@@ -29,13 +29,7 @@ import { create, del } from './create.js';
 import { editColor } from './editColor.js';
 import { editIcon, iconSave } from './editIcon.js';
 import { editName } from './editName.js';
-import {
- autocomplete,
- claimShared,
- shareRefresh,
- shareSelect,
- sharePanel,
-} from './share.js';
+import { autocomplete, claimShared, shareRefresh, shareSelect, sharePanel } from './share.js';
 
 const command = async function (
  this: CustomRolesPlugin,
