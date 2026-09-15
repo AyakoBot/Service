@@ -1,3 +1,4 @@
+import { commandMentions } from '../../../../Util/commandMention.js';
 import type { TicketPanel as TicketPanelRow } from '@ayako/database';
 import {
  ActionRowBuilder,
@@ -43,6 +44,7 @@ export const buildPanelEditor = async function (
 ) {
  const t = await this.t(guildId);
  const api = await this.getAPI(guildId);
+ const mention = await commandMentions.call(api);
  const emotes = this.client.emojis.for(api);
  const pageCount = Math.max(1, Math.ceil(panels.length / panelPageSize));
  const safePage = Math.min(Math.max(0, page), pageCount - 1);
@@ -99,7 +101,7 @@ export const buildPanelEditor = async function (
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
    `-# ${t.panel.editHint({
-    command: `\`/${EmbedBuilderCommand.EmbedBuilder} ${EmbedBuilderSubcommand.Create}\``,
+    command: mention(`${EmbedBuilderCommand.EmbedBuilder} ${EmbedBuilderSubcommand.Create}`),
    })}`,
   ),
  );
@@ -137,14 +139,12 @@ export const buildPanelEditor = async function (
    .setMinValues(1)
    .setMaxValues(1)
    .addOptions(
-    kinds
-     .slice(0, selectOptionLimit)
-     .map((kind) =>
-      new StringSelectMenuOptionBuilder()
-       .setLabel(systemDisplayLabel(t, kind).slice(0, 100))
-       .setDescription((kind.panelButtonLabel || t.startTicket()).slice(0, 100))
-       .setValue(String(kind.id)),
-     ),
+    kinds.slice(0, selectOptionLimit).map((kind) =>
+     new StringSelectMenuOptionBuilder()
+      .setLabel(systemDisplayLabel(t, kind).slice(0, 100))
+      .setDescription((kind.panelButtonLabel || t.startTicket()).slice(0, 100))
+      .setValue(String(kind.id)),
+    ),
    );
   components.push(
    new ActionRowBuilder<StringSelectMenuBuilder>()
