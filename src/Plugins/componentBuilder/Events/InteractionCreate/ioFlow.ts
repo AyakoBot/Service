@@ -1,3 +1,4 @@
+import { commandMentions } from '../../../../Util/commandMention.js';
 import { txtFileWriter } from '@ayako/utility';
 import {
  LabelBuilder,
@@ -26,12 +27,7 @@ import type ComponentBuilderPlugin from '../../Plugin.js';
 import { applyErrorText } from '../../Util/applyErrorText.js';
 import { builderContext, ephemeralNote } from '../../Util/builderContext.js';
 import { parseMarker } from '../../Util/builderState.js';
-import {
- normalizeImport,
- stripIds,
- validateTree,
- type WipTree,
-} from '../../Util/componentTree.js';
+import { normalizeImport, stripIds, validateTree, type WipTree } from '../../Util/componentTree.js';
 import { renderBuilder } from '../../Util/renderBuilder.js';
 
 import { openIntoThread } from './start.js';
@@ -78,6 +74,7 @@ export const importSave = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
+ const mention = await commandMentions.call(await this.getAPI(cmd.guild_id));
 
  const code = inputIds
   .map((id) => findModalValue(cmd.data.components, id) || '')
@@ -108,7 +105,7 @@ export const importSave = async function (
    cmd,
    detectMessageJsonKind(parsed) === MessageJsonKind.Embeds
     ? t.io.embedsDetected({
-       command: `\`/${EmbedBuilderCommand.EmbedBuilder} ${EmbedBuilderSubcommand.Create}\``,
+       command: mention(`${EmbedBuilderCommand.EmbedBuilder} ${EmbedBuilderSubcommand.Create}`),
       })
     : t.errors.invalidJson(),
   );
