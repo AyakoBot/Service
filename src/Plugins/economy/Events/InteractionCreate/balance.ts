@@ -1,6 +1,6 @@
 import type { APIChatInputApplicationCommandInteraction } from 'discord-api-types/v10';
 
-import ephemeralNote from '../../../../Util/ephemeralNote.js';
+import ephemeralNote from '../../Util/respond.js';
 import { getUserOption } from '../../../../Util/interactionOptions.js';
 import { EconomyOption } from '../../Classes/Commands.js';
 import type EconomyPlugin from '../../Plugin.js';

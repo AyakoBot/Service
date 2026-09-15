@@ -1,7 +1,6 @@
-import { MessageFlags, type APIMessageComponentInteraction } from 'discord-api-types/v10';
+import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import ephemeralNote from '../../../../Util/ephemeralNote.js';
+import ephemeralNote, { editOriginal } from '../../Util/respond.js';
 import { renderPayoutGraph } from '../../../../Util/payoutGraph.js';
 import type EconomyPlugin from '../../Plugin.js';
 
@@ -13,15 +12,21 @@ export default async function (
  const guildId = cmd.guild_id;
  if (!guildId || !rowId) return;
 
+ const t = await this.t(guildId);
+
  const row = await this.client.db.client.economyRoleReward.findFirst({
   where: { id: rowId, guild: guildId },
  });
- if (!row) return;
 
- const t = await this.t(guildId);
+ if (!row) {
+  ephemeralNote.call(this, cmd, t.shop.missing());
+
+  return;
+ }
 
  if (row.payEvery <= 0 || row.recurringAmount <= 0) {
   ephemeralNote.call(this, cmd, t.settings.rewards.previewNeedsRecurring());
+
   return;
  }
 
@@ -36,8 +41,7 @@ export default async function (
   }),
  );
 
- new MessagePayload(this.client, { origin: this.name, reason: 'Payout curve preview' })
-  .setFiles([{ name: 'payout-curve.png', data: buffer, contentType: 'image/png' }])
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
+ await editOriginal.call(this, cmd, {
+  files: [{ name: 'payout-curve.png', data: buffer, contentType: 'image/png' }],
+ });
 }
