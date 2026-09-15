@@ -4,6 +4,7 @@ export enum PluginBotKey {
  CustomRoles = 'CUSTOM_ROLES_TOKEN',
  Economy = 'ECONOMY_TOKEN',
  Info = 'INFO_TOKEN',
+ Rp = 'RP_TOKEN',
  Ticketing = 'TICKET_TOKEN',
  Welcome = 'WELCOME_TOKEN',
 }
