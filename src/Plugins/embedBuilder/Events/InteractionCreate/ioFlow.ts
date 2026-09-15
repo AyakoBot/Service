@@ -1,3 +1,4 @@
+import { commandMentions } from '../../../../Util/commandMention.js';
 import { txtFileWriter } from '@ayako/utility';
 import {
  EmbedBuilder,
@@ -95,6 +96,7 @@ export const importSave = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
+ const mention = await commandMentions.call(await this.getAPI(cmd.guild_id));
 
  const code = inputIds
   .map((id) => findModalValue(cmd.data.components, id) || '')
@@ -123,7 +125,9 @@ export const importSave = async function (
    this,
    cmd,
    t.io.componentsDetected({
-    command: `\`/${ComponentBuilderCommand.ComponentBuilder} ${ComponentBuilderSubcommand.Create}\``,
+    command: mention(
+     `${ComponentBuilderCommand.ComponentBuilder} ${ComponentBuilderSubcommand.Create}`,
+    ),
    }),
   );
   return;
@@ -183,9 +187,7 @@ export const placeholders = async function (
  const render = (group: PlaceholderGroup) =>
   `**${group.name}**\n${renderPlaceholderList(group.placeholders)}`;
 
- const sections = scope.owned.length
-  ? scope.owned.map(render).join('\n\n')
-  : t.placeholders.none();
+ const sections = scope.owned.length ? scope.owned.map(render).join('\n\n') : t.placeholders.none();
 
  const footer = scope.others.length
   ? `\n\n-# ${t.placeholders.otherBots({ list: scope.others.map((g) => g.name).join(', ') })}`
