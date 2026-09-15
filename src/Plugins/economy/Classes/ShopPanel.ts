@@ -17,6 +17,7 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
 import { parseEmojiInput } from '../../../Util/emojiInput.js';
+import { resolveSavedContent } from '../../../Util/savedRef.js';
 import type { ShowIfResult } from '../../settings/SettingsSchema.js';
 import type EconomyPlugin from '../Plugin.js';
 
@@ -62,25 +63,43 @@ export default class ShopPanel {
 
  payload = async (row: EconomyRoleReward): Promise<MessagePayload> => {
   const t = await this.plugin.t(row.guild);
+  const label = t.settings.rewards.panelTitle();
+  const button = this.button(row, label);
+
+  const payload = new MessagePayload(this.client, {
+   origin: this.plugin.name,
+   reason: 'Economy shop panel',
+  });
+
+  const saved = await resolveSavedContent(this.client, row.guild, {
+   embed: row.panelEmbed,
+   components: row.panelComponents,
+  });
+
+  if (saved?.embed) {
+   return payload
+    .setEmbeds([saved.embed])
+    .setComponents([new ActionRowBuilder<ButtonBuilder>().addComponents(button).toJSON()]);
+  }
+
+  if (saved?.components) {
+   return payload
+    .setComponents([
+     ...saved.components,
+     new ActionRowBuilder<ButtonBuilder>().addComponents(button).toJSON(),
+    ])
+    .setFlags(MessageFlags.IsComponentsV2);
+  }
 
   const container = new ContainerBuilder()
    .addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-     `## ${t.settings.rewards.panelTitle()}
-${t.settings.rewards.panelBody()}`,
-    ),
+    new TextDisplayBuilder().setContent(`## ${label}
+${t.settings.rewards.panelBody()}`),
    )
    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-   .addActionRowComponents(
-    new ActionRowBuilder<ButtonBuilder>().addComponents(
-     this.button(row, t.settings.rewards.panelTitle()),
-    ),
-   );
+   .addActionRowComponents(new ActionRowBuilder<ButtonBuilder>().addComponents(button));
 
-  return new MessagePayload(this.client, {
-   origin: this.plugin.name,
-   reason: 'Economy shop panel',
-  })
+  return payload
    .setComponents([container.toJSON() as APIMessageTopLevelComponent])
    .setFlags(MessageFlags.IsComponentsV2);
  };

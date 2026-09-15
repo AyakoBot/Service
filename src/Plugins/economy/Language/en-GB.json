@@ -10,7 +10,8 @@
    "identity": "Identity",
    "rewards": "Role Rewards",
    "payout": "Payout",
-   "shop": "Shop"
+   "shop": "Shop",
+   "panel": "Panel"
   },
   "fields": {
    "active": "Active",
@@ -78,7 +79,7 @@
    "configTitle": "Economy Role Rewards",
    "overviewDescription": "Pay a one-off currency bonus the first time a Member qualifies for a Reward. Each Reward pays once per Member, so re-gaining a qualifying Role does not pay again.",
    "rowLabel": "Reward {{id}}",
-   "rowSummary": "{{count}} qualifying Roles",
+   "rowSummary": "{{role}} · {{price}}",
    "section": "Who qualifies for this Reward, and how much currency it pays out.",
    "fields": {
     "roles": "Qualifying Roles",
@@ -97,7 +98,9 @@
     "panelChannel": "Panel channel",
     "panelButtonText": "Panel button text",
     "panelButtonEmote": "Panel button icon",
-    "panelButtonStyle": "Panel button style"
+    "panelButtonStyle": "Panel button style",
+    "panelEmbed": "Panel embed",
+    "panelComponents": "Panel components"
    },
    "descriptions": {
     "active": "Whether this Reward is evaluated at all. Turning it off stops any further payouts from it.",
@@ -117,7 +120,9 @@
     "panelChannel": "Pick a Channel and the Panel is posted there right away. This field clears itself.",
     "panelButtonText": "Label shown on the buy Button.",
     "panelButtonEmote": "Icon shown on the buy Button.",
-    "panelButtonStyle": "Colour of the buy Button."
+    "panelButtonStyle": "Colour of the buy Button.",
+    "panelEmbed": "Name of a saved Embed to use as the Panel body. Clears the components choice.",
+    "panelComponents": "Name of a saved Component set to use as the Panel body. Clears the embed choice."
    },
    "payoutSection": "When this Reward pays out, and how the amount grows over time.",
    "curves": {
@@ -133,7 +138,7 @@
    "previewButton": "Preview",
    "previewTitle": "Recurring payout — base {{base}}, {{curve}}, strength {{modifier}}",
    "previewNeedsRecurring": "Set a recurring amount and an interval first.",
-   "shopSection": "How Members buy this Reward, and what they get for it.",
+   "shopSection": "What this Reward costs and what the buyer gets.",
    "options": {
     "shopCommand": "Shop command",
     "shopPanel": "Panel with a Button",
@@ -143,16 +148,18 @@
     "styleDanger": "Red"
    },
    "crossAds": {
-    "customRolesMissing": "Add [Ayako Custom Roles]({{invite}}) to this Server to sell Custom-Role access.",
-    "noCustomRoleRewards": "No Custom-Role Reward exists yet. Create one in {{command}} first."
+    "customRolesMissing": "Add [Ayako Custom Roles]({{invite}}) to this Server to sell Custom-Role access."
    },
    "panelTitle": "Shop",
    "panelBody": "Buy this Reward to unlock what it grants.",
    "posted": "Panel posted in {{channel}}.",
    "postFailed": "Could not post the Panel in {{channel}}. Check my permissions there.",
    "needsPrice": "Set a purchase price before posting a Panel.",
-   "shopFooter": "This Panel is a Components V2 message. Change what it says with {{command}}.",
-   "needsActive": "Switch this Reward on before posting a Panel."
+   "shopFooter": "Change what this Panel says with {{command}}.",
+   "needsActive": "Switch this Reward on before posting a Panel.",
+   "panelSection": "The Panel Members press to buy this Reward.",
+   "rowSummaryFree": "{{role}} · not for sale",
+   "rowNoRole": "No Role set"
   },
   "profileWriteFailed": "Discord rejected the profile change. Check the value is valid (nicknames are capped at 32 characters) and that the bot may change its nickname here."
  },
@@ -209,7 +216,21 @@
   "inactive": "This Reward is switched off, so it cannot be bought yet.",
   "noPrice": "This Reward has no purchase price set.",
   "grantsNothing": "This Reward grants nothing yet, so it cannot be bought.",
-  "missing": "That Reward no longer exists."
+  "missing": "That Reward no longer exists.",
+  "openPanel": "Open Panel",
+  "receipt": {
+   "title": "Purchase complete",
+   "roles": "Roles",
+   "customRole": "Custom-Role access",
+   "paid": "Paid",
+   "balance": "Balance",
+   "bonus": "You also received {{amount}} {{symbol}}",
+   "recurring": "Pays {{amount}} {{symbol}} every {{days}} days",
+   "nothing": "Nothing was granted",
+   "customRoleHint": "Create your Custom Role with {{command}}"
+  },
+  "customRoleOff": "The Custom-Role Reward this unlocks is switched off, so it would give you nothing. Ask an Admin to enable it.",
+  "noPanel": "no Panel posted yet"
  },
  "inventory": {
   "title": "Inventory",
@@ -251,6 +272,8 @@
   "frozen": "The currency system is currently frozen.",
   "noItem": "That item does not exist.",
   "notOwned": "You do not own that item.",
-  "hierarchy": "This bot cannot manage that role."
+  "hierarchy": "This bot cannot manage that role.",
+  "embedNotFound": "No saved Embed with that name exists in this Server.",
+  "componentsNotFound": "No saved Component set with that name exists in this Server."
  }
 }

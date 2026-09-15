@@ -1,5 +1,10 @@
 import type Client from '../../../Classes/Client.js';
 import { mintId } from '../../../Util/mintId.js';
+import {
+ botHighestPosition,
+ filterWritableRoles,
+ highestPositionOf,
+} from '../../../Util/roleHierarchy.js';
 import { RoleWritePriority } from '../../../Util/roleWriteQueue.js';
 import type EconomyPlugin from '../Plugin.js';
 
@@ -39,11 +44,37 @@ export default class EconomyShop {
   return rows.map((row) => row.item);
  };
 
+ private canGrant = async (req: PurchaseRequest): Promise<boolean> => {
+  const api = await this.plugin.getAPI(req.guildId);
+  const roleIds = req.addRoles ?? [];
+
+  const { ok } = await filterWritableRoles.call(this.client, {
+   guildId: req.guildId,
+   botId: api.botId,
+   roleIds,
+  });
+  if (ok.length < roleIds.length) return false;
+
+  const botPosition = await botHighestPosition.call(this.client, req.guildId, api.botId);
+  if (botPosition === null) return false;
+
+  const member = await this.client.cache.members.get(req.guildId, req.userId);
+  const targetPosition = await highestPositionOf.call(
+   this.client,
+   req.guildId,
+   member?.roles ?? [],
+  );
+
+  return botPosition > targetPosition;
+ };
+
  purchase = async (req: PurchaseRequest): Promise<SpendResult> => {
   const settings = await this.plugin.bank.settings(req.guildId);
   if (!settings.active || settings.frozen) return SpendResult.Frozen;
 
   const price = Math.max(0, Math.floor(req.price));
+
+  if (req.addRoles?.length && !(await this.canGrant(req))) return SpendResult.RolesBlocked;
 
   try {
    await this.client.db.client.economyPurchase.create({

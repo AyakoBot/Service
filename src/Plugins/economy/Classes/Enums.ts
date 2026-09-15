@@ -11,6 +11,7 @@ export enum EconomyGroups {
  Rewards = 'rewards',
  Payout = 'payout',
  Shop = 'shop',
+ Panel = 'panel',
 }
 
 export enum LedgerReason {

@@ -8,6 +8,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import constants from '../../../../Classes/Constants.js';
 import ephemeralNote from '../../../../Util/ephemeralNote.js';
 import { sellableRow } from '../../../../Util/roleRewards.js';
 import { EconomyRoute } from '../../Classes/Routes.js';
@@ -41,12 +42,8 @@ export default async function (
  }
 
  const rows = await this.client.db.client.economyRoleReward.findMany({
-  where: {
-   guild: guildId,
-   active: true,
-   shopType: ShopSurface.command,
-   buyPrice: { gt: 0 },
-  },
+  where: { guild: guildId, active: true, buyPrice: { gt: 0 } },
+  orderBy: { buyPrice: 'desc' },
   take: rowLimit,
  });
 
@@ -69,23 +66,58 @@ export default async function (
    const label = await shopLabel.call(this, row, t.shop.title());
    const has = owned.includes(row.id);
 
-   return { row, label, has, buyable: !has && sellableRow(row, roleIds, userId) };
+   const panelUrl =
+    row.shopType === ShopSurface.panel && row.panelChannel && row.panelMessage
+     ? constants.formatters.msgURL(guildId, row.panelChannel, row.panelMessage)
+     : null;
+
+   return {
+    row,
+    label,
+    has,
+    panelUrl,
+    equipped: row.purchaseRoles.some((roleId) => roleIds.includes(roleId)),
+    buyable: !has && sellableRow(row, roleIds, userId),
+   };
   }),
  );
 
- const lines = entries.map(
-  ({ row, label, has }) =>
-   `- **${label}** — ${
-    has ? t.shop.owned() : t.shop.priced({ price: String(row.buyPrice), symbol })
-   }`,
+ const lines = entries.map(({ row, label, has, panelUrl }) => {
+  const price = has ? t.shop.owned() : t.shop.priced({ price: String(row.buyPrice), symbol });
+  const unreachable = row.shopType === ShopSurface.panel && !panelUrl;
+
+  return `- **${label}** — ${price}${unreachable ? ` *(${t.shop.noPanel()})*` : ''}`;
+ });
+
+ const buttonLabel = ({
+  has,
+  equipped,
+  label,
+ }: {
+  has: boolean;
+  equipped: boolean;
+  label: string;
+ }): string => {
+  if (!has) return `${t.shop.buy()} ${label}`;
+
+  return equipped ? t.shop.unequip() : t.shop.equip();
+ };
+
+ const clickable = entries.filter(
+  (entry) => entry.row.shopType === ShopSurface.command || entry.panelUrl,
  );
 
- const buttons = entries.map(({ row, label, has, buyable }) =>
-  new ButtonBuilder()
-   .setStyle(has ? ButtonStyle.Secondary : ButtonStyle.Success)
-   .setCustomId(this.getRoute(EconomyRoute.ShopBuy, row.id))
-   .setLabel(`${t.shop.buy()} ${label}`.slice(0, 80))
-   .setDisabled(!buyable),
+ const buttons = clickable.map((entry) =>
+  entry.panelUrl
+   ? new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setURL(entry.panelUrl)
+      .setLabel(`${t.shop.openPanel()} ${entry.label}`.slice(0, 80))
+   : new ButtonBuilder()
+      .setStyle(entry.has ? ButtonStyle.Secondary : ButtonStyle.Success)
+      .setCustomId(this.getRoute(EconomyRoute.ShopBuy, entry.row.id))
+      .setLabel(buttonLabel(entry).slice(0, 80))
+      .setDisabled(!entry.has && !entry.buyable),
  );
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Economy shop' })

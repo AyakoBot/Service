@@ -1,9 +1,12 @@
 import { PayoutCurve, ShopButtonStyle, ShopSurface, type EconomyRoleReward } from '@ayako/database';
 
-import { inviteFor, partnerAvailable } from '../../../Util/crossAdvert.js';
+import { createCrossAdvert } from '../../../Util/crossAdvert.js';
+import { SavedSource, savedRefTransform } from '../../../Util/savedRef.js';
+import en from '../Language/en-GB.json' with { type: 'json' };
 import { PluginBotKey } from '../../../Util/pluginBotKey.js';
 import { PluginName } from '../../../Classes/abstracts/Plugin.js';
 import { ComponentBuilderCommand } from '../../componentBuilder/Classes/Commands.js';
+import { EmbedBuilderCommand } from '../../embedBuilder/Classes/Commands.js';
 
 import { EmoteName } from '../../../Classes/EmoteName.js';
 import { EditorType } from '../../settings/EditorType.js';
@@ -38,12 +41,40 @@ const panelPost: SettingsFieldVirtual<EconomyRewardRow> = {
  },
 };
 
-const shopFooter = (t: EconomyTranslator): string =>
- t.settings.rewards.shopFooter({ command: `/${ComponentBuilderCommand.ComponentBuilder}` });
+const shopFooter = (t: EconomyTranslator, row: EconomyRewardRow): string =>
+ t.settings.rewards.shopFooter({
+  command: row.panelEmbed
+   ? `/${EmbedBuilderCommand.EmbedBuilder}`
+   : `/${ComponentBuilderCommand.ComponentBuilder}`,
+ });
+
+const customRoleAdvert = createCrossAdvert<EconomyRewardRow>({
+ partner: PluginName.CustomRoles,
+ partnerKey: PluginBotKey.CustomRoles,
+ advert: async (plugin, _stored, invite) =>
+  (await (plugin as EconomyPlugin).t(undefined)).settings.rewards.crossAds.customRolesMissing({
+   invite,
+  }),
+ unavailable: async (plugin, invite) =>
+  (await (plugin as EconomyPlugin).t(undefined)).settings.rewards.crossAds.customRolesMissing({
+   invite,
+  }),
+ read: async (row) => row.customRoleReward,
+ write: async (value, row, ctx) => {
+  const picked = Array.isArray(value) ? value[0] : value;
+
+  await ctx.client.db.client.economyRoleReward.updateMany({
+   where: { id: row.id, guild: row.guild },
+   data: { customRoleReward: picked ? String(picked) : null },
+  });
+
+  return { ok: true };
+ },
+});
 
 const customRoleOptions: OptionsResolver = async (ctx) => {
  const rows = await ctx.client.db.client.roleReward.findMany({
-  where: { guild: ctx.guildId, customRole: true },
+  where: { guild: ctx.guildId, customRole: true, active: true },
  });
 
  return rows.map((row) => ({ label: `Reward ${row.id}`, value: row.id }));
@@ -59,31 +90,20 @@ export default {
  overviewDescription: (t: EconomyTranslator) => t.settings.rewards.overviewDescription(),
  rowLabel: (t: EconomyTranslator, row: EconomyRewardRow) =>
   t.settings.rewards.rowLabel({ id: row.id }),
- rowSummary: (t: EconomyTranslator, row: EconomyRewardRow) =>
-  t.settings.rewards.rowSummary({ count: String(row.roles.length) }),
+ rowSummary: (t: EconomyTranslator, row: EconomyRewardRow) => {
+  const roleId = row.purchaseRoles[0] ?? row.roles[0];
+  const role = roleId ? `<@&${roleId}>` : t.settings.rewards.rowNoRole();
+
+  return row.buyPrice > 0
+   ? t.settings.rewards.rowSummary({ role, price: String(row.buyPrice) })
+   : t.settings.rewards.rowSummaryFree({ role });
+ },
  groups: [
   {
    id: EconomyGroups.Shop,
    label: (t: EconomyTranslator) => t.settings.groups.shop(),
    description: (t: EconomyTranslator) => t.settings.rewards.shopSection(),
    emote: EmoteName.Shop,
-   footer: shopFooter,
-   availableIf: async (_row, ctx) =>
-    (await partnerAvailable(
-     ctx.client,
-     ctx.guildId,
-     PluginName.CustomRoles,
-     PluginBotKey.CustomRoles,
-    ))
-     ? { ok: true }
-     : {
-        ok: false,
-        reason: (
-         await (ctx.plugin as EconomyPlugin).t(ctx.guildId)
-        ).settings.rewards.crossAds.customRolesMissing({
-         invite: inviteFor(PluginBotKey.CustomRoles),
-        }),
-       },
    fields: [
     {
      column: 'buyPrice',
@@ -109,13 +129,13 @@ export default {
      label: (t: EconomyTranslator) => t.settings.rewards.fields.customRoleReward(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.customRoleReward(),
      options: customRoleOptions,
+     virtual: customRoleAdvert,
     },
     {
      column: 'shopType',
      editor: EditorType.ShopType,
      emote: EmoteName.Shop,
      arity: FieldArity.Single,
-     separator: true,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.shopType(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.shopType(),
      options: [
@@ -129,6 +149,15 @@ export default {
       },
      ],
     },
+   ],
+  },
+  {
+   id: EconomyGroups.Panel,
+   label: (t: EconomyTranslator) => t.settings.groups.panel(),
+   description: (t: EconomyTranslator) => t.settings.rewards.panelSection(),
+   emote: EmoteName.Message,
+   footer: shopFooter,
+   fields: [
     {
      column: 'panelButtonText',
      editor: EditorType.String,
@@ -171,6 +200,36 @@ export default {
        label: (t: EconomyTranslator) => t.settings.rewards.options.styleDanger(),
       },
      ],
+    },
+    {
+     column: 'panelEmbed',
+     editor: EditorType.String,
+     emote: EmoteName.Message,
+     arity: FieldArity.Single,
+     showIf: wantsPanel,
+     label: (t: EconomyTranslator) => t.settings.rewards.fields.panelEmbed(),
+     description: (t: EconomyTranslator) => t.settings.rewards.descriptions.panelEmbed(),
+     transform: savedRefTransform(
+      SavedSource.Embed,
+      'economyRoleReward',
+      { panelComponents: null },
+      en.errors.embedNotFound,
+     ),
+    },
+    {
+     column: 'panelComponents',
+     editor: EditorType.String,
+     emote: EmoteName.Json,
+     arity: FieldArity.Single,
+     showIf: wantsPanel,
+     label: (t: EconomyTranslator) => t.settings.rewards.fields.panelComponents(),
+     description: (t: EconomyTranslator) => t.settings.rewards.descriptions.panelComponents(),
+     transform: savedRefTransform(
+      SavedSource.Components,
+      'economyRoleReward',
+      { panelEmbed: null },
+      en.errors.componentsNotFound,
+     ),
     },
     {
      column: 'panelChannel',

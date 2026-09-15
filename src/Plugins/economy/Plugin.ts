@@ -85,7 +85,7 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
  settingName = PluginName.Economy;
 
  pilotGuilds = ['1465149479995965613', '1518697272525979648']; // TODO: remove
- dependencies = [PluginName.Settings, PluginName.ComponentBuilder];
+ dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'EconomySetting';
 
  customBotPerms =
