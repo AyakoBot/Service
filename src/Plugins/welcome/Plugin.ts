@@ -31,7 +31,6 @@ import {
 } from '../settings/SettingsSchema.js';
 
 import { WelcomeCommand, WelcomeSubcommand } from './Classes/Commands.js';
-import { SavedSource } from './Classes/Enums.js';
 import { WelcomeRoute } from './Classes/Routes.js';
 import guildAuditLogEntryCreate from './Events/GuildAuditLogEntryCreate/index.js';
 import guildMemberAdd from './Events/GuildMemberAdd/index.js';
@@ -46,7 +45,7 @@ import {
  welcomeProfileImageTransform,
  welcomeProfileVirtual,
 } from './Util/botToken.js';
-import { savedRefTransform } from './Util/savedRefTransform.js';
+import { SavedSource, savedRefTransform } from '../../Util/savedRef.js';
 
 type Events =
  | GatewayDispatchEvents.GuildAuditLogEntryCreate
@@ -258,7 +257,12 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.embed({ list: placeholderDoc }),
       arity: FieldArity.Single,
-      transform: savedRefTransform(SavedSource.Embed, { welcomeComponents: null }),
+      transform: savedRefTransform(
+       SavedSource.Embed,
+       'welcomeSetting',
+       { welcomeComponents: null },
+       en.errors.embedNotFound,
+      ),
      },
      {
       column: 'welcomeComponents',
@@ -268,7 +272,12 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.components({ list: placeholderDoc }),
       arity: FieldArity.Single,
-      transform: savedRefTransform(SavedSource.Components, { welcomeEmbed: null }),
+      transform: savedRefTransform(
+       SavedSource.Components,
+       'welcomeSetting',
+       { welcomeEmbed: null },
+       en.errors.componentsNotFound,
+      ),
      },
      {
       column: 'welcomePingJoin',
@@ -337,7 +346,12 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.embed({ list: placeholderDoc }),
       arity: FieldArity.Single,
-      transform: savedRefTransform(SavedSource.Embed, { goodbyeComponents: null }),
+      transform: savedRefTransform(
+       SavedSource.Embed,
+       'welcomeSetting',
+       { goodbyeComponents: null },
+       en.errors.embedNotFound,
+      ),
      },
      {
       column: 'goodbyeComponents',
@@ -347,7 +361,12 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       description: (t: WelcomeTranslator) =>
        t.settings.descriptions.components({ list: placeholderDoc }),
       arity: FieldArity.Single,
-      transform: savedRefTransform(SavedSource.Components, { goodbyeEmbed: null }),
+      transform: savedRefTransform(
+       SavedSource.Components,
+       'welcomeSetting',
+       { goodbyeEmbed: null },
+       en.errors.componentsNotFound,
+      ),
      },
      {
       column: 'goodbyePingRoles',
