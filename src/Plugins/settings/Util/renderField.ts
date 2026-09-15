@@ -18,16 +18,9 @@ import { FieldArity } from '../SettingsSchema.js';
 import type { SettingsField } from '../SettingsSchema.js';
 
 import { asOptions, buildEntitySelect } from './fieldValueHelpers.js';
-import { ComponentKind, resolveComponentKind } from './resolveComponentKind.js';
+import { ComponentKind, optionKinds, resolveComponentKind } from './resolveComponentKind.js';
 
 const labelDescLimit = 100;
-
-const optionKinds = new Set<ComponentKind>([
- ComponentKind.Radio,
- ComponentKind.CheckboxGroup,
- ComponentKind.Select1,
- ComponentKind.SelectN,
-]);
 
 export const clampDescription = (description: string): string => {
  if (description.length <= labelDescLimit) return description;
@@ -53,7 +46,7 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
  const kind = resolveComponentKind(field.editor, field.arity ?? FieldArity.Single, optionCount);
  const customId = field.column;
 
- if (!optionCount && optionKinds.has(kind)) {
+ if (field.options === undefined && optionKinds.has(kind)) {
   throw new Error(
    `[settings] field '${field.column}' uses editor '${field.editor}' but declares no options`,
   );

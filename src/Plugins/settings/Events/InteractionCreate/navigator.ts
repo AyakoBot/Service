@@ -55,6 +55,7 @@ const sendOverview = async function (
  cmd: APIApplicationCommandInteraction | APIMessageComponentInteraction | APIModalSubmitInteraction,
  settingName: string,
  respond: RespondMode,
+ page = 0,
 ) {
  if (!cmd.guild_id) return;
 
@@ -76,10 +77,12 @@ const sendOverview = async function (
   createLabel: t.navigator.create(),
   editLabel: t.base.t.Edit(),
   emptyText: t.navigator.overviewEmpty(),
-  overflowText: (count: string) => t.navigator.overviewMore({ count }),
+  pageLabel: (current: string, total: string) => t.navigator.overviewPage({ current, total }),
+  activateLabel: t.navigator.activateSelected(),
   settingName,
   schema,
   rows,
+  page,
   emotes,
  });
 
@@ -235,4 +238,12 @@ export const renderGuide = async function (
   .setComponents(page.map((c) => c.toJSON() as APIMessageTopLevelComponent))
   .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
   .update(cmd);
+};
+
+export const overviewPage = async function (
+ this: SettingsPlugin,
+ cmd: APIMessageComponentInteraction,
+ id: SettingsId,
+): Promise<void> {
+ await sendOverview.call(this, cmd, id.settingName, RespondMode.Update, id.page ?? 0);
 };

@@ -2,7 +2,10 @@ import { RequestHandlerError } from '@ayako/api';
 import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import type SettingsPlugin from '../../Plugin.js';
+import ephemeralNote from '../../../../Util/ephemeralNote.js';
+import { FieldArity } from '../../SettingsSchema.js';
 import { buildFieldModal } from '../../Util/buildFieldModal.js';
+import { optionKinds, resolveComponentKind } from '../../Util/resolveComponentKind.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import { resolveFieldOptions } from '../../Util/resolveFieldOptions.js';
@@ -25,6 +28,14 @@ export default async function (
  const ctx = { client: this.client, plugin: resolved.plugin, guildId: cmd.guild_id };
  const [field] = await resolveFieldOptions([raw], ctx);
  if (!field) return;
+
+ const kind = resolveComponentKind(field.editor, field.arity ?? FieldArity.Single, 0);
+ if (optionKinds.has(kind) && Array.isArray(field.options) && !field.options.length) {
+  const t = await this.t(cmd.guild_id);
+
+  ephemeralNote.call(this, cmd, t.navigator.noOptions());
+  return;
+ }
 
  const row = await this.tableClient(resolved.schema.table).findFirst({
   where: { id: id.rowId, guild: cmd.guild_id },

@@ -1,10 +1,12 @@
 import {
+ ActionRowBuilder,
  ButtonBuilder,
+ StringSelectMenuBuilder,
  ContainerBuilder,
  SectionBuilder,
  TextDisplayBuilder,
 } from '@discordjs/builders';
-import { ButtonStyle } from 'discord-api-types/v10';
+import { ButtonStyle, type APIPartialEmoji } from 'discord-api-types/v10';
 
 import type { EmoteSet } from '../../../Classes/EmojiRegistry.js';
 import type { SettingsSchema } from '../SettingsSchema.js';
@@ -12,7 +14,8 @@ import type { SettingsSchema } from '../SettingsSchema.js';
 import { encodeSettingsId, SettingsAction } from './customId.js';
 import { buttonEmoji } from './settingsEmotes.js';
 
-const overviewRowLimit = 8;
+const overviewRowLimit = 7;
+const selectLimit = 25;
 
 export interface OverviewOptions {
  title: string;
@@ -20,10 +23,12 @@ export interface OverviewOptions {
  createLabel: string;
  editLabel: string;
  emptyText: string;
- overflowText: (count: string) => string;
+ pageLabel: (current: string, total: string) => string;
+ activateLabel: string;
  settingName: string;
  schema: SettingsSchema;
  rows: Record<string, unknown>[];
+ page: number;
  emotes: EmoteSet;
 }
 
@@ -33,10 +38,12 @@ export const buildOverview = ({
  createLabel,
  editLabel,
  emptyText,
- overflowText,
+ pageLabel,
+ activateLabel,
  settingName,
  schema,
  rows,
+ page,
  emotes,
 }: OverviewOptions): ContainerBuilder => {
  const container = new ContainerBuilder().addSectionComponents(
@@ -58,7 +65,10 @@ export const buildOverview = ({
  if (rows.length === 0) {
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(emptyText));
  } else {
-  rows.slice(0, overviewRowLimit).forEach((row) => {
+  const pages = Math.max(1, Math.ceil(rows.length / overviewRowLimit));
+  const current = Math.min(Math.max(0, page), pages - 1);
+
+  rows.slice(current * overviewRowLimit, (current + 1) * overviewRowLimit).forEach((row) => {
    const section = new SectionBuilder().addTextDisplayComponents(
     new TextDisplayBuilder().setContent(schema.rowLabel(row)),
    );
@@ -86,10 +96,50 @@ export const buildOverview = ({
    container.addSectionComponents(section);
   });
 
-  if (rows.length > overviewRowLimit) {
+  const toggleColumn = schema.groups
+   .flatMap((g) => g.fields)
+   .find((field) => field.headerToggle)?.column;
+
+  const inactive = toggleColumn ? rows.filter((row) => !row[toggleColumn]) : [];
+
+  if (toggleColumn && inactive.length) {
+   container.addActionRowComponents(
+    new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+     new StringSelectMenuBuilder()
+      .setCustomId(
+       encodeSettingsId({ action: SettingsAction.ActivateSelected, settingName, page: current }),
+      )
+      .setPlaceholder(activateLabel)
+      .setMinValues(1)
+      .setMaxValues(Math.min(inactive.length, selectLimit))
+      .setOptions(
+       inactive.slice(0, selectLimit).map((row) => ({
+        label: schema.rowLabel(row).slice(0, 100),
+        value: String(row[schema.rowKey]),
+       })),
+      ),
+    ),
+   );
+  }
+
+  if (pages > 1) {
    container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-     `-# ${overflowText(String(rows.length - overviewRowLimit))}`,
+    new TextDisplayBuilder().setContent(`-# ${pageLabel(String(current + 1), String(pages))}`),
+   );
+
+   const pageButton = (target: number, emoji: APIPartialEmoji, disabled: boolean): ButtonBuilder =>
+    new ButtonBuilder()
+     .setStyle(ButtonStyle.Secondary)
+     .setEmoji(buttonEmoji(emoji))
+     .setDisabled(disabled)
+     .setCustomId(
+      encodeSettingsId({ action: SettingsAction.OverviewPage, settingName, page: target }),
+     );
+
+   container.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+     pageButton(current - 1, emotes.prev, current === 0),
+     pageButton(current + 1, emotes.next, current >= pages - 1),
     ),
    );
   }

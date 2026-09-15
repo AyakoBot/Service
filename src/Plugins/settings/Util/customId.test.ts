@@ -11,7 +11,7 @@ test('round-trips a group navigation id', () => {
   groupId: 'general',
   hideUnavail: true,
  });
- assert.equal(id, 'settings:gnav:ticketing:42:general::1::');
+ assert.equal(id, 'settings:gnav:ticketing:42:general::1:::');
  assert.deepEqual(parseSettingsId(id), {
   action: SettingsAction.GroupNav,
   settingName: 'ticketing',
@@ -21,6 +21,7 @@ test('round-trips a group navigation id', () => {
   hideUnavail: true,
   guideFlags: undefined,
   guideSection: undefined,
+  page: undefined,
  });
 });
 
@@ -33,7 +34,7 @@ test('round-trips a set-field id with a column', () => {
   column: 'category',
   hideUnavail: false,
  });
- assert.equal(id, 'settings:set:ticketing:7:channels:category:::');
+ assert.equal(id, 'settings:set:ticketing:7:channels:category::::');
  assert.deepEqual(parseSettingsId(id), {
   action: SettingsAction.SetField,
   settingName: 'ticketing',
@@ -43,12 +44,13 @@ test('round-trips a set-field id with a column', () => {
   hideUnavail: false,
   guideFlags: undefined,
   guideSection: undefined,
+  page: undefined,
  });
 });
 
 test('round-trips a create id with no row, group, or column', () => {
  const id = encodeSettingsId({ action: SettingsAction.Create, settingName: 'ticketing' });
- assert.equal(id, 'settings:create:ticketing::::::');
+ assert.equal(id, 'settings:create:ticketing:::::::');
  assert.deepEqual(parseSettingsId(id), {
   action: SettingsAction.Create,
   settingName: 'ticketing',
@@ -58,6 +60,7 @@ test('round-trips a create id with no row, group, or column', () => {
   hideUnavail: false,
   guideFlags: undefined,
   guideSection: undefined,
+  page: undefined,
  });
 });
 
@@ -79,6 +82,7 @@ test('round-trips a field modal id', () => {
   hideUnavail: true,
   guideFlags: undefined,
   guideSection: undefined,
+  page: undefined,
  });
 });
 
@@ -92,7 +96,7 @@ test('round-trips a guide id carrying a zero bitfield and a section', () => {
   guideFlags: 0,
   guideSection: 'channels',
  });
- assert.equal(id, 'settings:guide:ticketing:9:general::1:0:channels');
+ assert.equal(id, 'settings:guide:ticketing:9:general::1:0:channels:');
  assert.deepEqual(parseSettingsId(id), {
   action: SettingsAction.Guide,
   settingName: 'ticketing',
@@ -102,6 +106,7 @@ test('round-trips a guide id carrying a zero bitfield and a section', () => {
   hideUnavail: true,
   guideFlags: 0,
   guideSection: 'channels',
+  page: undefined,
  });
 });
 

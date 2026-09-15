@@ -23,7 +23,8 @@ import fieldModal from './fieldModal.js';
 import fieldSave from './fieldSave.js';
 import groupNav from './groupNav.js';
 import guideStep from './guideStep.js';
-import { openFromCommand, reRender } from './navigator.js';
+import activateSelected from './activateSelected.js';
+import { openFromCommand, overviewPage, reRender } from './navigator.js';
 import { confirmDelete, del } from './rowActions.js';
 import setField from './setField.js';
 import toggleField from './toggleField.js';
@@ -49,6 +50,8 @@ const componentHandlers: Partial<Record<SettingsAction, ComponentHandler>> = {
  [SettingsAction.Delete]: confirmDelete,
  [SettingsAction.DeleteConfirm]: del,
  [SettingsAction.GuideStep]: guideStep,
+ [SettingsAction.OverviewPage]: overviewPage,
+ [SettingsAction.ActivateSelected]: activateSelected,
 };
 
 const authorize = async function (this: SettingsPlugin, cmd: APIInteraction): Promise<boolean> {

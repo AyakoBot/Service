@@ -3,7 +3,7 @@ import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
-import { isUnset } from '../../Util/isUnset.js';
+import { activateBlockers } from '../../Util/activateBlockers.js';
 import persistFieldValue from '../../Util/persistFieldValue.js';
 import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
@@ -41,13 +41,7 @@ export default async function (
  const next = !displayRow[field.column];
 
  if (field.headerToggle && next) {
-  const gated = schema.groups.filter((g) => g.fields.some((f) => f.headerToggle)).map((g) => g.id);
-  const owner = schema.groups.find((g) => g.fields.some((f) => f.column === field.column));
-  const missing = schema.groups
-   .filter((g) => g.id === owner?.id || !gated.includes(g.id))
-   .filter((g) => !g.showIf || g.showIf(row).ok)
-   .flatMap((g) => g.fields)
-   .filter((f) => f.required && (!f.showIf || f.showIf(row).ok) && isUnset(row[f.column]));
+  const missing = activateBlockers(schema, row, field.column);
 
   if (missing.length) {
    const t = await this.t(cmd.guild_id);

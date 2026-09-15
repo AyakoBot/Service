@@ -88,7 +88,9 @@ export const buildGroupPage = ({
    .setLabel(on ? t.navigator.enabled() : t.navigator.disabled())
    .setEmoji(buttonEmoji(on ? emotes.enabled : emotes.disabled));
 
- const headerToggleField = group.fields.find((field) => field.headerToggle);
+ const headerToggleField =
+  group.fields.find((field) => field.headerToggle) ??
+  schema.groups.flatMap((g) => g.fields).find((field) => field.headerToggle);
 
  const headerToggle = headerToggleField
   ? toggleButton(Boolean(row[headerToggleField.column])).setCustomId(

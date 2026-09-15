@@ -13,6 +13,13 @@ export enum ComponentKind {
  SelectN = 'select-n',
 }
 
+export const optionKinds = new Set<ComponentKind>([
+ ComponentKind.Radio,
+ ComponentKind.CheckboxGroup,
+ ComponentKind.Select1,
+ ComponentKind.SelectN,
+]);
+
 const entity = new Set<EditorType>([
  EditorType.Channel,
  EditorType.Channels,

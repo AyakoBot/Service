@@ -18,7 +18,11 @@
   "deleteTitle": "Delete \"{{label}}\"?",
   "deleteWarning": "This permanently removes this configuration. It can't be undone.",
   "confirmDelete": "Delete permanently",
-  "overviewMore": "{{count}} more not shown"
+  "noOptions": "There is nothing to pick here yet. Set one up first, then come back.",
+  "overviewPage": "Page {{current}} of {{total}}",
+  "activateSelected": "Activate selected…",
+  "activatedCount": "Activated {{count}}.",
+  "activateSkipped": "Skipped {{count}} that still need required fields."
  },
  "guide": {
   "progress": "{{done}}/{{total}} required steps done",
