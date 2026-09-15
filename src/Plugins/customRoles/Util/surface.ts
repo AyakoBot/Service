@@ -119,6 +119,7 @@ const buyHint = async (
  client: Client,
  guildId: string,
  rewardIds: string[],
+ mention: CommandMention,
 ): Promise<string | null> => {
  if (!rewardIds.length) return null;
 
@@ -134,7 +135,7 @@ const buyHint = async (
  if (links.length) return t.customRole.buyPanel({ links: links.join(' ') });
 
  return gates.some((gate) => gate.shopType === ShopSurface.command)
-  ? t.customRole.buyCommand({ command: `/${EconomyCommand.Shop}` })
+  ? t.customRole.buyCommand({ command: mention(EconomyCommand.Shop) })
   : null;
 };
 
@@ -157,11 +158,14 @@ export const openSurface = async function (
  const capabilities = mergeCapabilities(applying);
 
  if (!capabilities.customRole) {
+  const gateApi = await this.getAPI(guildId);
+  const gateMention = await commandMentions.call(gateApi);
   const hint = await buyHint(
    t,
    this.client,
    guildId,
    rows.filter((row) => row.customRole).map((row) => row.id),
+   gateMention,
   );
 
   await respondEphemeral.call(

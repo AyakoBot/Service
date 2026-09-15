@@ -29,6 +29,7 @@ import type CustomRolesPlugin from '../Plugin.js';
 import type { CustomRolesTranslator } from '../Plugin.js';
 import {
  applyingRows,
+ passesGates,
  DigestAction,
  mergeCapabilities,
  planDigest,
@@ -122,26 +123,35 @@ export default class RolePerks {
   preloaded?: RoleReward[],
  ): Promise<RoleReward[]> => {
   const rows = preloaded ?? (await this.rowsFor(guildId));
-  const applying = applyingRows(rows, roleIds, userId);
 
   const locks = await this.lockedRewards(
    guildId,
-   applying.map((row) => row.id),
+   rows.map((row) => row.id),
   );
-  if (!locks.size) return applying;
 
-  const items = [...new Set(locks.values())];
+  const granted = applyingRows(
+   rows.filter((row) => !locks.has(row.id)),
+   roleIds,
+   userId,
+  );
+  if (!locks.size) return granted;
+
+  const buyable = rows.filter(
+   (row) =>
+    locks.has(row.id) &&
+    passesGates(row, roleIds, userId) &&
+    (!row.roles.length || row.roles.some((id) => roleIds.includes(id))),
+  );
+  if (!buyable.length) return granted;
+
+  const items = [...new Set(buyable.map((row) => locks.get(row.id)!))];
   const owned = await this.purchasedIds(guildId, userId, items);
 
   const missing = items.filter((item) => !owned.includes(item));
   const inherited = missing.length ? await this.grandfather(guildId, userId, missing) : [];
   const settled = new Set([...owned, ...inherited]);
 
-  return applying.filter((row) => {
-   const item = locks.get(row.id);
-
-   return !item || settled.has(item);
-  });
+  return [...granted, ...buyable.filter((row) => settled.has(locks.get(row.id)!))];
  };
 
  capabilitiesFor = async (
