@@ -383,7 +383,6 @@ export default class RolePerks {
 
   const guildId = key.slice(reconcilePrefix.length);
   if (!guildId) return;
-  if (!this.plugin.isPilotGuild(guildId)) return; // TODO: remove
 
   await this.runChunk(guildId).catch((error: Error) =>
    this.plugin.nonFatalError(error, 'customRoles.reconcile.chunk'),
@@ -399,7 +398,6 @@ export default class RolePerks {
 
    const guildId = key.slice(reconcilePrefix.length);
    if (!guildId) continue;
-   if (!this.plugin.isPilotGuild(guildId)) continue; // TODO: remove
 
    await arm.call(this.client, key, await this.cursorFor(key), 1);
   }
