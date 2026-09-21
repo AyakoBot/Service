@@ -43,8 +43,9 @@ const editorPrefix = (emotes: EmoteSet, field: SettingsField, value?: unknown): 
 };
 
 const withReason = (text: string, visible: ShowIfResult): string => {
- if (visible.ok) return text;
- return `${text}\n-# ${visible.reason ?? ''}`;
+ if (visible.ok || !visible.reason) return text;
+
+ return `${text}\n-# ${visible.reason}`;
 };
 
 const renderEntitySelect = (
