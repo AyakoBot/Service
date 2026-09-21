@@ -256,6 +256,14 @@ export default {
      label: (t: EconomyTranslator) => t.settings.rewards.fields.currency(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.currency(),
     },
+    // TODO: move to levelling role rewards once levelling is migrated
+    {
+     column: 'xpMultiplier',
+     editor: EditorType.Number,
+     emote: EmoteName.Xp,
+     label: (t: EconomyTranslator) => t.settings.rewards.fields.xpMultiplier(),
+     description: (t: EconomyTranslator) => t.settings.rewards.descriptions.xpMultiplier(),
+    },
     {
      column: 'payEvery',
      editor: EditorType.Number,
@@ -263,6 +271,14 @@ export default {
      label: (t: EconomyTranslator) => t.settings.rewards.fields.payEvery(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.payEvery(),
     },
+   ],
+  },
+  {
+   id: EconomyGroups.Recurring,
+   label: (t: EconomyTranslator) => t.settings.groups.recurring(),
+   description: (t: EconomyTranslator) => t.settings.rewards.recurringSection(),
+   emote: EmoteName.Curve,
+   fields: [
     {
      column: 'repeating',
      editor: EditorType.Boolean,
@@ -274,7 +290,6 @@ export default {
      column: 'recurringAmount',
      editor: EditorType.Number,
      emote: EmoteName.Coin,
-     separator: true,
      showIf: recurring,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.recurringAmount(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.recurringAmount(),
@@ -284,6 +299,7 @@ export default {
      editor: EditorType.FormulaType,
      emote: EmoteName.Brain,
      arity: FieldArity.Single,
+     separator: true,
      showIf: recurring,
      label: (t: EconomyTranslator) => t.settings.rewards.fields.curve(),
      description: (t: EconomyTranslator) => t.settings.rewards.descriptions.curve(),

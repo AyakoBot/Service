@@ -9,8 +9,8 @@ export default async function (
 ) {
  if (!data.guild_id) return;
 
- await this.client.db.client.economyItem.updateMany({
-  where: { guild: data.guild_id, message: data.id },
-  data: { message: null, channel: null, active: false },
+ await this.client.db.client.economyRoleReward.updateMany({
+  where: { guild: data.guild_id, panelMessage: data.id },
+  data: { panelChannel: null, panelMessage: null },
  });
 }

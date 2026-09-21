@@ -66,28 +66,6 @@ model EconomyBalance {
  @@index([guild, balance])
 }
 
-model EconomyItem {
- id    String @id @db.VarChar
- guild String @db.VarChar
-
- label  String  @db.VarChar
- price  Int     @default(0)
- active Boolean @default(false)
- kind   ShopItemKind @default(command)
-
- addRoles     String[] @db.VarChar
- removeRoles  String[] @db.VarChar
- replyText    String?  @db.Text
- grantBalance Int      @default(0)
-
- buttonText  String? @db.VarChar
- buttonEmote String? @db.VarChar
- message     String? @db.VarChar
- channel     String? @db.VarChar
-
- @@index([guild, active])
-}
-
 model EconomyPurchase {
  id    String @id @db.VarChar
  guild String @db.VarChar
@@ -122,6 +100,9 @@ model EconomyRoleReward {
  denyUsers String[] @db.VarChar
 
  currency Int @default(0)
+
+ // TODO: move to levelling role rewards once levelling is migrated
+ xpMultiplier Float @default(1)
 
  buyPrice         Int      @default(0) // 0 = not for sale
  purchaseRoles    String[] @db.VarChar
@@ -194,7 +175,3 @@ model EconomyRoleRewardEligibility {
  @@index(guild)
 }
 
-enum ShopItemKind {
- command
- message
-}

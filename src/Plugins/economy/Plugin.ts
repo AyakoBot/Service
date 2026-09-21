@@ -84,7 +84,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
  name = 'Economy';
  settingName = PluginName.Economy;
 
- pilotGuilds = ['1465149479995965613', '1518697272525979648']; // TODO: remove
  dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'EconomySetting';
 
@@ -110,7 +109,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.MessageCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageCreate>,
   ) => {
-   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    messageCreate.call(this, data);
@@ -118,7 +116,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.MessageDelete]: (
    data: ExtractPayload<GatewayDispatchEvents.MessageDelete>,
   ) => {
-   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    messageDelete.call(this, data);
@@ -126,7 +123,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.ChannelDelete]: (
    data: ExtractPayload<GatewayDispatchEvents.ChannelDelete>,
   ) => {
-   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    channelDelete.call(this, data);
@@ -134,7 +130,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.GuildMemberUpdate]: (
    data: ExtractPayload<GatewayDispatchEvents.GuildMemberUpdate>,
   ) => {
-   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    guildMemberUpdate.call(this, data);
@@ -142,7 +137,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
   [GatewayDispatchEvents.InteractionCreate]: (
    data: ExtractPayload<GatewayDispatchEvents.InteractionCreate>,
   ) => {
-   if (!this.isPilotGuild(data.guild_id)) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
@@ -477,7 +471,6 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       editor: EditorType.Boolean,
       label: (t: EconomyTranslator) => t.settings.fields.transferActive(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferActive(),
-      headerToggle: true,
      },
      {
       column: 'transferMin',
@@ -485,6 +478,10 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       emote: EmoteName.Floor,
       label: (t: EconomyTranslator) => t.settings.fields.transferMin(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferMin(),
+      showIf: (row) => ({
+       ok: row.transferActive,
+       reason: en.settings.reasons.transfersOff,
+      }),
      },
      {
       column: 'transferMax',
@@ -492,6 +489,10 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       emote: EmoteName.Ceiling,
       label: (t: EconomyTranslator) => t.settings.fields.transferMax(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferMax(),
+      showIf: (row) => ({
+       ok: row.transferActive,
+       reason: en.settings.reasons.transfersOff,
+      }),
      },
      {
       column: 'transferDailyMax',
@@ -499,6 +500,10 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       emote: EmoteName.Calendar,
       label: (t: EconomyTranslator) => t.settings.fields.transferDailyMax(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferDailyMax(),
+      showIf: (row) => ({
+       ok: row.transferActive,
+       reason: en.settings.reasons.transfersOff,
+      }),
      },
      {
       column: 'transferTax',
@@ -506,6 +511,10 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
       emote: EmoteName.Downvote,
       label: (t: EconomyTranslator) => t.settings.fields.transferTax(),
       description: (t: EconomyTranslator) => t.settings.descriptions.transferTax(),
+      showIf: (row) => ({
+       ok: row.transferActive,
+       reason: en.settings.reasons.transfersOff,
+      }),
      },
     ],
    },

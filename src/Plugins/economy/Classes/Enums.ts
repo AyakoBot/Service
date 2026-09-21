@@ -10,6 +10,7 @@ export enum EconomyGroups {
  Identity = 'identity',
  Rewards = 'rewards',
  Payout = 'payout',
+ Recurring = 'recurring',
  Shop = 'shop',
  Panel = 'panel',
 }

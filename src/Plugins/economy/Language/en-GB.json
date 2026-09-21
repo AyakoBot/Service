@@ -2,6 +2,9 @@
  "settings": {
   "configTitle": "Currency settings",
   "overviewDescription": "Configure how this server's currency works, including earning, transfers and the role shop.",
+  "reasons": {
+   "transfersOff": "Turn Transfers on to use this"
+  },
   "groups": {
    "general": "General",
    "earning": "Earning",
@@ -10,6 +13,7 @@
    "identity": "Identity",
    "rewards": "Role Rewards",
    "payout": "Payout",
+   "recurring": "Recurring payouts",
    "shop": "Shop",
    "panel": "Panel"
   },
@@ -86,6 +90,7 @@
     "denyRoles": "Denied Roles",
     "denyUsers": "Denied Members",
     "currency": "Payout",
+    "xpMultiplier": "XP multiplier",
     "payEvery": "Pay every",
     "repeating": "Keep repeating",
     "recurringAmount": "Recurring amount",
@@ -108,6 +113,7 @@
     "denyRoles": "Holding any one of these Roles disqualifies a Member, even if they hold a qualifying Role.",
     "denyUsers": "These Users never qualify for this Reward, even while holding a qualifying Role.",
     "currency": "How much currency to pay the first time a Member qualifies. Set 0 to pay nothing.",
+    "xpMultiplier": "Multiplies the XP a qualifying Member earns. 1 leaves XP unchanged.",
     "payEvery": "Days a Member must hold the Role before each payout. Zero pays only on receive.",
     "repeating": "Keep paying every interval. Turn this off to pay once after the first interval.",
     "recurringAmount": "What the first recurring payout is worth. Later payouts follow the curve.",
@@ -125,6 +131,7 @@
     "panelComponents": "Name of a saved Component set to use as the Panel body. Clears the embed choice."
    },
    "payoutSection": "When this Reward pays out, and how the amount grows over time.",
+   "recurringSection": "How a repeating payout grows over time.",
    "curves": {
     "logarithmic": "Logarithmic",
     "linear": "Linear",
