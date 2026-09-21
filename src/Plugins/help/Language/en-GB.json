@@ -1,0 +1,83 @@
+{
+ "panel": {
+  "title": "{{bot}} Help",
+  "pick": "Pick a Command",
+  "scope": "Switch between Commands and Settings",
+  "intro": "Everything this Bot can do is listed below. Use {{search}} to look one up by name.",
+  "botMissing": "I could not read my own Command list just now, so this is the last set I knew about.",
+  "notFound": "No Command matches {{query}}. The closest I have is {{closest}}.",
+  "expired": "This Panel has expired. Run {{help}} again to reopen it.",
+  "empty": "Nothing to show here yet.",
+  "contextMenu": "{{name}} is a Right-Click Command. Right-click a Message or a User and look under **Apps**.",
+  "post": "Post this Panel"
+ },
+ "scope": {
+  "settings": "Settings",
+  "commandsDescription": "Things this Bot can do for you",
+  "settingsDescription": "Things this Bot can be configured to do",
+  "context": "Right-Click Commands",
+  "standalone": "Options",
+  "tree": "All forms of this Command",
+  "optionsFor": "Options for {{command}}"
+ },
+ "settings": {
+  "title": "Settings",
+  "intro": "These are configured with {{settings}} followed by the Category and Name shown here.",
+  "category": "Category",
+  "elsewhere": "This Bot has no Settings of its own. Run this Command on the main Bot to configure it."
+ },
+ "options": {
+  "required": "required",
+  "optional": "optional",
+  "choices": "one of: {{choices}}",
+  "noOptions": "This Command takes no Options."
+ },
+ "fleet": {
+  "title": "The Ayako Fleet",
+  "intro": "Ayako is split across several Bots so each one only asks for the Permissions it needs. You are talking to **{{bot}}**.",
+  "invite": "Add {{bot}}",
+  "website": "Open ayakobot.com",
+  "hint": "Run {{help}} on any of them to see what it can do.",
+  "unavailable": "Not configured on this Install"
+ },
+ "bots": {
+  "base": {
+   "label": "Ayako",
+   "blurb": "Everything Ayako can do, plus Server configuration"
+  },
+  "info": {
+   "label": "Ayako Info",
+   "blurb": "Look up Users, Servers, Roles, Emojis and Permissions"
+  },
+  "afk": {
+   "label": "Ayako AFK",
+   "blurb": "Away messages that answer for you"
+  },
+  "rp": {
+   "label": "Ayako RP",
+   "blurb": "Roleplay actions between Members"
+  },
+  "ticketing": {
+   "label": "Ayako Tickets",
+   "blurb": "Support Tickets and their Panels"
+  },
+  "economy": {
+   "label": "Ayako Economy",
+   "blurb": "Currency, Balance, Shop and Inventory"
+  },
+  "custom-roles": {
+   "label": "Ayako Custom Roles",
+   "blurb": "Member-created Roles"
+  },
+  "welcome": {
+   "label": "Ayako Welcome",
+   "blurb": "Welcome and Goodbye messages"
+  }
+ },
+ "errors": {
+  "guildOnly": "This needs to be run in a Server."
+ },
+ "navigator": {
+  "unavailable": "You can only post this Panel if you have the `Manage Server` Permission."
+ }
+}
