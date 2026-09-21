@@ -1,10 +1,6 @@
 import type Client from '../../../Classes/Client.js';
 import { mintId } from '../../../Util/mintId.js';
-import {
- botHighestPosition,
- filterWritableRoles,
- highestPositionOf,
-} from '../../../Util/roleHierarchy.js';
+import { filterWritableRoles } from '../../../Util/roleHierarchy.js';
 import { RoleWritePriority } from '../../../Util/roleWriteQueue.js';
 import type EconomyPlugin from '../Plugin.js';
 
@@ -53,19 +49,8 @@ export default class EconomyShop {
    botId: api.botId,
    roleIds,
   });
-  if (ok.length < roleIds.length) return false;
 
-  const botPosition = await botHighestPosition.call(this.client, req.guildId, api.botId);
-  if (botPosition === null) return false;
-
-  const member = await this.client.cache.members.get(req.guildId, req.userId);
-  const targetPosition = await highestPositionOf.call(
-   this.client,
-   req.guildId,
-   member?.roles ?? [],
-  );
-
-  return botPosition > targetPosition;
+  return ok.length === roleIds.length;
  };
 
  purchase = async (req: PurchaseRequest): Promise<SpendResult> => {

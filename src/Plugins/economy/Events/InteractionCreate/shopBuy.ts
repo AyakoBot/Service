@@ -10,7 +10,7 @@ import type EconomyPlugin from '../../Plugin.js';
 import type { EconomyTranslator } from '../../Plugin.js';
 import { commandMentions } from '../../../../Util/commandMention.js';
 import { shopLabel } from '../../Util/shopLabel.js';
-import { deferShop, shopText } from '../../Util/shopReply.js';
+import ephemeralNote, { editOriginal } from '../../Util/respond.js';
 
 const toggleEquip = async function (
  this: EconomyPlugin,
@@ -110,7 +110,7 @@ const receipt = async function (
   );
  }
 
- await shopText.call(this, cmd, lines.join('\n'));
+ await editOriginal.call(this, cmd, { content: lines.join('\n') });
 };
 
 export default async function (
@@ -122,11 +122,9 @@ export default async function (
  const userId = cmd.member?.user.id ?? cmd.user?.id;
  if (!guildId || !userId || !rowId) return;
 
- await deferShop.call(this, cmd);
-
  const t = await this.t(guildId);
  const note = (text: string) => {
-  void shopText.call(this, cmd, text);
+  ephemeralNote.call(this, cmd, text);
  };
 
  const row = await this.client.db.client.economyRoleReward.findFirst({

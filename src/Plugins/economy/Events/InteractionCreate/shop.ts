@@ -2,14 +2,12 @@ import { ShopSurface } from '@ayako/database';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
- MessageFlags,
  type APIChatInputApplicationCommandInteraction,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
 
-import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import constants from '../../../../Classes/Constants.js';
-import ephemeralNote from '../../../../Util/ephemeralNote.js';
+import ephemeralNote, { editOriginal } from '../../Util/respond.js';
 import { sellableRow } from '../../../../Util/roleRewards.js';
 import { EconomyRoute } from '../../Classes/Routes.js';
 import { shopLabel } from '../../Util/shopLabel.js';
@@ -120,16 +118,13 @@ export default async function (
       .setDisabled(!entry.has && !entry.buyable),
  );
 
- new MessagePayload(this.client, { origin: this.name, reason: 'Economy shop' })
-  .setContent(`## ${t.shop.title()}\n${lines.join('\n')}`)
-  .setComponents(
-   chunk(buttons).map(
-    (group) =>
-     new ActionRowBuilder<ButtonBuilder>()
-      .addComponents(group)
-      .toJSON() as APIMessageTopLevelComponent,
-   ),
-  )
-  .setFlags(MessageFlags.Ephemeral)
-  .reply(cmd);
+ await editOriginal.call(this, cmd, {
+  content: `## ${t.shop.title()}\n${lines.join('\n')}`,
+  components: chunk(buttons).map(
+   (group) =>
+    new ActionRowBuilder<ButtonBuilder>()
+     .addComponents(group)
+     .toJSON() as APIMessageTopLevelComponent,
+  ),
+ });
 }
