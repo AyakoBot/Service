@@ -178,11 +178,6 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
      ).addBooleanOption(hideOption()),
     )
     .addSubcommand(
-     subcommand(InfoSubcommand.Servers, 'Display all Servers this Bot is in').addBooleanOption(
-      hideOption(),
-     ),
-    )
-    .addSubcommand(
      subcommand(
       InfoSubcommand.Events,
       'Display the Scheduled Events of this Server',

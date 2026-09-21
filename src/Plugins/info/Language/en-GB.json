@@ -179,11 +179,6 @@
   "scanned": "Based on {{count}} cached users",
   "none": "No badge data available."
  },
- "servers": {
-  "title": "Servers",
-  "members": "{{count}} Members",
-  "none": "No servers found."
- },
  "events": {
   "title": "Scheduled Events",
   "startsAt": "Starts",

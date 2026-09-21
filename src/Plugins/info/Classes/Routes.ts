@@ -7,7 +7,6 @@ export enum InfoRoute {
  Members = 'info/members',
  EmojiPage = 'info/emojiPage',
  StickerPage = 'info/stickerPage',
- ServersPage = 'info/serversPage',
  MsgHistoryPage = 'info/msgHistoryPage',
 }
 

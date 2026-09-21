@@ -18,12 +18,26 @@ export enum InfoSubcommand {
  Invite = 'invite',
  Bot = 'bot',
  Badges = 'badges',
- Servers = 'servers',
  Events = 'events',
  Webhook = 'webhook',
  Automod = 'automod',
  Soundboard = 'soundboard',
  Permissions = 'permissions',
+}
+
+export enum InfoAlias {
+ User = 'user',
+ Emojis = 'emojis',
+ Stickers = 'stickers',
+ Roles = 'roles',
+ Server = 'server',
+ Invites = 'invites',
+}
+
+export enum InfoAliasSubcommand {
+ Info = 'info',
+ Avatar = 'avatar',
+ Banner = 'banner',
 }
 
 export enum InfoOption {

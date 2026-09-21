@@ -9,7 +9,12 @@ import {
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import { getSubcommand } from '../../../../Util/interactionOptions.js';
-import { InfoCommand, InfoSubcommand } from '../../Classes/Commands.js';
+import {
+ InfoAlias,
+ InfoAliasSubcommand,
+ InfoCommand,
+ InfoSubcommand,
+} from '../../Classes/Commands.js';
 import { InfoRoute } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
 
@@ -28,7 +33,6 @@ import permissions, { basicPerms, permsSelect } from './permissions.js';
 import ping from './ping.js';
 import role from './role.js';
 import server from './server.js';
-import servers, { serversPage } from './servers.js';
 import soundboard from './soundboard.js';
 import sticker, { stickerPage } from './sticker.js';
 import user, { rerenderUser } from './user.js';
@@ -57,12 +61,24 @@ const subHandlers: Record<InfoSubcommand, SubHandler> = {
  [InfoSubcommand.Invite]: invite,
  [InfoSubcommand.Bot]: bot,
  [InfoSubcommand.Badges]: badges,
- [InfoSubcommand.Servers]: servers,
  [InfoSubcommand.Events]: events,
  [InfoSubcommand.Webhook]: webhook,
  [InfoSubcommand.Automod]: automod,
  [InfoSubcommand.Soundboard]: soundboard,
  [InfoSubcommand.Permissions]: permissions,
+};
+
+const aliasSubcommands: Record<InfoAlias, Partial<Record<InfoAliasSubcommand, InfoSubcommand>>> = {
+ [InfoAlias.User]: {
+  [InfoAliasSubcommand.Info]: InfoSubcommand.User,
+  [InfoAliasSubcommand.Avatar]: InfoSubcommand.Avatar,
+  [InfoAliasSubcommand.Banner]: InfoSubcommand.Banner,
+ },
+ [InfoAlias.Emojis]: { [InfoAliasSubcommand.Info]: InfoSubcommand.Emoji },
+ [InfoAlias.Stickers]: { [InfoAliasSubcommand.Info]: InfoSubcommand.Sticker },
+ [InfoAlias.Roles]: { [InfoAliasSubcommand.Info]: InfoSubcommand.Role },
+ [InfoAlias.Server]: { [InfoAliasSubcommand.Info]: InfoSubcommand.Server },
+ [InfoAlias.Invites]: { [InfoAliasSubcommand.Info]: InfoSubcommand.Invite },
 };
 
 export default async function (
@@ -94,8 +110,14 @@ export default async function (
     case InfoCommand.MessageHistory:
      messageHistory.call(this, interaction);
      break;
-    default:
+    default: {
+     const alias = aliasSubcommands[interaction.data.name as InfoAlias];
+     const sub = alias ? getSubcommand(interaction) : null;
+     const mapped = sub ? alias?.[sub.name as InfoAliasSubcommand] : undefined;
+
+     if (sub && mapped) subHandlers[mapped].call(this, interaction, sub);
      break;
+    }
    }
    break;
   }
@@ -148,10 +170,6 @@ const button = async function (this: InfoPlugin, cmd: APIMessageComponentInterac
   }
   case InfoRoute.StickerPage: {
    stickerPage.call(this, cmd, args);
-   break;
-  }
-  case InfoRoute.ServersPage: {
-   serversPage.call(this, cmd, args);
    break;
   }
   case InfoRoute.MsgHistoryPage: {
