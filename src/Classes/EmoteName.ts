@@ -195,6 +195,7 @@ export enum EmoteName {
  LogWebhookDelete = 'log_webhook_delete',
  LogWebhookUpdate = 'log_webhook_update',
  Member = 'member',
+ Menu = 'menu',
  Message = 'message',
  Muted = 'muted',
  MutedCross = 'muted_cross',
