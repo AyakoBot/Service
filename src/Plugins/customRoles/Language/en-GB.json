@@ -51,12 +51,14 @@
   "groups": {
    "reward": "Reward",
    "customRole": "Custom Role",
-   "shop": "Shop"
+   "shop": "Shop",
+   "inactivity": "Inactivity"
   },
   "sections": {
    "reward": "Who qualifies for this Reward, and what they get for it.",
    "customRole": "The Custom-Role perk this Reward unlocks, and what its owner may change about it.",
-   "shop": "How Members buy this Reward."
+   "shop": "How Members buy this Reward.",
+   "inactivity": "Wipe the Custom-Roles of members who stop being active. Applies to members who get their Custom-Role from this reward."
   },
   "fields": {
    "roles": "Qualifying Roles",
@@ -122,6 +124,31 @@
    "posted": "Panel posted in {{channel}}.",
    "postFailed": "Could not post the Panel in {{channel}}. Check my permissions there.",
    "needsPrice": "Set a purchase price before posting a Panel."
+  },
+  "inactivity": {
+   "fields": {
+    "inactivityWipe": "Wipe inactive Custom-Roles",
+    "activitySources": "What counts as activity",
+    "inactiveAfter": "Inactive after"
+   },
+   "descriptions": {
+    "inactivityWipe": "Delete the Custom-Role of members who get it from this reward once they have been inactive for longer than the set time. A member keeps their Custom-Role as long as any other reward granting it still counts them as active or doesn't wipe. Tracking starts when this is switched on.",
+    "activitySources": "Which actions keep a member active for this reward. Creating a Custom-Role always counts.",
+    "inactiveAfter": "How long a member can be inactive before their Custom-Role is wiped. At least 1 day."
+   },
+   "options": {
+    "messages": "Sending messages",
+    "messagesHint": "Any message in a server channel or thread.",
+    "reactions": "Reacting to messages",
+    "reactionsHint": "Adding a reaction to any message.",
+    "voice": "Joining voice",
+    "voiceHint": "Joining or switching a voice channel.",
+    "online": "Being online",
+    "onlineHint": "Any status change while not offline. Needs the Presence Intent."
+   },
+   "errors": {
+    "tooShort": "Set at least 1 day."
+   }
   }
  },
  "buy": {

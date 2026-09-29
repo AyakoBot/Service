@@ -45,6 +45,8 @@ const claimRow = async function (
  roleId: string,
  stale: boolean,
 ): Promise<void> {
+ await this.activity.touchAll(surface.guildId, surface.userId);
+
  if (!stale) {
   await this.client.db.client.customRole.create({
    data: { guild: surface.guildId, user: surface.userId, role: roleId },

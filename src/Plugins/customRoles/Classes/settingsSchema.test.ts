@@ -5,6 +5,7 @@ import type Client from '../../../Classes/Client.js';
 import type { TransformContext } from '../../settings/SettingsSchema.js';
 import type CustomRolesPlugin from '../Plugin.js';
 
+import type ActivityTracker from './ActivityTracker.js';
 import RolePerks from './RolePerks.js';
 import schema from './settingsSchema.js';
 
@@ -30,6 +31,7 @@ const stub = () => {
 const fireChange = async (rowId: string): Promise<Map<string, string>> => {
  const { writes, client, plugin } = stub();
  plugin.rewards = new RolePerks(plugin);
+ plugin.activity = { syncTracking: async () => undefined } as unknown as ActivityTracker;
 
  await schema.onChange?.({ client, plugin, guildId: 'G1', rowId } as TransformContext);
 

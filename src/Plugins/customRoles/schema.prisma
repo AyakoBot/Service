@@ -8,6 +8,12 @@ datasource db {
  provider = "postgresql"
 }
 
+model EconomyRoleReward {
+ id               String      @id @db.VarChar
+ customRoleReward String?     @db.VarChar
+ customRole       RoleReward? @relation(fields: [customRoleReward], references: [id], onDelete: SetNull)
+}
+
 //#endregion
 
 model RoleReward {
@@ -28,6 +34,13 @@ model RoleReward {
  maxShare       Int     @default(0)
 
  notifyChannel String? @db.VarChar
+
+ inactivityWipe  Boolean          @default(false)
+ activitySources ActivitySource[] @default([Messages, Voice])
+ inactiveAfter   Decimal          @default(2592000) @db.Decimal
+ trackingSince   DateTime?
+
+ economyRewards EconomyRoleReward[]
 
  @@index(guild)
 }
@@ -62,4 +75,22 @@ model RoleRewardEligibility {
 
  @@id([guild, user])
  @@index(guild)
+}
+
+enum ActivitySource {
+ Messages
+ Reactions
+ Voice
+ // TODO: request presence intent for this
+ // Online
+}
+
+model LastActive {
+ guild      String         @db.VarChar
+ user       String         @db.VarChar
+ source     ActivitySource
+ lastActive DateTime       @default(now())
+
+ @@id([guild, user, source])
+ @@index([guild, user])
 }

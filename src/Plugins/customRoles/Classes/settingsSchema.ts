@@ -1,4 +1,4 @@
-import type { RoleReward } from '@ayako/database';
+import { ActivitySource, type RoleReward } from '@ayako/database';
 import { ChannelType } from 'discord-api-types/v10';
 
 import { EmoteName } from '../../../Classes/EmoteName.js';
@@ -9,12 +9,15 @@ import {
  type ShowIfResult,
  type TransformContext,
 } from '../../settings/SettingsSchema.js';
+import { minInactivitySeconds } from '../constants.js';
+import en from '../Language/en-GB.json' with { type: 'json' };
 import type CustomRolesPlugin from '../Plugin.js';
 import type { CustomRolesTranslator } from '../Plugin.js';
 
 export enum CustomRolesGroup {
  Reward = 'reward',
  CustomRole = 'customrole',
+ Inactivity = 'inactivity',
 }
 
 export const MAX_SHARE_LIMIT = 25;
@@ -22,6 +25,11 @@ export const MAX_SHARE_LIMIT = 25;
 const notifyChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
 
 const wantsCustomRole = (row: RoleReward): ShowIfResult => ({ ok: row.customRole });
+
+const atLeastADay = (value: unknown): ShowIfResult =>
+ Number(value) >= minInactivitySeconds
+  ? { ok: true }
+  : { ok: false, reason: en.settings.inactivity.errors.tooShort };
 
 const shareCount = (value: unknown): ShowIfResult => {
  if (value === null || value === undefined || value === '') return { ok: true };
@@ -42,8 +50,12 @@ export default {
  rowLabel: (t: CustomRolesTranslator, row: RoleReward) => t.settings.rowLabel({ id: row.id }),
  rowSummary: (t: CustomRolesTranslator, row: RoleReward) =>
   t.settings.rowSummary({ count: String(row.roles.length) }),
- onChange: async (ctx: TransformContext) =>
-  (ctx.plugin as CustomRolesPlugin).rewards.enqueueReconcile(ctx.guildId),
+ onChange: async (ctx: TransformContext) => {
+  const plugin = ctx.plugin as CustomRolesPlugin;
+
+  await plugin.activity.syncTracking(ctx.guildId, ctx.rowId);
+  await plugin.rewards.enqueueReconcile(ctx.guildId);
+ },
  groups: [
   {
    id: CustomRolesGroup.Reward,
@@ -150,6 +162,64 @@ export default {
      description: (t: CustomRolesTranslator) => t.settings.descriptions.maxShare(),
      showIf: wantsCustomRole,
      validate: shareCount,
+    },
+   ],
+  },
+  {
+   id: CustomRolesGroup.Inactivity,
+   label: (t: CustomRolesTranslator) => t.settings.groups.inactivity(),
+   description: (t: CustomRolesTranslator) => t.settings.sections.inactivity(),
+   emote: EmoteName.Timer,
+   fields: [
+    {
+     column: 'inactivityWipe',
+     editor: EditorType.Boolean,
+     label: (t: CustomRolesTranslator) => t.settings.inactivity.fields.inactivityWipe(),
+     description: (t: CustomRolesTranslator) =>
+      t.settings.inactivity.descriptions.inactivityWipe(),
+    },
+    {
+     column: 'activitySources',
+     editor: EditorType.ActivitySources,
+     emote: EmoteName.Activity,
+     arity: FieldArity.Multi,
+     showIf: wantsCustomRole,
+     label: (t: CustomRolesTranslator) => t.settings.inactivity.fields.activitySources(),
+     description: (t: CustomRolesTranslator) =>
+      t.settings.inactivity.descriptions.activitySources(),
+     options: [
+      {
+       value: ActivitySource.Messages,
+       label: (t: CustomRolesTranslator) => t.settings.inactivity.options.messages(),
+       description: (t: CustomRolesTranslator) => t.settings.inactivity.options.messagesHint(),
+      },
+      {
+       value: ActivitySource.Reactions,
+       label: (t: CustomRolesTranslator) => t.settings.inactivity.options.reactions(),
+       description: (t: CustomRolesTranslator) => t.settings.inactivity.options.reactionsHint(),
+      },
+      {
+       value: ActivitySource.Voice,
+       label: (t: CustomRolesTranslator) => t.settings.inactivity.options.voice(),
+       description: (t: CustomRolesTranslator) => t.settings.inactivity.options.voiceHint(),
+      },
+      // TODO: request presence intent for this
+      // {
+       // value: ActivitySource.Online,
+       // label: (t: CustomRolesTranslator) => t.settings.inactivity.options.online(),
+       // description: (t: CustomRolesTranslator) => t.settings.inactivity.options.onlineHint(),
+      // },
+     ],
+    },
+    {
+     column: 'inactiveAfter',
+     editor: EditorType.Duration,
+     emote: EmoteName.Timer,
+     showIf: wantsCustomRole,
+     label: (t: CustomRolesTranslator) => t.settings.inactivity.fields.inactiveAfter(),
+     description: (t: CustomRolesTranslator) =>
+      t.settings.inactivity.descriptions.inactiveAfter(),
+     validate: atLeastADay,
     },
    ],
   },
