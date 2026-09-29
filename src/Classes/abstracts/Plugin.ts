@@ -76,6 +76,8 @@ export enum PluginName {
  CustomRoles = 'custom-roles',
  // Logging = 'logging',
  Economy = 'economy',
+ Confessions = 'confessions',
+ Help = 'help',
 }
 
 export type BaseLanguage = Record<string, unknown>;
@@ -108,7 +110,7 @@ export default abstract class Plugin<
 
  extraSchemas?: Record<string, SettingsSchemaDef>;
 
- pilotGuilds?: string[]; // TODO: remove
+ pilotGuilds?: string[];
 
  isPilotGuild = (guildId?: string | null): boolean =>
   !this.pilotGuilds || this.pilotGuilds.includes(guildId ?? '');
