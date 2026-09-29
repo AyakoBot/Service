@@ -3,6 +3,10 @@ export enum WelcomeCommand {
  SaveGifGoodbye = 'Save GIF to goodbye',
 }
 
+export enum WelcomeSettingName {
+ Goodbye = 'goodbye',
+}
+
 export enum WelcomeSubcommand {
  WelcomeGifs = 'welcome-gifs',
  GoodbyeGifs = 'goodbye-gifs',

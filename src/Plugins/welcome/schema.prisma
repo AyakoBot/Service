@@ -8,6 +8,14 @@ datasource db {
  provider = "postgresql"
 }
 
+enum PresenceActivityType {
+ Playing
+ Listening
+ Watching
+ Competing
+ Custom
+}
+
 //#endregion
 
 model WelcomeSetting {

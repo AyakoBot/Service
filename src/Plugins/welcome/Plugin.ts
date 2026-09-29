@@ -30,7 +30,7 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
-import { WelcomeCommand, WelcomeSubcommand } from './Classes/Commands.js';
+import { WelcomeCommand, WelcomeSettingName, WelcomeSubcommand } from './Classes/Commands.js';
 import { WelcomeRoute } from './Classes/Routes.js';
 import guildAuditLogEntryCreate from './Events/GuildAuditLogEntryCreate/index.js';
 import guildMemberAdd from './Events/GuildMemberAdd/index.js';
@@ -45,7 +45,7 @@ import {
  welcomeProfileImageTransform,
  welcomeProfileVirtual,
 } from './Util/botToken.js';
-import { SavedSource, savedRefTransform } from '../../Util/savedRef.js';
+import { savedDesignField } from '../../Util/savedRef.js';
 
 type Events =
  | GatewayDispatchEvents.GuildAuditLogEntryCreate
@@ -62,6 +62,8 @@ type WelcomeVirtualColumns = {
  profileAvatar: string | null;
  profileBanner: string | null;
  profileBio: string | null;
+ welcomeDesign: string | null;
+ goodbyeDesign: string | null;
 };
 
 export enum WelcomeGroups {
@@ -78,8 +80,17 @@ export enum WelcomeGuideFlag {
 
 const welcomePlaceholders = withBasePlaceholders(MessagePlaceholder.Gif);
 const placeholderDoc = buildPlaceholderDoc(MessagePlaceholder.Gif);
+const welcomeAppends = 2;
 
 const greetingChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];
+
+const goodbyeFirst = (schema: SettingsSchemaDef): SettingsSchemaDef => ({
+ ...schema,
+ groups: [
+  ...schema.groups.filter((group) => group.id === WelcomeGroups.Goodbye),
+  ...schema.groups.filter((group) => group.id !== WelcomeGroups.Goodbye),
+ ],
+});
 
 export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
  name = 'Welcome';
@@ -211,6 +222,9 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       .setName(PluginName.Welcome)
       .setDescription('Configure welcome and goodbye messages'),
      new SlashCommandSubcommandBuilder()
+      .setName(WelcomeSettingName.Goodbye)
+      .setDescription('Configure the goodbye message'),
+     new SlashCommandSubcommandBuilder()
       .setName(WelcomeSubcommand.WelcomeGifs)
       .setDescription('Manage the random GIF pool for welcome messages'),
      new SlashCommandSubcommandBuilder()
@@ -250,33 +264,17 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       required: true,
      },
      {
-      column: 'welcomeEmbed',
-      editor: EditorType.String,
-      emote: EmoteName.Json,
-      label: (t: WelcomeTranslator) => t.settings.fields.embed(),
+      column: 'welcomeDesign',
+      editor: EditorType.SavedDesign,
+      emote: EmoteName.Message,
+      label: (t: WelcomeTranslator) => t.settings.fields.design(),
       description: (t: WelcomeTranslator) =>
-       t.settings.descriptions.embed({ list: placeholderDoc }),
+       t.settings.descriptions.design({ list: placeholderDoc }),
       arity: FieldArity.Single,
-      transform: savedRefTransform(
-       SavedSource.Embed,
+      ...savedDesignField(
        'welcomeSetting',
-       { welcomeComponents: null },
-       en.errors.embedNotFound,
-      ),
-     },
-     {
-      column: 'welcomeComponents',
-      editor: EditorType.String,
-      emote: EmoteName.Command,
-      label: (t: WelcomeTranslator) => t.settings.fields.components(),
-      description: (t: WelcomeTranslator) =>
-       t.settings.descriptions.components({ list: placeholderDoc }),
-      arity: FieldArity.Single,
-      transform: savedRefTransform(
-       SavedSource.Components,
-       'welcomeSetting',
-       { welcomeEmbed: null },
-       en.errors.componentsNotFound,
+       { embed: 'welcomeEmbed', components: 'welcomeComponents' },
+       welcomeAppends,
       ),
      },
      {
@@ -339,33 +337,17 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
       required: true,
      },
      {
-      column: 'goodbyeEmbed',
-      editor: EditorType.String,
-      emote: EmoteName.Json,
-      label: (t: WelcomeTranslator) => t.settings.fields.embed(),
+      column: 'goodbyeDesign',
+      editor: EditorType.SavedDesign,
+      emote: EmoteName.Message,
+      label: (t: WelcomeTranslator) => t.settings.fields.design(),
       description: (t: WelcomeTranslator) =>
-       t.settings.descriptions.embed({ list: placeholderDoc }),
+       t.settings.descriptions.design({ list: placeholderDoc }),
       arity: FieldArity.Single,
-      transform: savedRefTransform(
-       SavedSource.Embed,
+      ...savedDesignField(
        'welcomeSetting',
-       { goodbyeComponents: null },
-       en.errors.embedNotFound,
-      ),
-     },
-     {
-      column: 'goodbyeComponents',
-      editor: EditorType.String,
-      emote: EmoteName.Command,
-      label: (t: WelcomeTranslator) => t.settings.fields.components(),
-      description: (t: WelcomeTranslator) =>
-       t.settings.descriptions.components({ list: placeholderDoc }),
-      arity: FieldArity.Single,
-      transform: savedRefTransform(
-       SavedSource.Components,
-       'welcomeSetting',
-       { goodbyeEmbed: null },
-       en.errors.componentsNotFound,
+       { embed: 'goodbyeEmbed', components: 'goodbyeComponents' },
+       welcomeAppends,
       ),
      },
      {
@@ -550,12 +532,8 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
        required: true,
       },
       {
-       column: 'welcomeEmbed',
-       label: (t: WelcomeTranslator) => t.settings.fields.embed(),
-      },
-      {
-       column: 'welcomeComponents',
-       label: (t: WelcomeTranslator) => t.settings.fields.components(),
+       column: 'welcomeDesign',
+       label: (t: WelcomeTranslator) => t.settings.fields.design(),
       },
       {
        column: 'welcomePingJoin',
@@ -584,12 +562,8 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
        required: true,
       },
       {
-       column: 'goodbyeEmbed',
-       label: (t: WelcomeTranslator) => t.settings.fields.embed(),
-      },
-      {
-       column: 'goodbyeComponents',
-       label: (t: WelcomeTranslator) => t.settings.fields.components(),
+       column: 'goodbyeDesign',
+       label: (t: WelcomeTranslator) => t.settings.fields.design(),
       },
       {
        column: 'goodbyeActive',
@@ -604,4 +578,6 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
   WelcomeSetting & WelcomeVirtualColumns,
   WelcomeTranslator
  > as unknown as SettingsSchemaDef;
+
+ extraSchemas = { [WelcomeSettingName.Goodbye]: goodbyeFirst(this.settingsSchema) };
 }

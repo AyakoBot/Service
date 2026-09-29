@@ -12,8 +12,7 @@
   "fields": {
    "active": "Enabled",
    "channel": "Channel",
-   "embed": "Saved Embed",
-   "components": "Saved CV2 Message",
+   "design": "Saved Design",
    "pingJoin": "Ping joined User",
    "pingRoles": "Ping Roles",
    "pingUsers": "Ping Users",
@@ -29,8 +28,7 @@
   "descriptions": {
    "welcomeChannel": "Where welcome messages are sent",
    "goodbyeChannel": "Where goodbye messages are sent",
-   "embed": "The name of a saved embed from the embed builder.",
-   "components": "The name of a saved message from the component builder - takes priority over the saved embed.",
+   "design": "A design saved in the embed builder or component builder. Placeholders: {{list}}",
    "pingJoin": "Mention the joining user above the message",
    "pingRoles": "Roles to mention above the message",
    "pingUsers": "Users to mention above the message",
@@ -98,8 +96,6 @@
   "goodbye": "**{{username}}** left {{server}}."
  },
  "errors": {
-  "embedNotFound": "No saved embed with that name exists.",
-  "componentsNotFound": "No saved CV2 message with that name exists.",
   "manageGuildRequired": "You need the Manage Server permission to do that."
  },
  "gifs": {
