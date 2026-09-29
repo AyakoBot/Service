@@ -17,6 +17,8 @@ export type WipNode = CountableComponent;
 
 export const accessorySegment = 'a';
 
+export const messageComponentLimit = 40;
+
 export const childrenOf = (node: CountableComponent): CountableComponent[] | null => {
  switch (node.type) {
   case ComponentType.ActionRow:

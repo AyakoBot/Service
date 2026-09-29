@@ -666,6 +666,7 @@
   "User": "User",
   "Users": "Users",
   "Application": "Application",
+  "Boolean": "Boolean",
   "Bot": "Bot",
   "Flags": "Flags",
   "ScheduledEvent": "Scheduled-Event",
@@ -733,5 +734,19 @@
   "SoundboardSound": "Soundboard Sound",
   "Volume": "Volume",
   "Creator": "Creator"
+ },
+ "placeholders": {
+  "button": "Placeholders",
+  "title": "Available Placeholders",
+  "intro": "Type these into any text field. They are filled in when a plugin posts the saved design, such as a welcome message, ticket panel or confession. Sent straight from the builder, they appear exactly as typed.",
+  "none": "This bot offers no placeholders."
+ },
+ "savedDesigns": {
+  "embed": "Embed",
+  "components": "Components V2",
+  "truncated": "{{shown}} of {{total}} saved designs listed, newest first.",
+  "notFound": "That saved design no longer exists. Pick another one.",
+  "tooLarge": "too large here ({{count}} of {{limit}})",
+  "tooLargeReason": "This design has {{count}} components, but this message holds at most {{limit}} of yours. Trim it in the component builder first."
  }
 }

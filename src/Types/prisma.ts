@@ -86,14 +86,17 @@ export interface DataBaseTables {
  welcomeGif: PrismaTables.WelcomeGif;
  economySetting: PrismaTables.EconomySetting;
  economyBalance: PrismaTables.EconomyBalance;
- economyItem: PrismaTables.EconomyItem;
  economyPurchase: PrismaTables.EconomyPurchase;
  economyPayout: PrismaTables.EconomyPayout;
  economyRoleReward: PrismaTables.EconomyRoleReward;
  economyRoleRewardEligibility: PrismaTables.EconomyRoleRewardEligibility;
  customRole: PrismaTables.CustomRole;
+ lastActive: PrismaTables.LastActive;
  roleReward: PrismaTables.RoleReward;
  roleRewardEligibility: PrismaTables.RoleRewardEligibility;
+ confessionSetting: PrismaTables.ConfessionSetting;
+ confession: PrismaTables.Confession;
+ confessionBan: PrismaTables.ConfessionBan;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];

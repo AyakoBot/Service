@@ -27,6 +27,7 @@ const { default: pluginWelcome } = await import('./Plugins/welcome/Plugin.js');
 const { default: syncCustomBotCommands } = await import('./Util/syncCustomBotCommands.js');
 const { default: pluginCustomRoles } = await import('./Plugins/customRoles/Plugin.js');
 const { default: pluginEconomy } = await import('./Plugins/economy/Plugin.js');
+const { default: pluginConfessions } = await import('./Plugins/confessions/Plugin.js');
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
 console.log('+       Restart all Clusters with "restart"        +');
@@ -72,6 +73,7 @@ client.registerPlugin(pluginInfo);
 client.registerPlugin(pluginWelcome);
 client.registerPlugin(pluginCustomRoles);
 client.registerPlugin(pluginEconomy);
+client.registerPlugin(pluginConfessions);
 
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();
 

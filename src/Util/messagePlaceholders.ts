@@ -21,6 +21,9 @@ export enum MessagePlaceholder {
  Winners = 'winners',
  Entries = 'entries',
  Host = 'host',
+
+ Confession = 'confession',
+ Number = 'number',
 }
 
 export const serverPlaceholders = [
