@@ -48,6 +48,7 @@ export interface BuilderView {
  selectedProperty: EmbedProperty | null;
  canManage: boolean;
  hasMessageContent: boolean;
+ placeholderStyle: ButtonStyle;
  emotes: EmoteSet;
 }
 
@@ -250,9 +251,9 @@ const utilityRow = function (this: EmbedBuilderPlugin, t: Translator, view: Buil
    .setLabel(t.base.t.Export())
    .setEmoji(buttonEmoji(view.emotes.json)),
   new ButtonBuilder()
-   .setStyle(ButtonStyle.Secondary)
+   .setStyle(view.placeholderStyle)
    .setCustomId(this.getRoute(EmbedBuilderRoute.Placeholders))
-   .setLabel(t.placeholders.button())
+   .setLabel(t.base.placeholders.button())
    .setEmoji(buttonEmoji(view.emotes.info)),
  );
 };

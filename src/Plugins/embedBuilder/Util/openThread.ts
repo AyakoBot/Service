@@ -2,6 +2,7 @@ import { RequestHandlerError, type RequestHandlerErrorType } from '@ayako/api';
 import { ChannelType, type APIEmbed, type APIInteraction } from 'discord-api-types/v10';
 
 import { botHasMessageContent } from '../../../Util/botMessageContent.js';
+import { firstCycledStyle } from '../../../Util/buttonCycle.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
 
@@ -49,6 +50,7 @@ export const openThread = async function (
   selectedProperty: null,
   canManage: hasManageGuild(cmd.member.permissions),
   hasMessageContent: await botHasMessageContent(api),
+  placeholderStyle: firstCycledStyle,
   emotes: this.client.emojis.for(api),
  });
 

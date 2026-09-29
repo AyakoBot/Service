@@ -3,9 +3,11 @@ import { MessageType, type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import { botHasMessageContent } from '../../../../Util/botMessageContent.js';
+import { nextButtonStyle } from '../../../../Util/buttonCycle.js';
 import fetchMessages from '../../../../Util/fetchMessages.js';
 import { hasManageGuild } from '../../../settings/Util/authorizeSettings.js';
 import { propertyInputs, PropertyInput } from '../../Classes/Properties.js';
+import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../../Plugin.js';
 import { applyProperty } from '../../Util/applyProperty.js';
 import {
@@ -77,6 +79,10 @@ export const processBuilderMessage = async function (
    selectedProperty: null,
    canManage,
    hasMessageContent: await botHasMessageContent(api),
+   placeholderStyle: nextButtonStyle(
+    surface.components,
+    this.getRoute(EmbedBuilderRoute.Placeholders),
+   ),
    emotes: this.client.emojis.for(api),
   })
   .edit(msg.channel_id, surface.id, msg.guild_id, api);

@@ -5,8 +5,10 @@ import {
 } from 'discord-api-types/v10';
 
 import { botHasMessageContent } from '../../../Util/botMessageContent.js';
+import { nextButtonStyle } from '../../../Util/buttonCycle.js';
 import ephemeralNote from '../../../Util/ephemeralNote.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
+import { EmbedBuilderRoute } from '../Classes/Routes.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
 
 import {
@@ -47,6 +49,10 @@ export const builderContext = async function (
    selectedProperty: getSelectedProperty(message),
    canManage: hasManageGuild(cmd.member?.permissions),
   hasMessageContent: await botHasMessageContent(api),
+   placeholderStyle: nextButtonStyle(
+    message.components,
+    this.getRoute(EmbedBuilderRoute.Placeholders),
+   ),
    emotes: this.client.emojis.for(api),
   },
  };
