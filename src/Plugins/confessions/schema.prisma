@@ -1,0 +1,106 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model ConfessionSetting {
+ id            String              @id @db.VarChar
+ guild         String              @db.VarChar
+ active        Boolean             @default(false)
+ mode          ConfessionMode      @default(Review)
+ anonymity     ConfessionAnonymity @default(Unmaskable)
+ channel       String?             @db.VarChar
+ autoThread    Boolean             @default(false)
+ reviewChannel String?             @db.VarChar
+ reviewerRoles String[]            @db.VarChar
+ logChannel    String?             @db.VarChar
+ cooldown      Decimal             @default(300) @db.Decimal
+ minAccountAge Decimal             @default(0) @db.Decimal
+ minMemberAge  Decimal             @default(0) @db.Decimal
+ minLength     Int                 @default(10)
+ maxLength     Int                 @default(3800)
+ maxPerDay     Int                 @default(0)
+ allowMedia    Boolean             @default(false)
+ numbered      Boolean             @default(true)
+ submitButton  Boolean             @default(true)
+ embed         String?             @db.VarChar
+ components    String?             @db.VarChar
+ nextNumber    Int                 @default(1)
+ postJitter    Decimal             @default(0) @db.Decimal
+ blockedRoles  String[]            @db.VarChar
+ blockedUsers  String[]            @db.VarChar
+ deleteAfter   Decimal             @default(0) @db.Decimal
+
+ @@index([guild])
+}
+
+model Confession {
+ id           String          @id @db.VarChar
+ guild        String          @db.VarChar
+ number       Int?
+ parent       String?         @db.VarChar
+ state        ConfessionState @default(Pending)
+ queueChannel String?         @db.VarChar
+ queueMessage String?         @db.VarChar
+ channel      String?         @db.VarChar
+ message      String?         @db.VarChar
+ thread       String?         @db.VarChar
+ content      String?
+ media        String?         @db.VarChar
+ identity     String          @db.VarChar
+ author       String?         @db.VarChar
+ createdAt    DateTime        @default(now())
+
+ parentConfession Confession?     @relation("ConfessionReplies", fields: [parent], references: [id], onDelete: Cascade)
+ replies          Confession[]    @relation("ConfessionReplies")
+ bans             ConfessionBan[]
+
+ @@unique([guild, number])
+ @@index([guild])
+ @@index([guild, identity])
+ @@index([guild, state])
+ @@index([parent])
+}
+
+model ConfessionBan {
+ guild      String    @db.VarChar
+ identity   String    @db.VarChar
+ by         String    @db.VarChar
+ reason     String?
+ until      DateTime?
+ createdAt  DateTime  @default(now())
+ confession String?   @db.VarChar
+ number     Int?
+ reply      Boolean   @default(false)
+ content    String?
+
+ bannedConfession Confession? @relation(fields: [confession], references: [id], onDelete: SetNull)
+
+ @@id([guild, identity])
+ @@index([confession])
+}
+
+enum ConfessionMode {
+ Direct
+ Review
+ Screened
+}
+
+enum ConfessionAnonymity {
+ Unmaskable
+ Anonymous
+}
+
+enum ConfessionState {
+ Pending
+ Posted
+ Denied
+ Removed
+}
