@@ -1,6 +1,7 @@
 import {
  ComponentType,
  type APIActionRowComponent,
+ type APIButtonComponent,
  type APIButtonComponentWithURL,
  type APIComponentInMessageActionRow,
  type APIMessageTopLevelComponent,
@@ -14,12 +15,12 @@ import { stripIds, validateTree, type WipTree } from './componentTree.js';
 enum MarkerParam {
  Builder = 'isComponentBuilder',
  Exec = 'exec',
+ Design = 'dm',
  WebhookName = 'wn',
  WebhookAvatar = 'wa',
 }
 
 export enum ChromeComponentId {
- Boundary = 900001,
  Placeholder = 900002,
 }
 
@@ -28,6 +29,7 @@ export const markerUrlLimit = 512;
 
 export interface BuilderMarker {
  execId: string;
+ designId?: string;
  webhookName?: string;
  webhookAvatar?: string;
 }
@@ -40,38 +42,46 @@ export const buildMarkerUrl = (marker: BuilderMarker): string => {
  const url = new URL(markerBase);
  url.searchParams.set(MarkerParam.Builder, 'true');
  url.searchParams.set(MarkerParam.Exec, marker.execId);
+ if (marker.designId) url.searchParams.set(MarkerParam.Design, marker.designId);
  if (marker.webhookName) url.searchParams.set(MarkerParam.WebhookName, marker.webhookName);
  if (marker.webhookAvatar) url.searchParams.set(MarkerParam.WebhookAvatar, marker.webhookAvatar);
  return url.toString();
 };
 
+const chromeComponents = (msg: BuilderMessageLike): APIMessageTopLevelComponent[] =>
+ msg.components ?? [];
+
 const chromeRows = (
  msg: BuilderMessageLike,
-): APIActionRowComponent<APIComponentInMessageActionRow>[] => {
- const rows: APIActionRowComponent<APIComponentInMessageActionRow>[] = [];
+): APIActionRowComponent<APIComponentInMessageActionRow>[] =>
+ chromeComponents(msg).filter(
+  (component): component is APIActionRowComponent<APIComponentInMessageActionRow> =>
+   component.type === ComponentType.ActionRow,
+ );
 
- for (const component of msg.components ?? []) {
-  if (component.type === ComponentType.Separator &&
-   component.id === ChromeComponentId.Boundary) {
-   break;
+const chromeButtons = (msg: BuilderMessageLike): APIButtonComponent[] =>
+ chromeComponents(msg).flatMap((component) => {
+  if (component.type === ComponentType.ActionRow) {
+   return component.components.filter(
+    (child): child is APIButtonComponent => child.type === ComponentType.Button,
+   );
   }
-  if (component.type === ComponentType.ActionRow) rows.push(component);
- }
-
- return rows;
-};
+  if (component.type === ComponentType.Section &&
+   component.accessory.type === ComponentType.Button) {
+   return [component.accessory];
+  }
+  return [];
+ });
 
 const markerButton = (msg: BuilderMessageLike): APIButtonComponentWithURL | null => {
- for (const row of chromeRows(msg)) {
-  for (const component of row.components) {
-   if (component.type !== ComponentType.Button || !('url' in component)) continue;
-   try {
-    if (new URL(component.url).searchParams.get(MarkerParam.Builder) === 'true') {
-     return component;
-    }
-   } catch {
-    continue;
+ for (const component of chromeButtons(msg)) {
+  if (!('url' in component)) continue;
+  try {
+   if (new URL(component.url).searchParams.get(MarkerParam.Builder) === 'true') {
+    return component;
    }
+  } catch {
+   continue;
   }
  }
  return null;
@@ -87,6 +97,7 @@ export const parseMarker = (msg: BuilderMessageLike): BuilderMarker | null => {
 
  return {
   execId,
+  designId: url.searchParams.get(MarkerParam.Design) ?? undefined,
   webhookName: url.searchParams.get(MarkerParam.WebhookName) ?? undefined,
   webhookAvatar: url.searchParams.get(MarkerParam.WebhookAvatar) ?? undefined,
  };
@@ -94,16 +105,8 @@ export const parseMarker = (msg: BuilderMessageLike): BuilderMarker | null => {
 
 export const getWipTree = (msg: BuilderMessageLike): WipTree => {
  const components = msg.components ?? [];
- const boundary = components.findIndex(
-  (component) =>
-   component.type === ComponentType.Separator &&
-   component.id === ChromeComponentId.Boundary,
- );
- if (boundary === -1) return [];
-
- const wip = components.slice(boundary + 1);
- if (wip.length === 1 && wip[0].id === ChromeComponentId.Placeholder) return [];
- return stripIds(wip);
+ if (components.length === 1 && components[0]?.id === ChromeComponentId.Placeholder) return [];
+ return stripIds(components);
 };
 
 const findSelect = (
@@ -125,6 +128,11 @@ export const getSelectedPath = (msg: BuilderMessageLike): string | null => {
  const value = select?.options.find((option) => option.default)?.value ?? null;
  if (value === null || !/^[\d.a]+$/.test(value)) return null;
  return value;
+};
+
+export const getNodePage = (msg: BuilderMessageLike): number => {
+ const page = Number(findSelect(msg, ComponentBuilderRoute.Node)?.custom_id.split('_')[1]);
+ return Number.isInteger(page) && page > 0 ? page : 0;
 };
 
 export const isSendable = (tree: WipTree): boolean =>

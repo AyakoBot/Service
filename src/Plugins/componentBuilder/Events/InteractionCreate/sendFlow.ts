@@ -53,7 +53,12 @@ const restoreBuilder = async function (
  view: BuilderView,
 ) {
  const t = await this.t(cmd.guild_id ?? undefined);
- renderBuilder.call(this, t, { ...view, marker: { execId: view.marker.execId } }).update(cmd);
+ renderBuilder
+  .call(this, t, {
+   ...view,
+   marker: { execId: view.marker.execId, designId: view.marker.designId },
+  })
+  .update(cmd);
 };
 
 const followUpNote = async function (
@@ -240,6 +245,7 @@ export const webhookSubmit = async function (
   ...ctx.view,
   marker: {
    execId: ctx.view.marker.execId,
+   designId: ctx.view.marker.designId,
    webhookName: name || undefined,
    webhookAvatar: avatar || undefined,
   },

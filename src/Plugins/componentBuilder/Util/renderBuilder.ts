@@ -2,7 +2,7 @@ import {
  ActionRowBuilder,
  ButtonBuilder,
  ChannelSelectMenuBuilder,
- SeparatorBuilder,
+ SectionBuilder,
  StringSelectMenuBuilder,
  StringSelectMenuOptionBuilder,
  TextDisplayBuilder,
@@ -12,7 +12,6 @@ import {
  ChannelType,
  ComponentType,
  MessageFlags,
- SeparatorSpacingSize,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
 
@@ -42,7 +41,9 @@ import {
  makeText,
  validateTree,
  type WipNode,
+ type WipTree,
 } from './componentTree.js';
+import { lastNodePage, NodePageNav, nodePageSize, shownNodePage } from './nodePaging.js';
 
 type Translator = Awaited<ReturnType<ComponentBuilderPlugin['t']>>;
 
@@ -194,12 +195,14 @@ const markerLinkButton = (view: BuilderView): ButtonBuilder =>
  new ButtonBuilder()
   .setStyle(ButtonStyle.Link)
   .setURL(buildMarkerUrl(view.marker))
-  .setEmoji(buttonEmoji(view.emotes.info));
+  .setEmoji(buttonEmoji(view.emotes.info))
+  .setDisabled(true);
 
 const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
  const entries = flattenTree(view.tree);
+ const page = shownNodePage(entries, view.selectedPath, view.nodePage);
 
- const options = entries.slice(0, 25).map((entry) => {
+ const options = entries.slice(page * nodePageSize, (page + 1) * nodePageSize).map((entry) => {
   const kind = kindOf(entry.node);
   const option = new StringSelectMenuOptionBuilder()
    .setLabel(
@@ -215,12 +218,22 @@ const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, vie
  });
 
  const select = new StringSelectMenuBuilder()
-  .setCustomId(this.getRoute(ComponentBuilderRoute.Node))
+  .setCustomId(this.getRoute(ComponentBuilderRoute.Node, page))
   .setPlaceholder(t.builder.nodePlaceholder())
   .setMinValues(0)
   .setMaxValues(1);
 
- if (options.length) { select.addOptions(options); } else {
+ const pageOption = (label: string, nav: NodePageNav) =>
+  new StringSelectMenuOptionBuilder().setLabel(label).setValue(nav);
+ const paged = [
+  ...(page > 0 ? [pageOption(t.builder.previousPage(), NodePageNav.Previous)] : []),
+  ...options,
+  ...(page < lastNodePage(entries.length)
+   ? [pageOption(t.builder.nextPage(), NodePageNav.Next)]
+   : []),
+ ];
+
+ if (paged.length) { select.addOptions(paged); } else {
   select
    .setDisabled(true)
    .addOptions(new StringSelectMenuOptionBuilder().setLabel('-').setValue('-'));
@@ -278,7 +291,11 @@ const utilityRow = function (this: ComponentBuilderPlugin, t: Translator, view: 
    .setCustomId(this.getRoute(ComponentBuilderRoute.ExportJson))
    .setLabel(t.base.t.Export())
    .setEmoji(buttonEmoji(view.emotes.json)),
-  markerLinkButton(view),
+  new ButtonBuilder()
+   .setStyle(view.placeholderStyle)
+   .setCustomId(this.getRoute(ComponentBuilderRoute.Placeholders))
+   .setLabel(t.base.placeholders.button())
+   .setEmoji(buttonEmoji(view.emotes.info)),
  );
 };
 
@@ -370,8 +387,6 @@ export const sendRows = function (
   );
  }
 
- buttons.addComponents(markerLinkButton(view));
-
  return [
   new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(select),
   buttons,
@@ -415,26 +430,29 @@ export const renderBuilder = function (
  view: BuilderView,
  rows?: APIMessageTopLevelComponent[],
 ): MessagePayload {
- const wip: APIMessageTopLevelComponent[] = view.tree.length
-  ? view.tree
-  : [
-     {
-      ...makeText(t.builder.placeholder()),
-      id: ChromeComponentId.Placeholder,
-     },
-    ];
-
  return new MessagePayload(this.client, { origin: this.name, reason: 'Component builder surface' })
   .setAllowedMentionsUsers([view.marker.execId])
   .setFlags(MessageFlags.IsComponentsV2)
   .setComponents([
-   headerText.call(this, t, view).toJSON() as unknown as APIMessageTopLevelComponent,
-   ...(rows ?? builderRows.call(this, t, view)),
-   new SeparatorBuilder()
-    .setDivider(true)
-    .setSpacing(SeparatorSpacingSize.Large)
-    .setId(ChromeComponentId.Boundary)
+   new SectionBuilder()
+    .addTextDisplayComponents(headerText.call(this, t, view))
+    .setButtonAccessory(markerLinkButton(view))
     .toJSON() as unknown as APIMessageTopLevelComponent,
-   ...wip,
+   ...(rows ?? builderRows.call(this, t, view)),
   ]);
+};
+
+export const renderDesign = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ tree: WipTree,
+): MessagePayload {
+ return new MessagePayload(this.client, { origin: this.name, reason: 'Component builder design' })
+  .setAllowedMentionsParse([])
+  .setFlags(MessageFlags.IsComponentsV2)
+  .setComponents(
+   tree.length
+    ? tree
+    : [{ ...makeText(t.builder.placeholder()), id: ChromeComponentId.Placeholder }],
+  );
 };

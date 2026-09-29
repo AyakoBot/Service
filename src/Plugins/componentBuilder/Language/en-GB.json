@@ -10,9 +10,11 @@
  },
  "builder": {
   "title": "Component Builder",
-  "desc": "Everything below the divider is your message. Pick a component to edit it, or add new ones. Buttons and selects are live previews - their Custom IDs must start with `c-`.",
+  "desc": "The message below this one is your design. Pick a component to edit it, or add new ones. Buttons and selects are live previews - their Custom IDs must start with `c-`.",
   "placeholder": "Your message will appear here - add a component to get started.",
   "nodePlaceholder": "Select a component",
+  "previousPage": "‹ Previous page",
+  "nextPage": "Next page ›",
   "actionPlaceholder": "Do something with the selected component",
   "addPlaceholder": "Add a component",
   "waitingForText": "Waiting for your next message to set the selected text - emojis and mentions included.",
@@ -153,6 +155,10 @@
  },
  "errors": {
   "tooManyComponents": "This message is full - remove a component first.",
+  "tooLargeToOpen": "This design has {{count}} components, but the builder holds at most {{limit}}. Export it with {{command}}, remove some components, then import it again.",
+  "legacyBuilder": "This builder was opened before an update and can no longer be edited. Open a new one with {{command}}.",
+  "designMissing": "The design message of this builder is gone. Open a new builder with {{command}}.",
+  "designEditFailed": "The design could not be updated: {{error}}",
   "rowFull": "A row holds up to 5 buttons, or exactly one select menu.",
   "sectionFull": "A section holds up to 3 text components.",
   "sectionNeedsText": "A section needs at least one text component.",

@@ -17,6 +17,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
+import { placeholderReference } from '../../../../Util/placeholderReference.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import {
  EmbedBuilderCommand,
@@ -28,7 +29,7 @@ import { applyErrorText } from '../../Util/applyErrorText.js';
 import { builderContext, ephemeralNote } from '../../Util/builderContext.js';
 import { parseMarker } from '../../Util/builderState.js';
 import { normalizeImport, stripIds, validateTree, type WipTree } from '../../Util/componentTree.js';
-import { renderBuilder } from '../../Util/renderBuilder.js';
+import { presentBuilder } from '../../Util/presentBuilder.js';
 
 import { openIntoThread } from './start.js';
 
@@ -122,7 +123,7 @@ export const importSave = async function (
  if (cmd.message && parseMarker(cmd.message)) {
   const ctx = await builderContext.call(this, cmd);
   if (!ctx) return;
-  renderBuilder.call(this, t, { ...ctx.view, tree, selectedPath: null }).update(cmd);
+  await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree, selectedPath: null });
   return;
  }
 
@@ -138,6 +139,27 @@ export const exportJson = async function (
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Components JSON export' })
   .setFiles([txtFileWriter(JSON.stringify(ctx.view.tree, null, 2), 'components')])
+  .setFlags(MessageFlags.Ephemeral)
+  .reply(cmd);
+};
+
+export const placeholders = async function (
+ this: ComponentBuilderPlugin,
+ cmd: APIMessageComponentInteraction,
+) {
+ const ctx = await builderContext.call(this, cmd);
+ if (!ctx || !cmd.guild_id) return;
+
+ const t = await this.t(cmd.guild_id);
+ const content = await placeholderReference.call(
+  this.client,
+  t.base.placeholders,
+  cmd.application_id,
+  cmd.guild_id,
+ );
+
+ new MessagePayload(this.client, { origin: this.name, reason: 'Component placeholders' })
+  .setContent(content)
   .setFlags(MessageFlags.Ephemeral)
   .reply(cmd);
 };

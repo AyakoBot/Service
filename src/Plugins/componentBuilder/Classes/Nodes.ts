@@ -1,3 +1,5 @@
+import { messageComponentLimit } from '../../../Util/componentBudget.js';
+
 export enum NodeKind {
  Text = 'text',
  Container = 'container',
@@ -56,7 +58,7 @@ export enum MediaAddKind {
  AccessoryThumbnail = 'accessoryThumbnail',
 }
 
-export const wipComponentLimit = 24;
+export const wipComponentLimit = messageComponentLimit;
 export const rowButtonLimit = 5;
 export const sectionTextLimit = 3;
 export const galleryItemLimit = 10;

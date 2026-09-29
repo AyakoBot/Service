@@ -36,7 +36,7 @@ import {
  type TreeResult,
  type WipNode,
 } from '../../Util/componentTree.js';
-import { renderBuilder } from '../../Util/renderBuilder.js';
+import { presentBuilder } from '../../Util/presentBuilder.js';
 
 type Translator = Awaited<ReturnType<ComponentBuilderPlugin['t']>>;
 
@@ -313,15 +313,6 @@ export const openMediaModal = async function (
  await showModal.call(this, cmd, modal);
 };
 
-const rerenderModal = async function (
- this: ComponentBuilderPlugin,
- cmd: APIModalSubmitInteraction,
- view: BuilderView,
-) {
- const t = await this.t(cmd.guild_id ?? undefined);
- renderBuilder.call(this, t, view).update(cmd);
-};
-
 const modalFail = async function (
  this: ComponentBuilderPlugin,
  cmd: APIModalSubmitInteraction,
@@ -396,7 +387,7 @@ export const editorSave = async function (
   return;
  }
 
- await rerenderModal.call(this, cmd, { ...ctx.view, tree: result.tree });
+ await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree: result.tree });
 };
 
 export const optionsSave = async function (
@@ -414,7 +405,7 @@ export const optionsSave = async function (
   return;
  }
 
- await rerenderModal.call(this, cmd, { ...ctx.view, tree: result.tree });
+ await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree: result.tree });
 };
 
 export const mediaAddSave = async function (
@@ -473,5 +464,5 @@ export const mediaAddSave = async function (
   return;
  }
 
- await rerenderModal.call(this, cmd, { ...ctx.view, tree: result.tree });
+ await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree: result.tree });
 };

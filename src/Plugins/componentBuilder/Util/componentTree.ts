@@ -67,7 +67,7 @@ export type TreeResult =
 
 export const customIdPrefix = 'c-';
 export const textContentLimit = 4000;
-export const wipTextBudget = 3500;
+export const wipTextBudget = 4000;
 export const buttonLabelLimit = 80;
 export const buttonUrlLimit = 512;
 export const mediaAltLimit = 1024;

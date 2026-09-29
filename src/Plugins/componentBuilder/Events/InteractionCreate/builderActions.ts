@@ -30,21 +30,14 @@ import {
  type TreeResult,
  type WipNode,
  type WipTree,
+ flattenTree,
 } from '../../Util/componentTree.js';
-import { renderBuilder } from '../../Util/renderBuilder.js';
+import { NodePageNav, shownNodePage, stepNodePage } from '../../Util/nodePaging.js';
+import { presentBuilder } from '../../Util/presentBuilder.js';
 
 import { openEditModal, openMediaModal, openOptionsModal } from './editorModal.js';
 
 type Translator = Awaited<ReturnType<ComponentBuilderPlugin['t']>>;
-
-const rerender = async function (
- this: ComponentBuilderPlugin,
- cmd: APIMessageComponentInteraction,
- view: BuilderView,
-) {
- const t = await this.t(cmd.guild_id ?? undefined);
- renderBuilder.call(this, t, view).update(cmd);
-};
 
 const failNote = async function (
  this: ComponentBuilderPlugin,
@@ -64,8 +57,19 @@ export const nodePick = async function (
  if (!ctx) return;
 
  const [value] = cmd.data.values;
+ if (value === NodePageNav.Previous || value === NodePageNav.Next) {
+  const entries = flattenTree(ctx.view.tree);
+  const shown = shownNodePage(entries, ctx.view.selectedPath, ctx.view.nodePage);
+  await presentBuilder.call(this, cmd, ctx.view.tree, {
+   ...ctx.view,
+   selectedPath: null,
+   nodePage: stepNodePage(shown, value),
+  });
+  return;
+ }
+
  const selectedPath = value && getNode(ctx.view.tree, value) ? value : null;
- await rerender.call(this, cmd, { ...ctx.view, selectedPath });
+ await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, selectedPath });
 };
 
 const toggleNode = (
@@ -332,7 +336,7 @@ export const actionPick = async function (
   return;
  }
 
- await rerender.call(this, cmd, {
+ await presentBuilder.call(this, cmd, view.tree, {
   ...view,
   tree: result.result.tree,
   selectedPath:
@@ -347,7 +351,7 @@ export const emptyBuilder = async function (
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return;
 
- await rerender.call(this, cmd, { ...ctx.view, tree: [], selectedPath: null });
+ await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree: [], selectedPath: null });
 };
 
 export const backToBuilder = async function (
@@ -357,9 +361,9 @@ export const backToBuilder = async function (
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return;
 
- await rerender.call(this, cmd, {
+ await presentBuilder.call(this, cmd, ctx.view.tree, {
   ...ctx.view,
-  marker: { execId: ctx.view.marker.execId },
+  marker: { execId: ctx.view.marker.execId, designId: ctx.view.marker.designId },
  });
 };
 

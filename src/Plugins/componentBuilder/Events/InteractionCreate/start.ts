@@ -21,11 +21,16 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import { Colors } from '../../../../Types/index.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
+import {
+ ComponentBuilderCommand,
+ ComponentBuilderSubcommand,
+} from '../../Classes/Commands.js';
+import { wipComponentLimit } from '../../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import CustomComponents from '../../CustomComponents.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
 import { authorizeManage, ephemeralNote } from '../../Util/builderContext.js';
-import type { WipTree } from '../../Util/componentTree.js';
+import { countComponents, type WipTree } from '../../Util/componentTree.js';
 import { openThread } from '../../Util/openThread.js';
 
 const selectLimit = 25;
@@ -117,6 +122,17 @@ const confirmSurface = function (this: ComponentBuilderPlugin, content: string) 
   .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral);
 };
 
+const respondWith = function (
+ this: ComponentBuilderPlugin,
+ cmd: APIInteraction,
+ content: string,
+ respond: RespondMode,
+) {
+ const payload = confirmSurface.call(this, content);
+ if (respond === RespondMode.Reply) payload.reply(cmd);
+ else payload.update(cmd);
+};
+
 export const openIntoThread = async function (
  this: ComponentBuilderPlugin,
  cmd: APIInteraction,
@@ -128,6 +144,17 @@ export const openIntoThread = async function (
  const api = await this.getAPI(cmd.guild_id);
  const emotes = this.client.emojis.for(api);
 
+ const size = countComponents(tree);
+ if (size > wipComponentLimit) {
+  const note = t.errors.tooLargeToOpen({
+   count: String(size),
+   limit: String(wipComponentLimit),
+   command: `/${ComponentBuilderCommand.ComponentBuilder} ${ComponentBuilderSubcommand.ViewSaved}`,
+  });
+  respondWith.call(this, cmd, `${textEmote(emotes.warning)} ${note}`, respond);
+  return;
+ }
+
  const result = await openThread.call(this, cmd, tree);
  const failNote =
   result instanceof RequestHandlerError
@@ -138,9 +165,7 @@ export const openIntoThread = async function (
    ? `${textEmote(emotes.enabled)} ${t.start.threadCreated({ channel: `<#${result}>` })}`
    : `${textEmote(emotes.warning)} ${failNote}`;
 
- const payload = confirmSurface.call(this, content);
- if (respond === RespondMode.Reply) payload.reply(cmd);
- else payload.update(cmd);
+ respondWith.call(this, cmd, content, respond);
 };
 
 export const startOpen = async function (

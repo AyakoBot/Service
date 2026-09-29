@@ -12,7 +12,6 @@ import type { ExtractPayload } from '../../../../Types/gateway.js';
 import { ComponentBuilderCommand } from '../../Classes/Commands.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
-import { parseMarker } from '../../Util/builderState.js';
 import { customIdPrefix } from '../../Util/componentTree.js';
 
 import autocomplete from './autocomplete.js';
@@ -25,7 +24,7 @@ import {
  nodePick,
 } from './builderActions.js';
 import { editorSave, mediaAddSave, optionsSave } from './editorModal.js';
-import { exportJson, importOpen, importSave } from './ioFlow.js';
+import { exportJson, importOpen, importSave, placeholders } from './ioFlow.js';
 import { saveOpen, saveSubmit } from './saveFlow.js';
 import {
  editOpen,
@@ -53,11 +52,7 @@ export default async function (
   }
   case InteractionType.MessageComponent: {
    const interaction = cmd as APIMessageComponentInteraction;
-   if (
-    interaction.data.custom_id.startsWith(customIdPrefix) &&
-    interaction.message &&
-    parseMarker(interaction.message)
-   ) {
+   if (interaction.data.custom_id.startsWith(customIdPrefix)) {
     ackCustomComponent.call(this, interaction);
     break;
    }
@@ -121,6 +116,10 @@ const button = async function (
   }
   case ComponentBuilderRoute.ExportJson: {
    exportJson.call(this, cmd);
+   break;
+  }
+  case ComponentBuilderRoute.Placeholders: {
+   placeholders.call(this, cmd);
    break;
   }
   case ComponentBuilderRoute.Save: {

@@ -10,34 +10,65 @@ import {
 import {
  buildMarkerUrl,
  ChromeComponentId,
+ getNodePage,
  getSelectedPath,
  getWipTree,
  isSendable,
  parseMarker,
 } from './builderState.js';
-import { makeSeparator, makeText } from './componentTree.js';
+import { makeText } from './componentTree.js';
 
 const markerRow = (url: string): APIMessageTopLevelComponent => ({
  type: ComponentType.ActionRow,
  components: [{ type: ComponentType.Button, style: ButtonStyle.Link, url, label: 'i' }],
 });
 
-const boundary = (): APIMessageTopLevelComponent => ({
- ...makeSeparator(),
- id: ChromeComponentId.Boundary,
+const markerHeader = (url: string): APIMessageTopLevelComponent => ({
+ type: ComponentType.Section,
+ components: [makeText('Component Builder')],
+ accessory: { type: ComponentType.Button, style: ButtonStyle.Link, url, disabled: true },
 });
 
-test('marker survives a build/parse round trip', () => {
+const nodeSelect = (customId: string, selected: string | null): APIMessageTopLevelComponent =>
+ ({
+  type: ComponentType.ActionRow,
+  components: [
+   {
+    type: ComponentType.StringSelect,
+    custom_id: customId,
+    options: [
+     { label: 'a', value: '0', default: selected === '0' },
+     { label: 'b', value: '1.a', default: selected === '1.a' },
+     { label: 'next', value: 'page:next', default: false },
+    ],
+   },
+  ],
+ }) as APIMessageTopLevelComponent;
+
+test('marker survives a build/parse round trip, design id included', () => {
  const url = buildMarkerUrl({
   execId: '123',
+  designId: '456',
   webhookName: 'Hook',
   webhookAvatar: 'https://cdn.example.com/a.png',
  });
- const marker = parseMarker({ components: [markerRow(url)] });
- assert.deepEqual(marker, {
+
+ assert.deepEqual(parseMarker({ components: [markerRow(url)] }), {
   execId: '123',
+  designId: '456',
   webhookName: 'Hook',
   webhookAvatar: 'https://cdn.example.com/a.png',
+ });
+});
+
+test('parseMarker reads the disabled header marker and leaves the design id unset when absent', () => {
+ const url = buildMarkerUrl({ execId: '123' });
+
+ assert.deepEqual(parseMarker({ components: [markerHeader(url)] }), {
+  execId: '123',
+  designId: undefined,
+  webhookName: undefined,
+  webhookAvatar: undefined,
  });
 });
 
@@ -50,46 +81,26 @@ test('parseMarker ignores foreign link buttons and missing exec ids', () => {
  assert.equal(parseMarker({}), null);
 });
 
-test('getWipTree slices after the boundary and hides the placeholder', () => {
+test('getWipTree reads the whole design message and hides the placeholder', () => {
  const wip = makeText('real content');
- const msg = {
-  components: [makeText('chrome'), boundary(), { ...wip, id: 3 }],
- };
- assert.deepEqual(getWipTree(msg), [wip]);
 
- const placeholder = {
-  components: [
-   makeText('chrome'),
-   boundary(),
-   { ...makeText('placeholder'), id: ChromeComponentId.Placeholder },
-  ],
- };
- assert.deepEqual(getWipTree(placeholder), []);
-
- assert.deepEqual(getWipTree({ components: [makeText('no boundary')] }), []);
+ assert.deepEqual(getWipTree({ components: [{ ...wip, id: 3 }] }), [wip]);
+ assert.deepEqual(
+  getWipTree({ components: [{ ...makeText('placeholder'), id: ChromeComponentId.Placeholder }] }),
+  [],
+ );
+ assert.deepEqual(getWipTree({}), []);
 });
 
-test('getSelectedPath reads the node select default before the boundary', () => {
- const msg = {
-  components: [
-   {
-    type: ComponentType.ActionRow,
-    components: [
-     {
-      type: ComponentType.StringSelect,
-      custom_id: 'components/node',
-      options: [
-       { label: 'a', value: '0', default: false },
-       { label: 'b', value: '1.a', default: true },
-      ],
-     },
-    ],
-   } as APIMessageTopLevelComponent,
-   boundary(),
-  ],
- };
- assert.equal(getSelectedPath(msg), '1.a');
- assert.equal(getSelectedPath({ components: [boundary()] }), null);
+test('getSelectedPath reads the node select default and ignores page options', () => {
+ assert.equal(getSelectedPath({ components: [nodeSelect('components/node_0', '1.a')] }), '1.a');
+ assert.equal(getSelectedPath({ components: [nodeSelect('components/node_0', null)] }), null);
+});
+
+test('getNodePage reads the page from the node select custom id', () => {
+ assert.equal(getNodePage({ components: [nodeSelect('components/node_1', null)] }), 1);
+ assert.equal(getNodePage({ components: [nodeSelect('components/node', null)] }), 0);
+ assert.equal(getNodePage({}), 0);
 });
 
 test('isSendable requires content and a valid tree', () => {

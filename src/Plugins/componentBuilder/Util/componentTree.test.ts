@@ -24,6 +24,7 @@ import {
  removeNode,
  stripIds,
  validateTree,
+ wipTextBudget,
  type WipTree,
 } from './componentTree.js';
 
@@ -157,13 +158,14 @@ test('stripIds removes ids recursively without touching content', () => {
 });
 
 test('validateTree enforces the aggregate text budget', () => {
- const over: WipTree = [makeText('a'.repeat(2000)), makeText('b'.repeat(1600))];
+ const rest = wipTextBudget - 2000;
+ const over: WipTree = [makeText('a'.repeat(2000)), makeText('b'.repeat(rest + 1))];
  assert.equal(validateTree(over), BuilderErrorCode.TooMuchText);
 
- const under: WipTree = [makeText('a'.repeat(2000)), makeText('b'.repeat(1400))];
+ const under: WipTree = [makeText('a'.repeat(2000)), makeText('b'.repeat(rest))];
  assert.equal(validateTree(under), null);
 
- const single: WipTree = [makeText('a'.repeat(3600))];
+ const single: WipTree = [makeText('a'.repeat(wipTextBudget + 1))];
  assert.equal(validateTree(single), BuilderErrorCode.TooMuchText);
 });
 
@@ -224,7 +226,7 @@ test('validateTree rejects style/field mismatches and over-limit values on butto
 });
 
 test('insertNode and updateNode enforce the text budget at mutation time', () => {
- const nearFull: WipTree = [makeText('a'.repeat(3400))];
+ const nearFull: WipTree = [makeText('a'.repeat(wipTextBudget - 100))];
  const insert = insertNode(nearFull, '', makeText('b'.repeat(200)));
  assert.deepEqual(insert, { ok: false, error: BuilderErrorCode.TooMuchText });
 });

@@ -1,20 +1,24 @@
+import { RequestHandlerError } from '@ayako/api';
 import { getGuildPerms } from '@ayako/utility';
 import { MessageType, type GatewayDispatchEvents } from 'discord-api-types/v10';
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
+import { nextButtonStyle } from '../../../../Util/buttonCycle.js';
 import fetchMessages from '../../../../Util/fetchMessages.js';
 import { hasManageGuild } from '../../../settings/Util/authorizeSettings.js';
 import { NodeKind } from '../../Classes/Nodes.js';
+import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
 import { applyText } from '../../Util/applyNode.js';
 import {
+ getNodePage,
  getSelectedPath,
  getWipTree,
  parseMarker,
  type BuilderMessageLike,
 } from '../../Util/builderState.js';
 import { getNode, kindOf } from '../../Util/componentTree.js';
-import { renderBuilder } from '../../Util/renderBuilder.js';
+import { renderBuilder, renderDesign } from '../../Util/renderBuilder.js';
 
 export default async function (
  this: ComponentBuilderPlugin,
@@ -46,9 +50,19 @@ export default async function (
 
  const surface = builderMsg as BuilderMessageLike & { id: string };
  const marker = parseMarker(surface);
- if (!marker || marker.execId !== msg.author.id) return;
+ if (!marker?.designId || marker.execId !== msg.author.id) return;
 
- const tree = getWipTree(surface);
+ const design =
+  (messages.find((m) => (m as { id?: string }).id === marker.designId) as
+   | BuilderMessageLike
+   | undefined) ??
+  (await api.channels.getMessage(msg.channel_id, marker.designId, {
+   origin: this.name,
+   reason: 'Reading the component builder design',
+  }));
+ if (design instanceof RequestHandlerError) return;
+
+ const tree = getWipTree(design);
  const selectedPath = getSelectedPath(surface);
  if (!selectedPath) return;
 
@@ -72,8 +86,16 @@ export default async function (
    marker,
    tree: result.tree,
    selectedPath: null,
+   nodePage: getNodePage(surface),
    canManage,
+   placeholderStyle: nextButtonStyle(
+    surface.components,
+    this.getRoute(ComponentBuilderRoute.Placeholders),
+   ),
    emotes: this.client.emojis.for(api),
   })
   .edit(msg.channel_id, surface.id, msg.guild_id, api);
+ await renderDesign
+  .call(this, t, result.tree)
+  .edit(msg.channel_id, marker.designId, msg.guild_id, api);
 }

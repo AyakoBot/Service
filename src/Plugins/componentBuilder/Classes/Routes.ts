@@ -15,6 +15,7 @@ export enum ComponentBuilderRoute {
  ImportJson = 'components/import',
  ImportSave = 'components/importSave',
  ExportJson = 'components/export',
+ Placeholders = 'components/placeholders',
 
  Save = 'components/save',
  SaveSubmit = 'components/saveSubmit',
