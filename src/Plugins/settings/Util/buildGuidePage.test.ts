@@ -139,3 +139,15 @@ test('buildGuideBar renders one icon per section and points at the current one',
 test('buildGuideBar collapses for a single section', () => {
  assert.equal(buildGuideBar(emotes, [section()], 0), '');
 });
+
+test('stepDone lets a step decide for itself when it is done', () => {
+ const price = {
+  column: 'buyPrice',
+  label: 'Price',
+  done: (row: Record<string, unknown>) => Number(row.buyPrice) > 0,
+ };
+
+ assert.equal(stepDone(price, { buyPrice: 0 }), false);
+ assert.equal(stepDone(price, { buyPrice: 50 }), true);
+ assert.equal(stepDone({ column: 'buyPrice', label: 'Price' }, { buyPrice: 0 }), true);
+});

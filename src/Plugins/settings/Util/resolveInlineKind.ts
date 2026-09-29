@@ -23,6 +23,7 @@ const entity = new Set<EditorType>([
 export const resolveInlineKind = (field: SettingsField): InlineKind => {
  if (field.editor === EditorType.Boolean) return InlineKind.Toggle;
  if (entity.has(field.editor)) return InlineKind.Entity;
+ if (field.editor === EditorType.SavedDesign) return InlineKind.ModalText;
  if (Array.isArray(field.options) && field.options.length > 0) return InlineKind.Select;
  return InlineKind.ModalText;
 };

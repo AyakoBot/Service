@@ -56,5 +56,5 @@ export const resolveComponentKind = (
  if (arity === FieldArity.Multi) {
   return optionCount <= 5 ? ComponentKind.CheckboxGroup : ComponentKind.SelectN;
  }
- return optionCount <= 5 ? ComponentKind.Radio : ComponentKind.Select1;
+ return optionCount >= 2 && optionCount <= 5 ? ComponentKind.Radio : ComponentKind.Select1;
 };

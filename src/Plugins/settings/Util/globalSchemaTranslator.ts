@@ -100,6 +100,7 @@ export const globalSchemaTranslator = (
         description: st.description?.(t) ?? fieldDescription(def, t, st.column),
         required: st.required,
         showIf: st.showIf,
+        done: st.done,
        })),
       })),
      }

@@ -1,4 +1,9 @@
-import type { RowGuardContext, SettingsField, SettingsFieldVirtual } from '../SettingsSchema.js';
+import type {
+ RowGuardContext,
+ SettingsField,
+ SettingsFieldVirtual,
+ SettingsSchema,
+} from '../SettingsSchema.js';
 
 const readTimeoutMs = 2000;
 
@@ -37,4 +42,14 @@ export const resolveVirtualFields = async (
  );
 
  return Object.fromEntries(entries);
+};
+
+export const guideVirtualFields = (schema: SettingsSchema): SettingsField[] => {
+ const steps = new Set(
+  (schema.guide?.sections ?? []).flatMap((section) => section.steps.map((step) => step.column)),
+ );
+
+ return schema.groups.flatMap((group) =>
+  group.fields.filter((field) => field.virtual && steps.has(field.column)),
+ );
 };

@@ -65,6 +65,10 @@ class EditorEmotes {
   [EditorType.StickyRoleMode]: EmoteName.StickyRole,
   [EditorType.BumpMatchSource]: EmoteName.Message,
   [EditorType.BumpTemplate]: EmoteName.Timer,
+  [EditorType.ConfessionMode]: EmoteName.Hammer,
+  [EditorType.ConfessionAnonymity]: EmoteName.Lock,
+  [EditorType.ActivitySources]: EmoteName.Activity,
+  [EditorType.SavedDesign]: EmoteName.Message,
 
   [EditorType.GuildId]: undefined,
   [EditorType.Id]: undefined,

@@ -1,7 +1,7 @@
 import { type APIModalSubmitInteraction } from 'discord-api-types/v10';
 
 import { parseDurationSeconds } from '../../../../Util/durationSeconds.js';
-import { findModalValue } from '../../../../Util/findModalValue.js';
+import { findModalValue, findModalValues } from '../../../../Util/findModalValue.js';
 import parseDuration from '../../../../Util/parseDuration.js';
 import { EditorType } from '../../EditorType.js';
 import type SettingsPlugin from '../../Plugin.js';
@@ -45,7 +45,9 @@ export default async function (
  });
  if (!row) return;
 
- const raw = findModalValue(cmd.data.components, field.column);
+ const raw =
+  findModalValue(cmd.data.components, field.column) ??
+  findModalValues(cmd.data.components, field.column)[0];
 
  let value: unknown;
  if (field.editor === EditorType.Duration) {

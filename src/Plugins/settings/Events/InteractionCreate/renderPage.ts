@@ -11,7 +11,7 @@ import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import guideActionState from '../../Util/guideActionState.js';
 import { resolveFieldOptions } from '../../Util/resolveFieldOptions.js';
-import { resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
+import { guideVirtualFields, resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 export interface RenderPageArgs {
  settingName: string;
@@ -49,6 +49,7 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
 
  const displayRow = {
   ...row,
+  ...(await resolveVirtualFields(guideVirtualFields(schema), row, guardCtx)),
   ...(groupUnavailable ? {} : await resolveVirtualFields(group.fields, row, guardCtx)),
  };
  const emotes = this.client.emojis.for(api);

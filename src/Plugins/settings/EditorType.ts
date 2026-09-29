@@ -52,6 +52,10 @@ export enum EditorType {
  StickyRoleMode = 'sticky-role-mode',
  BumpMatchSource = 'bump-match-source',
  BumpTemplate = 'bump-template',
+ ConfessionMode = 'confession-mode',
+ ConfessionAnonymity = 'confession-anonymity',
+ ActivitySources = 'activity-sources',
+ SavedDesign = 'saved-design',
 
  GuildId = 'guild-id',
  Id = 'id',

@@ -18,6 +18,7 @@ import { buildOverview } from '../../Util/buildOverview.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import guideActionState from '../../Util/guideActionState.js';
+import { guideVirtualFields, resolveVirtualFields } from '../../Util/resolveVirtualFields.js';
 
 import { renderPage } from './renderPage.js';
 
@@ -220,12 +221,20 @@ export const renderGuide = async function (
   plugin: resolved.plugin,
   guildId: cmd.guild_id,
  });
+ const displayRow = {
+  ...row,
+  ...(await resolveVirtualFields(guideVirtualFields(schema), row, {
+   client: this.client,
+   plugin: resolved.plugin,
+   guildId: cmd.guild_id,
+  })),
+ };
  const page = buildGuidePage({
   settingName: id.settingName,
   schema,
   guide: schema.guide,
   rowId: id.rowId,
-  row,
+  row: displayRow,
   originGroupId: id.groupId,
   sectionId: id.guideSection,
   guideFlags: id.guideFlags ?? 0,

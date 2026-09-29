@@ -54,6 +54,7 @@ export const stepDone = (
  actionState: GuideActionState = {},
 ): boolean => {
  if (step.action) return Boolean(actionState[step.action.customId]);
+ if (step.done) return step.done(row);
  if (!step.column) return false;
  return row[step.column] !== false && !isUnset(row[step.column]);
 };

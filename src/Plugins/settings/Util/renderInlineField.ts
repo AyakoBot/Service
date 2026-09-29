@@ -48,6 +48,9 @@ const withReason = (text: string, visible: ShowIfResult): string => {
  return `${text}\n-# ${visible.reason}`;
 };
 
+const optionLabel = (field: SettingsField, value: unknown): string =>
+ asOptions(field).find((option) => option.value === String(value))?.label ?? String(value);
+
 const renderEntitySelect = (
  field: SettingsField,
  value: unknown,
@@ -170,7 +173,7 @@ export const renderInlineField = (
           ? ''
           : field.virtual?.prose && typeof value === 'string'
             ? `\n> ${value}`
-            : `\n> \`${String(value)}\``;
+            : `\n> \`${optionLabel(field, value)}\``;
    container.addSectionComponents(
     new SectionBuilder()
      .addTextDisplayComponents(

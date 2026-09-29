@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { EditorType } from '../EditorType.js';
-import type { RowGuardContext, SettingsField } from '../SettingsSchema.js';
+import type { RowGuardContext, SettingsField, SettingsSchema } from '../SettingsSchema.js';
 
-import { resolveVirtualFields } from './resolveVirtualFields.js';
+import { guideVirtualFields, resolveVirtualFields } from './resolveVirtualFields.js';
 
 const ctx = {} as RowGuardContext;
 
@@ -74,4 +74,25 @@ test('yields null for a read that exceeds the timeout', async () => {
 
  assert.deepEqual(resolved, { profileNick: null });
  assert.ok(elapsedMs < 4000, `expected the timeout to cut in, took ${elapsedMs}ms`);
+});
+
+test('guideVirtualFields keeps only virtual fields that are guide steps', () => {
+ const read = async () => null;
+ const schema = {
+  groups: [
+   {
+    fields: [
+     field('design', read),
+     field('profileNick', read),
+     { column: 'channel', editor: EditorType.Channel, label: 'channel' },
+    ],
+   },
+  ],
+  guide: { sections: [{ steps: [{ column: 'design' }, { column: 'channel' }, { action: 'x' }] }] },
+ } as unknown as SettingsSchema;
+
+ assert.deepEqual(
+  guideVirtualFields(schema).map((entry) => entry.column),
+  ['design'],
+ );
 });

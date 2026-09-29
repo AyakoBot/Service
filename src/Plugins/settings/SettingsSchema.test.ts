@@ -74,11 +74,8 @@ test('rejects a virtual field missing write', () => {
  assert.throws(() => assertSchemaValid(baseSchema(broken)), /must define both 'read' and 'write'/);
 });
 
-test('rejects a guide step that references a virtual field', () => {
- assert.throws(
-  () => assertSchemaValid(baseSchema(virtualField, 'profileNick')),
-  /references virtual column 'profileNick'/,
- );
+test('accepts a guide step that references a virtual field', () => {
+ assert.doesNotThrow(() => assertSchemaValid(baseSchema(virtualField, 'profileNick')));
 });
 
 test('rejects a required virtual field', () => {

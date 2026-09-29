@@ -116,6 +116,7 @@ export interface SettingsGuideStep<Row = Record<string, unknown>> {
  description?: string;
  required?: SettingsGuideStepRequired<Row>;
  showIf?: (row: Row) => ShowIfResult;
+ done?: (row: Row) => boolean;
 }
 
 export interface SettingsGuideGate {
@@ -209,6 +210,7 @@ export interface SettingsGuideStepDef<Row = Record<string, unknown>, T = Default
  description?: (t: T) => string;
  required?: SettingsGuideStepRequired<Row>;
  showIf?: (row: Row) => ShowIfResult;
+ done?: (row: Row) => boolean;
 }
 
 export interface SettingsGuideGateDef<T = DefaultTranslator> {
@@ -298,10 +300,6 @@ export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
 
  const columns = new Set(schema.groups.flatMap((group) => group.fields.map((f) => f.column)));
 
- const virtualColumns = new Set(
-  schema.groups.flatMap((group) => group.fields.filter((f) => f.virtual).map((f) => f.column)),
- );
-
  schema.guide?.sections.forEach((section) => {
   section.steps.forEach((step) => {
    if (Boolean(step.column) === Boolean(step.action)) {
@@ -312,11 +310,6 @@ export const assertSchemaValid = (schema: SettingsSchemaDef): void => {
    if (step.column && !columns.has(step.column)) {
     throw new Error(
      `[settings] guide section '${section.id}' on table '${schema.table}' references unknown column '${step.column}'.`,
-    );
-   }
-   if (step.column && virtualColumns.has(step.column)) {
-    throw new Error(
-     `[settings] guide section '${section.id}' on table '${schema.table}' references virtual column '${step.column}'; virtual fields cannot be guide steps.`,
     );
    }
   });

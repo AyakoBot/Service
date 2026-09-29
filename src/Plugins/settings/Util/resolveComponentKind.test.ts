@@ -60,3 +60,14 @@ test('enum-backed follows the 2×2 on option count + arity', () => {
   ComponentKind.SelectN,
  );
 });
+
+test('a single option falls back to a select, since a radio group needs two', () => {
+ assert.equal(
+  resolveComponentKind(EditorType.SavedDesign, FieldArity.Single, 1),
+  ComponentKind.Select1,
+ );
+ assert.equal(
+  resolveComponentKind(EditorType.SavedDesign, FieldArity.Single, 2),
+  ComponentKind.Radio,
+ );
+});
