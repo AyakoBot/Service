@@ -1,8 +1,7 @@
 import { PayoutCurve, ShopButtonStyle, ShopSurface, type EconomyRoleReward } from '@ayako/database';
 
 import { createCrossAdvert } from '../../../Util/crossAdvert.js';
-import { SavedSource, savedRefTransform } from '../../../Util/savedRef.js';
-import en from '../Language/en-GB.json' with { type: 'json' };
+import { savedDesignField } from '../../../Util/savedRef.js';
 import { PluginBotKey } from '../../../Util/pluginBotKey.js';
 import { PluginName } from '../../../Classes/abstracts/Plugin.js';
 import { ComponentBuilderCommand } from '../../componentBuilder/Classes/Commands.js';
@@ -23,6 +22,8 @@ import type { EconomyTranslator } from '../Plugin.js';
 import type { EconomyRewardRow } from './EconomyRewards.js';
 import { EconomyGroups } from './Enums.js';
 import { EconomyRoute } from './Routes.js';
+
+const panelAppends = 2;
 
 const wantsPanel = (row: EconomyRewardRow): ShowIfResult => ({
  ok: row.shopType === ShopSurface.panel,
@@ -202,33 +203,17 @@ export default {
      ],
     },
     {
-     column: 'panelEmbed',
-     editor: EditorType.String,
+     column: 'panelDesign',
+     editor: EditorType.SavedDesign,
      emote: EmoteName.Message,
      arity: FieldArity.Single,
      showIf: wantsPanel,
-     label: (t: EconomyTranslator) => t.settings.rewards.fields.panelEmbed(),
-     description: (t: EconomyTranslator) => t.settings.rewards.descriptions.panelEmbed(),
-     transform: savedRefTransform(
-      SavedSource.Embed,
+     label: (t: EconomyTranslator) => t.settings.rewards.fields.panelDesign(),
+     description: (t: EconomyTranslator) => t.settings.rewards.descriptions.panelDesign(),
+     ...savedDesignField(
       'economyRoleReward',
-      { panelComponents: null },
-      en.errors.embedNotFound,
-     ),
-    },
-    {
-     column: 'panelComponents',
-     editor: EditorType.String,
-     emote: EmoteName.Json,
-     arity: FieldArity.Single,
-     showIf: wantsPanel,
-     label: (t: EconomyTranslator) => t.settings.rewards.fields.panelComponents(),
-     description: (t: EconomyTranslator) => t.settings.rewards.descriptions.panelComponents(),
-     transform: savedRefTransform(
-      SavedSource.Components,
-      'economyRoleReward',
-      { panelEmbed: null },
-      en.errors.componentsNotFound,
+      { embed: 'panelEmbed', components: 'panelComponents' },
+      panelAppends,
      ),
     },
     {
@@ -367,4 +352,72 @@ export default {
    ],
   },
  ],
-} satisfies SettingsSchemaDef<EconomyRewardRow, EconomyTranslator> as unknown as SettingsSchemaDef;
+ guide: {
+  title: (t: EconomyTranslator) => t.settings.rewards.guide.title(),
+  intro: (t: EconomyTranslator) => t.settings.rewards.guide.intro(),
+  advert: {
+   text: (t: EconomyTranslator) => t.settings.rewards.guide.advertText(),
+   buttonLabel: (t: EconomyTranslator) => t.settings.rewards.guide.advertButton(),
+   emote: EmoteName.Shop,
+  },
+  sections: [
+   {
+    id: EconomyGroups.Shop,
+    label: (t: EconomyTranslator) => t.settings.groups.shop(),
+    description: (t: EconomyTranslator) => t.settings.rewards.guide.sellingDesc(),
+    emote: EmoteName.Shop,
+    steps: [
+     {
+      column: 'buyPrice',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.buyPrice(),
+      required: true,
+      done: (row) => row.buyPrice > 0,
+     },
+     {
+      column: 'shopType',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.shopType(),
+     },
+    ],
+   },
+   {
+    id: EconomyGroups.Panel,
+    label: (t: EconomyTranslator) => t.settings.groups.panel(),
+    description: (t: EconomyTranslator) => t.settings.rewards.guide.panelDesc(),
+    emote: EmoteName.Message,
+    showIf: wantsPanel,
+    steps: [
+     {
+      column: 'active',
+      label: (t: EconomyTranslator) => t.base.t.Active(),
+      required: true,
+     },
+     {
+      column: 'panelDesign',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.panelDesign(),
+     },
+     {
+      column: 'panelButtonText',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.panelButtonText(),
+     },
+     {
+      column: 'panelButtonEmote',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.panelButtonEmote(),
+     },
+     {
+      column: 'panelButtonStyle',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.panelButtonStyle(),
+     },
+     {
+      column: 'panelChannel',
+      label: (t: EconomyTranslator) => t.settings.rewards.fields.panelChannel(),
+      required: true,
+      done: (row) => Boolean(row.panelMessage),
+     },
+    ],
+   },
+  ],
+ },
+} satisfies SettingsSchemaDef<
+ EconomyRewardRow & { panelDesign: string | null },
+ EconomyTranslator
+> as unknown as SettingsSchemaDef;

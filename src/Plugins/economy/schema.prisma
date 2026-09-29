@@ -8,6 +8,11 @@ datasource db {
  provider = "postgresql"
 }
 
+model RoleReward {
+ id             String              @id @db.VarChar
+ economyRewards EconomyRoleReward[]
+}
+
 //#endregion
 
 model EconomySetting {
@@ -75,8 +80,11 @@ model EconomyPurchase {
 
  boughtAt DateTime @default(now())
 
+ roleReward EconomyRoleReward @relation(fields: [item], references: [id], onDelete: Cascade)
+
  @@unique([guild, user, item])
  @@index([guild, user])
+ @@index([item])
 }
 
 model EconomyPayout {
@@ -107,6 +115,7 @@ model EconomyRoleReward {
  buyPrice         Int      @default(0) // 0 = not for sale
  purchaseRoles    String[] @db.VarChar
  customRoleReward String?  @db.VarChar // @crossplugin(custom-roles) RoleReward unlocked by buying this
+ customRole       RoleReward? @relation(fields: [customRoleReward], references: [id], onDelete: SetNull)
 
  shopType ShopSurface @default(panel)
 
@@ -126,7 +135,11 @@ model EconomyRoleReward {
  curve           PayoutCurve @default(linear)
  curveModifier   Int         @default(100)
 
+ purchases EconomyPurchase[]
+ progress  EconomyRoleRewardProgress[]
+
  @@index(guild)
+ @@index(customRoleReward)
 }
 
 enum ShopSurface {
@@ -159,9 +172,12 @@ model EconomyRoleRewardProgress {
  payouts      Int       @default(0)
  nextPayoutAt DateTime?
 
+ roleReward EconomyRoleReward @relation(fields: [reward], references: [id], onDelete: Cascade)
+
  @@id([guild, user, reward])
  @@index([nextPayoutAt])
  @@index([guild, user])
+ @@index([reward])
 }
 
 model EconomyRoleRewardEligibility {

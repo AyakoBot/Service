@@ -32,13 +32,17 @@ export default class EconomyBank {
   });
 
  row = async (guildId: string, userId: string): Promise<EconomyBalance> => {
-  const settings = await this.settings(guildId);
+  const where = { guild_user: { guild: guildId, user: userId } };
+  const existing = await this.client.db.client.economyBalance.findUnique({ where });
+  if (existing) return existing;
 
-  return this.client.db.client.economyBalance.upsert({
-   where: { guild_user: { guild: guildId, user: userId } },
-   create: { guild: guildId, user: userId, balance: settings.startBalance },
-   update: {},
+  const settings = await this.settings(guildId);
+  await this.client.db.client.economyBalance.createMany({
+   data: [{ guild: guildId, user: userId, balance: settings.startBalance }],
+   skipDuplicates: true,
   });
+
+  return this.client.db.client.economyBalance.findUniqueOrThrow({ where });
  };
 
  balanceOf = async (guildId: string, userId: string): Promise<number> =>

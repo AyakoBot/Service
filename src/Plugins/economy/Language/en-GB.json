@@ -104,8 +104,7 @@
     "panelButtonText": "Panel button text",
     "panelButtonEmote": "Panel button icon",
     "panelButtonStyle": "Panel button style",
-    "panelEmbed": "Panel embed",
-    "panelComponents": "Panel components"
+    "panelDesign": "Panel design"
    },
    "descriptions": {
     "active": "Whether this Reward is evaluated at all. Turning it off stops any further payouts from it.",
@@ -127,8 +126,7 @@
     "panelButtonText": "Label shown on the buy Button.",
     "panelButtonEmote": "Icon shown on the buy Button.",
     "panelButtonStyle": "Colour of the buy Button.",
-    "panelEmbed": "Name of a saved Embed to use as the Panel body. Clears the components choice.",
-    "panelComponents": "Name of a saved Component set to use as the Panel body. Clears the embed choice."
+    "panelDesign": "A design saved in the embed builder or component builder, used as the Panel body."
    },
    "payoutSection": "When this Reward pays out, and how the amount grows over time.",
    "recurringSection": "How a repeating payout grows over time.",
@@ -166,7 +164,15 @@
    "needsActive": "Switch this Reward on before posting a Panel.",
    "panelSection": "The Panel Members press to buy this Reward.",
    "rowSummaryFree": "{{role}} · not for sale",
-   "rowNoRole": "No Role set"
+   "rowNoRole": "No Role set",
+   "guide": {
+    "title": "Shop panel setup",
+    "intro": "Sell this Reward with a buy Button: set a price, design the Panel, then post it.",
+    "advertText": "Selling this Reward for the first time? Set up its shop Panel step by step.",
+    "advertButton": "Open the guide",
+    "sellingDesc": "Give the Reward a price above 0 and choose where it is sold.",
+    "panelDesc": "Turn the Reward on, design the Panel and its buy Button, then pick the Channel to post it in."
+   }
   },
   "profileWriteFailed": "Discord rejected the profile change. Check the value is valid (nicknames are capped at 32 characters) and that the bot may change its nickname here."
  },
@@ -279,8 +285,6 @@
   "frozen": "The currency system is currently frozen.",
   "noItem": "That item does not exist.",
   "notOwned": "You do not own that item.",
-  "hierarchy": "This bot cannot manage that role.",
-  "embedNotFound": "No saved Embed with that name exists in this Server.",
-  "componentsNotFound": "No saved Component set with that name exists in this Server."
+  "hierarchy": "This bot cannot manage that role."
  }
 }
