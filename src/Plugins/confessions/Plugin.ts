@@ -22,6 +22,7 @@ import Plugin, {
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
+import type { ButtonAction } from '../../Util/buttonActions.js';
 import type { CommandMention } from '../../Util/commandMention.js';
 import {
  MessagePlaceholder,
@@ -40,7 +41,7 @@ import ConfessionModeration from './Classes/ConfessionModeration.js';
 import ConfessionPublisher from './Classes/ConfessionPublisher.js';
 import Confessions from './Classes/Confessions.js';
 import ConfessionSchedule from './Classes/ConfessionSchedule.js';
-import { bansCommandName, commandName } from './Classes/Routes.js';
+import { bansCommandName, commandName, ConfessionsRoute } from './Classes/Routes.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageDelete from './Events/MessageDelete/index.js';
 import messageDeleteBulk from './Events/MessageDeleteBulk/index.js';
@@ -95,6 +96,13 @@ export default class ConfessionsPlugin extends Plugin<Events, ConfessionsLanguag
  dependencies = [PluginName.Settings];
  tableName = 'ConfessionSetting';
  placeholders = confessionPlaceholders;
+
+ buttonActions: ButtonAction[] = [
+  {
+   route: ConfessionsRoute.Submit,
+   label: async (guildId: string) => (await this.t(guildId)).confession.submitButton(),
+  },
+ ];
 
  customBotPerms =
   PermissionFlagsBits.ViewChannel |
