@@ -259,8 +259,9 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
   const ping = bodies.find((body) => body.name === InfoCommand.Ping);
   const info = bodies.find((body) => body.name === InfoCommand.Info);
   const botOnly = info?.options?.filter((option) => option.name === InfoSubcommand.Bot);
+  const bot = botOnly?.length === 1 ? botOnly[0] : undefined;
 
-  if (!ping || !info || botOnly?.length !== 1) {
+  if (!ping || !info || !bot) {
    this.nonFatalError(
     new Error('Universal commands missing from the info command surface'),
     'getUniversalCommands',
@@ -268,6 +269,6 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
    return [];
   }
 
-  return [ping, { ...info, options: botOnly }];
+  return [ping, { ...info, description: bot.description, options: [bot] }];
  };
 }
