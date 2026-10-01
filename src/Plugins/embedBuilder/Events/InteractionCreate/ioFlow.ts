@@ -17,7 +17,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
+import { isLink, resolveBuilderLink } from '../../../../Util/builderLinks.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
 import { placeholderReference } from '../../../../Util/placeholderReference.js';
@@ -105,7 +105,7 @@ export const importSave = async function (
 
  let parsed: unknown;
  if (isLink(code)) {
-  parsed = await resolveDiscohookLink(code);
+  parsed = await resolveBuilderLink(code);
   if (parsed === null) {
    ephemeralNote.call(this, cmd, t.io.linkFailed());
    return;

@@ -68,10 +68,10 @@
  "io": {
   "importTitle": "Import embed JSON",
   "jsonLabel": "JSON",
-  "jsonHint": "An embed object, an array of embeds, a full message, or a discohook.app link",
-  "guide": "**Importing from [discohook.app](https://discohook.app)**\nBuild your message there, then paste either a discohook **link** (share or data URL) or the JSON from its **JSON Data Editor** below.\n-# JSON too long for one field? Continue in the next one - the fields are joined in order.",
+  "jsonHint": "An embed object, an array of embeds, a full message, or a share link",
+  "guide": "**Importing from another builder**\nDesign your message on [Discohook](https://discohook.app) or [message.style](https://message.style/app/editor/new), then paste its **share link** or its JSON below.\n-# JSON too long for one field? Continue in the next one. The fields are joined in order.",
   "componentsDetected": "That JSON is a Components-V2 message. Import it with the component builder: {{command}}",
-  "linkFailed": "Couldn't read that discohook link. Share links expire after a while - export the JSON from the JSON Data Editor and paste that instead."
+  "linkFailed": "Couldn't read that link. Share links expire after a while (message.style after 7 days), so copy the message's JSON and paste that instead."
  },
  "properties": {
   "author-name": "Author name",

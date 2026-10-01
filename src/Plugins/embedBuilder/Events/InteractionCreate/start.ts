@@ -20,6 +20,7 @@ import {
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
+import { BuilderSite, builderSiteRow } from '../../../../Util/builderLinks.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { EmbedBuilderRoute } from '../../Classes/Routes.js';
@@ -29,6 +30,7 @@ import { authorizeManage, ephemeralNote } from '../../Util/builderContext.js';
 import { openThread } from '../../Util/openThread.js';
 
 const selectLimit = 25;
+const externalBuilders = [BuilderSite.Discohook, BuilderSite.MessageStyle];
 
 const buildStartSurface = async function (
  this: EmbedBuilderPlugin,
@@ -64,6 +66,10 @@ const buildStartSurface = async function (
     .setEmoji(buttonEmoji(emotes.json)),
   ),
  );
+ container.addTextDisplayComponents(
+  new TextDisplayBuilder().setContent(`-# ${t.base.builderSites.hint()}`),
+ );
+ container.addActionRowComponents(builderSiteRow(externalBuilders));
 
  if (saved.length) {
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
