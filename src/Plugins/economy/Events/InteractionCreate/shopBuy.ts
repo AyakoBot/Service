@@ -120,7 +120,7 @@ export default async function (
 ): Promise<void> {
  const guildId = cmd.guild_id;
  const userId = cmd.member?.user.id ?? cmd.user?.id;
- if (!guildId || !userId || !rowId) return;
+ if (!guildId || !userId) return;
 
  const t = await this.t(guildId);
  const note = (text: string) => {

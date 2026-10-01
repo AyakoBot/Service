@@ -13,7 +13,7 @@ import type EconomyPlugin from '../../Plugin.js';
 import { deferEconomy } from '../../Util/respond.js';
 
 import admin, { leaderboard } from './admin.js';
-import balance from './balance.js';
+import balance, { balanceButton } from './balance.js';
 import curvePreview from './curvePreview.js';
 import shopBuy from './shopBuy.js';
 import pay from './pay.js';
@@ -39,6 +39,7 @@ const routes: Partial<Record<EconomyCommand, Handler>> = {
 };
 
 const components: Partial<Record<EconomyRoute, ComponentHandler>> = {
+ [EconomyRoute.Balance]: balanceButton,
  [EconomyRoute.CurvePreview]: curvePreview,
  [EconomyRoute.ShopBuy]: shopBuy,
 };
@@ -52,7 +53,7 @@ export default async function (
   const component = components[route as EconomyRoute];
   const rowId = args[0] ?? '';
   const userId = data.member?.user.id ?? data.user?.id;
-  if (!component || !data.guild_id || !userId || !rowId) return;
+  if (!component || !data.guild_id || !userId) return;
 
   await deferEconomy.call(this, data);
   await component.call(this, data, rowId);

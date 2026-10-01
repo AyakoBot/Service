@@ -1,4 +1,8 @@
 {
+ "buttonActions": {
+  "buy": "Buy a reward",
+  "balance": "Show my balance"
+ },
  "settings": {
   "configTitle": "Currency settings",
   "overviewDescription": "Configure how this server's currency works, including earning, transfers and the role shop.",

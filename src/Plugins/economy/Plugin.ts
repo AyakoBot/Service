@@ -19,6 +19,7 @@ import Plugin, {
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
 import type { ExtractPayload } from '../../Types/gateway.js';
+import type { ButtonAction } from '../../Util/buttonActions.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -35,6 +36,7 @@ import EconomyShop from './Classes/EconomyShop.js';
 import ShopPanel from './Classes/ShopPanel.js';
 import { EconomyGroups, EconomySettingName } from './Classes/Enums.js';
 import rewardsSchema from './Classes/rewardsSchema.js';
+import { EconomyRoute } from './Classes/Routes.js';
 import channelDelete from './Events/ChannelDelete/index.js';
 import guildMemberUpdate from './Events/GuildMemberUpdate/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
@@ -43,6 +45,7 @@ import messageDelete from './Events/MessageDelete/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import { BotProfilePart, botProfileImageTransform, botProfileVirtual } from './Util/botProfile.js';
 import { economyBotTokenTransform } from './Util/botToken.js';
+import { shopChoices } from './Util/shopChoices.js';
 
 type EconomyVirtualColumns = {
  profileNick: string | null;
@@ -86,6 +89,18 @@ export default class EconomyPlugin extends Plugin<Events, EconomyLanguage> {
 
  dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'EconomySetting';
+
+ buttonActions: ButtonAction[] = [
+  {
+   route: EconomyRoute.ShopBuy,
+   label: async (guildId: string) => (await this.t(guildId)).buttonActions.buy(),
+   choices: ({ guildId }) => shopChoices.call(this, guildId),
+  },
+  {
+   route: EconomyRoute.Balance,
+   label: async (guildId: string) => (await this.t(guildId)).buttonActions.balance(),
+  },
+ ];
 
  customBotPerms =
   PermissionFlagsBits.ViewChannel |

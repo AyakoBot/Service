@@ -10,7 +10,7 @@ export default async function (
  rowId: string,
 ): Promise<void> {
  const guildId = cmd.guild_id;
- if (!guildId || !rowId) return;
+ if (!guildId) return;
 
  const t = await this.t(guildId);
 
