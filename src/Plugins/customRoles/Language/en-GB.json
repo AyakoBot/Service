@@ -1,4 +1,7 @@
 {
+ "buttonActions": {
+  "create": "Create my custom role"
+ },
  "rewards": {
   "desc": "You unlocked a new Role-Reward in **{{server}}**.",
   "customRole": "You can now create your own Custom-Role with {{command}}."

@@ -97,6 +97,9 @@ const component = async function (
   case CustomRolesRoute.ShareRefresh:
    await shareRefresh.call(this, cmd);
    break;
+  case CustomRolesRoute.Create:
+   if (cmd.guild_id) await create.call(this, cmd, cmd.guild_id, '');
+   break;
   case CustomRolesRoute.RewardNotify: {
    const guildId = args[0] || cmd.guild_id;
    if (guildId) await create.call(this, cmd, guildId, '');

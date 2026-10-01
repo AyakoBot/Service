@@ -8,6 +8,7 @@ import Plugin, {
  type BaseLang,
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
+import type { ButtonAction } from '../../Util/buttonActions.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { assertSchemaValid } from '../settings/SettingsSchema.js';
 
@@ -16,6 +17,7 @@ import ActivityTracker from './Classes/ActivityTracker.js';
 import CustomRoleService from './Classes/CustomRoleService.js';
 import InactivitySweep from './Classes/InactivitySweep.js';
 import RolePerks from './Classes/RolePerks.js';
+import { CustomRolesRoute } from './Classes/Routes.js';
 import settingsSchema from './Classes/settingsSchema.js';
 import guildMemberRemove from './Events/GuildMemberRemove/index.js';
 import guildMemberUpdate from './Events/GuildMemberUpdate/index.js';
@@ -45,6 +47,13 @@ export type CustomRolesTranslator = TranslatorType<CustomRolesLanguage> & { base
 export default class CustomRolesPlugin extends Plugin<Events, CustomRolesLanguage> {
  name = 'Custom Roles';
  settingName = PluginName.CustomRoles;
+
+ buttonActions: ButtonAction[] = [
+  {
+   route: CustomRolesRoute.Create,
+   label: async (guildId: string) => (await this.t(guildId)).buttonActions.create(),
+  },
+ ];
 
  tableName = 'roleReward';
 

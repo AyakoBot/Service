@@ -3,4 +3,5 @@ export enum CustomRolesRoute {
  ShareRefresh = 'customroles/sharerefresh',
  IconModal = 'customroles/iconmodal',
  RewardNotify = 'customroles/rewardnotify',
+ Create = 'customroles/create',
 }
