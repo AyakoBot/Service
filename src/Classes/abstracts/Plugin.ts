@@ -20,6 +20,7 @@ import baseLang from '../../Languages/en-GB.json' with { type: 'json' };
 import type { SettingsSchemaDef } from '../../Plugins/settings/SettingsSchema.js';
 import type { GatewayEventHandlers, GatewayEventPayloadMap } from '../../Types/gateway.js';
 import { isBotPresent } from '../../Util/botPresence.js';
+import type { ButtonAction } from '../../Util/buttonActions.js';
 import type { MessagePlaceholder } from '../../Util/messagePlaceholders.js';
 import { gateToken, TokenGate } from '../../Util/tokenBreaker.js';
 import { checkToken } from '../../Util/tokenCheck.js';
@@ -114,7 +115,15 @@ export default abstract class Plugin<
 
  isPilotGuild = (guildId?: string | null): boolean =>
   !this.pilotGuilds || this.pilotGuilds.includes(guildId ?? '');
+
+ isLiveFor = (guildId: string): boolean => {
+  if (this.pilotGuilds) return this.pilotGuilds.includes(guildId);
+  if (this.client.debugGuilds.includes(guildId)) return true;
+  return this.client.cutoverFeatures.includes(this.name);
+ };
+
  placeholders?: MessagePlaceholder[];
+ buttonActions?: ButtonAction[];
  logger = new ScopedLogger();
 
  protected pluginBotKey?: string;

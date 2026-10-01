@@ -711,6 +711,7 @@
   "Back": "Back",
   "Before": "Before",
   "After": "After",
+  "Inside": "Inside",
   "Extra": "Extra",
   "InviteCustomBot": "Invite Custom Bot",
   "Invite": "Invite",
@@ -740,6 +741,9 @@
   "title": "Available Placeholders",
   "intro": "Type these into any text field. They are filled in when a plugin posts the saved design, such as a welcome message, ticket panel or confession. Sent straight from the builder, they appear exactly as typed.",
   "none": "This bot offers no placeholders."
+ },
+ "builderSites": {
+  "hint": "Prefer a visual editor? Design your message on one of these sites, then paste its share link into **Import**."
  },
  "savedDesigns": {
   "embed": "Embed",
