@@ -7,17 +7,20 @@ import {
 
 import { MediaAddKind, NodeAction, NodeKind } from '../../Classes/Nodes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
-import { applyErrorText } from '../../Util/applyErrorText.js';
-import { builderContext, ephemeralNote, type BuilderView } from '../../Util/builderContext.js';
+import {
+ defaultPosition,
+ insertAtTarget,
+ normalizeTarget,
+ parseAddTarget,
+ type AddTarget,
+} from '../../Util/addTarget.js';
+import { builderContext, type BuilderView } from '../../Util/builderContext.js';
 import {
  BuilderErrorCode,
  getNode,
- insertNode,
- kindOf,
  makeButton,
  makeContainer,
  makeEntitySelect,
- makeRow,
  makeSectionWithButton,
  makeSeparator,
  makeStringSelect,
@@ -32,21 +35,29 @@ import {
  type WipTree,
  flattenTree,
 } from '../../Util/componentTree.js';
+import { failNote } from '../../Util/failNote.js';
+import { movedSelection, moveUnit, offersAction, styleOptions } from '../../Util/nodeActions.js';
 import { NodePageNav, shownNodePage, stepNodePage } from '../../Util/nodePaging.js';
 import { presentBuilder } from '../../Util/presentBuilder.js';
+import { addRows, styleRows } from '../../Util/renderBuilder.js';
 
+import { openBind } from './bindFlow.js';
 import { openEditModal, openMediaModal, openOptionsModal } from './editorModal.js';
 
 type Translator = Awaited<ReturnType<ComponentBuilderPlugin['t']>>;
 
-const failNote = async function (
+type Opener = (
  this: ComponentBuilderPlugin,
  cmd: APIMessageComponentInteraction,
- error: BuilderErrorCode,
-) {
- const t = await this.t(cmd.guild_id ?? undefined);
- ephemeralNote.call(this, cmd, applyErrorText(t, error));
-};
+ view: BuilderView,
+) => Promise<void>;
+
+interface NodeChange {
+ result: TreeResult;
+ selectedPath?: string | null;
+}
+
+type Change = (t: Translator, tree: WipTree, path: string) => NodeChange;
 
 export const nodePick = async function (
  this: ComponentBuilderPlugin,
@@ -72,11 +83,7 @@ export const nodePick = async function (
  await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, selectedPath });
 };
 
-const toggleNode = (
- tree: WipTree,
- path: string,
- action: NodeAction,
-): TreeResult =>
+const toggleNode = (tree: WipTree, path: string, action: NodeAction): TreeResult =>
  updateNode(tree, path, (node) => {
   switch (action) {
    case NodeAction.ToggleDivider:
@@ -115,14 +122,6 @@ const toggleNode = (
   }
  });
 
-const buttonStyles: Partial<Record<NodeAction, ButtonStyle>> = {
- [NodeAction.StylePrimary]: ButtonStyle.Primary,
- [NodeAction.StyleSecondary]: ButtonStyle.Secondary,
- [NodeAction.StyleSuccess]: ButtonStyle.Success,
- [NodeAction.StyleDanger]: ButtonStyle.Danger,
- [NodeAction.StyleLink]: ButtonStyle.Link,
-};
-
 const linkPlaceholderUrl = 'https://ayakobot.com/';
 
 const setButtonStyle = (tree: WipTree, path: string, style: ButtonStyle): TreeResult =>
@@ -154,7 +153,6 @@ const addedNode = function (
 ): WipNode | null {
  switch (action) {
   case NodeAction.AddText:
-  case NodeAction.AddTextChild:
    return makeText(t.defaults.text());
   case NodeAction.AddSeparator:
    return makeSeparator();
@@ -183,164 +181,177 @@ const addedNode = function (
  }
 };
 
-const interactiveAdds = [
- NodeAction.AddButton,
- NodeAction.AddStringSelect,
- NodeAction.AddUserSelect,
- NodeAction.AddRoleSelect,
- NodeAction.AddChannelSelect,
- NodeAction.AddMentionableSelect,
-];
+const moveChange = (tree: WipTree, path: string, offset: -1 | 1): NodeChange => ({
+ result: moveNode(tree, moveUnit(tree, path), offset),
+ selectedPath: movedSelection(tree, path, offset),
+});
 
-const addNode = function (
+const toggleChange =
+ (action: NodeAction): Change =>
+ (_t, tree, path) => ({ result: toggleNode(tree, path, action) });
+
+const nodeChanges: Partial<Record<NodeAction, Change>> = {
+ [NodeAction.MoveUp]: (_t, tree, path) => moveChange(tree, path, -1),
+ [NodeAction.MoveDown]: (_t, tree, path) => moveChange(tree, path, 1),
+ [NodeAction.Remove]: (_t, tree, path) => ({
+  result: removeNode(tree, path),
+  selectedPath: null,
+ }),
+ [NodeAction.ToggleDivider]: toggleChange(NodeAction.ToggleDivider),
+ [NodeAction.ToggleSpacing]: toggleChange(NodeAction.ToggleSpacing),
+ [NodeAction.ToggleSpoiler]: toggleChange(NodeAction.ToggleSpoiler),
+ [NodeAction.ToggleDisabled]: toggleChange(NodeAction.ToggleDisabled),
+ [NodeAction.AccessoryButton]: (t, tree, path) => ({
+  result: setAccessory(
+   tree,
+   path,
+   makeButton(nextCustomId(tree, 'button'), t.defaults.buttonLabel()),
+  ),
+ }),
+};
+
+const changeFor = (action: NodeAction): Change | undefined => {
+ const style = styleOptions.find((option) => option.action === action)?.style;
+ if (style === undefined) return nodeChanges[action];
+ return (_t, tree, path) => ({ result: setButtonStyle(tree, path, style) });
+};
+
+const presentAdd = async function (
  this: ComponentBuilderPlugin,
- t: Translator,
+ cmd: APIMessageComponentInteraction,
  view: BuilderView,
- action: NodeAction,
-): TreeResult {
- const node = addedNode.call(this, t, view.tree, action);
- if (!node) return { ok: false, error: BuilderErrorCode.NotAllowedHere };
-
- const selected = view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
- const selectedKind = selected ? kindOf(selected) : null;
-
- const intoRow = selectedKind === NodeKind.Row && action === NodeAction.AddButton;
- const needsRow =
-  !intoRow && interactiveAdds.includes(action) && kindOf(node) !== NodeKind.Row;
-
- const parentPath =
-  selectedKind === NodeKind.Container || selectedKind === NodeKind.Section || intoRow
-   ? (view.selectedPath ?? '')
-   : '';
-
- return insertNode(view.tree, parentPath, needsRow ? makeRow(node as never) : node);
+ target: AddTarget,
+) {
+ const t = await this.t(cmd.guild_id ?? undefined);
+ const adding = normalizeTarget(view.tree, target);
+ await presentBuilder.call(this, cmd, view.tree, view, addRows.call(this, t, view, adding));
 };
 
-const movedPath = (tree: WipTree, path: string, offset: -1 | 1): string => {
- const parts = path.split('.');
- const last = parts.at(-1);
- if (last === undefined || !/^\d+$/.test(last)) return path;
-
- const target = Number(last) + offset;
- if (target < 0) return path;
-
- const targetPath = [...parts.slice(0, -1), String(target)].join('.');
- return getNode(tree, targetPath) ? targetPath : path;
+const openAdd: Opener = async function (cmd, view) {
+ await presentAdd.call(this, cmd, view, {
+  position: defaultPosition(view.tree, view.selectedPath),
+  selectedPath: view.selectedPath,
+ });
 };
 
-const newNodePath = (view: BuilderView, result: WipTree, action: NodeAction): string | null => {
- const selected = view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
- const selectedKind = selected ? kindOf(selected) : null;
-
- const intoSelected =
-  selectedKind === NodeKind.Container ||
-  selectedKind === NodeKind.Section ||
-  (selectedKind === NodeKind.Row && action === NodeAction.AddButton);
-
- if (!intoSelected || !view.selectedPath) return String(result.length - 1);
-
- const parent = getNode(result, view.selectedPath);
- if (!parent) return null;
- const children =
-  parent.type === ComponentType.ActionRow ||
-  parent.type === ComponentType.Container ||
-  parent.type === ComponentType.Section
-   ? parent.components
-   : [];
- return `${view.selectedPath}.${children.length - 1}`;
+const openStyle: Opener = async function (cmd, view) {
+ if (!view.selectedPath) return;
+ const t = await this.t(cmd.guild_id ?? undefined);
+ await presentBuilder.call(
+  this,
+  cmd,
+  view.tree,
+  view,
+  styleRows.call(this, t, view, view.selectedPath),
+ );
 };
+
+const openAccessoryThumbnail: Opener = async function (cmd) {
+ await openMediaModal.call(this, cmd, MediaAddKind.AccessoryThumbnail);
+};
+
+const openers: Partial<Record<NodeAction, Opener>> = {
+ [NodeAction.Edit]: openEditModal,
+ [NodeAction.EditOptions]: openOptionsModal,
+ [NodeAction.AccessoryThumbnail]: openAccessoryThumbnail,
+ [NodeAction.Add]: openAdd,
+ [NodeAction.Style]: openStyle,
+ [NodeAction.Bind]: openBind,
+};
+
+const mediaAdds: Partial<Record<NodeAction, MediaAddKind>> = {
+ [NodeAction.AddGallery]: MediaAddKind.Gallery,
+ [NodeAction.AddSectionThumbnail]: MediaAddKind.SectionThumbnail,
+};
+
+const isNodeAction = (value: string): value is NodeAction =>
+ (Object.values(NodeAction) as string[]).includes(value);
 
 export const actionPick = async function (
  this: ComponentBuilderPlugin,
  cmd: APIMessageComponentInteraction,
+ args: string[],
 ) {
- if (cmd.data.component_type !== ComponentType.StringSelect) return;
+ const [action, argPath] = args;
+ if (!isNodeAction(action)) return;
+
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return;
 
- const t = await this.t(cmd.guild_id ?? undefined);
- const [value] = cmd.data.values;
- if (!(Object.values(NodeAction) as string[]).includes(value)) return;
- const action = value as NodeAction;
- const { view } = ctx;
- const path = view.selectedPath;
+ const selectedPath = argPath && getNode(ctx.view.tree, argPath) ? argPath : null;
+ if (!offersAction(ctx.view.tree, selectedPath, action)) {
+  await failNote.call(this, cmd, BuilderErrorCode.NotAllowedHere);
+  return;
+ }
+ const view: BuilderView = { ...ctx.view, selectedPath };
 
- switch (action) {
-  case NodeAction.Edit:
-   await openEditModal.call(this, cmd, view);
-   return;
-  case NodeAction.EditOptions:
-   await openOptionsModal.call(this, cmd, view);
-   return;
-  case NodeAction.AddGallery:
-   await openMediaModal.call(this, cmd, MediaAddKind.Gallery);
-   return;
-  case NodeAction.AddSectionThumbnail:
-   await openMediaModal.call(this, cmd, MediaAddKind.SectionThumbnail);
-   return;
-  case NodeAction.AccessoryThumbnail:
-   await openMediaModal.call(this, cmd, MediaAddKind.AccessoryThumbnail);
-   return;
-  default:
-   break;
+ const open = openers[action];
+ if (open) {
+  await open.call(this, cmd, view);
+  return;
  }
 
- const result = ((): { result: TreeResult; selectedPath?: string | null } | null => {
-  switch (action) {
-   case NodeAction.MoveUp:
-    return path
-     ? { result: moveNode(view.tree, path, -1), selectedPath: movedPath(view.tree, path, -1) }
-     : null;
-   case NodeAction.MoveDown:
-    return path
-     ? { result: moveNode(view.tree, path, 1), selectedPath: movedPath(view.tree, path, 1) }
-     : null;
-   case NodeAction.Remove:
-    return path ? { result: removeNode(view.tree, path), selectedPath: null } : null;
-   case NodeAction.ToggleDivider:
-   case NodeAction.ToggleSpacing:
-   case NodeAction.ToggleSpoiler:
-   case NodeAction.ToggleDisabled:
-    return path ? { result: toggleNode(view.tree, path, action) } : null;
-   case NodeAction.StylePrimary:
-   case NodeAction.StyleSecondary:
-   case NodeAction.StyleSuccess:
-   case NodeAction.StyleDanger:
-   case NodeAction.StyleLink:
-    return path
-     ? { result: setButtonStyle(view.tree, path, buttonStyles[action] as ButtonStyle) }
-     : null;
-   case NodeAction.AccessoryButton:
-    return path
-     ? {
-        result: setAccessory(
-         view.tree,
-         path,
-         makeButton(nextCustomId(view.tree, 'button'), t.defaults.buttonLabel()),
-        ),
-       }
-     : null;
-   default: {
-    const added = addNode.call(this, t, view, action);
-    return {
-     result: added,
-     selectedPath: added.ok ? newNodePath(view, added.tree, action) : undefined,
-    };
-   }
-  }
- })();
+ const change = changeFor(action);
+ if (!change || !selectedPath) return;
 
- if (!result) return;
- if (!result.result.ok) {
-  await failNote.call(this, cmd, result.result.error);
+ const t = await this.t(cmd.guild_id ?? undefined);
+ const { result, selectedPath: next } = change(t, view.tree, selectedPath);
+ if (!result.ok) {
+  await failNote.call(this, cmd, result.error);
   return;
  }
 
  await presentBuilder.call(this, cmd, view.tree, {
   ...view,
-  tree: result.result.tree,
-  selectedPath:
-   result.selectedPath === undefined ? view.selectedPath : result.selectedPath,
+  tree: result.tree,
+  selectedPath: next === undefined ? selectedPath : next,
+ });
+};
+
+export const addAt = async function (
+ this: ComponentBuilderPlugin,
+ cmd: APIMessageComponentInteraction,
+ args: string[],
+) {
+ const ctx = await builderContext.call(this, cmd);
+ if (!ctx) return;
+
+ await presentAdd.call(this, cmd, ctx.view, parseAddTarget(args));
+};
+
+export const addPick = async function (
+ this: ComponentBuilderPlugin,
+ cmd: APIMessageComponentInteraction,
+ args: string[],
+) {
+ if (cmd.data.component_type !== ComponentType.StringSelect) return;
+ const [action] = cmd.data.values;
+ if (!isNodeAction(action)) return;
+
+ const ctx = await builderContext.call(this, cmd);
+ if (!ctx) return;
+
+ const target = parseAddTarget(args);
+ const media = mediaAdds[action];
+ if (media) {
+  await openMediaModal.call(this, cmd, media, target);
+  return;
+ }
+
+ const t = await this.t(cmd.guild_id ?? undefined);
+ const node = addedNode.call(this, t, ctx.view.tree, action);
+ if (!node) return;
+
+ const added = insertAtTarget(ctx.view.tree, target, action, node);
+ if (!added.ok) {
+  await failNote.call(this, cmd, added.error);
+  return;
+ }
+
+ await presentBuilder.call(this, cmd, ctx.view.tree, {
+  ...ctx.view,
+  tree: added.tree,
+  selectedPath: added.path,
  });
 };
 
@@ -357,12 +368,15 @@ export const emptyBuilder = async function (
 export const backToBuilder = async function (
  this: ComponentBuilderPlugin,
  cmd: APIMessageComponentInteraction,
+ args: string[],
 ) {
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return;
 
+ const [argPath] = args;
  await presentBuilder.call(this, cmd, ctx.view.tree, {
   ...ctx.view,
+  selectedPath: argPath && getNode(ctx.view.tree, argPath) ? argPath : ctx.view.selectedPath,
   marker: { execId: ctx.view.marker.execId, designId: ctx.view.marker.designId },
  });
 };

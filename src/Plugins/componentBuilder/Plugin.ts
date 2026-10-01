@@ -10,6 +10,7 @@ import Plugin, {
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
+import type { ButtonAction } from '../../Util/buttonActions.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
 import {
@@ -18,6 +19,7 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
+import ButtonBindings from './Classes/ButtonBindings.js';
 import { ComponentBuilderCommand, ComponentBuilderSubcommand } from './Classes/Commands.js';
 import { wipComponentLimit } from './Classes/Nodes.js';
 import { ComponentBuilderRoute } from './Classes/Routes.js';
@@ -26,6 +28,7 @@ import messageCreate from './Events/MessageCreate/index.js';
 import en from './Language/en-GB.json' with { type: 'json' };
 import { isSendable } from './Util/builderState.js';
 import { countComponents, type WipTree } from './Util/componentTree.js';
+import { designChoices } from './Util/designChoices.js';
 
 type Events = GatewayDispatchEvents.InteractionCreate | GatewayDispatchEvents.MessageCreate;
 type APILanguage = typeof en;
@@ -67,8 +70,24 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
  } as Plugin<Events, APILanguage>['eventHandlers'];
  /* eslint-enable @typescript-eslint/naming-convention */
 
+ bindings: ButtonBindings;
+
+ buttonActions: ButtonAction[] = [
+  {
+   route: ComponentBuilderRoute.ShowDesign,
+   label: async (guildId: string) => (await this.t(guildId)).buttonActions.show(),
+   choices: ({ guildId }) => designChoices.call(this, guildId),
+  },
+  {
+   route: ComponentBuilderRoute.SwitchDesign,
+   label: async (guildId: string) => (await this.t(guildId)).buttonActions.switch(),
+   choices: ({ guildId }) => designChoices.call(this, guildId),
+  },
+ ];
+
  constructor(client: Client) {
   super(client);
+  this.bindings = new ButtonBindings(this);
   assertSchemaValid(this.settingsSchema);
  }
 
@@ -129,7 +148,9 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
    row.name || t.settings.unnamed(),
   rowSummary: (t: ComponentBuilderTranslator, row: CustomComponentsRow) => {
    const tree = (row.components ?? []) as unknown as WipTree;
-   const state = isSendable(tree) ? t.settings.stateReady() : t.settings.stateEmpty();
+   const state = isSendable(tree, this.bindings.claims)
+    ? t.settings.stateReady()
+    : t.settings.stateEmpty();
    return t.settings.rowSummary({
     state,
     preview: t.builder.componentCount({

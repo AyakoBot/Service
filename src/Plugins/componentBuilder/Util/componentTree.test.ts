@@ -78,6 +78,22 @@ test('insertNode respects parent rules and caps', () => {
  assert.deepEqual(sixth, { ok: false, error: BuilderErrorCode.RowFull });
 });
 
+test('insertNode splices at an index and appends without one', () => {
+ const atRoot = insertNode(sampleTree(), '', makeSeparator(), 1);
+ assert.ok(atRoot.ok);
+ assert.equal(atRoot.tree[1].type, ComponentType.Separator);
+ assert.equal(atRoot.tree[2].type, ComponentType.Container);
+
+ const inContainer = insertNode(sampleTree(), '1', makeText('first'), 0);
+ assert.ok(inContainer.ok);
+ assert.equal((getNode(inContainer.tree, '1.0') as { content: string }).content, 'first');
+ assert.equal((getNode(inContainer.tree, '1.1') as { content: string }).content, 'inside');
+
+ const appended = insertNode(sampleTree(), '', makeSeparator());
+ assert.ok(appended.ok);
+ assert.equal(appended.tree[3].type, ComponentType.Separator);
+});
+
 test('removeNode cascades empty rows and protects section texts', () => {
  const tree = sampleTree();
  const removed = removeNode(tree, '2.0');
@@ -237,4 +253,19 @@ test('normalizeImport accepts arrays, messages, and single components', () => {
  assert.deepEqual(normalizeImport(makeText('a')), [makeText('a')]);
  assert.equal(normalizeImport('nope'), null);
  assert.equal(normalizeImport({ foo: 1 }), null);
+});
+
+test('validateTree accepts claimed routes on buttons only', () => {
+ const isBound = (id: string) => id.startsWith('economy/');
+ const button: WipTree = [makeRow(makeButton('economy/shopBuy_r1', 'Buy'))];
+ const select: WipTree = [makeRow(makeStringSelect('economy/shopBuy_r1', 'One'))];
+ const twice: WipTree = [
+  makeRow(makeButton('economy/balance', 'A')),
+  makeRow(makeButton('economy/balance', 'B')),
+ ];
+
+ assert.equal(validateTree(button), BuilderErrorCode.CustomIdPrefix);
+ assert.equal(validateTree(button, isBound), null);
+ assert.equal(validateTree(select, isBound), BuilderErrorCode.CustomIdPrefix);
+ assert.equal(validateTree(twice, isBound), BuilderErrorCode.CustomIdTaken);
 });

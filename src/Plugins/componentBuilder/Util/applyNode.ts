@@ -15,7 +15,9 @@ import {
  mediaAltLimit,
  parseHttpUrl,
  textContentLimit,
+ unbound,
  updateNode,
+ type BoundCheck,
  type TreeResult,
  type WipTree,
 } from './componentTree.js';
@@ -24,8 +26,9 @@ export const checkEditableCustomId = (
  id: string,
  tree: WipTree,
  exceptPath: string,
+ isBound: BoundCheck = unbound,
 ): BuilderErrorCode | null => {
- if (!id.startsWith(customIdPrefix) || id.length > customIdLimit) {
+ if (id.length > customIdLimit || !(id.startsWith(customIdPrefix) || isBound(id))) {
   return BuilderErrorCode.CustomIdPrefix;
  }
  if (collectCustomIds(tree, exceptPath).includes(id)) return BuilderErrorCode.CustomIdTaken;
@@ -135,6 +138,7 @@ export const applyButton = (
  path: string,
  label: string,
  idOrUrl: string,
+ isBound: BoundCheck = unbound,
 ): TreeResult =>
  updateNode(tree, path, (node) => {
   if (node.type !== ComponentType.Button || 'sku_id' in node) {
@@ -153,7 +157,7 @@ export const applyButton = (
    return null;
   }
 
-  const idError = checkEditableCustomId(value, tree, path);
+  const idError = checkEditableCustomId(value, tree, path, isBound);
   if (idError) return idError;
   node.custom_id = value;
   return null;

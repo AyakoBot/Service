@@ -10,7 +10,7 @@ import {
 
 import { ComponentBuilderRoute } from '../Classes/Routes.js';
 
-import { stripIds, validateTree, type WipTree } from './componentTree.js';
+import { stripIds, validateTree, type BoundCheck, type WipTree } from './componentTree.js';
 
 enum MarkerParam {
  Builder = 'isComponentBuilder',
@@ -66,8 +66,10 @@ const chromeButtons = (msg: BuilderMessageLike): APIButtonComponent[] =>
     (child): child is APIButtonComponent => child.type === ComponentType.Button,
    );
   }
-  if (component.type === ComponentType.Section &&
-   component.accessory.type === ComponentType.Button) {
+  if (
+   component.type === ComponentType.Section &&
+   component.accessory.type === ComponentType.Button
+  ) {
    return [component.accessory];
   }
   return [];
@@ -130,10 +132,20 @@ export const getSelectedPath = (msg: BuilderMessageLike): string | null => {
  return value;
 };
 
+const nodePageArg = (msg: BuilderMessageLike): string | undefined => {
+ const select = findSelect(msg, ComponentBuilderRoute.Node);
+ if (select) return select.custom_id.split('_')[1];
+
+ return chromeButtons(msg)
+  .map((button) => ('custom_id' in button ? button.custom_id : ''))
+  .find((customId) => customId.startsWith(ComponentBuilderRoute.Back))
+  ?.split('_')[2];
+};
+
 export const getNodePage = (msg: BuilderMessageLike): number => {
- const page = Number(findSelect(msg, ComponentBuilderRoute.Node)?.custom_id.split('_')[1]);
+ const page = Number(nodePageArg(msg));
  return Number.isInteger(page) && page > 0 ? page : 0;
 };
 
-export const isSendable = (tree: WipTree): boolean =>
- tree.length > 0 && validateTree(tree) === null;
+export const isSendable = (tree: WipTree, isBound?: BoundCheck): boolean =>
+ tree.length > 0 && validateTree(tree, isBound) === null;

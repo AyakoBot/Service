@@ -305,6 +305,7 @@ export const insertNode = (
  source: WipTree,
  parentPath: string,
  node: WipNode,
+ index?: number,
 ): TreeResult => {
  const tree = structuredClone(source);
  const kind = kindOf(node);
@@ -321,7 +322,7 @@ export const insertNode = (
 
  if (!parentPath) {
   if (!topLevelKinds.includes(kind)) return { ok: false, error: BuilderErrorCode.NotAllowedHere };
-  tree.push(node as APIMessageTopLevelComponent);
+  tree.splice(index ?? tree.length, 0, node as APIMessageTopLevelComponent);
   return { ok: true, tree };
  }
 
@@ -333,7 +334,11 @@ export const insertNode = (
    if (!containerChildKinds.includes(kind)) {
     return { ok: false, error: BuilderErrorCode.NotAllowedHere };
    }
-   parent.components.push(node as APIComponentInContainer);
+   parent.components.splice(
+    index ?? parent.components.length,
+    0,
+    node as APIComponentInContainer,
+   );
    return { ok: true, tree };
   }
   case ComponentType.ActionRow: {
@@ -345,7 +350,11 @@ export const insertNode = (
    if (parent.components.length >= rowButtonLimit) {
     return { ok: false, error: BuilderErrorCode.RowFull };
    }
-   parent.components.push(node as APIComponentInMessageActionRow);
+   parent.components.splice(
+    index ?? parent.components.length,
+    0,
+    node as APIComponentInMessageActionRow,
+   );
    return { ok: true, tree };
   }
   case ComponentType.Section: {
@@ -353,7 +362,11 @@ export const insertNode = (
    if (parent.components.length >= sectionTextLimit) {
     return { ok: false, error: BuilderErrorCode.SectionFull };
    }
-   parent.components.push(node as APITextDisplayComponent);
+   parent.components.splice(
+    index ?? parent.components.length,
+    0,
+    node as APITextDisplayComponent,
+   );
    return { ok: true, tree };
   }
   default:
@@ -429,12 +442,22 @@ export const updateNode = (
 
 export const parseHttpUrl = parseUrl;
 
-const checkCustomId = (id: unknown, seen: Set<string>): BuilderErrorCode | null => {
- if (typeof id !== 'string' || !id.startsWith(customIdPrefix) || id.length > customIdLimit) {
+export type BoundCheck = (customId: string) => boolean;
+
+export const unbound: BoundCheck = () => false;
+
+interface IdScope {
+ seen: Set<string>;
+ isBound: BoundCheck;
+}
+
+const checkCustomId = (id: unknown, ids: IdScope, bindable: boolean): BuilderErrorCode | null => {
+ if (typeof id !== 'string' || id.length > customIdLimit) return BuilderErrorCode.CustomIdPrefix;
+ if (!id.startsWith(customIdPrefix) && !(bindable && ids.isBound(id))) {
   return BuilderErrorCode.CustomIdPrefix;
  }
- if (seen.has(id)) return BuilderErrorCode.CustomIdTaken;
- seen.add(id);
+ if (ids.seen.has(id)) return BuilderErrorCode.CustomIdTaken;
+ ids.seen.add(id);
  return null;
 };
 
@@ -466,9 +489,9 @@ const validateOption = (option: APISelectMenuOption): BuilderErrorCode | null =>
 
 const validateSelect = (
  node: APISelectMenuComponent,
- seen: Set<string>,
+ ids: IdScope,
 ): BuilderErrorCode | null => {
- const idError = checkCustomId(node.custom_id, seen);
+ const idError = checkCustomId(node.custom_id, ids, false);
  if (idError) return idError;
 
  if ((node.placeholder?.length ?? 0) > placeholderLimit) return BuilderErrorCode.TooLong;
@@ -503,7 +526,7 @@ const validateButtonLabel = (label: unknown, emoji: unknown): BuilderErrorCode |
 
 const validateButton = (
  node: Extract<WipNode, { type: ComponentType.Button }>,
- seen: Set<string>,
+ ids: IdScope,
 ): BuilderErrorCode | null => {
  const raw = node as unknown as Record<string, unknown>;
 
@@ -517,7 +540,7 @@ const validateButton = (
    }
    const labelError = validateButtonLabel(raw.label, raw.emoji);
    if (labelError) return labelError;
-   return checkCustomId(raw.custom_id, seen);
+   return checkCustomId(raw.custom_id, ids, true);
   }
   case ButtonStyle.Link: {
    if (raw.custom_id !== undefined || raw.sku_id !== undefined) {
@@ -538,7 +561,7 @@ const validateButton = (
 
 const validateNode = (
  node: WipNode,
- seen: Set<string>,
+ ids: IdScope,
  topLevel: boolean,
 ): BuilderErrorCode | null => {
  const kind = kindOfSafe(node);
@@ -572,13 +595,13 @@ const validateNode = (
     : BuilderErrorCode.InvalidUrl;
   }
   case ComponentType.Button:
-   return validateButton(node, seen);
+   return validateButton(node, ids);
   case ComponentType.StringSelect:
   case ComponentType.UserSelect:
   case ComponentType.RoleSelect:
   case ComponentType.ChannelSelect:
   case ComponentType.MentionableSelect:
-   return validateSelect(node, seen);
+   return validateSelect(node, ids);
   case ComponentType.ActionRow: {
    if (!Array.isArray(node.components) || !node.components.length) {
     return BuilderErrorCode.RowFull;
@@ -590,7 +613,7 @@ const validateNode = (
     return BuilderErrorCode.RowFull;
    }
    for (const child of node.components) {
-    const error = validateNode(child, seen, false);
+    const error = validateNode(child, ids, false);
     if (error) return error;
    }
    return null;
@@ -602,14 +625,14 @@ const validateNode = (
    }
    for (const child of node.components) {
     if (kindOfSafe(child) !== NodeKind.Text) return BuilderErrorCode.NotAllowedHere;
-    const error = validateNode(child, seen, false);
+    const error = validateNode(child, ids, false);
     if (error) return error;
    }
    const accessoryKind = kindOfSafe(node.accessory);
    if (accessoryKind !== NodeKind.Button && accessoryKind !== NodeKind.Thumbnail) {
     return BuilderErrorCode.NotAllowedHere;
    }
-   return validateNode(node.accessory, seen, false);
+   return validateNode(node.accessory, ids, false);
   }
   case ComponentType.Container: {
    if (typeof node.accent_color === 'number' &&
@@ -624,7 +647,7 @@ const validateNode = (
     if (!childKind || !containerChildKinds.includes(childKind)) {
      return BuilderErrorCode.NotAllowedHere;
     }
-    const error = validateNode(child, seen, false);
+    const error = validateNode(child, ids, false);
     if (error) return error;
    }
    return null;
@@ -634,13 +657,16 @@ const validateNode = (
  }
 };
 
-export const validateTree = (tree: WipTree): BuilderErrorCode | null => {
+export const validateTree = (
+ tree: WipTree,
+ isBound: BoundCheck = unbound,
+): BuilderErrorCode | null => {
  if (countComponents(tree) > wipComponentLimit) return BuilderErrorCode.TooManyComponents;
  if (countText(tree) > wipTextBudget) return BuilderErrorCode.TooMuchText;
 
- const seen = new Set<string>();
+ const ids: IdScope = { seen: new Set<string>(), isBound };
  for (const node of tree) {
-  const error = validateNode(node, seen, true);
+  const error = validateNode(node, ids, true);
   if (error) return error;
  }
  return null;

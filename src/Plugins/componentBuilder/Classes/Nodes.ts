@@ -22,6 +22,9 @@ export enum NodeAction {
  MoveUp = 'up',
  MoveDown = 'down',
  Remove = 'remove',
+ Add = 'add',
+ Style = 'style',
+ Bind = 'bind',
 
  ToggleDivider = 'divider',
  ToggleSpacing = 'spacing',
@@ -49,7 +52,6 @@ export enum NodeAction {
  AddRoleSelect = 'addRoleSelect',
  AddChannelSelect = 'addChannelSelect',
  AddMentionableSelect = 'addMentionableSelect',
- AddTextChild = 'addTextChild',
 }
 
 export enum MediaAddKind {

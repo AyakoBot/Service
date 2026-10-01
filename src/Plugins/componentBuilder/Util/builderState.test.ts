@@ -103,6 +103,25 @@ test('getNodePage reads the page from the node select custom id', () => {
  assert.equal(getNodePage({}), 0);
 });
 
+const backRow = (customId: string): APIMessageTopLevelComponent => ({
+ type: ComponentType.ActionRow,
+ components: [
+  { type: ComponentType.Button, style: ButtonStyle.Secondary, custom_id: customId, label: 'Back' },
+ ],
+});
+
+test('without a node select the page rides on the Back button', () => {
+ assert.equal(getNodePage({ components: [backRow('components/back__2')] }), 2);
+ assert.equal(getNodePage({ components: [backRow('components/back_1.0_1')] }), 1);
+ assert.equal(getNodePage({ components: [backRow('components/back')] }), 0);
+ assert.equal(
+  getNodePage({
+   components: [nodeSelect('components/node_1', null), backRow('components/back__3')],
+  }),
+  1,
+ );
+});
+
 test('isSendable requires content and a valid tree', () => {
  assert.equal(isSendable([]), false);
  assert.equal(isSendable([makeText('hi')]), true);

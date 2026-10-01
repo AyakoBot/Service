@@ -57,7 +57,7 @@ export const saveSubmit = async function (
 
  const t = await this.t(cmd.guild_id);
  const name = (findModalValue(cmd.data.components, 'name') || '').trim().slice(0, 100);
- if (!name || !isSendable(ctx.view.tree)) return;
+ if (!name || !isSendable(ctx.view.tree, this.bindings.claims)) return;
 
  try {
   await CustomComponents.save(this.client, cmd.guild_id, name, ctx.view.tree);

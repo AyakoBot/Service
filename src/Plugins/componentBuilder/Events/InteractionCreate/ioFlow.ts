@@ -114,7 +114,7 @@ export const importSave = async function (
  }
 
  tree = stripIds(tree);
- const validationError = validateTree(tree);
+ const validationError = validateTree(tree, this.bindings.claims);
  if (validationError) {
   ephemeralNote.call(this, cmd, applyErrorText(t, validationError));
   return;

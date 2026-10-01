@@ -7,6 +7,13 @@ export enum ComponentBuilderRoute {
 
  Node = 'components/node',
  Action = 'components/action',
+ AddAt = 'components/addAt',
+ AddPick = 'components/addPick',
+ BindSystem = 'components/bindSystem',
+ BindAction = 'components/bindAction',
+ BindChoice = 'components/bindChoice',
+ ShowDesign = 'components/showDesign',
+ SwitchDesign = 'components/switchDesign',
  EditorSave = 'components/editorSave',
  OptionsSave = 'components/optionsSave',
  MediaAddSave = 'components/mediaAdd',

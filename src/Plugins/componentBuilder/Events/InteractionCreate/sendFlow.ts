@@ -43,7 +43,7 @@ const sendableContext = async function (
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return null;
  if (!(await authorizeManage.call(this, cmd))) return null;
- if (!isSendable(ctx.view.tree)) return null;
+ if (!isSendable(ctx.view.tree, this.bindings.claims)) return null;
  return ctx;
 };
 

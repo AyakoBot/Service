@@ -15,14 +15,18 @@ import type ComponentBuilderPlugin from '../../Plugin.js';
 import { customIdPrefix } from '../../Util/componentTree.js';
 
 import autocomplete from './autocomplete.js';
+import { bindAction, bindChoice, bindSystem } from './bindFlow.js';
 import {
  ackCustomComponent,
  actionPick,
+ addAt,
+ addPick,
  backToBuilder,
  closeThread,
  emptyBuilder,
  nodePick,
 } from './builderActions.js';
+import { showDesign, switchDesign } from './designButtons.js';
 import { editorSave, mediaAddSave, optionsSave } from './editorModal.js';
 import { exportJson, importOpen, importSave, placeholders } from './ioFlow.js';
 import { saveOpen, saveSubmit } from './saveFlow.js';
@@ -83,10 +87,7 @@ export default async function (
  }
 }
 
-const button = async function (
- this: ComponentBuilderPlugin,
- cmd: APIMessageComponentInteraction,
-) {
+const button = async function (this: ComponentBuilderPlugin, cmd: APIMessageComponentInteraction) {
  const [fileCall, ...args] = cmd.data.custom_id.split('_');
 
  switch (fileCall) {
@@ -108,6 +109,26 @@ const button = async function (
   }
   case ComponentBuilderRoute.OpenBuilder: {
    openFromAction.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.Action: {
+   actionPick.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.AddAt: {
+   addAt.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.BindSystem: {
+   bindSystem.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.ShowDesign: {
+   showDesign.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.SwitchDesign: {
+   switchDesign.call(this, cmd, args);
    break;
   }
   case ComponentBuilderRoute.Empty: {
@@ -139,7 +160,7 @@ const button = async function (
    break;
   }
   case ComponentBuilderRoute.Back: {
-   backToBuilder.call(this, cmd);
+   backToBuilder.call(this, cmd, args);
    break;
   }
   case ComponentBuilderRoute.CloseThread: {
@@ -151,11 +172,8 @@ const button = async function (
  }
 };
 
-const select = async function (
- this: ComponentBuilderPlugin,
- cmd: APIMessageComponentInteraction,
-) {
- const [fileCall] = cmd.data.custom_id.split('_');
+const select = async function (this: ComponentBuilderPlugin, cmd: APIMessageComponentInteraction) {
+ const [fileCall, ...args] = cmd.data.custom_id.split('_');
 
  switch (fileCall) {
   case ComponentBuilderRoute.LoadPick: {
@@ -166,8 +184,24 @@ const select = async function (
    nodePick.call(this, cmd);
    break;
   }
+  case ComponentBuilderRoute.AddPick: {
+   addPick.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.BindSystem: {
+   bindSystem.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.BindAction: {
+   bindAction.call(this, cmd, args);
+   break;
+  }
+  case ComponentBuilderRoute.BindChoice: {
+   bindChoice.call(this, cmd, args);
+   break;
+  }
   case ComponentBuilderRoute.Action: {
-   actionPick.call(this, cmd);
+   backToBuilder.call(this, cmd, []);
    break;
   }
   default:

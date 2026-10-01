@@ -33,6 +33,19 @@ test('applyText trims, caps, and rejects empty content', () => {
  });
 });
 
+test('applyButton accepts a claimed route only when the bound check allows it', () => {
+ const tree: WipTree = [makeRow(makeButton('economy/balance', 'x'))];
+ const isBound = (id: string) => id === 'economy/balance';
+
+ assert.deepEqual(applyButton(tree, '0.0', 'y', 'economy/balance'), {
+  ok: false,
+  error: BuilderErrorCode.CustomIdPrefix,
+ });
+ const ok = applyButton(tree, '0.0', 'y', 'economy/balance', isBound);
+ assert.ok(ok.ok);
+ assert.equal((getNode(ok.tree, '0.0') as { label: string }).label, 'y');
+});
+
 test('applyButton enforces the c- prefix and uniqueness', () => {
  const tree: WipTree = [
   makeRow(makeButton('c-a', 'x')),

@@ -7,9 +7,16 @@ import {
 } from 'discord-api-types/v10';
 
 import { findModalValue } from '../../../../Util/findModalValue.js';
-import { MediaAddKind, NodeKind } from '../../Classes/Nodes.js';
+import { MediaAddKind, NodeAction, NodeKind } from '../../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
+import {
+ addTargetArgs,
+ insertAtTarget,
+ parseAddTarget,
+ type AddResult,
+ type AddTarget,
+} from '../../Util/addTarget.js';
 import { applyErrorText } from '../../Util/applyErrorText.js';
 import {
  applyButton,
@@ -25,7 +32,6 @@ import { builderContext, ephemeralNote, type BuilderView } from '../../Util/buil
 import {
  BuilderErrorCode,
  getNode,
- insertNode,
  kindOf,
  makeGallery,
  makeSectionWithThumbnail,
@@ -281,10 +287,15 @@ export const openMediaModal = async function (
  this: ComponentBuilderPlugin,
  cmd: APIMessageComponentInteraction,
  kind: MediaAddKind,
+ target?: AddTarget,
 ) {
  const t = await this.t(cmd.guild_id ?? undefined);
  const modal = new ModalBuilder().setCustomId(
-  this.getRoute(ComponentBuilderRoute.MediaAddSave, kind),
+  this.getRoute(
+   ComponentBuilderRoute.MediaAddSave,
+   kind,
+   ...(target ? addTargetArgs(target) : []),
+  ),
  );
 
  if (kind === MediaAddKind.Gallery) {
@@ -362,6 +373,7 @@ export const editorSave = async function (
      path,
      value(cmd, ModalField.Label),
      value(cmd, ModalField.Url) || value(cmd, ModalField.CustomId),
+     this.bindings.claims,
     );
    case ComponentType.StringSelect:
    case ComponentType.UserSelect:
@@ -413,17 +425,14 @@ export const mediaAddSave = async function (
  cmd: APIModalSubmitInteraction,
  args: string[],
 ) {
- const [kind] = args;
+ const [kind, ...targetArgs] = args;
  if (!(Object.values(MediaAddKind) as string[]).includes(kind)) return;
 
  const ctx = await builderContext.call(this, cmd);
  if (!ctx) return;
  const { view } = ctx;
  const t = await this.t(cmd.guild_id ?? undefined);
-
- const selected = view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
- const selectedKind = selected ? kindOf(selected) : null;
- const parentPath = selectedKind === NodeKind.Container ? (view.selectedPath ?? '') : '';
+ const target = parseAddTarget(targetArgs);
 
  const url = parseHttpUrl(value(cmd, ModalField.Url).trim());
  if (kind !== MediaAddKind.Gallery && !url) {
@@ -431,28 +440,32 @@ export const mediaAddSave = async function (
   return;
  }
 
- const result = ((): TreeResult => {
+ const result = ((): AddResult => {
   switch (kind as MediaAddKind) {
    case MediaAddKind.Gallery: {
     const items = parseGalleryLines(value(cmd, ModalField.Lines));
     if (!Array.isArray(items)) return { ok: false, error: items };
-    return insertNode(view.tree, parentPath, makeGallery(items));
+    return insertAtTarget(view.tree, target, NodeAction.AddGallery, makeGallery(items));
    }
    case MediaAddKind.SectionThumbnail:
-    return insertNode(
+    return insertAtTarget(
      view.tree,
-     parentPath,
+     target,
+     NodeAction.AddSectionThumbnail,
      makeSectionWithThumbnail(t.defaults.text(), url ?? ''),
     );
    case MediaAddKind.AccessoryThumbnail: {
-    if (!view.selectedPath || selectedKind !== NodeKind.Section) {
+    const path = view.selectedPath;
+    const selected = path ? getNode(view.tree, path) : null;
+    if (!path || !selected || kindOf(selected) !== NodeKind.Section) {
      return { ok: false, error: BuilderErrorCode.NotAllowedHere };
     }
-    return setAccessory(
+    const applied = setAccessory(
      view.tree,
-     view.selectedPath,
+     path,
      makeThumbnail(url ?? '', value(cmd, ModalField.Alt).trim() || undefined),
     );
+    return applied.ok ? { ...applied, path } : applied;
    }
    default:
     return { ok: false, error: BuilderErrorCode.NotAllowedHere };
@@ -464,5 +477,9 @@ export const mediaAddSave = async function (
   return;
  }
 
- await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree: result.tree });
+ await presentBuilder.call(this, cmd, ctx.view.tree, {
+  ...ctx.view,
+  tree: result.tree,
+  selectedPath: result.path,
+ });
 };

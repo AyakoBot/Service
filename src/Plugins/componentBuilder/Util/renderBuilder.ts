@@ -19,16 +19,19 @@ import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import { EmoteName } from '../../../Classes/EmoteName.js';
 import { cleanPreview } from '../../../Util/cleanPreview.js';
 import { buttonEmoji, textEmote } from '../../settings/Util/settingsEmotes.js';
-import {
- NodeAction,
- NodeKind,
- rowButtonLimit,
- sectionTextLimit,
- wipComponentLimit,
-} from '../Classes/Nodes.js';
+import { NodeAction, NodeKind, wipComponentLimit } from '../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../Plugin.js';
 
+import {
+ addedKinds,
+ AddPosition,
+ addTargetArgs,
+ affordableActions,
+ positionsFor,
+ resolvePlacement,
+ type AddTarget,
+} from './addTarget.js';
 import { applyErrorText } from './applyErrorText.js';
 import type { BuilderView } from './builderContext.js';
 import { buildMarkerUrl, ChromeComponentId, isSendable } from './builderState.js';
@@ -36,13 +39,13 @@ import {
  countComponents,
  flattenTree,
  getNode,
- isAccessoryPath,
  kindOf,
  makeText,
  validateTree,
  type WipNode,
  type WipTree,
 } from './componentTree.js';
+import { actionRowsFor, isActionDisabled, styleOptions, toggleState } from './nodeActions.js';
 import { lastNodePage, NodePageNav, nodePageSize, shownNodePage } from './nodePaging.js';
 
 type Translator = Awaited<ReturnType<ComponentBuilderPlugin['t']>>;
@@ -78,7 +81,7 @@ const actionLabel = (t: Translator, action: NodeAction): string =>
 
 const nodePreview = (t: Translator, node: WipNode): string => {
  const text = (value: string | undefined | null): string =>
-  (value ? cleanPreview(value).replace(/\s+/g, ' ').trim().slice(0, previewLimit) : '');
+  value ? cleanPreview(value).replace(/\s+/g, ' ').trim().slice(0, previewLimit) : '';
 
  switch (node.type) {
   case ComponentType.TextDisplay:
@@ -109,86 +112,51 @@ const nodePreview = (t: Translator, node: WipNode): string => {
  }
 };
 
-const rootAddActions = [
- NodeAction.AddText,
- NodeAction.AddContainer,
- NodeAction.AddSectionButton,
- NodeAction.AddSectionThumbnail,
- NodeAction.AddSeparator,
- NodeAction.AddGallery,
- NodeAction.AddButton,
- NodeAction.AddStringSelect,
- NodeAction.AddUserSelect,
- NodeAction.AddRoleSelect,
- NodeAction.AddChannelSelect,
- NodeAction.AddMentionableSelect,
-];
-
-const containerAddActions = rootAddActions.filter(
- (action) => action !== NodeAction.AddContainer,
-);
-
-const structureActions = [NodeAction.MoveUp, NodeAction.MoveDown, NodeAction.Remove];
-
-const nodeActions = (node: WipNode): NodeAction[] => {
- switch (kindOf(node)) {
-  case NodeKind.Text:
-   return [NodeAction.Edit, ...structureActions];
-  case NodeKind.Container:
-   return [NodeAction.Edit, NodeAction.ToggleSpoiler, ...containerAddActions,
-    ...structureActions];
-  case NodeKind.Section: {
-   const section = node as Extract<WipNode, { type: ComponentType.Section }>;
-   const adds = section.components.length < sectionTextLimit ? [NodeAction.AddTextChild] : [];
-   return [...adds, NodeAction.AccessoryButton, NodeAction.AccessoryThumbnail,
-    ...structureActions];
-  }
-  case NodeKind.Separator:
-   return [NodeAction.ToggleDivider, NodeAction.ToggleSpacing, ...structureActions];
-  case NodeKind.Gallery:
-   return [NodeAction.Edit, ...structureActions];
-  case NodeKind.Row: {
-   const row = node as Extract<WipNode, { type: ComponentType.ActionRow }>;
-   const allButtons = row.components.every((child) => kindOf(child) === NodeKind.Button);
-   const adds =
-    allButtons && row.components.length < rowButtonLimit ? [NodeAction.AddButton] : [];
-   return [...adds, ...structureActions];
-  }
-  case NodeKind.Button:
-   return [
-    NodeAction.Edit,
-    NodeAction.StylePrimary,
-    NodeAction.StyleSecondary,
-    NodeAction.StyleSuccess,
-    NodeAction.StyleDanger,
-    NodeAction.StyleLink,
-    NodeAction.ToggleDisabled,
-    ...structureActions,
-   ];
-  case NodeKind.StringSelect:
-   return [NodeAction.Edit, NodeAction.EditOptions, NodeAction.ToggleDisabled,
-    ...structureActions];
-  case NodeKind.UserSelect:
-  case NodeKind.RoleSelect:
-  case NodeKind.ChannelSelect:
-  case NodeKind.MentionableSelect:
-   return [NodeAction.Edit, NodeAction.ToggleDisabled, ...structureActions];
-  case NodeKind.Thumbnail:
-   return [NodeAction.Edit, NodeAction.ToggleSpoiler, ...structureActions];
-  default:
-   return [];
- }
+const actionStyles: Partial<Record<NodeAction, ButtonStyle>> = {
+ [NodeAction.Edit]: ButtonStyle.Primary,
+ [NodeAction.Add]: ButtonStyle.Success,
+ [NodeAction.Remove]: ButtonStyle.Danger,
 };
 
-export const actionsFor = (view: BuilderView): NodeAction[] => {
- const node = view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
- if (!node || !view.selectedPath) {
-  return countComponents(view.tree) >= wipComponentLimit ? [] : rootAddActions;
- }
+const actionEmotes: Partial<Record<NodeAction, EmoteName>> = {
+ [NodeAction.Edit]: EmoteName.Edit,
+ [NodeAction.EditOptions]: EmoteName.Fields,
+ [NodeAction.Style]: EmoteName.Palette,
+ [NodeAction.Add]: EmoteName.Plus,
+ [NodeAction.Remove]: EmoteName.Trash,
+ [NodeAction.AccessoryButton]: EmoteName.Command,
+ [NodeAction.AccessoryThumbnail]: kindEmotes[NodeKind.Thumbnail],
+ [NodeAction.StyleLink]: EmoteName.Link,
+};
 
- const actions = nodeActions(node);
- if (!isAccessoryPath(view.selectedPath)) return actions;
- return actions.filter((action) => !structureActions.includes(action));
+const positionLabel = (t: Translator, position: AddPosition): string => {
+ const labels: Record<AddPosition, () => string> = {
+  [AddPosition.Inside]: t.base.t.Inside,
+  [AddPosition.After]: t.base.t.After,
+  [AddPosition.End]: t.add.atEnd,
+ };
+ return labels[position]();
+};
+
+const nodeName = (t: Translator, node: WipNode): string => {
+ const kind = kindOf(node);
+ return [`**${kind ? kindLabel(t, kind) : '?'}**`, nodePreview(t, node)]
+  .filter(Boolean)
+  .join(' · ');
+};
+
+const targetLine = (t: Translator, view: BuilderView, target: AddTarget): string => {
+ const anchorPath = resolvePlacement(view.tree, target)?.anchor;
+ const anchor = anchorPath ? getNode(view.tree, anchorPath) : null;
+ if (!anchor) return t.add.targetEnd();
+
+ const component = nodeName(t, anchor);
+ if (target.position === AddPosition.Inside) return t.add.targetInside({ component });
+
+ const selected = target.selectedPath ? getNode(view.tree, target.selectedPath) : null;
+ return selected && anchorPath !== target.selectedPath
+  ? t.add.targetAfterHolder({ component, selected: nodeName(t, selected) })
+  : t.add.targetAfter({ component });
 };
 
 const markerLinkButton = (view: BuilderView): ButtonBuilder =>
@@ -205,14 +173,16 @@ const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, vie
  const options = entries.slice(page * nodePageSize, (page + 1) * nodePageSize).map((entry) => {
   const kind = kindOf(entry.node);
   const option = new StringSelectMenuOptionBuilder()
-   .setLabel(
-    `${'· '.repeat(entry.depth)}${kind ? kindLabel(t, kind) : '?'}`.slice(0, 100),
-   )
+   .setLabel(`${'· '.repeat(entry.depth)}${kind ? kindLabel(t, kind) : '?'}`.slice(0, 100))
    .setValue(entry.path)
    .setDefault(entry.path === view.selectedPath);
   if (kind) option.setEmoji(buttonEmoji(view.emotes.get(kindEmotes[kind])));
 
-  const preview = nodePreview(t, entry.node);
+  const system =
+   'custom_id' in entry.node ? this.bindings.systemName(entry.node.custom_id) : null;
+  const preview = [nodePreview(t, entry.node), system ? t.bind.bound({ system }) : '']
+   .filter(Boolean)
+   .join(' · ');
   if (preview) option.setDescription(preview.slice(0, 100));
   return option;
  });
@@ -233,7 +203,9 @@ const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, vie
    : []),
  ];
 
- if (paged.length) { select.addOptions(paged); } else {
+ if (paged.length) {
+  select.addOptions(paged);
+ } else {
   select
    .setDisabled(true)
    .addOptions(new StringSelectMenuOptionBuilder().setLabel('-').setValue('-'));
@@ -242,28 +214,73 @@ const nodeSelectRow = function (this: ComponentBuilderPlugin, t: Translator, vie
  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 };
 
-const actionSelectRow = function (
+const actionButton = function (
  this: ComponentBuilderPlugin,
  t: Translator,
  view: BuilderView,
+ action: NodeAction,
 ) {
- const actions = actionsFor(view);
+ const node = view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
+ const state = node ? toggleState(node, action) : null;
+ const stateEmote = state ? EmoteName.Enabled : EmoteName.Disabled;
+ const stateStyle = state ? ButtonStyle.Success : ButtonStyle.Secondary;
+ const emote = state === null ? actionEmotes[action] : stateEmote;
+
+ const button = new ButtonBuilder()
+  .setCustomId(this.getRoute(ComponentBuilderRoute.Action, action, view.selectedPath ?? ''))
+  .setLabel(actionLabel(t, action).slice(0, 80))
+  .setStyle(state === null ? (actionStyles[action] ?? ButtonStyle.Secondary) : stateStyle)
+  .setDisabled(isActionDisabled(view.tree, view.selectedPath, action));
+ if (emote) button.setEmoji(buttonEmoji(view.emotes.get(emote)));
+ return button;
+};
+
+const actionButtonRows = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
+ return actionRowsFor(view.tree, view.selectedPath).map((actions) =>
+  new ActionRowBuilder<ButtonBuilder>().addComponents(
+   actions.map((action) => actionButton.call(this, t, view, action)),
+  ),
+ );
+};
+
+const backButton = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ view: BuilderView,
+ selectedPath: string | null,
+) {
+ return new ButtonBuilder()
+  .setStyle(ButtonStyle.Secondary)
+  .setCustomId(this.getRoute(ComponentBuilderRoute.Back, selectedPath ?? '', view.nodePage))
+  .setLabel(t.base.t.Back())
+  .setEmoji(buttonEmoji(view.emotes.back));
+};
+
+const addSelectRow = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ view: BuilderView,
+ target: AddTarget,
+) {
+ const placement = resolvePlacement(view.tree, target);
+ const actions = placement ? affordableActions(view.tree, placement) : [];
 
  const select = new StringSelectMenuBuilder()
-  .setCustomId(this.getRoute(ComponentBuilderRoute.Action))
-  .setPlaceholder(
-   view.selectedPath ? t.builder.actionPlaceholder() : t.builder.addPlaceholder(),
-  )
+  .setCustomId(this.getRoute(ComponentBuilderRoute.AddPick, ...addTargetArgs(target)))
+  .setPlaceholder(t.add.placeholder())
   .setMinValues(1)
   .setMaxValues(1);
 
  if (actions.length) {
   select.addOptions(
-   actions.map((action) =>
-    new StringSelectMenuOptionBuilder()
+   actions.map((action) => {
+    const option = new StringSelectMenuOptionBuilder()
      .setLabel(actionLabel(t, action).slice(0, 100))
-     .setValue(action),
-   ),
+     .setValue(action);
+    const kind = addedKinds[action];
+    if (kind) option.setEmoji(buttonEmoji(view.emotes.get(kindEmotes[kind])));
+    return option;
+   }),
   );
  } else {
   select
@@ -272,6 +289,69 @@ const actionSelectRow = function (
  }
 
  return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
+};
+
+const addPositionRow = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ view: BuilderView,
+ target: AddTarget,
+) {
+ const positions = positionsFor(view.tree, target.selectedPath).map((position) =>
+  new ButtonBuilder()
+   .setStyle(position === target.position ? ButtonStyle.Primary : ButtonStyle.Secondary)
+   .setCustomId(
+    this.getRoute(ComponentBuilderRoute.AddAt, ...addTargetArgs({ ...target, position })),
+   )
+   .setLabel(positionLabel(t, position))
+   .setDisabled(!resolvePlacement(view.tree, { ...target, position })),
+ );
+
+ return new ActionRowBuilder<ButtonBuilder>().addComponents(
+  ...positions,
+  backButton.call(this, t, view, target.selectedPath),
+ );
+};
+
+export const addRows = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ view: BuilderView,
+ target: AddTarget,
+): APIMessageTopLevelComponent[] {
+ return [
+  new TextDisplayBuilder().setContent(
+   `${textEmote(view.emotes.plus)} ${targetLine(t, view, target)}`,
+  ),
+  addSelectRow.call(this, t, view, target),
+  addPositionRow.call(this, t, view, target),
+ ].map((row) => row.toJSON() as unknown as APIMessageTopLevelComponent);
+};
+
+export const styleRows = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ view: BuilderView,
+ path: string,
+): APIMessageTopLevelComponent[] {
+ const node = getNode(view.tree, path);
+ const current = node?.type === ComponentType.Button ? node.style : null;
+
+ const styles = styleOptions.map(({ action, style }) => {
+  const button = new ButtonBuilder()
+   .setStyle(style === ButtonStyle.Link ? ButtonStyle.Secondary : style)
+   .setCustomId(this.getRoute(ComponentBuilderRoute.Action, action, path))
+   .setLabel(actionLabel(t, action).slice(0, 80))
+   .setDisabled(style === current);
+  const emote = actionEmotes[action];
+  if (emote) button.setEmoji(buttonEmoji(view.emotes.get(emote)));
+  return button;
+ });
+
+ return [
+  new ActionRowBuilder<ButtonBuilder>().addComponents(styles),
+  new ActionRowBuilder<ButtonBuilder>().addComponents(backButton.call(this, t, view, path)),
+ ].map((row) => row.toJSON() as unknown as APIMessageTopLevelComponent);
 };
 
 const utilityRow = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
@@ -300,7 +380,7 @@ const utilityRow = function (this: ComponentBuilderPlugin, t: Translator, view: 
 };
 
 const actionRow = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
- const locked = !view.canManage || !isSendable(view.tree);
+ const locked = !view.canManage || !isSendable(view.tree, this.bindings.claims);
 
  return new ActionRowBuilder<ButtonBuilder>().addComponents(
   new ButtonBuilder()
@@ -335,7 +415,7 @@ export const builderRows = function (
 ): APIMessageTopLevelComponent[] {
  return [
   nodeSelectRow.call(this, t, view),
-  actionSelectRow.call(this, t, view),
+  ...actionButtonRows.call(this, t, view),
   utilityRow.call(this, t, view),
   actionRow.call(this, t, view),
  ].map((row) => row.toJSON() as unknown as APIMessageTopLevelComponent);
@@ -351,9 +431,7 @@ export const sendRows = function (
 
  const select = new ChannelSelectMenuBuilder()
   .setCustomId(
-   this.getRoute(
-    webhook ? ComponentBuilderRoute.WebhookSendTo : ComponentBuilderRoute.SendTo,
-   ),
+   this.getRoute(webhook ? ComponentBuilderRoute.WebhookSendTo : ComponentBuilderRoute.SendTo),
   )
   .setPlaceholder(webhook ? t.send.webhookPlaceholder() : t.send.placeholder())
   .setChannelTypes(
@@ -370,11 +448,7 @@ export const sendRows = function (
   .setMaxValues(webhook ? 5 : 25);
 
  const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-  new ButtonBuilder()
-   .setStyle(ButtonStyle.Secondary)
-   .setCustomId(this.getRoute(ComponentBuilderRoute.Back))
-   .setLabel(t.base.t.Back())
-   .setEmoji(buttonEmoji(view.emotes.back)),
+  backButton.call(this, t, view, null),
  );
 
  if (mode === SendMode.Bot) {
@@ -387,25 +461,29 @@ export const sendRows = function (
   );
  }
 
- return [
-  new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(select),
-  buttons,
- ].map((row) => row.toJSON() as unknown as APIMessageTopLevelComponent);
+ return [new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(select), buttons].map(
+  (row) => row.toJSON() as unknown as APIMessageTopLevelComponent,
+ );
 };
 
-const headerText = function (this: ComponentBuilderPlugin, t: Translator, view: BuilderView) {
+const headerText = function (
+ this: ComponentBuilderPlugin,
+ t: Translator,
+ view: BuilderView,
+ browsing: boolean,
+) {
  const { emotes } = view;
  const lines = [
   `# ${textEmote(emotes.json)} ${t.builder.title()} · <@${view.marker.execId}>`,
   t.builder.desc(),
  ];
 
- const selected = view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
+ const selected = browsing && view.selectedPath ? getNode(view.tree, view.selectedPath) : null;
  if (selected && kindOf(selected) === NodeKind.Text) {
   lines.push(`${textEmote(emotes.timer)} ${t.builder.waitingForText()}`);
  }
 
- const validationError = view.tree.length ? validateTree(view.tree) : null;
+ const validationError = view.tree.length ? validateTree(view.tree, this.bindings.claims) : null;
  if (!view.tree.length) {
   lines.push(`${textEmote(emotes.warning)} ${t.builder.needsComponent()}`);
  } else if (validationError) {
@@ -435,7 +513,7 @@ export const renderBuilder = function (
   .setFlags(MessageFlags.IsComponentsV2)
   .setComponents([
    new SectionBuilder()
-    .addTextDisplayComponents(headerText.call(this, t, view))
+    .addTextDisplayComponents(headerText.call(this, t, view, !rows))
     .setButtonAccessory(markerLinkButton(view))
     .toJSON() as unknown as APIMessageTopLevelComponent,
    ...(rows ?? builderRows.call(this, t, view)),
