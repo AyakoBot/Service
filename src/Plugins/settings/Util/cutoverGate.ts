@@ -50,6 +50,7 @@ const ownerOf = function (this: SettingsPlugin, settingName: string) {
 export default function (this: SettingsPlugin, cmd: APIInteraction): boolean {
  const settingName = targetSettingName(cmd);
  const plugin = settingName ? ownerOf.call(this, settingName) : undefined;
+ if (plugin && cmd.guild_id) return plugin.isLiveFor(cmd.guild_id);
 
  if (plugin?.pilotGuilds) return plugin.pilotGuilds.includes(cmd.guild_id ?? '');
 
