@@ -30,6 +30,7 @@ test('fleet bots stay in step with the plugin bot keys', () => {
   [FleetBot.Rp]: PluginBotKey.Rp,
   [FleetBot.Ticketing]: PluginBotKey.Ticketing,
   [FleetBot.Welcome]: PluginBotKey.Welcome,
+  [FleetBot.Confessions]: PluginBotKey.Confessions,
  };
 
  fleetEntries().forEach((entry) => {
@@ -64,5 +65,23 @@ test('a synthetic token resolves to its decoded application id', () => {
  } finally {
   if (saved === undefined) delete process.env[PluginBotKey.Info];
   else process.env[PluginBotKey.Info] = saved;
+ }
+});
+
+test('the main bot resolves through the Token variable the Service actually uses', () => {
+ const appId = '650691698409734151';
+ const saved = { token: process.env.Token, main: process.env[PluginBotKey.Base] };
+ process.env.Token = `Bot ${Buffer.from(appId).toString('base64')}.segment.sig`;
+ delete process.env[PluginBotKey.Base];
+
+ try {
+  const entry = fleetEntries().find((candidate) => candidate.bot === FleetBot.Base);
+
+  assert.ok(entry);
+  assert.equal(entry.appId, appId);
+ } finally {
+  if (saved.token === undefined) delete process.env.Token;
+  else process.env.Token = saved.token;
+  if (saved.main !== undefined) process.env[PluginBotKey.Base] = saved.main;
  }
 });

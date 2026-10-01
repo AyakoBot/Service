@@ -15,11 +15,13 @@ import { accentColor, codeCommand, type Translator, type ViewContext } from '../
 
 const websiteUrl = 'https://ayakobot.com/';
 
-const lineFor = (t: Translator, emotes: EmoteSet, entry: FleetEntry): string => {
+type LiveEntry = FleetEntry & { appId: string };
+
+const isLive = (entry: FleetEntry): entry is LiveEntry => entry.appId !== null;
+
+const lineFor = (t: Translator, emotes: EmoteSet, entry: LiveEntry): string => {
  const labels = t.bots[entry.bot];
- const link = entry.appId
-  ? `[${t.fleet.invite({ bot: labels.label() })}](${constants.standard.botAddUrl(entry.appId)})`
-  : t.fleet.unavailable();
+ const link = `[${t.fleet.invite({ bot: labels.label() })}](${constants.standard.botAddUrl(entry.appId)})`;
 
  return `${textEmote(emotes.info)} **${labels.label()}** ${labels.blurb()} ${link}`;
 };
@@ -37,13 +39,15 @@ export default function (ctx: ViewContext) {
   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
  );
 
- const entries = fleetEntries();
+ const entries = fleetEntries().filter(isLive);
 
- container.addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(
-   entries.map((entry) => lineFor(ctx.t, ctx.emotes, entry)).join('\n'),
-  ),
- );
+ if (entries.length) {
+  container.addTextDisplayComponents(
+   new TextDisplayBuilder().setContent(
+    entries.map((entry) => lineFor(ctx.t, ctx.emotes, entry)).join('\n'),
+   ),
+  );
+ }
 
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(ctx.t.fleet.hint({ help: codeCommand('help') })),

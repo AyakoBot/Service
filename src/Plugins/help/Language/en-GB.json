@@ -37,8 +37,7 @@
   "intro": "Ayako is split across several Bots so each one only asks for the Permissions it needs. You are talking to **{{bot}}**.",
   "invite": "Add {{bot}}",
   "website": "Open ayakobot.com",
-  "hint": "Run {{help}} on any of them to see what it can do.",
-  "unavailable": "Not configured on this Install"
+  "hint": "Run {{help}} on any of them to see what it can do."
  },
  "bots": {
   "base": {
@@ -72,6 +71,10 @@
   "welcome": {
    "label": "Ayako Welcome",
    "blurb": "Welcome and Goodbye messages"
+  },
+  "confessions": {
+   "label": "Ayako Confessions",
+   "blurb": "Anonymous confessions with staff review"
   }
  },
  "errors": {

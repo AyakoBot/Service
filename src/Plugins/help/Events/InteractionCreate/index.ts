@@ -226,6 +226,8 @@ const dispatchCommand = async function (
 };
 
 export default async function (this: HelpPlugin, cmd: APIInteraction): Promise<void> {
+ if (cmd.application_id === this.client.getBaseAPI().botId) return;
+
  switch (cmd.type) {
   case InteractionType.ApplicationCommand:
    await dispatchCommand.call(this, cmd as APIChatInputApplicationCommandInteraction);

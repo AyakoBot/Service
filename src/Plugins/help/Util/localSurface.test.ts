@@ -3,8 +3,10 @@ import { test } from 'node:test';
 
 import type Client from '../../../Classes/Client.js';
 import AFKPlugin from '../../afk/Plugin.js';
-import RpPlugin from '../../rp/Plugin.js';
+import ComponentBuilderPlugin from '../../componentBuilder/Plugin.js';
+import EmbedBuilderPlugin from '../../embedBuilder/Plugin.js';
 import SettingsPlugin from '../../settings/Plugin.js';
+import WelcomePlugin from '../../welcome/Plugin.js';
 import HelpPlugin from '../Plugin.js';
 
 import localSurface from './localSurface.js';
@@ -25,7 +27,9 @@ const emptyClient = stubClient([]);
 
 const helpPlugin = new HelpPlugin(emptyClient);
 const afkPlugin = new AFKPlugin(emptyClient);
-const rpPlugin = new RpPlugin(emptyClient);
+const welcomePlugin = new WelcomePlugin(emptyClient);
+const embedBuilderPlugin = new EmbedBuilderPlugin(emptyClient);
+const componentBuilderPlugin = new ComponentBuilderPlugin(emptyClient);
 const settingsPlugin = new SettingsPlugin(emptyClient);
 
 const namesOf = (commands: { name: string }[]): string[] =>
@@ -71,18 +75,24 @@ test('an owner carries the settings entry it declares and nothing else', () => {
 });
 
 test('a second owner resolves through its own token', () => {
- process.env.RP_TOKEN = tokenFor('222222222222222222');
+ process.env.WELCOME_TOKEN = tokenFor('222222222222222222');
 
  try {
   const surface = localSurface.call(
-   stubClient([helpPlugin, rpPlugin, settingsPlugin]),
+   stubClient([
+    helpPlugin,
+    welcomePlugin,
+    settingsPlugin,
+    embedBuilderPlugin,
+    componentBuilderPlugin,
+   ]),
    '222222222222222222',
   );
 
-  assert.ok(namesOf(surface.commands).includes('rp'));
+  assert.ok(namesOf(surface.commands).includes('Save GIF to welcome'));
   assert.ok(!namesOf(surface.commands).includes('afk'));
  } finally {
-  delete process.env.RP_TOKEN;
+  delete process.env.WELCOME_TOKEN;
  }
 });
 
@@ -91,12 +101,12 @@ test('an owner closure excludes unrelated plugins', () => {
 
  try {
   const surface = localSurface.call(
-   stubClient([helpPlugin, afkPlugin, settingsPlugin, rpPlugin]),
+   stubClient([helpPlugin, afkPlugin, settingsPlugin, welcomePlugin]),
    '111111111111111111',
   );
 
   assert.ok(!namesOf(surface.commands).includes('ping'));
-  assert.ok(!namesOf(surface.commands).includes('rp'));
+  assert.ok(!namesOf(surface.commands).includes('Save GIF to welcome'));
  } finally {
   delete process.env.AFK_TOKEN;
  }

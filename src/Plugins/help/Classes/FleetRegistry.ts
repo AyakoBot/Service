@@ -1,4 +1,4 @@
-import { appIdOf } from '../../../Util/appIdTokens.js';
+import { appIdOf, baseToken } from '../../../Util/appIdTokens.js';
 import { PluginBotKey } from '../../../Util/pluginBotKey.js';
 import { FleetBot } from './Commands.js';
 
@@ -17,11 +17,15 @@ const bots: { bot: FleetBot; tokenKey: PluginBotKey }[] = [
  { bot: FleetBot.Economy, tokenKey: PluginBotKey.Economy },
  { bot: FleetBot.CustomRoles, tokenKey: PluginBotKey.CustomRoles },
  { bot: FleetBot.Welcome, tokenKey: PluginBotKey.Welcome },
+ { bot: FleetBot.Confessions, tokenKey: PluginBotKey.Confessions },
 ];
+
+const tokenOf = (key: PluginBotKey): string | undefined =>
+ key === PluginBotKey.Base ? baseToken() : process.env[key];
 
 export const fleetEntries = (): FleetEntry[] =>
  bots.map((entry) => {
-  const token = process.env[entry.tokenKey];
+  const token = tokenOf(entry.tokenKey);
 
   return {
    ...entry,
