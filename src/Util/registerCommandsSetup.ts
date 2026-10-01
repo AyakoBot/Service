@@ -23,6 +23,7 @@ export default async function registerCommandsSetup(tag: string) {
  const { default: pluginEconomy } = await import('../Plugins/economy/Plugin.js');
  const { default: pluginConfessions } = await import('../Plugins/confessions/Plugin.js');
  const { default: pluginWelcome } = await import('../Plugins/welcome/Plugin.js');
+ const { default: pluginHelp } = await import('../Plugins/help/Plugin.js');
  const { default: buildCommandBody } = await import('./buildCommandBody.js');
 
  const client: Client = new ClientClass();
@@ -39,6 +40,7 @@ export default async function registerCommandsSetup(tag: string) {
  client.registerPlugin(pluginEconomy);
  client.registerPlugin(pluginConfessions);
  client.registerPlugin(pluginWelcome);
+ client.registerPlugin(pluginHelp);
 
  const pluginName = process.argv
   .find((arg) => arg.startsWith('--plugin='))

@@ -1,5 +1,8 @@
 const baseKeys = ['Token', 'DevToken'];
 
+export const baseToken = (env: NodeJS.ProcessEnv = process.env): string | undefined =>
+ baseKeys.map((key) => env[key]).find(Boolean);
+
 export const appIdOf = (token: string): string | null => {
  const [segment] = token.replace('Bot ', '').split('.');
  if (!segment) return null;
