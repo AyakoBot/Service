@@ -34,6 +34,7 @@ import Plugin, {
 } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
+import type { ButtonAction } from '../../Util/buttonActions.js';
 import { withServerPlaceholders } from '../../Util/messagePlaceholders.js';
 import type { TranslatorType } from '../../Util/translator.js';
 import { EditorType } from '../settings/Plugin.js';
@@ -111,6 +112,20 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
  dependencies = [PluginName.Settings, PluginName.EmbedBuilder, PluginName.ComponentBuilder];
  tableName = 'TicketSetting';
  placeholders = withServerPlaceholders();
+
+ buttonActions: ButtonAction[] = [
+  {
+   route: TicketRoute.Create,
+   label: async (guildId: string) => (await this.t(guildId)).startTicket(),
+   choices: async ({ guildId }) =>
+    (await this.client.db.client.ticketSetting.findMany({ where: { guild: guildId } })).map(
+     (kind) => ({
+      label: kind.name || kind.panelButtonLabel || `#${kind.id}`,
+      value: String(kind.id),
+     }),
+    ),
+  },
+ ];
 
  customBotPerms =
   PermissionFlagsBits.ViewChannel |

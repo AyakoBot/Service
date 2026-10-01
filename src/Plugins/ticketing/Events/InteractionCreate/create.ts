@@ -32,9 +32,11 @@ export default async function (
   return;
  }
 
- const ticketSettings = await this.client.db.client.ticketSetting.findUnique({
-  where: { id: args[0] },
- });
+ const ticketSettings = args[0]
+  ? await this.client.db.client.ticketSetting.findFirst({
+     where: { id: args[0], guild: cmd.guild_id },
+    })
+  : null;
 
  if (!ticketSettings) {
   handleTicketError.call(this.client, {
