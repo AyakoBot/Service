@@ -23,6 +23,7 @@ export const applyErrorText = (t: Translator, code: BuilderErrorCode): string =>
   [BuilderErrorCode.TooMuchText]: t.errors.tooMuchText,
   [BuilderErrorCode.UnsupportedComponent]: t.errors.unsupportedComponent,
   [BuilderErrorCode.NotAllowedHere]: t.errors.notAllowedHere,
+  [BuilderErrorCode.AttachmentMedia]: t.errors.attachmentMedia,
  };
  return texts[code]();
 };

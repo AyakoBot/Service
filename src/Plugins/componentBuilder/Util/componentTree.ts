@@ -59,6 +59,7 @@ export enum BuilderErrorCode {
  TooMuchText = 'tooMuchText',
  UnsupportedComponent = 'unsupportedComponent',
  NotAllowedHere = 'notAllowedHere',
+ AttachmentMedia = 'attachmentMedia',
 }
 
 export type TreeResult =
@@ -193,6 +194,63 @@ export const stripIds = (tree: WipTree): WipTree => {
 
  clone.forEach(walk);
  return clone;
+};
+
+export type AdoptResult =
+ | { ok: true; tree: WipTree; dropped: number }
+ | { ok: false; error: BuilderErrorCode };
+
+const attachmentPrefix = 'attachment://';
+
+const isAttachment = (url: unknown): boolean =>
+ typeof url === 'string' && url.startsWith(attachmentPrefix);
+
+const isForeignId = (
+ node: APIButtonComponentWithCustomId | APISelectMenuComponent,
+ isBound: BoundCheck,
+): boolean =>
+ !node.custom_id.startsWith(customIdPrefix) &&
+ !(node.type === ComponentType.Button && isBound(node.custom_id));
+
+const adoptedId = (id: string): string =>
+ `${customIdPrefix}${id.slice(0, customIdLimit - customIdPrefix.length)}`;
+
+export const adoptImport = (source: WipTree, isBound: BoundCheck): AdoptResult => {
+ const tree = structuredClone(source);
+ let dropped = 0;
+ let blocked = false;
+
+ const keep = (node: WipNode): boolean => {
+  if (node.type === ComponentType.File) {
+   dropped += 1;
+   return false;
+  }
+  if (node.type !== ComponentType.MediaGallery) return true;
+
+  const items = node.items.filter((item) => !isAttachment(item.media?.url));
+  dropped += node.items.length - items.length;
+  node.items = items;
+  return items.length > 0;
+ };
+
+ const visit = (node: WipNode) => {
+  if (isInteractive(node) && isForeignId(node, isBound)) node.custom_id = adoptedId(node.custom_id);
+  if (node.type === ComponentType.Container) node.components = node.components.filter(keep);
+  if (node.type === ComponentType.Section) {
+   if (node.accessory.type === ComponentType.Thumbnail && isAttachment(node.accessory.media.url)) {
+    blocked = true;
+   }
+   visit(node.accessory);
+  }
+  childrenOf(node)?.forEach(visit);
+ };
+
+ const kept = tree.filter(keep);
+ kept.forEach(visit);
+
+ return blocked
+  ? { ok: false, error: BuilderErrorCode.AttachmentMedia }
+  : { ok: true, tree: kept, dropped };
 };
 
 export const makeText = (content: string): APITextDisplayComponent => ({

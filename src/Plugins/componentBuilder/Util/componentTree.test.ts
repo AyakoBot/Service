@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 
 import {
+ adoptImport,
  BuilderErrorCode,
  collectCustomIds,
  countComponents,
@@ -268,4 +269,78 @@ test('validateTree accepts claimed routes on buttons only', () => {
  assert.equal(validateTree(button, isBound), null);
  assert.equal(validateTree(select, isBound), BuilderErrorCode.CustomIdPrefix);
  assert.equal(validateTree(twice, isBound), BuilderErrorCode.CustomIdTaken);
+});
+
+test('adoptImport prefixes foreign ids and leaves c-, bound and link buttons alone', () => {
+ const isBound = (id: string) => id === 'economy/balance';
+ const tree: WipTree = [
+  makeRow(makeButton('36acfad8', 'A')),
+  makeRow(makeButton('c-keep', 'B')),
+  makeRow(makeButton('economy/balance', 'C')),
+  makeRow({ type: ComponentType.Button, style: ButtonStyle.Link, url: 'https://a.com', label: 'L' }),
+  makeRow(makeStringSelect('economy/balance', 'One')),
+  makeRow(makeButton('x'.repeat(100), 'Long')),
+ ];
+
+ const adopted = adoptImport(tree, isBound);
+ assert.ok(adopted.ok);
+ const ids = flattenTree(adopted.tree)
+  .map((entry) => (entry.node as { custom_id?: string }).custom_id)
+  .filter(Boolean);
+
+ assert.deepEqual(ids, [
+  'c-36acfad8',
+  'c-keep',
+  'economy/balance',
+  'c-economy/balance',
+  `c-${'x'.repeat(98)}`,
+ ]);
+ assert.equal(adopted.dropped, 0);
+ assert.equal(validateTree(adopted.tree, isBound), null);
+ assert.equal((tree[0] as { components: { custom_id: string }[] }).components[0]?.custom_id, '36acfad8');
+});
+
+test('adoptImport drops files and uploaded gallery images and counts them', () => {
+ const tree = [
+  { type: ComponentType.File, file: { url: 'attachment://a.pdf' } },
+  {
+   type: ComponentType.Container,
+   components: [
+    makeText('kept'),
+    { type: ComponentType.File, file: { url: 'attachment://b.pdf' } },
+    {
+     type: ComponentType.MediaGallery,
+     items: [{ media: { url: 'attachment://c.png' } }, { media: { url: 'https://a.com/d.png' } }],
+    },
+    { type: ComponentType.MediaGallery, items: [{ media: { url: 'attachment://e.png' } }] },
+   ],
+  },
+ ] as unknown as WipTree;
+
+ const adopted = adoptImport(tree, () => false);
+ assert.ok(adopted.ok);
+ assert.equal(adopted.dropped, 4);
+ assert.equal(adopted.tree.length, 1);
+
+ const container = adopted.tree[0] as { components: { type: number; items?: unknown[] }[] };
+ assert.deepEqual(
+  container.components.map((child) => child.type),
+  [ComponentType.TextDisplay, ComponentType.MediaGallery],
+ );
+ assert.equal(container.components[1]?.items?.length, 1);
+});
+
+test('adoptImport refuses an uploaded thumbnail', () => {
+ const tree = [
+  {
+   type: ComponentType.Section,
+   components: [makeText('t')],
+   accessory: { type: ComponentType.Thumbnail, media: { url: 'attachment://x.png' } },
+  },
+ ] as unknown as WipTree;
+
+ assert.deepEqual(adoptImport(tree, () => false), {
+  ok: false,
+  error: BuilderErrorCode.AttachmentMedia,
+ });
 });

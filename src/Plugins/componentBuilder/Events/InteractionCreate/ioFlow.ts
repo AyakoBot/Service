@@ -14,7 +14,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
-import { isLink, resolveDiscohookLink } from '../../../../Util/discohookLink.js';
+import { isLink, resolveBuilderLink } from '../../../../Util/builderLinks.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
 import { placeholderReference } from '../../../../Util/placeholderReference.js';
@@ -28,7 +28,13 @@ import type ComponentBuilderPlugin from '../../Plugin.js';
 import { applyErrorText } from '../../Util/applyErrorText.js';
 import { builderContext, ephemeralNote } from '../../Util/builderContext.js';
 import { parseMarker } from '../../Util/builderState.js';
-import { normalizeImport, stripIds, validateTree, type WipTree } from '../../Util/componentTree.js';
+import {
+ adoptImport,
+ normalizeImport,
+ stripIds,
+ validateTree,
+ type WipTree,
+} from '../../Util/componentTree.js';
 import { presentBuilder } from '../../Util/presentBuilder.js';
 
 import { openIntoThread } from './start.js';
@@ -85,7 +91,7 @@ export const importSave = async function (
 
  let parsed: unknown;
  if (isLink(code)) {
-  parsed = await resolveDiscohookLink(code);
+  parsed = await resolveBuilderLink(code);
   if (parsed === null) {
    ephemeralNote.call(this, cmd, t.io.linkFailed());
    return;
@@ -113,7 +119,13 @@ export const importSave = async function (
   return;
  }
 
- tree = stripIds(tree);
+ const adopted = adoptImport(stripIds(tree), this.bindings.claims);
+ if (!adopted.ok) {
+  ephemeralNote.call(this, cmd, applyErrorText(t, adopted.error));
+  return;
+ }
+ tree = adopted.tree;
+
  const validationError = validateTree(tree, this.bindings.claims);
  if (validationError) {
   ephemeralNote.call(this, cmd, applyErrorText(t, validationError));
@@ -124,10 +136,27 @@ export const importSave = async function (
   const ctx = await builderContext.call(this, cmd);
   if (!ctx) return;
   await presentBuilder.call(this, cmd, ctx.view.tree, { ...ctx.view, tree, selectedPath: null });
-  return;
+ } else {
+  await openIntoThread.call(this, cmd, tree, RespondMode.Update);
  }
 
- await openIntoThread.call(this, cmd, tree, RespondMode.Update);
+ if (adopted.dropped) {
+  await followUpNote.call(this, cmd, t.io.droppedFiles({ count: String(adopted.dropped) }));
+ }
+};
+
+const followUpNote = async function (
+ this: ComponentBuilderPlugin,
+ cmd: APIModalSubmitInteraction,
+ content: string,
+) {
+ const api = await this.getAPI(cmd.guild_id ?? '');
+ await api.webhooks.execute(
+  cmd.application_id,
+  cmd.token,
+  { content, flags: MessageFlags.Ephemeral },
+  { origin: this.name, reason: 'Component builder import note' },
+ );
 };
 
 export const exportJson = async function (
