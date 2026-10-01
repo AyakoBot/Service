@@ -41,7 +41,7 @@ export interface DataBaseTables {
  // punishments: PrismaTables.punishments;
  // reactionroles: PrismaTables.reactionroles;
  // reactionrolesettings: PrismaTables.reactionrolesettings;
- // reminder: PrismaTables.Reminder;
+ reminder: PrismaTables.Reminder;
  // reviews: PrismaTables.reviews;
  // rolerewards: PrismaTables.rolerewards;
  // roleseparator: PrismaTables.roleseparator;

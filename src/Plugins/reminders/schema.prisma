@@ -1,0 +1,21 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model Reminder {
+ userId    String  @db.VarChar
+ channelId String  @db.VarChar
+ reason    String
+ startTime Decimal @id @db.Decimal
+ endTime   Decimal @db.Decimal
+
+ @@index([userId, startTime])
+}
