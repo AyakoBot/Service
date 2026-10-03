@@ -50,7 +50,6 @@ export default class RemindersPlugin extends Plugin<Events, RemindersLanguage> {
 
  eventHandlers = {
   INTERACTION_CREATE: (data) => {
-   if (!this.client.debugGuilds.includes(data.guild_id || '')) return; // TODO: remove
    if (!this.isEnabled()) return;
 
    interactionCreate.call(this, data);
