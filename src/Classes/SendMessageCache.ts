@@ -126,8 +126,11 @@ export default class SendMessageCache {
    const flags = payloads.reduce((acc, p) => acc | (p.flags ?? 0), 0) || undefined;
    api = entry.payloads.find((p) => p.api)?.api ?? (await this.client.getAPI(entry.guildId));
 
-   const apiMessage = await api.channels
-    .createMessage(
+   const send =
+    entry.guildId === '@me'
+     ? api.channels.createDirectMessage.bind(api.channels)
+     : api.channels.createMessage.bind(api.channels);
+   const apiMessage = await send(
      entry.channelId,
      {
       embeds: payloads.flatMap((p) => p.embeds ?? []),
