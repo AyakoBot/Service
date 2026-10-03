@@ -31,7 +31,7 @@ const renderEntity = (field: SettingsField, value: unknown, customId: string): L
  const label = new LabelBuilder().setLabel(field.label);
  if (field.description) label.setDescription(clampDescription(field.description));
 
- const select = buildEntitySelect(field, value, customId);
+ const select = buildEntitySelect(field, value, customId).setRequired(false);
  if (select instanceof RoleSelectMenuBuilder) return label.setRoleSelectMenuComponent(select);
  if (select instanceof UserSelectMenuBuilder) return label.setUserSelectMenuComponent(select);
  if (select instanceof MentionableSelectMenuBuilder) {
@@ -116,6 +116,7 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
      .setCustomId(customId)
      .setMinValues(0)
      .setMaxValues(1)
+     .setRequired(false)
      .setOptions(asOptions(field).map((o) => ({ ...o, default: String(value) === o.value }))),
    );
   case ComponentKind.SelectN:
@@ -124,6 +125,7 @@ export const renderField = (field: SettingsField, row: Record<string, unknown>):
      .setCustomId(customId)
      .setMinValues(0)
      .setMaxValues(Math.max(1, asOptions(field).length))
+     .setRequired(false)
      .setOptions(
       asOptions(field).map((o) => ({
        ...o,
