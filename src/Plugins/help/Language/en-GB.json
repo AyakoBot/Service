@@ -75,6 +75,10 @@
   "confessions": {
    "label": "Ayako Confessions",
    "blurb": "Anonymous confessions with staff review"
+  },
+  "reminders": {
+   "label": "Ayako Reminders",
+   "blurb": "Reminders delivered to your DMs"
   }
  },
  "errors": {

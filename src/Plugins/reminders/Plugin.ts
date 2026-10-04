@@ -12,6 +12,7 @@ import {
 
 import Plugin, { PluginName } from '../../Classes/abstracts/Plugin.js';
 import type Client from '../../Classes/Client.js';
+import { PluginBotKey } from '../../Util/pluginBotKey.js';
 
 import ReminderEngine from './Classes/ReminderEngine.js';
 import { commandName, ReminderOption, ReminderSub } from './Classes/Routes.js';
@@ -61,6 +62,7 @@ export default class RemindersPlugin extends Plugin<Events, RemindersLanguage> {
 
  constructor(client: Client) {
   super(client);
+  this.pluginBotKey = PluginBotKey.Reminders;
 
   this.client.cache.on('scheduleExpired', (key: unknown) =>
    this.engine.onScheduleExpired(String(key)),

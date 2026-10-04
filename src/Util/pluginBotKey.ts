@@ -8,4 +8,5 @@ export enum PluginBotKey {
  Rp = 'RP_TOKEN',
  Ticketing = 'TICKET_TOKEN',
  Welcome = 'WELCOME_TOKEN',
+ Reminders = 'REMINDERS_TOKEN',
 }

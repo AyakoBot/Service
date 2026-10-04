@@ -18,4 +18,5 @@ export enum FleetBot {
  Ticketing = 'ticketing',
  Welcome = 'welcome',
  Confessions = 'confessions',
+ Reminders = 'reminders',
 }

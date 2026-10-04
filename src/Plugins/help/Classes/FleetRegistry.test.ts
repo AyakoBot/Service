@@ -31,6 +31,7 @@ test('fleet bots stay in step with the plugin bot keys', () => {
   [FleetBot.Ticketing]: PluginBotKey.Ticketing,
   [FleetBot.Welcome]: PluginBotKey.Welcome,
   [FleetBot.Confessions]: PluginBotKey.Confessions,
+  [FleetBot.Reminders]: PluginBotKey.Reminders,
  };
 
  fleetEntries().forEach((entry) => {

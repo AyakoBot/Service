@@ -1,4 +1,4 @@
-import { RequestHandlerError } from '@ayako/api';
+import { RequestHandlerError, type API } from '@ayako/api';
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
 import {
  MessageFlags,
@@ -150,18 +150,28 @@ export default class Reminder extends DBReminder {
   if (!row) return;
 
   const t = await this.plugin.t(null);
-  const dm = await this.client.getBaseAPI().users.createDM(this.userId, {
-   origin,
-   reason: 'Opening DM channel for reminder',
-  });
+  const content = `${t.ended()}\n>>> ${row.reason}`;
 
-  if (!(dm instanceof RequestHandlerError)) {
-   await new MessagePayload(this.client, { origin, reason: 'Reminder ended' })
-    .setContent(`${t.ended()}\n>>> ${row.reason}`)
-    .addSendTo({ channel: dm.id, guildId: '@me' })
-    .send();
+  if (!(await this.dm(this.plugin.getPluginAPI(), content))) {
+   await this.dm(this.client.getBaseAPI(), content);
   }
 
   await super.delete();
+ }
+
+ private async dm(api: API, content: string): Promise<boolean> {
+  const channel = await api.users.createDM(this.userId, {
+   origin,
+   reason: 'Opening DM channel for reminder',
+  });
+  if (channel instanceof RequestHandlerError) return false;
+
+  const sent = await api.channels.createDirectMessage(
+   channel.id,
+   { content },
+   { origin, reason: 'Reminder ended' },
+  );
+
+  return !(sent instanceof RequestHandlerError);
  }
 }
