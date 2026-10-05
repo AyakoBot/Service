@@ -38,7 +38,7 @@ const namesOf = (commands: { name: string }[]): string[] =>
 test('an unowned application gets the whole registered surface', () => {
  const surface = localSurface.call(stubClient([helpPlugin, afkPlugin]), unowned);
 
- assert.deepEqual(namesOf(surface.commands), ['afk', 'help', 'plugins', 'settings']);
+ assert.deepEqual(namesOf(surface.commands), ['afk', 'help', 'mod', 'plugins', 'settings']);
 });
 
 test('a declared token owner gets only its own closure plus universal commands', () => {
@@ -50,7 +50,7 @@ test('a declared token owner gets only its own closure plus universal commands',
    '111111111111111111',
   );
 
-  assert.deepEqual(namesOf(surface.commands), ['afk', 'help', 'plugins', 'settings']);
+  assert.deepEqual(namesOf(surface.commands), ['afk', 'help', 'mod', 'plugins', 'settings']);
  } finally {
   delete process.env.AFK_TOKEN;
  }

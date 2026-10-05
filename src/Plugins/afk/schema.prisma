@@ -11,18 +11,20 @@ datasource db {
 //#endregion
 
 model AfkState {
- userId  String  @db.VarChar // TODO: rename col once sync fns are obsolete
- reason  String?
- since   Decimal @db.Decimal
- guildId String  @db.VarChar // TODO: rename col once sync fns are obsolete
+ user   String  @db.VarChar
+ reason String?
+ since  Decimal @db.Decimal
+ guild  String  @db.VarChar
 
- @@id([userId, guildId])
- @@index([userId, guildId])
+ @@id([user, guild])
+ @@index([user, guild])
 }
 
 model AfkSetting {
- guildId    String @db.VarChar // TODO: rename col once sync fns are obsolete
- maxLetters Int    @default(250)
+ id         String  @id @db.VarChar
+ guild      String  @db.VarChar
+ maxLetters Int     @default(250)
+ prefix     String? @db.VarChar
 
- @@id(guildId)
+ ignoredChannels String[] @default([]) @db.VarChar
 }

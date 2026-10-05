@@ -19,7 +19,9 @@ export default async function (
  if (!msg.author_id) return;
 
  const prefix = await getPrefix.call(this.client, msg);
- const commandName = prefix ? msg.content.slice(prefix.length).split(/\s+/)[0] : null;
+ const commandName = prefix
+  ? msg.content.slice(prefix.length).split(/\s+/)[0]?.toLowerCase()
+  : null;
 
  const afk = new Afk(this, msg.author_id, data.guild_id);
  if (commandName !== AfkCommand.Afk) afk.remove(msg);

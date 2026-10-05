@@ -7,6 +7,7 @@ import {
  type ContextMenuCommandBuilder,
  type SlashCommandOptionsOnlyBuilder,
  type SlashCommandSubcommandBuilder,
+ type SlashCommandSubcommandGroupBuilder,
  type SlashCommandSubcommandsOnlyBuilder,
 } from '@discordjs/builders';
 import { GatewayDispatchEvents } from '@discordjs/core';
@@ -274,6 +275,7 @@ export default abstract class Plugin<
    SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder | ContextMenuCommandBuilder
   )[];
   settings: { category: SettingsCategory | null; commands: SlashCommandSubcommandBuilder[] }[];
+  mod?: (SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder)[];
  };
 
  nonFatalError = (error: Error | RequestHandlerError<RequestHandlerErrorType>, context: string) => {

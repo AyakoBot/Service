@@ -4,6 +4,8 @@ import {
  type SlashCommandSubcommandBuilder,
 } from '@discordjs/builders';
 import {
+ ApplicationIntegrationType,
+ InteractionContextType,
  PermissionFlagsBits,
  type RESTPostAPIChatInputApplicationCommandsJSONBody,
  type RESTPostAPIContextMenuApplicationCommandsJSONBody,
@@ -15,6 +17,7 @@ import resolvePluginDependencies from './resolvePluginDependencies.js';
 import universalCommands from './universalCommands.js';
 
 export const settingsCommandName = 'settings';
+export const modCommandName = 'mod';
 
 const buildSettingsCommand = (plugins: Client['plugins']) => {
  const command = new SlashCommandBuilder()
@@ -45,6 +48,25 @@ const buildSettingsCommand = (plugins: Client['plugins']) => {
  return command;
 };
 
+const buildModCommand = (plugins: Client['plugins']) => {
+ const entries = plugins.flatMap((plugin) => plugin.getCommands().mod ?? []);
+ if (!entries.length) return null;
+
+ const command = new SlashCommandBuilder()
+  .setName(modCommandName)
+  .setDescription('Moderation Commands')
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .setContexts([InteractionContextType.Guild])
+  .setIntegrationTypes([ApplicationIntegrationType.GuildInstall]);
+
+ entries.forEach((entry) => {
+  if (entry instanceof SlashCommandSubcommandGroupBuilder) command.addSubcommandGroup(entry);
+  else command.addSubcommand(entry);
+ });
+
+ return command;
+};
+
 const buildCommandBody = function (
  this: Client,
  only?: Client['plugins'][number],
@@ -56,7 +78,7 @@ const buildCommandBody = function (
 
  const standalone = selected.flatMap((plugin) => plugin.getCommands().commands);
 
- const bodies = [buildSettingsCommand(selected), ...standalone]
+ const bodies = [buildSettingsCommand(selected), buildModCommand(selected), ...standalone]
   .filter((command) => command !== null)
   .map((command) => command.toJSON());
 

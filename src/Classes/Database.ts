@@ -94,6 +94,10 @@ export default class Database {
      $allOperations: async (data) =>
       this.cache.handleOperation('customClient', 'guildId', data as CacheOperationData),
     },
+    afkSetting: {
+     $allOperations: async (data) =>
+      this.cache.handleOperation('afkSetting', 'guild', data as CacheOperationData),
+    },
     // welcome: {
     //  $allOperations: async (data) =>
     //   this.cache.handleOperation('welcome', 'guildid', data as CacheOperationData),

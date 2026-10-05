@@ -4,19 +4,56 @@
   "setReason": "User went AFK",
   "removeReason": "User returned from AFK",
   "replyReason": "User mentioned another AFK User",
+  "restoreReason": "User re-set their AFK status",
   "set": "-# `{{user.username}}` went AFK",
+  "graceNote": "-# Messages in the next minute won't end it.",
+  "nickTooLong": "-# Your name is too long for the AFK tag.",
+  "nickOwner": "-# Bots can't change the server owner's nickname, so there's no AFK tag.",
+  "nickFailed": "-# I couldn't add the AFK tag to your nickname.",
   "removed": "Welcome Back!\n-# You've been AFK since {{time}}",
+  "pingsTitle": "**Pings while you were away: {{count}}**",
+  "pingLine": "<@{{user}}> · {{link}}{{preview}}",
+  "pingsMore": "-# …and {{count}} more",
+  "restoreButton": "Re-set AFK state",
+  "dmButton": "DM me this",
+  "notYours": "-# Only <@{{user}}> can use this button.",
+  "dmSent": "-# Sent to your DMs.",
+  "dmFailed": "-# I couldn't DM you. Your DMs might be closed.",
+  "restored": "-# Your AFK status is back.",
+  "alreadyAfk": "-# You're already AFK.",
+  "restoreExpired": "-# This button has expired.",
   "isAFK": "<@{{user}}> is AFK since {{since}}{{text}}",
-  "disabled": "-# Setting AFK is turned off on this Server.\nAsk an admin to turn it back on with {{command}}"
+  "disabled": "-# Setting AFK is turned off on this Server.\nAsk an admin to turn it back on with {{command}}",
+  "notAfk": "-# <@{{user}}> isn't AFK.",
+  "forceRemoved": "-# Removed <@{{user}}>'s AFK status.",
+  "forceRemoveReason": "AFK status removed by a moderator",
+  "reasonReset": "-# Cleared <@{{user}}>'s AFK reason. They're still AFK.",
+  "listTitle": "**AFK members: {{count}}**",
+  "listLine": "<@{{user}}> since {{since}}{{reason}}",
+  "listPage": "-# Page {{page}} of {{pages}}",
+  "listEmpty": "-# Nobody here is AFK."
  },
  "settings": {
   "name": "AFK",
-  "desc": "Change who can use this command in `Server Settings` > `Integrations` > `Ayako` > `afk`",
+  "desc": "AFK ends with the first message sent at least one minute after going AFK. Change who can use this command in `Server Settings` > `Integrations` > `Ayako` > `afk`",
   "fields": {
    "maxLetters": {
     "name": "Max. Letters/Symbols",
     "desc": "The most letters or symbols an AFK status can have."
+   },
+   "prefix": {
+    "name": "Prefix",
+    "desc": "Go AFK by message, e.g. `,` for `,afk brb`, or a user mention like `<@ID>`. Leave empty to only use the Server's Ayako prefix."
+   },
+   "ignoredChannels": {
+    "name": "Ignored Channels",
+    "desc": "Messages in these channels don't end AFK."
    }
+  },
+  "prefixAdvert": "Prefix commands need a bot that can read messages. Add [Ayako]({{main}}) or [Ayako Ticketing]({{invite}}) to this Server.",
+  "errors": {
+   "maxLetters": "Enter a whole number of at least 1.",
+   "prefix": "A prefix can have at most {{max}} characters and no spaces, or be a user mention like `<@ID>`."
   }
  }
 }
