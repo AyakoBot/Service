@@ -1,9 +1,4 @@
-import { RequestHandlerError } from '@ayako/api';
-import {
- ComponentType,
- MessageFlags,
- type APIMessageComponentInteraction,
-} from 'discord-api-types/v10';
+import type { APIMessageComponentInteraction } from 'discord-api-types/v10';
 
 import ephemeralNote from '../../../../Util/ephemeralNote.js';
 import Afk from '../../Classes/Afk.js';
@@ -22,28 +17,7 @@ const restore: ButtonHandler = async function (cmd, guildId, userId) {
 };
 
 const dmPings: ButtonHandler = async function (cmd, guildId, userId) {
- const t = await this.t(guildId);
- const api = await this.getAPI(guildId);
- const meta = { origin: this.name, reason: 'Send the AFK ping summary' };
- const containers = cmd.message.components?.filter(
-  (component) => component.type === ComponentType.Container,
- );
-
- const dm = await api.users.createDM(userId, meta);
- const sent =
-  dm instanceof RequestHandlerError
-   ? dm
-   : await api.channels.createDirectMessage(
-      dm.id,
-      {
-       components: containers ?? [],
-       flags: MessageFlags.IsComponentsV2,
-       allowed_mentions: { parse: [] },
-      },
-      meta,
-     );
-
- ephemeralNote.call(this, cmd, sent instanceof RequestHandlerError ? t.t.dmFailed() : t.t.dmSent());
+ await new Afk(this, userId, guildId).dmPings(cmd);
 };
 
 const handlers: Record<AfkRoute, ButtonHandler> = {

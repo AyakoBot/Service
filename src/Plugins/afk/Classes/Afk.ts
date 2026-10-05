@@ -28,6 +28,7 @@ import { AfkCommand, AfkOption, AfkRoute, NickSkip } from '../Enums.js';
 import type AFKPlugin from '../Plugin.js';
 import canUserExecuteCommand from '../Util/canUserExecuteCommand.js';
 import { afkSuffixOf, taggedNick, untaggedNick } from '../Util/nick.js';
+import { pingPreview } from '../Util/pingPreview.js';
 import { postNotice } from '../Util/postNotice.js';
 import { scheduleNoticeDelete } from '../Util/scheduleNoticeDelete.js';
 import { flatten, messageLink } from '../Util/text.js';
@@ -78,8 +79,9 @@ export default class Afk {
   ).filter((afk): afk is AfkStateRow => !!afk);
   if (!afkStates.length) return;
 
+  const preview = await pingPreview.call(plugin, msg);
   await Promise.all(
-   afkStates.map((afk) => plugin.tracker.recordPing(msg.guild_id, afk.user, msg)),
+   afkStates.map((afk) => plugin.tracker.recordPing(msg.guild_id, afk.user, msg, preview)),
   );
 
   const claimed = await Promise.all(
@@ -243,7 +245,11 @@ export default class Afk {
 
   const t = await this.t();
   const pings = await this.plugin.tracker.takePings(this.guild, this.userId, Number(afk.since));
-  await this.plugin.tracker.saveReturn(this.guild, this.userId, { reason: afk.reason, pings });
+  await this.plugin.tracker.saveReturn(this.guild, this.userId, {
+   reason: afk.reason,
+   since: Number(afk.since),
+   pings,
+  });
 
   const body = new MessagePayload(this.client, {
    origin: this.plugin.name,
@@ -251,7 +257,10 @@ export default class Afk {
   })
    .setReply(msg.id)
    .setFlags(MessageFlags.IsComponentsV2)
-   .setComponents([this.returnContainer(t, afk, pings), this.returnButtons(t, pings)])
+   .setComponents([
+    this.returnContainer(t, Number(afk.since), pings, false),
+    this.returnButtons(t, pings),
+   ])
    .getAPIPayload();
 
   const notice = await postNotice.call(
@@ -323,6 +332,37 @@ export default class Afk {
   this.setNick();
  }
 
+ async dmPings(cmd: APIMessageComponentInteraction) {
+  const t = await this.t();
+  const state = await this.plugin.tracker.readReturn(this.guild, this.userId);
+  if (!state) {
+   ephemeralNote.call(this.plugin, cmd, t.t.restoreExpired());
+   return;
+  }
+
+  const api = await this.plugin.getAPI(this.guild);
+  const meta = { origin: this.plugin.name, reason: 'Send the AFK ping summary' };
+  const dm = await api.users.createDM(this.userId, meta);
+  const sent =
+   dm instanceof RequestHandlerError
+    ? dm
+    : await api.channels.createDirectMessage(
+       dm.id,
+       {
+        components: [this.returnContainer(t, state.since, state.pings, true)],
+        flags: MessageFlags.IsComponentsV2,
+        allowed_mentions: { parse: [] },
+       },
+       meta,
+      );
+
+  ephemeralNote.call(
+   this.plugin,
+   cmd,
+   sent instanceof RequestHandlerError ? t.t.dmFailed() : t.t.dmSent(),
+  );
+ }
+
  private async save(reason: string | null | undefined): Promise<void> {
   await this.client.db.client.afkState.upsert({
    where: this.where,
@@ -372,12 +412,12 @@ export default class Afk {
   return [new EmbedBuilder().setColor(Colors.Loading).setDescription(`-# ${censored}`)];
  }
 
- private returnContainer(t: Translator, afk: AfkStateRow, pings: AfkPing[]) {
+ private returnContainer(t: Translator, since: number, pings: AfkPing[], withPreviews: boolean) {
   const container = new ContainerBuilder()
    .setAccentColor(Colors.Loading)
    .addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
-     t.t.removed({ time: constants.formatters.getTime(Number(afk.since)) }),
+     t.t.removed({ time: constants.formatters.getTime(since) }),
     ),
    );
   if (!pings.length) return container.toJSON();
@@ -386,7 +426,7 @@ export default class Afk {
    t.t.pingLine({
     user: ping.author,
     link: messageLink(this.guild, ping.channel, ping.message),
-    preview: ping.preview ? `\n> -# ${ping.preview}` : '',
+    preview: withPreviews && ping.preview ? `\n> -# ${ping.preview}` : '',
    }),
   );
   const more = pings.length - shownPings;

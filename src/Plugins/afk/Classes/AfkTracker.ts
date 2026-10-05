@@ -3,7 +3,6 @@ import type { RMessage } from '@ayako/utility';
 import type Client from '../../../Classes/Client.js';
 import { AfkKey } from '../Enums.js';
 import type AFKPlugin from '../Plugin.js';
-import { previewOf } from '../Util/text.js';
 
 const noticeCooldownMs = 10000;
 const pingLimit = 20;
@@ -22,6 +21,7 @@ export interface AfkPing {
 
 export interface AfkReturn {
  reason: string | null;
+ since: number;
  pings: AfkPing[];
 }
 
@@ -53,12 +53,17 @@ export default class AfkTracker {
    'NX',
   )) === 'OK';
 
- recordPing = async (guild: string, user: string, msg: RMessage): Promise<void> => {
+ recordPing = async (
+  guild: string,
+  user: string,
+  msg: RMessage,
+  preview: string,
+ ): Promise<void> => {
   const ping: AfkPing = {
    author: msg.author_id,
    channel: msg.channel_id,
    message: msg.id,
-   preview: previewOf(msg.content ?? ''),
+   preview,
    at: Date.now(),
   };
 
@@ -92,12 +97,17 @@ export default class AfkTracker {
   );
  };
 
- takeReturn = async (guild: string, user: string): Promise<AfkReturn | null> => {
-  const key = keyOf(AfkKey.Return, guild, user);
-  const raw = await this.client.cache.cacheDb.get(key);
-  await this.client.cache.cacheDb.del(key);
+ readReturn = async (guild: string, user: string): Promise<AfkReturn | null> =>
+  parsed<AfkReturn | null>(
+   await this.client.cache.cacheDb.get(keyOf(AfkKey.Return, guild, user)),
+   null,
+  );
 
-  return parsed<AfkReturn | null>(raw, null);
+ takeReturn = async (guild: string, user: string): Promise<AfkReturn | null> => {
+  const state = await this.readReturn(guild, user);
+  await this.client.cache.cacheDb.del(keyOf(AfkKey.Return, guild, user));
+
+  return state;
  };
 
  private readPings = async (guild: string, user: string): Promise<AfkPing[]> =>
