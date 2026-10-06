@@ -5,6 +5,7 @@
   "create": "Create new",
   "overviewEmpty": "No Systems yet - create one to get started.",
   "validationFailed": "{{field}}: {{reason}}",
+  "valueRequired": "This setting needs a value.",
   "enabled": "Enabled",
   "disabled": "Disabled",
   "change": "Change",

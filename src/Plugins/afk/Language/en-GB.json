@@ -6,7 +6,6 @@
   "replyReason": "User mentioned another AFK User",
   "restoreReason": "User re-set their AFK status",
   "set": "-# `{{user.username}}` went AFK",
-  "graceNote": "-# Messages in the next minute won't end it.",
   "nickTooLong": "-# Your name is too long for the AFK tag.",
   "nickOwner": "-# Bots can't change the server owner's nickname, so there's no AFK tag.",
   "nickFailed": "-# I couldn't add the AFK tag to your nickname.",

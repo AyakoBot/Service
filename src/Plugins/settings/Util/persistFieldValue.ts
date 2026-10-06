@@ -1,3 +1,5 @@
+import { Prisma } from '@ayako/database';
+
 import type Plugin from '../../../Classes/abstracts/Plugin.js';
 import type { TableName } from '../../../Types/prisma.js';
 import type SettingsPlugin from '../Plugin.js';
@@ -27,10 +29,16 @@ export default async function (
   }
  }
 
- await this.tableClient(args.table).updateMany({
-  where: { id: args.rowId, guild: args.guildId },
-  data: { [args.field.column]: args.value },
- });
+ try {
+  await this.tableClient(args.table).updateMany({
+   where: { id: args.rowId, guild: args.guildId },
+   data: { [args.field.column]: args.value },
+  });
+ } catch (err) {
+  if (args.value !== null || !(err instanceof Prisma.PrismaClientValidationError)) throw err;
+
+  return { ok: false, reason: (await this.t(args.guildId)).navigator.valueRequired() };
+ }
 
  return { ok: true };
 }

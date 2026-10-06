@@ -391,8 +391,7 @@ export default class Afk {
 
  private async confirmation(t: Translator, afk: AfkStateRow | null) {
   const user = await this.client.cache.users.get(this.userId);
-  const status = afk ? t.t.updated({ user }) : t.t.set({ user });
-  return `${status}\n${t.t.graceNote()}`;
+  return afk ? t.t.updated({ user }) : t.t.set({ user });
  }
 
  private async reasonEmbeds(
