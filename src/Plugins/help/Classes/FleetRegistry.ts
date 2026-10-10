@@ -19,6 +19,7 @@ const bots: { bot: FleetBot; tokenKey: PluginBotKey }[] = [
  { bot: FleetBot.Welcome, tokenKey: PluginBotKey.Welcome },
  { bot: FleetBot.Confessions, tokenKey: PluginBotKey.Confessions },
  { bot: FleetBot.Reminders, tokenKey: PluginBotKey.Reminders },
+ { bot: FleetBot.BumpReminders, tokenKey: PluginBotKey.BumpReminders },
 ];
 
 const tokenOf = (key: PluginBotKey): string | undefined =>

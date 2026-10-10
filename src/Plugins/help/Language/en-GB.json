@@ -79,6 +79,10 @@
   "reminders": {
    "label": "Ayako Reminders",
    "blurb": "Reminders delivered to your DMs"
+  },
+  "bump-reminders": {
+   "label": "Ayako Bump Reminders",
+   "blurb": "A ping when your Server can be bumped again"
   }
  },
  "errors": {

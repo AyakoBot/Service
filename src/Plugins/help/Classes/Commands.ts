@@ -19,4 +19,5 @@ export enum FleetBot {
  Welcome = 'welcome',
  Confessions = 'confessions',
  Reminders = 'reminders',
+ BumpReminders = 'bump-reminders',
 }
