@@ -1,0 +1,82 @@
+{
+ "title": "{{provider}} Bump Reminder",
+ "reminderText": "You can now bump this server again!\n\nPlease type {{command}}\n-# If the bump bot doesn't respond with a bump confirmation, click the button below.",
+ "reminderTextNoCommand": "You can now bump this server again!\n-# If the bump bot doesn't respond with a bump confirmation, click the button below.",
+ "unnamedProvider": "Bump",
+ "bumpedButton": "Mark Server as bumped",
+ "marked": "Server marked as bumped.",
+ "tooEarly": "Please bump the server first. This button is only for when the bump bot doesn't respond. It unlocks {{unlock}}.",
+ "settings": {
+  "configTitle": "Bump Reminders",
+  "overviewDescription": "Reminds your community when the server can be bumped again. Add one entry per bump bot: start from a template, or point it at any bot yourself.",
+  "newRow": "New Bump Reminder",
+  "rowSummary": "{{status}} · every {{cooldown}}",
+  "groups": {
+   "general": "General",
+   "detection": "Bump Bot",
+   "pings": "Pings",
+   "repeat": "Repeat"
+  },
+  "fields": {
+   "active": "Enabled",
+   "name": "Name",
+   "template": "Start from a Template",
+   "botId": "Bump Bot",
+   "cooldownSeconds": "Bump Cooldown",
+   "commandName": "Bump Command",
+   "commandId": "Command ID",
+   "matchSource": "Where to look",
+   "matchText": "Text to look for",
+   "channel": "Reminder Channel",
+   "deleteReply": "Delete Bump Confirmation",
+   "roles": "Ping Roles",
+   "users": "Ping Users",
+   "repeatEnabled": "Repeat Reminder",
+   "repeatReminder": "Repeat After"
+  },
+  "descriptions": {
+   "active": "Whether this bump reminder is enabled",
+   "name": "Shown in the reminder heading. Defaults to a generic label",
+   "template": "Fills in a known bump bot's settings for you. You can edit everything afterwards.",
+   "botId": "The bot whose message counts as a successful bump",
+   "cooldownSeconds": "How long until the server can be bumped again, e.g. `2h` or `3h 50m`",
+   "commandName": "The command people should run, without the slash (e.g. `bump`)",
+   "commandId": "Optional. Makes the command clickable in the reminder. Right-click the command in Discord and copy its ID.",
+   "matchSource": "Which part of the bot's message to search",
+   "matchText": "The reminder starts when the chosen part contains this text. Case is ignored.",
+   "channel": "The channel reminders are sent in. Defaults to the channel the bump happened in",
+   "deleteReply": "Delete the bump bot's confirmation message shortly after the bump",
+   "roles": "Roles to ping with the reminder",
+   "users": "Users to ping with the reminder",
+   "repeatEnabled": "Send another reminder if no-one bumps",
+   "repeatReminder": "How long to wait before repeating the reminder"
+  },
+  "matchSources": {
+   "content": "Message text",
+   "embedTitle": "Embed title",
+   "embedDescription": "Embed description",
+   "embedAuthorName": "Embed author name",
+   "embedFooterText": "Embed footer text",
+   "embedFieldName": "Any embed field name",
+   "embedFieldValue": "Any embed field value"
+  },
+  "reasons": {
+   "repeatOnly": "Only shown while repeating is enabled",
+   "commandIdNeedsName": "Set the bump command first"
+  },
+  "deleteBlocked": "Turn this bump reminder off before deleting it."
+ },
+ "guide": {
+  "title": "Bump Reminders Setup Guide",
+  "intro": "Pick the bump bot, tell Ayako how its confirmation looks, choose who gets pinged, then enable it. The first bump does the rest.",
+  "advertText": "**New here?** The Setup Guide walks you through the bump reminder options.",
+  "advertButton": "Setup Guide",
+  "enable": "Turn this bump reminder on"
+ },
+ "errors": {
+  "notEnabled": "Bump reminders are not enabled in this server.",
+  "botRequired": "Pick the bump bot first.",
+  "matchRequired": "Tell Ayako what text marks a successful bump.",
+  "cooldownTooShort": "Enter a duration of at least 1 minute."
+ }
+}

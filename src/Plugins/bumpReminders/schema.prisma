@@ -1,0 +1,52 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model BumpReminderSetting {
+ id     String  @id @db.VarChar
+ guild  String  @db.VarChar
+ active Boolean @default(false)
+ name   String? @db.VarChar
+
+ // Applying a template overwrites the detection fields below
+ template String? @db.VarChar
+
+ // The bot whose message counts as a successful bump
+ botId           String? @db.VarChar
+ cooldownSeconds Decimal? @db.Decimal
+
+ // Rendered as </commandName:commandId> when the id is known, /commandName otherwise
+ commandName String? @db.VarChar
+ commandId   String? @db.VarChar
+
+ matchSource BumpMatchSource @default(Content)
+ matchText   String?         @db.VarChar
+
+ channel        String?  @db.VarChar
+ deleteReply    Boolean  @default(false)
+ roles          String[] @db.VarChar
+ users          String[] @db.VarChar
+ repeatEnabled  Boolean  @default(false)
+ repeatReminder Decimal  @default(3600) @db.Decimal
+
+ @@index([guild])
+ @@index([botId])
+}
+
+enum BumpMatchSource {
+ Content
+ EmbedTitle
+ EmbedDescription
+ EmbedAuthorName
+ EmbedFooterText
+ EmbedFieldName
+ EmbedFieldValue
+}

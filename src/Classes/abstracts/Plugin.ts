@@ -62,7 +62,7 @@ export enum PluginName {
  // Giveaways = 'giveaways',
  Reminders = 'reminders',
  // Verification = 'verification',
- // BumpReminders = 'bump-reminders',
+ BumpReminders = 'disboard-reminders',
  // Management = 'management',
  // Moderation = 'moderation',
  // Leveling = 'leveling',
