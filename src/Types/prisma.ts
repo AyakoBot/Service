@@ -97,6 +97,7 @@ export interface DataBaseTables {
  confessionSetting: PrismaTables.ConfessionSetting;
  confession: PrismaTables.Confession;
  confessionBan: PrismaTables.ConfessionBan;
+ bumpReminderSetting: PrismaTables.BumpReminderSetting;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
