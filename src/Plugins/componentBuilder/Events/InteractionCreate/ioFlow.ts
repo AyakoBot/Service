@@ -68,7 +68,7 @@ export const importOpen = async function (
    ),
   );
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening components JSON import modal',
@@ -81,7 +81,7 @@ export const importSave = async function (
 ) {
  if (!cmd.guild_id) return;
  const t = await this.t(cmd.guild_id);
- const mention = await commandMentions.call(await this.getAPI(cmd.guild_id));
+ const mention = await commandMentions.call(await this.getInteractionAPI(cmd));
 
  const code = inputIds
   .map((id) => findModalValue(cmd.data.components, id) || '')
@@ -150,7 +150,7 @@ const followUpNote = async function (
  cmd: APIModalSubmitInteraction,
  content: string,
 ) {
- const api = await this.getAPI(cmd.guild_id ?? '');
+ const api = await this.getInteractionAPI(cmd);
  await api.webhooks.execute(
   cmd.application_id,
   cmd.token,

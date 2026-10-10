@@ -20,7 +20,7 @@ const inBuilderPreview = async function (
 ): Promise<boolean> {
  if (!cmd.guild_id) return false;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const earlier = await api.channels.getMessages(
   cmd.message.channel_id,
   { limit: previewLookback, before: cmd.message.id },
@@ -71,7 +71,7 @@ export const showDesign = async function (
  const tree = await designOrNote.call(this, cmd, args);
  if (!tree || !cmd.guild_id) return;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const sent = await api.interactions.reply(
   cmd.id,
   cmd.token,
@@ -100,7 +100,7 @@ export const switchDesign = async function (
  const tree = await designOrNote.call(this, cmd, args);
  if (!tree || !cmd.guild_id) return;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const updated = await api.interactions.updateMessage(
   cmd.id,
   cmd.token,

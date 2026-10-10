@@ -26,7 +26,7 @@ export const presentBuilder = async function (
  if (!cmd.guild_id || !channelId || !view.marker.designId) return;
  if (JSON.stringify(before) === JSON.stringify(view.tree)) return;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const edited = await renderDesign
   .call(this, t, view.tree)
   .edit(channelId, view.marker.designId, cmd.guild_id, api);

@@ -67,7 +67,7 @@ const followUpNote = async function (
  content: string,
 ) {
  if (!cmd.guild_id) return;
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.followUp(
   cmd.token,
   { content, flags: MessageFlags.Ephemeral },
@@ -158,7 +158,7 @@ export const webhookOpen = async function (
     ),
   );
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening webhook identity modal',
@@ -183,7 +183,7 @@ const sendToWebhookUrl = async function (
   return;
  }
 
- const api = await this.getAPI(guildId);
+ const api = await this.getInteractionAPI(cmd);
 
  const webhook = await api.webhooks.get(parsed.id, { token: parsed.token }, {
   origin: this.name,
@@ -295,7 +295,7 @@ export const webhookSendTo = async function (
  if (!ctx) return;
 
  const t = await this.t(cmd.guild_id);
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
 
  const failed: string[] = [];
  for (const channelId of cmd.data.values) {
@@ -356,7 +356,7 @@ export const editOpen = async function (
     ),
   );
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
   origin: this.name,
   reason: 'Opening message edit modal',
@@ -414,7 +414,7 @@ export const editSave = async function (
  }
 
  const [, , channelId, messageId] = match;
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
 
  const message = await api.channels.getMessage(channelId, messageId, {
   origin: this.name,

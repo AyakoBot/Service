@@ -18,7 +18,7 @@ export const openThread = async function (
 ): Promise<string | RequestHandlerError<RequestHandlerErrorType> | null> {
  if (!cmd.guild_id || !cmd.channel || !cmd.member) return null;
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const userId = cmd.member.user.id;
 
  const thread = await api.channels.createThread(
@@ -31,7 +31,8 @@ export const openThread = async function (
   undefined,
   { origin: this.name, reason: 'Creating component builder thread' },
  );
- if (!thread || thread instanceof RequestHandlerError) return null;
+ if (!thread) return null;
+ if (thread instanceof RequestHandlerError) return thread;
 
  const added = await api.threads.addMember(thread.id, userId, {
   origin: this.name,

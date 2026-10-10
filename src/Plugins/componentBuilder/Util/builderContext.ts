@@ -60,7 +60,7 @@ export const builderContext = async function (
   return null;
  }
 
- const api = await this.getAPI(cmd.guild_id);
+ const api = await this.getInteractionAPI(cmd);
  const design = await api.channels.getMessage(message.channel_id, marker.designId, {
   origin: this.name,
   reason: 'Reading the component builder design',
