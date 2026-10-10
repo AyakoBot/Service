@@ -29,6 +29,7 @@ const { default: pluginReminders } = await import('./Plugins/reminders/Plugin.js
 const { default: pluginCustomRoles } = await import('./Plugins/customRoles/Plugin.js');
 const { default: pluginEconomy } = await import('./Plugins/economy/Plugin.js');
 const { default: pluginConfessions } = await import('./Plugins/confessions/Plugin.js');
+const { default: pluginBumpReminders } = await import('./Plugins/bumpReminders/Plugin.js');
 const { default: pluginHelp } = await import('./Plugins/help/Plugin.js');
 
 console.log('+++++++++++++++++ Welcome to Ayako +++++++++++++++++');
@@ -77,6 +78,7 @@ client.registerPlugin(pluginReminders);
 client.registerPlugin(pluginCustomRoles);
 client.registerPlugin(pluginEconomy);
 client.registerPlugin(pluginConfessions);
+client.registerPlugin(pluginBumpReminders);
 client.registerPlugin(pluginHelp);
 
 client.plugins.find((p) => p.name === 'Filter Scraper')?.disable();

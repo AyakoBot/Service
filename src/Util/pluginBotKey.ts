@@ -9,4 +9,5 @@ export enum PluginBotKey {
  Ticketing = 'TICKET_TOKEN',
  Welcome = 'WELCOME_TOKEN',
  Reminders = 'REMINDERS_TOKEN',
+ BumpReminders = 'BUMP_REMINDERS_TOKEN',
 }
