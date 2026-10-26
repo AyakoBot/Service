@@ -83,7 +83,7 @@ const customRoleOptions: OptionsResolver = async (ctx) => {
 
 const recurring = (row: EconomyRewardRow): ShowIfResult => ({ ok: row.payEvery > 0 });
 
-export default {
+const rewardsSchema: SettingsSchemaDef = {
  table: 'economyRoleReward',
  rowKey: 'id',
  multiRow: true,
@@ -417,7 +417,6 @@ export default {
    },
   ],
  },
-} satisfies SettingsSchemaDef<
- EconomyRewardRow & { panelDesign: string | null },
- EconomyTranslator
-> as unknown as SettingsSchemaDef;
+} satisfies SettingsSchemaDef<EconomyRewardRow & { panelDesign: string | null }, EconomyTranslator>;
+
+export default rewardsSchema;

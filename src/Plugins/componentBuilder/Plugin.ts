@@ -138,7 +138,7 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'customComponents',
   rowKey: 'id',
   multiRow: true,
@@ -185,8 +185,5 @@ export default class ComponentBuilderPlugin extends Plugin<Events, APILanguage> 
     ],
    },
   ],
- } satisfies SettingsSchemaDef<
-  CustomComponentsRow,
-  ComponentBuilderTranslator
- > as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<CustomComponentsRow, ComponentBuilderTranslator>;
 }

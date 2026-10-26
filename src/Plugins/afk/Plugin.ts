@@ -154,7 +154,7 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'afkSetting',
   rowKey: 'id',
   multiRow: false,
@@ -190,5 +190,5 @@ export default class AFKPlugin extends Plugin<Events, AFKLanguage> {
     ],
    },
   ],
- } satisfies SettingsSchemaDef<AfkSetting, AFKTranslator> as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<AfkSetting, AFKTranslator>;
 }

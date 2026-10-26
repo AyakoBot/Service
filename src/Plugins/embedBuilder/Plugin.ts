@@ -139,7 +139,7 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'customEmbed',
   rowKey: 'id',
   multiRow: true,
@@ -178,5 +178,5 @@ export default class EmbedBuilderPlugin extends Plugin<Events, APILanguage> {
     ],
    },
   ],
- } satisfies SettingsSchemaDef<CustomEmbedRow, EmbedBuilderTranslator> as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<CustomEmbedRow, EmbedBuilderTranslator>;
 }

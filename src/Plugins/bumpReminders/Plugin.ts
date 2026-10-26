@@ -117,7 +117,7 @@ export default class BumpRemindersPlugin extends Plugin<Events, BumpRemindersLan
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'bumpReminderSetting',
   rowKey: 'id',
   multiRow: true,
@@ -327,10 +327,7 @@ export default class BumpRemindersPlugin extends Plugin<Events, BumpRemindersLan
     },
    ],
   },
- } satisfies SettingsSchemaDef<
-  BumpReminderSetting,
-  BumpRemindersTranslator
- > as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<BumpReminderSetting, BumpRemindersTranslator>;
 
  extraSchemas = { [BumpRemindersSettingName.Bump]: this.settingsSchema };
 }

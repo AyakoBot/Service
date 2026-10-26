@@ -235,7 +235,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'welcomeSetting',
   rowKey: 'id',
   multiRow: false,
@@ -574,10 +574,7 @@ export default class WelcomePlugin extends Plugin<Events, WelcomeLanguage> {
     },
    ],
   },
- } satisfies SettingsSchemaDef<
-  WelcomeSetting & WelcomeVirtualColumns,
-  WelcomeTranslator
- > as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<WelcomeSetting & WelcomeVirtualColumns, WelcomeTranslator>;
 
  extraSchemas = { [WelcomeSettingName.Goodbye]: goodbyeFirst(this.settingsSchema) };
 }

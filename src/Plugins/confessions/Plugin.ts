@@ -190,7 +190,7 @@ export default class ConfessionsPlugin extends Plugin<Events, ConfessionsLanguag
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'confessionSetting',
   rowKey: 'id',
   multiRow: false,
@@ -477,5 +477,5 @@ export default class ConfessionsPlugin extends Plugin<Events, ConfessionsLanguag
  } satisfies SettingsSchemaDef<
   ConfessionSetting & ConfessionsVirtualColumns,
   ConfessionsTranslator
- > as unknown as SettingsSchemaDef;
+ >;
 }
