@@ -1,0 +1,188 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model Giveaway {
+ guild            String    @db.VarChar
+ message          String    @id @db.VarChar
+ channel          String    @db.VarChar
+ description      String
+ prize            String?
+ host             String    @db.VarChar
+ winnerCount      Decimal   @default(1) @db.Decimal
+ endTime          DateTime
+ participants     String[] @default([]) @db.VarChar
+ winners          String[] @default([]) @db.VarChar
+ unclaimedWinners String[] @default([]) @db.VarChar
+ forfeited        String[] @default([]) @db.VarChar
+ ended            Boolean   @default(false)
+ cancelled        Boolean   @default(false)
+ collectSeconds   Decimal?  @db.Decimal
+ failReroll       Boolean   @default(false)
+ claimUntil       DateTime?
+ claimingDone     Boolean   @default(false)
+ announceMessage  String?   @db.VarChar
+
+ // GiveawayTemplate id this giveaway was started from
+ template String? @db.VarChar
+
+ requiredRoles     String[] @default([]) @db.VarChar
+ excludedRoles     String[] @default([]) @db.VarChar
+ minAccountSeconds Decimal?            @db.Decimal
+ minTenureSeconds  Decimal?            @db.Decimal
+ minMessages       Decimal?            @db.Decimal
+ minMessagesSince  Decimal?            @db.Decimal
+ minVoiceSeconds   Decimal?            @db.Decimal
+ enforcement       GiveawayEnforcement @default(onEnd)
+
+ // Every winner must hold a personal prize while this is set
+ personalPrizes Boolean  @default(false)
+ currency       Decimal? @db.Decimal
+ winnerRoles    String[] @default([]) @db.VarChar
+ // Winners already paid their currency and roles; a guarded push keeps a double click from paying twice
+ rewarded       String[] @default([]) @db.VarChar
+
+ // Content and embeds, or Components V2 components; resolved and frozen at creation, so the Components V2 flag can never change on edit
+ design      Json?
+ banner      String? @db.VarChar
+ thumbnail   String? @db.VarChar
+ accentColor String? @db.VarChar
+
+ bonusRoles    GiveawayBonusSnapshot[]
+ entryActivity GiveawayEntryActivity[]
+ prizes        GiveawayPrize[]
+
+ @@index([guild])
+}
+
+model GiveawaySetting {
+ id    String @id @db.VarChar
+ guild String @db.VarChar
+
+ winnerCount    Decimal? @db.Decimal
+ duration       Decimal? @db.Decimal
+ collectSeconds Decimal? @db.Decimal
+ accentColor    String?  @db.VarChar
+
+ logChannel String? @db.VarChar
+ dmWinners  Boolean @default(true)
+
+ botToken      String?               @db.VarChar
+ presenceType  PresenceActivityType?
+ presenceText  String?               @db.VarChar
+ presenceEmoji String?               @db.VarChar
+
+ trackActivity      Boolean  @default(false)
+ // Channels or categories whose messages count; empty counts every channel
+ messageChannels    String[] @default([]) @db.VarChar
+ // Voice channels or categories that count; empty counts every channel but the AFK channel
+ voiceChannels      String[] @default([]) @db.VarChar
+ voiceCountMuted    Boolean  @default(false)
+ voiceCountDeafened Boolean  @default(false)
+ voiceMinMembers    Decimal  @default(1) @db.Decimal
+
+ @@index([guild])
+}
+
+// A reusable giveaway setup, started by command or on its own schedule
+model GiveawayTemplate {
+ id    String  @id @db.VarChar
+ guild String  @db.VarChar
+ name  String? @db.VarChar
+
+ description    String?
+ prize          String?
+ channel        String?  @db.VarChar
+ host           String?  @db.VarChar
+ duration       Decimal? @db.Decimal
+ winnerCount    Decimal? @db.Decimal
+ collectSeconds Decimal? @db.Decimal
+ failReroll     Boolean  @default(false)
+
+ requiredRoles     String[] @default([]) @db.VarChar
+ excludedRoles     String[] @default([]) @db.VarChar
+ minAccountSeconds Decimal?            @db.Decimal
+ minTenureSeconds  Decimal?            @db.Decimal
+ minMessages       Decimal?            @db.Decimal
+ minMessagesSince  Decimal?            @db.Decimal
+ minVoiceSeconds   Decimal?            @db.Decimal
+ enforcement       GiveawayEnforcement @default(onEnd)
+
+ bonusRoles String[] @default([]) @db.VarChar
+ bonusExtra Decimal  @default(1) @db.Decimal
+
+ personalPrizes Boolean  @default(false)
+ currency       Decimal? @db.Decimal
+ winnerRoles    String[] @default([]) @db.VarChar
+
+ // Name of a CustomEmbed or CustomComponents row used as the design
+ embed       String? @db.VarChar
+ components  String? @db.VarChar
+ banner      String? @db.VarChar
+ thumbnail   String? @db.VarChar
+ accentColor String? @db.VarChar
+
+ // Seconds between runs; null when the template never repeats
+ repeatSeconds Decimal?  @db.Decimal
+ nextRunAt     DateTime?
+
+ @@unique([guild, name])
+ @@index([guild])
+}
+
+model GiveawayBonusSnapshot {
+ message String  @db.VarChar
+ role    String  @db.VarChar
+ extra   Decimal @default(0) @db.Decimal
+
+ giveaway Giveaway @relation(fields: [message], references: [message], onDelete: Cascade)
+
+ @@id([message, role])
+}
+
+model GiveawayActivity {
+ guild        String  @db.VarChar
+ user         String  @db.VarChar
+ messages     Decimal @default(0) @db.Decimal
+ voiceSeconds Decimal @default(0) @db.Decimal
+
+ @@id([guild, user])
+ @@index([guild])
+}
+
+model GiveawayEntryActivity {
+ message  String  @db.VarChar
+ user     String  @db.VarChar
+ messages Decimal @default(0) @db.Decimal
+
+ giveaway Giveaway @relation(fields: [message], references: [message], onDelete: Cascade)
+
+ @@id([message, user])
+}
+
+// One per-winner prize; a claimed prize stays with its winner and is never handed out again
+model GiveawayPrize {
+ message  String  @db.VarChar
+ position Int
+ value    String
+ winner   String? @db.VarChar
+ claimed  Boolean @default(false)
+
+ giveaway Giveaway @relation(fields: [message], references: [message], onDelete: Cascade)
+
+ @@id([message, position])
+ @@unique([message, winner])
+}
+
+enum GiveawayEnforcement {
+ onJoin
+ onEnd
+}
