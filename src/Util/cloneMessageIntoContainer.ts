@@ -6,6 +6,7 @@ import {
  SectionBuilder,
  SeparatorBuilder,
  TextDisplayBuilder,
+ ThumbnailBuilder,
  type ContainerBuilder,
 } from '@discordjs/builders';
 import {
@@ -18,6 +19,8 @@ import {
 
 import constants from '../Classes/Constants.js';
 
+import { splitBesideThumbnail } from './splitBesideThumbnail.js';
+
 interface ContextBase {
  authorName: string;
  rawAuthor?: boolean;
@@ -27,9 +30,9 @@ interface ContextBase {
 }
 
 type ContextButton =
- | (ContextBase & { button: ButtonBuilder; context?: never })
- | (ContextBase & { button?: never; context: string })
- | (ContextBase & { button?: never; context?: never });
+ | (ContextBase & { button: ButtonBuilder; thumbnail?: never })
+ | (ContextBase & { button?: never; thumbnail: string })
+ | (ContextBase & { button?: never; thumbnail?: never });
 
 export const contextMarkerButton = (customId: string) =>
  new ButtonBuilder()
@@ -53,11 +56,24 @@ const attachmentLines = (
  label: string | undefined,
 ) => attachments.map((a) => `-# ${label ? `${label}: ` : ''}[${a.filename}](${a.url})`).join('\n');
 
+const thumbnailHeader = (contextButton: ContextButton) =>
+ contextButton.rawAuthor ? contextButton.authorName : `**${contextButton.authorName}**`;
+
 export const cloneMessageIntoContainer = function (
  this: ContainerBuilder,
  msg: RMessage | GatewayMessageDeleteDispatchData | null,
  contextButton?: ContextButton,
 ) {
+ const content = msg && 'content' in msg ? msg.content : '';
+ const stamp =
+  msg && 'content' in msg
+   ? `-# ${constants.formatters.getTime(new Date(msg.timestamp).getTime())}`
+   : null;
+ const [beside, below] = contextButton?.thumbnail
+  ? splitBesideThumbnail(thumbnailHeader(contextButton), content)
+  : ['', content];
+ const stampBeside = !!contextButton?.thumbnail && !beside && !!stamp;
+
  switch (true) {
   case !!(contextButton?.authorName && contextButton?.button): {
    this.addSectionComponents(
@@ -72,16 +88,15 @@ export const cloneMessageIntoContainer = function (
    break;
   }
 
-  case !!(contextButton?.authorName && contextButton?.context): {
-   this.addSectionComponents(
-    new SectionBuilder()
-     .addTextDisplayComponents(
-      getAuthorNameComponent(contextButton.authorName, contextButton.rawAuthor),
-     )
-     .setButtonAccessory(contextMarkerButton(contextButton.context)),
-   );
+  case !!(contextButton?.authorName && contextButton?.thumbnail): {
+   const section = new SectionBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(thumbnailHeader(contextButton)))
+    .setThumbnailAccessory(new ThumbnailBuilder().setURL(contextButton.thumbnail));
 
-   addSeparator.call(this);
+   const side = beside || (stampBeside ? stamp : null);
+   if (side) section.addTextDisplayComponents(new TextDisplayBuilder().setContent(side));
+
+   this.addSectionComponents(section);
    break;
   }
 
@@ -100,9 +115,7 @@ export const cloneMessageIntoContainer = function (
 
  if (!msg || !('content' in msg)) return;
 
- if (msg.content) {
-  this.addTextDisplayComponents(new TextDisplayBuilder().setContent(msg.content));
- }
+ if (below) this.addTextDisplayComponents(new TextDisplayBuilder().setContent(below));
 
  const isForward = msg.message_reference?.type === MessageReferenceType.Forward;
  if (isForward) {
@@ -187,10 +200,8 @@ export const cloneMessageIntoContainer = function (
   );
  }
 
+ if (stampBeside || !stamp) return;
+
  addSeparator.call(this);
- this.addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(
-   `-# ${constants.formatters.getTime(new Date(msg.timestamp).getTime())}`,
-  ),
- );
+ this.addTextDisplayComponents(new TextDisplayBuilder().setContent(stamp));
 };

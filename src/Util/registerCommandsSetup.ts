@@ -24,6 +24,7 @@ export default async function registerCommandsSetup(tag: string) {
  const { default: pluginEconomy } = await import('../Plugins/economy/Plugin.js');
  const { default: pluginConfessions } = await import('../Plugins/confessions/Plugin.js');
  const { default: pluginBumpReminders } = await import('../Plugins/bumpReminders/Plugin.js');
+ const { default: pluginGiveaways } = await import('../Plugins/giveaways/Plugin.js');
  const { default: pluginWelcome } = await import('../Plugins/welcome/Plugin.js');
  const { default: pluginHelp } = await import('../Plugins/help/Plugin.js');
  const { default: buildCommandBody } = await import('./buildCommandBody.js');
@@ -43,6 +44,7 @@ export default async function registerCommandsSetup(tag: string) {
  client.registerPlugin(pluginEconomy);
  client.registerPlugin(pluginConfessions);
  client.registerPlugin(pluginBumpReminders);
+ client.registerPlugin(pluginGiveaways);
  client.registerPlugin(pluginWelcome);
  client.registerPlugin(pluginHelp);
 

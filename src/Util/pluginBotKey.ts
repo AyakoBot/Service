@@ -10,4 +10,5 @@ export enum PluginBotKey {
  Welcome = 'WELCOME_TOKEN',
  Reminders = 'REMINDERS_TOKEN',
  BumpReminders = 'BUMP_REMINDERS_TOKEN',
+ Giveaways = 'GIVEAWAYS_TOKEN',
 }

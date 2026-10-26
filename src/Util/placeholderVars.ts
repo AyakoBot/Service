@@ -8,13 +8,13 @@ export type PlaceholderVars = Record<string, string>;
 
 const discordEpoch = 1420070400000;
 
-const avatarUrl = (user: APIUser) =>
- (user.avatar
+export const avatarUrl = (user: Pick<APIUser, 'id' | 'avatar'>) =>
+ user.avatar
   ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=1024`
-  : `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`);
+  : `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.id) >> 22n) % 6n}.png`;
 
-const iconUrl = (guild: Pick<APIGuild, 'id' | 'icon'> | null) =>
- (guild?.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=1024` : '');
+export const iconUrl = (guild: Pick<APIGuild, 'id' | 'icon'> | null) =>
+ guild?.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=1024` : '';
 
 const createdStamp = (id: string) => {
  const ms = snowflakeToMs(id) ?? Number(BigInt(id) >> 22n) + discordEpoch;
