@@ -4,13 +4,14 @@ import type { DefaultTranslator, SettingsSchema, SettingsSchemaDef } from '../Se
 const fieldDescription = (
  def: SettingsSchemaDef,
  t: DefaultTranslator,
+ mention: CommandMention,
  column?: string,
 ): string | undefined =>
  column
   ? def.groups
      .flatMap((g) => g.fields)
      .find((f) => f.column === column)
-     ?.description?.(t)
+     ?.description?.(t, mention)
   : undefined;
 
 export const globalSchemaTranslator = (
@@ -18,16 +19,17 @@ export const globalSchemaTranslator = (
  def: SettingsSchemaDef,
  mention: CommandMention = plainCommand,
 ): SettingsSchema => {
- const { rowSummary } = def;
+ const { rowSummary, rowSubtitle } = def;
 
  return {
   table: def.table,
   rowKey: def.rowKey,
   multiRow: def.multiRow,
   title: def.title?.(t),
-  overviewDescription: def.overviewDescription?.(t),
+  overviewDescription: def.overviewDescription?.(t, mention),
   rowLabel: (row) => def.rowLabel(t, row),
   rowSummary: rowSummary ? (row) => rowSummary(t, row) : undefined,
+  rowSubtitle: rowSubtitle ? (row) => rowSubtitle(t, row) : undefined,
   groups: def.groups.map((g) => ({
    id: g.id,
    label: g.label(t),
@@ -48,7 +50,7 @@ export const globalSchemaTranslator = (
     editor: f.editor,
     emote: f.emote,
     label: f.label(t),
-    description: f.description?.(t),
+    description: f.description?.(t, mention),
     arity: f.arity,
     options: Array.isArray(f.options)
      ? f.options.map((o) => ({
@@ -67,6 +69,7 @@ export const globalSchemaTranslator = (
     showIf: f.showIf,
     validate: f.validate,
     transform: f.transform,
+    help: f.help && { label: f.help.label(t), text: f.help.text(t) },
     virtual: f.virtual,
    })),
   })),
@@ -97,7 +100,7 @@ export const globalSchemaTranslator = (
         column: st.column,
         action: st.action,
         label: st.label(t),
-        description: st.description?.(t) ?? fieldDescription(def, t, st.column),
+        description: st.description?.(t) ?? fieldDescription(def, t, mention, st.column),
         required: st.required,
         showIf: st.showIf,
         done: st.done,

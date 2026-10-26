@@ -13,6 +13,7 @@ export enum SettingsAction {
  GuideStep = 'gstep',
  OverviewPage = 'opage',
  ActivateSelected = 'actsel',
+ FieldHelp = 'fhelp',
 }
 
 export interface SettingsId {

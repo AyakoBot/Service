@@ -63,9 +63,13 @@ const sendOverview = async function (
  const resolved = this.resolveSchema(settingName);
  if (!resolved) return;
 
- const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
- const t = await this.t(cmd.guild_id);
  const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const schema = globalSchemaTranslator(
+  await resolved.plugin.t(cmd.guild_id),
+  resolved.schema,
+  await commandMentions.call(api),
+ );
+ const t = await this.t(cmd.guild_id);
  const emotes = this.client.emojis.for(api);
 
  const rows = await this.tableClient(resolved.schema.table).findMany({

@@ -190,6 +190,17 @@ export const renderInlineField = (
        .setCustomId(customIdFor(SettingsAction.FieldModal, field.column)),
      ),
    );
+   if (field.help) {
+    container.addActionRowComponents(
+     new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+       .setStyle(ButtonStyle.Secondary)
+       .setLabel(field.help.label)
+       .setEmoji(buttonEmoji(emotes.info))
+       .setCustomId(customIdFor(SettingsAction.FieldHelp, field.column)),
+     ),
+    );
+   }
   }
  }
 };

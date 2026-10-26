@@ -6,6 +6,7 @@ import parseDuration from '../../../../Util/parseDuration.js';
 import { EditorType } from '../../EditorType.js';
 import type SettingsPlugin from '../../Plugin.js';
 import type { SettingsField } from '../../SettingsSchema.js';
+import { applyFieldTransform } from '../../Util/applyFieldTransform.js';
 import type { SettingsId } from '../../Util/customId.js';
 import { globalSchemaTranslator } from '../../Util/globalSchemaTranslator.js';
 import persistFieldValue from '../../Util/persistFieldValue.js';
@@ -91,28 +92,24 @@ export default async function (
   return;
  }
 
- let persisted = value;
- if (field.transform && value !== undefined && value !== null) {
-  const result = await field.transform(value, {
-   client: this.client,
-   plugin: resolved.plugin,
-   guildId: cmd.guild_id,
-   rowId: id.rowId,
-  });
+ const result = await applyFieldTransform(field, value, {
+  client: this.client,
+  plugin: resolved.plugin,
+  guildId: cmd.guild_id,
+  rowId: id.rowId,
+ });
 
-  if ('error' in result) {
-   const t = await this.t(cmd.guild_id);
-   await reRender.call(this, cmd, id);
-   await followUpWarning.call(
-    this,
-    cmd,
-    t.navigator.validationFailed({ field: field.label, reason: result.error }),
-   );
-   return;
-  }
-
-  persisted = result.value;
+ if ('error' in result) {
+  const t = await this.t(cmd.guild_id);
+  await reRender.call(this, cmd, id);
+  await followUpWarning.call(
+   this,
+   cmd,
+   t.navigator.validationFailed({ field: field.label, reason: result.error }),
+  );
+  return;
  }
+ const persisted = result.value;
 
  const written = await persistFieldValue.call(this, {
   field,

@@ -80,7 +80,12 @@ export const buildGroupPage = ({
   encodeSettingsId({ action, settingName, rowId, groupId, column, hideUnavail, guideFlags });
 
  const summary = schema.rowSummary?.(row) ?? `${t.navigator.numberLabel()} #${rowId}`;
- const headerText = `# ${textEmote(emotes.settings)} ${schema.rowLabel(row)}\n-# ${summary}`;
+ const subtitle = schema.rowSubtitle?.(row);
+ const headerText = [
+  `# ${textEmote(emotes.settings)} ${schema.rowLabel(row)}`,
+  ...(subtitle ? [`-# ${subtitle}`] : []),
+  `-# ${summary}`,
+ ].join('\n');
 
  const toggleButton = (on: boolean): ButtonBuilder =>
   new ButtonBuilder()

@@ -41,8 +41,8 @@ export interface RowGuardContext {
 
 export interface SettingsFieldVirtual<Row = Record<string, unknown>> {
  prose?: boolean;
- read: (row: Row, ctx: RowGuardContext) => Promise<unknown>;
- write: (value: unknown, row: Row, ctx: RowGuardContext) => Promise<ShowIfResult>;
+ read(row: Row, ctx: RowGuardContext): Promise<unknown>;
+ write(value: unknown, row: Row, ctx: RowGuardContext): Promise<ShowIfResult>;
 }
 
 export type RowGuard<Row = Record<string, unknown>> = (
@@ -59,6 +59,11 @@ export interface SettingsOption {
 }
 
 export type OptionsResolver = (ctx: RowGuardContext) => Promise<SettingsOption[]>;
+
+export interface SettingsFieldHelp {
+ label: string;
+ text: string;
+}
 
 export interface SettingsField<Row = Record<string, unknown>> {
  column: keyof Row & string;
@@ -79,6 +84,7 @@ export interface SettingsField<Row = Record<string, unknown>> {
  showIf?: (row: Row) => ShowIfResult;
  validate?: (value: unknown, row: Row) => ShowIfResult;
  transform?: FieldTransform;
+ help?: SettingsFieldHelp;
 }
 
 export interface SettingsGroupAction {
@@ -103,11 +109,15 @@ export interface SettingsGroup<Row = Record<string, unknown>> {
 
 export interface SettingsGuideStepAction<Row = Record<string, unknown>> {
  customId: string;
- doneIf: (row: Row, ctx: RowGuardContext) => Promise<boolean> | boolean;
+ doneIf(row: Row, ctx: RowGuardContext): Promise<boolean> | boolean;
+}
+
+interface RowCheck<Row> {
+ check(row: Row): boolean;
 }
 
 export type SettingsGuideStepRequired<Row = Record<string, unknown>> =
- boolean | ((row: Row) => boolean);
+ boolean | RowCheck<Row>['check'];
 
 export interface SettingsGuideStep<Row = Record<string, unknown>> {
  column?: keyof Row & string;
@@ -157,6 +167,7 @@ export interface SettingsSchema<Row = Record<string, unknown>> {
  overviewDescription?: string;
  rowLabel: (row: Row) => string;
  rowSummary?: (row: Row) => string;
+ rowSubtitle?: (row: Row) => string;
  groups: SettingsGroup<Row>[];
  guide?: SettingsGuide<Row>;
 }
@@ -166,11 +177,10 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  virtual?: SettingsFieldVirtual<Row>;
  editor: EditorType;
  emote?: EmoteName;
- label: (t: T) => string;
- description?: (t: T) => string;
+ label(t: T): string;
+ description?(t: T, mention: CommandMention): string;
  arity?: FieldArity;
- options?:
-  { label: (t: T) => string; value: string; description?: (t: T) => string }[] | OptionsResolver;
+ options?: { label(t: T): string; value: string; description?(t: T): string }[] | OptionsResolver;
  channelTypes?: ChannelType[];
  required?: boolean;
  secret?: boolean;
@@ -178,27 +188,28 @@ export interface SettingsFieldDef<Row = Record<string, unknown>, T = DefaultTran
  ms?: boolean;
  headerToggle?: boolean;
  separator?: boolean;
- showIf?: (row: Row) => ShowIfResult;
- validate?: (value: unknown, row: Row) => ShowIfResult;
+ showIf?(row: Row): ShowIfResult;
+ validate?(value: unknown, row: Row): ShowIfResult;
  transform?: FieldTransform;
+ help?: { label(t: T): string; text(t: T): string };
 }
 
 export interface SettingsGroupActionDef<T = DefaultTranslator> {
  customId: string;
- label: (t: T) => string;
- description?: (t: T) => string;
- buttonLabel?: (t: T) => string;
+ label(t: T): string;
+ description?(t: T): string;
+ buttonLabel?(t: T): string;
  emote?: EmoteName;
 }
 
 export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  id: string;
- label: (t: T) => string;
- description?: (t: T) => string;
+ label(t: T): string;
+ description?(t: T): string;
  emote?: EmoteName;
- showIf?: (row: Row) => ShowIfResult;
- footer?: (t: T, row: Row) => string;
- availableIf?: RowGuard<Row>;
+ showIf?(row: Row): ShowIfResult;
+ footer?(t: T, row: Row): string;
+ availableIf?(row: Row, ctx: RowGuardContext): Promise<ShowIfResult>;
  fields: SettingsFieldDef<Row, T>[];
  actions?: SettingsGroupActionDef<T>[];
 }
@@ -206,39 +217,39 @@ export interface SettingsGroupDef<Row = Record<string, unknown>, T = DefaultTran
 export interface SettingsGuideStepDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  column?: keyof Row & string;
  action?: SettingsGuideStepAction<Row>;
- label: (t: T) => string;
- description?: (t: T) => string;
+ label(t: T): string;
+ description?(t: T): string;
  required?: SettingsGuideStepRequired<Row>;
- showIf?: (row: Row) => ShowIfResult;
- done?: (row: Row) => boolean;
+ showIf?(row: Row): ShowIfResult;
+ done?(row: Row): boolean;
 }
 
 export interface SettingsGuideGateDef<T = DefaultTranslator> {
  flag: number;
- question: (t: T) => string;
- yes?: (t: T) => string;
- no?: (t: T) => string;
+ question(t: T): string;
+ yes?(t: T): string;
+ no?(t: T): string;
 }
 
 export interface SettingsGuideSectionDef<Row = Record<string, unknown>, T = DefaultTranslator> {
  id: string;
- label: (t: T) => string;
- description?: (t: T) => string;
+ label(t: T): string;
+ description?(t: T): string;
  emote?: EmoteName;
- showIf?: (row: Row) => ShowIfResult;
+ showIf?(row: Row): ShowIfResult;
  gate?: SettingsGuideGateDef<T>;
  steps: SettingsGuideStepDef<Row, T>[];
 }
 
 export interface SettingsGuideAdvertDef<T = DefaultTranslator> {
- text: (t: T) => string;
- buttonLabel: (t: T) => string;
+ text(t: T): string;
+ buttonLabel(t: T): string;
  emote?: EmoteName;
 }
 
 export interface SettingsGuideDef<Row = Record<string, unknown>, T = DefaultTranslator> {
- title: (t: T) => string;
- intro?: (t: T, mention: CommandMention) => string;
+ title(t: T): string;
+ intro?(t: T, mention: CommandMention): string;
  advert: SettingsGuideAdvertDef<T>;
  sections: SettingsGuideSectionDef<Row, T>[];
 }
@@ -247,11 +258,12 @@ export interface SettingsSchemaDef<Row = Record<string, unknown>, T = DefaultTra
  table: TableName;
  rowKey: keyof Row & string;
  multiRow: boolean;
- title?: (t: T) => string;
- overviewDescription?: (t: T) => string;
- rowLabel: (t: T, row: Row) => string;
- rowSummary?: (t: T, row: Row) => string;
- canDelete?: RowGuard<Row>;
+ title?(t: T): string;
+ overviewDescription?(t: T, mention: CommandMention): string;
+ rowLabel(t: T, row: Row): string;
+ rowSummary?(t: T, row: Row): string;
+ rowSubtitle?(t: T, row: Row): string;
+ canDelete?(row: Row, ctx: RowGuardContext): Promise<ShowIfResult>;
  onChange?: RowChangeHook;
  groups: SettingsGroupDef<Row, T>[];
  guide?: SettingsGuideDef<Row, T>;

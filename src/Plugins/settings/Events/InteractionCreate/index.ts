@@ -19,6 +19,7 @@ import { parseSettingsId, SettingsAction, type SettingsId } from '../../Util/cus
 
 import autocomplete from './autocomplete.js';
 import create from './create.js';
+import fieldHelp from './fieldHelp.js';
 import fieldModal from './fieldModal.js';
 import fieldSave from './fieldSave.js';
 import groupNav from './groupNav.js';
@@ -43,6 +44,7 @@ const componentHandlers: Partial<Record<SettingsAction, ComponentHandler>> = {
  },
  [SettingsAction.ToggleField]: toggleField,
  [SettingsAction.FieldModal]: fieldModal,
+ [SettingsAction.FieldHelp]: fieldHelp,
  [SettingsAction.ToggleUnavail]: toggleUnavail,
  [SettingsAction.Nav]: reRender,
  [SettingsAction.Guide]: reRender,

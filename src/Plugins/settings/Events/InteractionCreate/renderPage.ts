@@ -5,6 +5,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { commandMentions } from '../../../../Util/commandMention.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
 import type SettingsPlugin from '../../Plugin.js';
 import { buildGroupPage, visibleGroups } from '../../Util/buildGroupPage.js';
@@ -29,7 +30,12 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  const resolved = this.resolveSchema(settingName);
  if (!resolved) return;
 
- const schema = globalSchemaTranslator(await resolved.plugin.t(cmd.guild_id), resolved.schema);
+ const api = await resolved.plugin.getAPI(cmd.guild_id);
+ const schema = globalSchemaTranslator(
+  await resolved.plugin.t(cmd.guild_id),
+  resolved.schema,
+  await commandMentions.call(api),
+ );
 
  const row = await this.tableClient(resolved.schema.table).findFirst({
   where: { id: rowId, guild: cmd.guild_id },
@@ -41,7 +47,6 @@ export const renderPage = async function (this: SettingsPlugin, args: RenderPage
  if (!group) return;
 
  const t = await this.t(cmd.guild_id);
- const api = await resolved.plugin.getAPI(cmd.guild_id);
  const guardCtx = { client: this.client, plugin: resolved.plugin, guildId: cmd.guild_id };
  const availability = group.availableIf ? await group.availableIf(row, guardCtx) : { ok: true };
  const groupUnavailable = availability.ok ? undefined : availability.reason;
