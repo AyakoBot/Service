@@ -98,6 +98,13 @@ export interface DataBaseTables {
  confession: PrismaTables.Confession;
  confessionBan: PrismaTables.ConfessionBan;
  bumpReminderSetting: PrismaTables.BumpReminderSetting;
+ giveaway: PrismaTables.Giveaway;
+ giveawaySetting: PrismaTables.GiveawaySetting;
+ giveawayTemplate: PrismaTables.GiveawayTemplate;
+ giveawayBonusSnapshot: PrismaTables.GiveawayBonusSnapshot;
+ giveawayActivity: PrismaTables.GiveawayActivity;
+ giveawayEntryActivity: PrismaTables.GiveawayEntryActivity;
+ giveawayPrize: PrismaTables.GiveawayPrize;
 }
 
 export type PrismaModelName = keyof Prisma.TypeMap['model'];
