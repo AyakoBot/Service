@@ -22,6 +22,7 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import { Colors } from '../../../../Types/index.js';
 import { BuilderSite, builderSiteRow } from '../../../../Util/builderLinks.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
+import threadOpenError from '../../../../Util/threadOpenError.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { EmbedBuilderRoute } from '../../Classes/Routes.js';
 import CustomEmbed from '../../CustomEmbed.js';
@@ -138,7 +139,7 @@ export const openIntoThread = async function (
  const result = await openThread.call(this, cmd, embed);
  const failNote =
   result instanceof RequestHandlerError
-   ? (result.errorMessage ?? t.errors.noThread())
+   ? threadOpenError(t.base, result, cmd.channel?.id ?? '', api.botId)
    : t.errors.noThread();
  const content =
   typeof result === 'string'

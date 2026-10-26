@@ -60,7 +60,7 @@ export const openThread = async function (
  });
  if (sent instanceof RequestHandlerError) {
   this.nonFatalError(sent, 'openThread.post');
-  return null;
+  return sent;
  }
 
  if (!(await botHasMessageContent(api))) {
