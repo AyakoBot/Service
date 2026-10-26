@@ -61,7 +61,7 @@ export const openThread = async function (
  );
  if (controls instanceof RequestHandlerError) {
   this.nonFatalError(controls, 'openThread.post');
-  return null;
+  return controls;
  }
 
  const design = await api.channels.createMessage(

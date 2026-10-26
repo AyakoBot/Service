@@ -21,11 +21,9 @@ import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js'
 import { Colors } from '../../../../Types/index.js';
 import { BuilderSite, builderSiteRow } from '../../../../Util/builderLinks.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
+import threadOpenError from '../../../../Util/threadOpenError.js';
 import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js';
-import {
- ComponentBuilderCommand,
- ComponentBuilderSubcommand,
-} from '../../Classes/Commands.js';
+import { ComponentBuilderCommand, ComponentBuilderSubcommand } from '../../Classes/Commands.js';
 import { wipComponentLimit } from '../../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import CustomComponents from '../../CustomComponents.js';
@@ -35,7 +33,11 @@ import { countComponents, type WipTree } from '../../Util/componentTree.js';
 import { openThread } from '../../Util/openThread.js';
 
 const selectLimit = 25;
-const externalBuilders = [BuilderSite.DiscordBuilders, BuilderSite.Discohook, BuilderSite.MessageStyle];
+const externalBuilders = [
+ BuilderSite.DiscordBuilders,
+ BuilderSite.Discohook,
+ BuilderSite.MessageStyle,
+];
 
 const buildStartSurface = async function (
  this: ComponentBuilderPlugin,
@@ -165,7 +167,7 @@ export const openIntoThread = async function (
  const result = await openThread.call(this, cmd, tree);
  const failNote =
   result instanceof RequestHandlerError
-   ? (result.errorMessage ?? t.errors.noThread())
+   ? threadOpenError(t.base, result, cmd.channel?.id ?? '', api.botId)
    : t.errors.noThread();
  const content =
   typeof result === 'string'

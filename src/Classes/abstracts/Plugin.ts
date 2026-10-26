@@ -59,7 +59,7 @@ export enum PluginName {
  // RP = 'rp',
  // VoiceHubs = 'voice-hubs',
  // Suggestions = 'suggestions',
- // Giveaways = 'giveaways',
+ Giveaways = 'giveaways',
  Reminders = 'reminders',
  // Verification = 'verification',
  BumpReminders = 'disboard-reminders',
