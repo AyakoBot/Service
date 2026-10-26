@@ -74,7 +74,11 @@ const userDetailLines = (emotes: EmoteSet, t: Translator, user: RUser): string[]
 
  if (user.accent_color) {
   lines.push(
-   line(emotes.palette, t.user.accentColor(), `\`#${user.accent_color.toString(16).padStart(6, '0')}\``),
+   line(
+    emotes.palette,
+    t.user.accentColor(),
+    `\`#${user.accent_color.toString(16).padStart(6, '0')}\``,
+   ),
   );
  }
  if (user.avatar_decoration_data) {
@@ -268,8 +272,7 @@ export default async function (
  sub: APIApplicationCommandInteractionDataSubcommandOption,
 ) {
  const t = await this.t(cmd.guild_id ?? cmd.locale);
- const targetId =
-  getUserOption(sub, InfoOption.User) ?? cmd.member?.user.id ?? cmd.user?.id ?? '';
+ const targetId = getUserOption(sub, InfoOption.User) ?? cmd.member?.user.id ?? cmd.user?.id ?? '';
 
  const user = await resolveUser.call(this, targetId);
  if (!user) {
@@ -277,12 +280,9 @@ export default async function (
   return;
  }
 
- const member = cmd.guild_id
-  ? await this.client.cache.members.get(cmd.guild_id, user.id)
-  : null;
+ const member = cmd.guild_id ? await this.client.cache.members.get(cmd.guild_id, user.id) : null;
 
- const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
- const emotes = this.client.emojis.for(api);
+ const emotes = this.client.emojis.forApp(cmd.application_id);
 
  respond.call(this, cmd, [buildUserContainer.call(this, emotes, t, user, member)], getHide(sub));
 }
@@ -299,12 +299,9 @@ export const rerenderUser = async function (
  const user = await resolveUser.call(this, targetId);
  if (!user) return;
 
- const member = cmd.guild_id
-  ? await this.client.cache.members.get(cmd.guild_id, user.id)
-  : null;
+ const member = cmd.guild_id ? await this.client.cache.members.get(cmd.guild_id, user.id) : null;
 
- const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
- const emotes = this.client.emojis.for(api);
+ const emotes = this.client.emojis.forApp(cmd.application_id);
 
  respond.call(this, cmd, [buildUserContainer.call(this, emotes, t, user, member)], true);
 };
