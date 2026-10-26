@@ -30,4 +30,5 @@ export enum ConfessionsRoute {
 export enum MenuAction {
  Ban = 'ban',
  Report = 'report',
+ Reveal = 'reveal',
 }

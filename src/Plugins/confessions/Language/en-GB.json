@@ -201,7 +201,9 @@
   "pickBan": "Ban author",
   "pickBanHint": "Moderator. Stops them confessing and replying.",
   "pickReport": "Report confession",
-  "pickReportHint": "Send it to the review/report channel."
+  "pickReportHint": "Send it to the review/report channel.",
+  "pickReveal": "Reveal author",
+  "pickRevealHint": "Moderator. Shows who sent it. The reveal is logged."
  },
  "menu": {
   "reported": "Thanks. Your report has been sent to the moderators.",

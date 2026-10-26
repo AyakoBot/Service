@@ -13,14 +13,22 @@ import {
 import { findModalValue } from '../../../../Util/findModalValue.js';
 import { MenuAction, reasonField } from '../../Classes/Routes.js';
 import { actionPicker, banForm, deleteForm, reportForm } from '../../Util/forms.js';
-import { IdentityError, isAuthorOf } from '../../Util/identity.js';
+import { IdentityError, canReveal, isAuthorOf } from '../../Util/identity.js';
 import { MenuPath, menuPath } from '../../Util/menu.js';
 import { deferConfession, note } from '../../Util/respond.js';
 import type ConfessionsPlugin from '../../Plugin.js';
 
+import { reveal } from './review.js';
+
 type Translator = Awaited<ReturnType<ConfessionsPlugin['t']>>;
 
 type MenuInteraction = APIMessageComponentInteraction | APIModalSubmitInteraction;
+
+type MenuHandler = (
+ this: ConfessionsPlugin,
+ cmd: APIMessageComponentInteraction,
+ confessionId: string,
+) => Promise<void>;
 
 interface MenuTarget {
  settings: ConfessionSetting;
@@ -68,7 +76,13 @@ const targetOf = async function (
 
  const userId = cmd.member.user.id;
  try {
-  return { settings, confession, t, userId, identity: this.confessions.identityFor(settings, userId) };
+  return {
+   settings,
+   confession,
+   t,
+   userId,
+   identity: this.confessions.identityFor(settings, userId),
+  };
  } catch (error) {
   return (error as Error).message === IdentityError.SecretMissing
    ? t.errors.secretMissing()
@@ -98,16 +112,33 @@ export const openMenu = async function (
 
  const paths: Record<MenuPath, () => Promise<unknown>> = {
   [MenuPath.Delete]: () =>
-   api.interactions.createModal(cmd.id, cmd.token, deleteForm(t, route, confession.id, reply).toJSON(), meta),
+   api.interactions.createModal(
+    cmd.id,
+    cmd.token,
+    deleteForm(t, route, confession.id, reply).toJSON(),
+    meta,
+   ),
   [MenuPath.Report]: () =>
-   api.interactions.createModal(cmd.id, cmd.token, reportForm(t, route, confession.id, reply).toJSON(), meta),
+   api.interactions.createModal(
+    cmd.id,
+    cmd.token,
+    reportForm(t, route, confession.id, reply).toJSON(),
+    meta,
+   ),
   [MenuPath.Moderate]: () =>
    api.interactions.reply(
     cmd.id,
     cmd.token,
     {
      content: t.forms.pickerPrompt(),
-     components: [actionPicker(t, route, confession.id).toJSON()],
+     components: [
+      actionPicker(
+       t,
+       route,
+       confession.id,
+       canReveal(settings.anonymity) && Boolean(confession.author),
+      ).toJSON(),
+     ],
      flags: MessageFlags.Ephemeral,
     },
     meta,
@@ -142,17 +173,11 @@ export const openBanForm = async function (
  );
 };
 
-export const menuAction = async function (
+const openReportForm = async function (
  this: ConfessionsPlugin,
  cmd: APIMessageComponentInteraction,
  confessionId: string,
 ): Promise<void> {
- const choice = cmd.data.component_type === ComponentType.StringSelect ? cmd.data.values[0] : null;
- if (choice === MenuAction.Ban) {
-  await openBanForm.call(this, cmd, confessionId);
-  return;
- }
-
  const target = await targetOf.call(this, cmd, confessionId, posted);
  if (typeof target === 'string') {
   await replyNow.call(this, cmd, target);
@@ -163,9 +188,31 @@ export const menuAction = async function (
  await api.interactions.createModal(
   cmd.id,
   cmd.token,
-  reportForm(target.t, routeOf.call(this), target.confession.id, Boolean(target.confession.parent)).toJSON(),
+  reportForm(
+   target.t,
+   routeOf.call(this),
+   target.confession.id,
+   Boolean(target.confession.parent),
+  ).toJSON(),
   meta,
  );
+};
+
+const menuActions: Record<MenuAction, MenuHandler> = {
+ [MenuAction.Ban]: openBanForm,
+ [MenuAction.Report]: openReportForm,
+ [MenuAction.Reveal]: reveal,
+};
+
+export const menuAction = async function (
+ this: ConfessionsPlugin,
+ cmd: APIMessageComponentInteraction,
+ confessionId: string,
+): Promise<void> {
+ const choice = cmd.data.component_type === ComponentType.StringSelect ? cmd.data.values[0] : null;
+ const action = menuActions[choice as MenuAction] ?? openReportForm;
+
+ await action.call(this, cmd, confessionId);
 };
 
 export const reportSubmit = async function (
@@ -182,7 +229,12 @@ export const reportSubmit = async function (
  }
 
  const reason = findModalValue(cmd.data.components, reasonField)?.trim() ?? '';
- const failure = await this.moderation.report(target.settings, target.confession, target.userId, reason);
+ const failure = await this.moderation.report(
+  target.settings,
+  target.confession,
+  target.userId,
+  reason,
+ );
 
  await note.call(this, cmd, failure ?? target.t.menu.reported());
 };
@@ -207,5 +259,9 @@ export const deleteSubmit = async function (
  }
 
  const failure = await this.moderation.deleteByAuthor(settings, confession);
- await note.call(this, cmd, failure ?? (confession.parent ? t.menu.replyDeleted() : t.menu.deleted()));
+ await note.call(
+  this,
+  cmd,
+  failure ?? (confession.parent ? t.menu.replyDeleted() : t.menu.deleted()),
+ );
 };

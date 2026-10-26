@@ -33,9 +33,7 @@ export const banForm = (
   .setCustomId(route(ConfessionsRoute.BanModal, confessionId))
   .setTitle(t.forms.banTitle())
   .addLabelComponents(
-   new LabelBuilder()
-    .setLabel(t.forms.banReason())
-    .setTextInputComponent(reasonInput(false)),
+   new LabelBuilder().setLabel(t.forms.banReason()).setTextInputComponent(reasonInput(false)),
    new LabelBuilder()
     .setLabel(t.forms.banDuration())
     .setDescription(t.forms.banDurationHint())
@@ -77,6 +75,7 @@ export const actionPicker = (
  t: ConfessionsTranslator,
  route: RouteFn,
  confessionId: string,
+ revealable: boolean,
 ): ActionRowBuilder<StringSelectMenuBuilder> =>
  new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
   new StringSelectMenuBuilder()
@@ -91,5 +90,13 @@ export const actionPicker = (
      .setLabel(t.forms.pickReport())
      .setDescription(t.forms.pickReportHint())
      .setValue(MenuAction.Report),
+    ...(revealable
+     ? [
+        new StringSelectMenuOptionBuilder()
+         .setLabel(t.forms.pickReveal())
+         .setDescription(t.forms.pickRevealHint())
+         .setValue(MenuAction.Reveal),
+       ]
+     : []),
    ),
  );
