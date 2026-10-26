@@ -208,11 +208,15 @@ export default class EmojiRegistry {
  for = (api: CustomAPI): EmoteSet => {
   if (!this.byApp.has(api.botId)) void this.ensure(api);
 
-  const cached = this.sets.get(api.botId);
+  return this.forApp(api.botId);
+ };
+
+ forApp = (appId: string): EmoteSet => {
+  const cached = this.sets.get(appId);
   if (cached) return cached;
 
-  const set = buildEmoteSet((name) => this.resolve(api.botId, name));
-  if (this.byApp.has(api.botId)) this.sets.set(api.botId, set);
+  const set = buildEmoteSet((name) => this.resolve(appId, name));
+  if (this.byApp.has(appId)) this.sets.set(appId, set);
 
   return set;
  };
