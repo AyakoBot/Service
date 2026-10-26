@@ -3,7 +3,7 @@ import { ComponentType, type APIMessageComponentInteraction } from 'discord-api-
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
 import handleTicketError from '../../Util/handleTicketError.js';
-import startTicketCreate from '../../Util/startTicketCreate.js';
+import openCreateModal from '../../Util/openCreateModal.js';
 
 export default async function (
  this: TicketPlugin,
@@ -38,12 +38,8 @@ export default async function (
   return;
  }
 
- startTicketCreate.call(this, cmd, {
-  guildId: (cmd.guild?.id || cmd.guild_id)!,
-  settingsId,
-  type: ticketSettings.type,
+ await openCreateModal.call(this, cmd, ticketSettings, {
   userId: user.id,
   roleIds: cmd.member.roles,
-  username: user.username,
  });
 }

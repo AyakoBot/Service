@@ -3,6 +3,7 @@ import { ComponentType, type APIMessageComponentInteraction } from 'discord-api-
 import type TicketPlugin from '../../Plugin.js';
 import { buildEndPayload, buildKindSelectPayload } from '../../Util/buildIntakePayload.js';
 import getOpenableKinds from '../../Util/getOpenableKinds.js';
+import { servedBy } from '../../Util/resolveDmBotApi.js';
 
 import { startKind } from './intakeKind.js';
 
@@ -19,7 +20,13 @@ export const intakeServer = async function (
 
  const [guildId] = cmd.data.values;
  const member = await this.client.cache.members.get(guildId, userId);
- const kinds = await getOpenableKinds.call(this.client, guildId, userId, member?.roles ?? []);
+ const kinds = await getOpenableKinds.call(
+  this.client,
+  guildId,
+  userId,
+  member?.roles ?? [],
+  servedBy.call(this, cmd.application_id),
+ );
 
  if (!kinds.length) {
   const t = await this.t(guildId);

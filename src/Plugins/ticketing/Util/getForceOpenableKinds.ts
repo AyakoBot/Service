@@ -18,6 +18,18 @@ export interface ForceOpenCandidate {
  block: ForceOpenBlock | null;
 }
 
+type Translator = Awaited<ReturnType<TicketPlugin['t']>>;
+
+const blockReasons: Record<ForceOpenBlock, (t: Translator) => string> = {
+ [ForceOpenBlock.NotActive]: (t) => t.forceOpen.blockNotActive(),
+ [ForceOpenBlock.NotDmType]: (t) => t.forceOpen.blockNotDmType(),
+ [ForceOpenBlock.NoCustomBot]: (t) => t.forceOpen.blockNoCustomBot(),
+ [ForceOpenBlock.BotUnavailable]: (t) => t.forceOpen.blockBotUnavailable(),
+ [ForceOpenBlock.NotStaff]: (t) => t.forceOpen.blockNotStaff(),
+};
+
+export const blockReason = (t: Translator, block: ForceOpenBlock): string => blockReasons[block](t);
+
 const dmTypes = [TicketType.dmToChannel, TicketType.dmToThread];
 
 const blockOf = async function (

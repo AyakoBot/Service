@@ -1,16 +1,13 @@
 import { RequestHandlerError } from '@ayako/api';
 import { LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
-import { TextInputStyle, type APIMessageComponentInteraction } from 'discord-api-types/v10';
+import { TextInputStyle } from 'discord-api-types/v10';
 
+import type { TicketCommandInteraction } from '../../Classes/ChannelTicket.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 import getTicketClassById from '../../Util/getTicketClassById.js';
 
-export default async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
- args: string[],
-) {
+export default async function (this: TicketPlugin, cmd: TicketCommandInteraction, args: string[]) {
  if (!cmd.guild_id) return;
 
  const t = await this.t(cmd.guild_id);

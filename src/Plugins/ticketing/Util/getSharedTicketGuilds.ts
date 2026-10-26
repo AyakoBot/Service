@@ -9,6 +9,8 @@ export interface CandidateGuild {
  kinds: TicketSetting[];
 }
 
+export type SettingFilter = (setting: TicketSetting) => boolean;
+
 const memberApi = async function (this: Client, guildId: string, kinds: TicketSetting[]) {
  const cipher = kinds.find((kind) => kind.botToken)?.botToken;
  if (!cipher) return this.getAPI(guildId);
@@ -39,15 +41,11 @@ const hydrateMember = async function (
 export default async function (
  this: Client,
  userId: string,
- scopeGuildIds?: string[],
+ serves: SettingFilter,
 ): Promise<CandidateGuild[]> {
- const where: { active: true; dmEnabled: true; guild?: { in: string[] } } = {
-  active: true,
-  dmEnabled: true,
- };
- if (scopeGuildIds?.length) where.guild = { in: scopeGuildIds };
-
- const settings = await this.db.client.ticketSetting.findMany({ where });
+ const settings = (
+  await this.db.client.ticketSetting.findMany({ where: { active: true, dmEnabled: true } })
+ ).filter(serves);
  if (!settings.length) return [];
 
  const byGuild = new Map<string, TicketSetting[]>();
@@ -67,8 +65,7 @@ export default async function (
 
   const roleIds = member.roles ?? [];
   const openable = kinds.filter(
-   (kind) =>
-    !kind.denyUsers.includes(userId) && !kind.denyRoles.some((r) => roleIds.includes(r)),
+   (kind) => !kind.denyUsers.includes(userId) && !kind.denyRoles.some((r) => roleIds.includes(r)),
   );
   if (!openable.length) continue;
 

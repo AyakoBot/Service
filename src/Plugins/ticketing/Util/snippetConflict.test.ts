@@ -31,10 +31,14 @@ const plugin = (rows: Row[], prefixes: string[][] = []) =>
   },
  }) as unknown as TicketPlugin;
 
-const check = (rows: Row[], data: { name: string; trigger?: string | null }, opts?: {
- prefixes?: string[][];
- excludeId?: string;
-}) => snippetConflict.call(plugin(rows, opts?.prefixes), 'guild', data, opts?.excludeId);
+const check = (
+ rows: Row[],
+ data: { name: string; trigger?: string | null },
+ opts?: {
+  prefixes?: string[][];
+  excludeId?: string;
+ },
+) => snippetConflict.call(plugin(rows, opts?.prefixes), 'guild', data, opts?.excludeId);
 
 const existing: Row[] = [{ id: '1', name: 'refund', trigger: '.r' }];
 
@@ -58,9 +62,16 @@ describe('snippetConflict', () => {
   assert.equal(await check(existing, { name: 'refund', trigger: '.r' }, { excludeId: '1' }), null);
  });
 
- it('reports a trigger shadowed by a staff-reply prefix', async () => {
+ it('allows a trigger that only starts with a staff-reply prefix', async () => {
   assert.equal(
-   await check(existing, { name: 'shipping', trigger: '.s' }, { prefixes: [['.']] }),
+   await check(existing, { name: 'report', trigger: '?report' }, { prefixes: [['?r']] }),
+   null,
+  );
+ });
+
+ it('reports a trigger identical to a staff-reply prefix', async () => {
+  assert.equal(
+   await check(existing, { name: 'reply', trigger: '?r' }, { prefixes: [['?r']] }),
    SnippetErrors.triggerPrefixConflict,
   );
  });

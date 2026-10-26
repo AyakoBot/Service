@@ -7,6 +7,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { tagInputOption } from '../../Classes/Routes.js';
 import Snippet from '../../Classes/Snippet.js';
 import type TicketPlugin from '../../Plugin.js';
 import runSnippet from '../../Util/runSnippet.js';
@@ -42,5 +43,8 @@ export default async function (this: TicketPlugin, cmd: APIApplicationCommandInt
   return;
  }
 
- await runSnippet.call(this, cmd, snippet, command.channel.id, staffId, cmd.guild_id);
+ const inputOption = command.data.options?.find((o) => o.name === tagInputOption);
+ const input = inputOption?.type === ApplicationCommandOptionType.String ? inputOption.value : '';
+
+ await runSnippet.call(this, cmd, snippet, command.channel.id, staffId, cmd.guild_id, input);
 }

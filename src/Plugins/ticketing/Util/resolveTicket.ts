@@ -61,3 +61,10 @@ export const resolveTicketByLogThread = function (this: Client, channelId: strin
 export const resolveTicketByStaffThread = function (this: Client, channelId: string) {
  return resolveTicketByThreadPrefix.call(this, channelId, TicketThreadPrefix.Staff);
 };
+
+export const resolveTicketHere = async function (this: Client, channelId: string) {
+ return (
+  (await resolveTicketByChannel.call(this, channelId)) ||
+  (await resolveTicketByStaffThread.call(this, channelId))
+ );
+};

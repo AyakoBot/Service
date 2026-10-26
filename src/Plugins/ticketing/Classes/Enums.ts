@@ -28,6 +28,7 @@ enum TicketErrors2 {
  create_DBEntryFailed = 'create.dbEntryFailed',
  create_LimitKindReached = 'create.limitKindReached',
  create_LimitTotalReached = 'create.limitTotalReached',
+ create_EmptyText = 'create.emptyText',
 
  close_TicketAlreadyClosed = 'close.ticketAlreadyClosed',
  close_UserNotStaff = 'close.userNotStaff',
@@ -44,6 +45,10 @@ enum TicketErrors2 {
  escalate_TierNotFound = 'escalate.tierNotFound',
  escalate_CannotReach = 'escalate.cannotReach',
  escalate_NoTiers = 'escalate.noTiers',
+
+ manage_TicketNotOpen = 'manage.ticketNotOpen',
+ manage_UserNotStaff = 'manage.userNotStaff',
+ manage_CannotRemoveCreator = 'manage.cannotRemoveCreator',
 
  unknownTicketType = 'unknownTicketType',
  settingsNotFound = 'settingsNotFound',
@@ -70,6 +75,12 @@ enum TicketErrors3 {
 
  delete_CantUpdateMessage = 'delete.cantUpdateMessage',
  delete_CantDeleteChannel = 'delete.cantDeleteChannel',
+
+ manage_CantUpdateMembers = 'manage.cantUpdateMembers',
+
+ move_ThreadTicket = 'move.threadTicket',
+ move_TargetNotFound = 'move.targetNotFound',
+ move_CantMove = 'move.cantMove',
 }
 
 export const ChannelTicketErrors = { ...BaseTicketErrors, ...TicketErrors3 } as const;
@@ -103,6 +114,7 @@ export enum SnippetErrors {
  triggerExists = 'snippet.triggerExists',
  triggerPrefixConflict = 'snippet.triggerPrefixConflict',
  dmFailed = 'snippet.dmFailed',
+ contactFailed = 'snippet.contactFailed',
 }
 
 export enum TierErrors {

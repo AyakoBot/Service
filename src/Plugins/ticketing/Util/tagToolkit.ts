@@ -84,6 +84,10 @@ export const buildToolkit = async function (
       .setCustomId(this.getRoute(TicketRoute.TagEdit, snippet.id))
       .setLabel(t.base.t.Edit()),
      new ButtonBuilder()
+      .setStyle(ButtonStyle.Secondary)
+      .setCustomId(this.getRoute(TicketRoute.TagAdvanced, snippet.id))
+      .setLabel(t.tag.advanced()),
+     new ButtonBuilder()
       .setStyle(ButtonStyle.Danger)
       .setCustomId(this.getRoute(TicketRoute.TagDelete, snippet.id))
       .setLabel(t.base.t.Delete()),
@@ -143,6 +147,14 @@ export const buildToolkit = async function (
    .setCustomId(this.getRoute(toggleRoute))
    .setLabel(opts.manage ? t.tag.browse() : t.tag.manage()),
  );
+ if (opts.manage) {
+  manageRow.addComponents(
+   new ButtonBuilder()
+    .setStyle(ButtonStyle.Secondary)
+    .setCustomId(this.getRoute(TicketRoute.TagAdvancedHelp))
+    .setLabel(t.tag.advancedHelp()),
+  );
+ }
 
  const components: APIMessageTopLevelComponent[] = [
   container.toJSON(),

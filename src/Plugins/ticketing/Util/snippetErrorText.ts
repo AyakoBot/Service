@@ -14,9 +14,9 @@ const texts: Record<SnippetErrors, (t: Translator, vars: SnippetErrorVars) => st
  [SnippetErrors.emptySnippet]: (t) => t.tag.errors.emptySnippet(),
  [SnippetErrors.nameRequired]: (t) => t.tag.errors.nameRequired(),
  [SnippetErrors.dmFailed]: (t) => t.errors.couldntSendDm(),
+ [SnippetErrors.contactFailed]: (t) => t.tag.errors.contactFailed(),
  [SnippetErrors.nameExists]: (t, vars) => t.tag.errors.nameExists({ name: vars.name }),
- [SnippetErrors.triggerExists]: (t, vars) =>
-  t.tag.errors.triggerExists({ trigger: vars.trigger }),
+ [SnippetErrors.triggerExists]: (t, vars) => t.tag.errors.triggerExists({ trigger: vars.trigger }),
  [SnippetErrors.triggerPrefixConflict]: (t, vars) =>
   t.tag.errors.triggerPrefixConflict({ trigger: vars.trigger }),
 };

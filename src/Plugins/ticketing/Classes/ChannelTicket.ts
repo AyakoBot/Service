@@ -1,6 +1,6 @@
 import type { API } from '@ayako/api';
 import { RequestHandlerError } from '@ayako/api';
-import type { TicketTier } from '@ayako/database';
+import type { TicketPriority, TicketTier } from '@ayako/database';
 import { TicketPlacementMode, TicketType } from '@ayako/database';
 import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/utility';
 import {
@@ -8,6 +8,7 @@ import {
  MessageFlags,
  OverwriteType,
  PermissionFlagsBits,
+ type APIApplicationCommandInteraction,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
@@ -19,9 +20,22 @@ import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
+import { movePositions } from '../Util/tagCommands.js';
+import { renderName, sameName } from '../Util/ticketName.js';
+import { nameValues, type NameOverrides } from '../Util/ticketNameValues.js';
 
 import BaseTicket from './BaseTicket.js';
 import { ChannelTicketErrors, TicketThreadPrefix } from './Enums.js';
+
+export type TicketCommandInteraction =
+ APIMessageComponentInteraction | APIApplicationCommandInteraction;
+export type TicketInteraction = TicketCommandInteraction | APIModalSubmitInteraction;
+
+const memberAccess =
+ PermissionFlagsBits.ViewChannel |
+ PermissionFlagsBits.SendMessages |
+ PermissionFlagsBits.AttachFiles |
+ PermissionFlagsBits.EmbedLinks;
 
 export default class ChannelTicket extends BaseTicket {
  static threadTypes = [
@@ -36,7 +50,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  // eslint-disable-next-line require-yield
- async *delete(data: { userId: string; cmd?: APIMessageComponentInteraction }) {
+ async *delete(data: { userId: string; cmd?: TicketCommandInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superDel = super.delete(data);
   await superDel.next();
@@ -60,10 +74,16 @@ export default class ChannelTicket extends BaseTicket {
   if (data.cmd) {
    const ticket = await this.getTicket();
    const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
-   await api.interactions.deleteReply(data.cmd.token, '@original', {
-    origin: ChannelTicket.name,
-    reason: 'Removing prepping-delete message',
-   });
+   await api.webhooks.deleteMessage(
+    data.cmd.application_id,
+    data.cmd.token,
+    '@original',
+    {},
+    {
+     origin: ChannelTicket.name,
+     reason: 'Removing prepping-delete message',
+    },
+   );
   }
 
   return true;
@@ -87,7 +107,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async replyMessage(
-  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+  cmd: TicketInteraction,
   payload: MessagePayload,
   errorCode: (typeof ChannelTicketErrors)[keyof typeof ChannelTicketErrors],
  ) {
@@ -114,7 +134,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  // eslint-disable-next-line require-yield
- async *close(data: { userId: string; cmd: APIModalSubmitInteraction; reason?: string }) {
+ async *close(data: { userId: string; cmd?: APIModalSubmitInteraction; reason?: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
   const superClose = super.close({ userId: data.userId, reason: data.reason });
@@ -133,6 +153,15 @@ export default class ChannelTicket extends BaseTicket {
   await this.revokeChannelAccess(api, channel);
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
+
+  if (!ticket.settings.deleteOnClose) {
+   const t = await this.plugin.t(ticket.settings.guild);
+   await this.postCloseNotice(
+    data.userId,
+    data.reason,
+    t.closedByStaff({ user: `<@${data.userId}>` }),
+   );
+  }
 
   return this;
  }
@@ -153,7 +182,7 @@ export default class ChannelTicket extends BaseTicket {
   await this.lockStaffThread();
   await this.applyLifecycleTags(ticket.settings.closeTags);
 
-  await this.postAutoCloseNotice(api.botId, reason, heading);
+  await this.postCloseNotice(api.botId, reason, heading);
   await this.refreshSurface();
 
   return this;
@@ -196,7 +225,7 @@ export default class ChannelTicket extends BaseTicket {
   const modify = await api.channels.edit(
    ticket.channel,
    {
-    name: await this.creatorChannelName(statusPrefix ?? t.closed()),
+    name: await this.creatorChannelName({ state: statusPrefix ?? t.closed() }),
     parent_id: archiveCategory?.id || undefined,
     permission_overwrites:
      archiveCategory?.permission_overwrites?.map((o) => ({
@@ -220,7 +249,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  // eslint-disable-next-line require-yield
- async *claim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+ async *claim(data: { userId: string; cmd?: TicketCommandInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superClaim = super.claim({ userId: data.userId });
   await superClaim.next();
@@ -232,7 +261,7 @@ export default class ChannelTicket extends BaseTicket {
    .call(this.client, data.userId)
    .then((r) => (r instanceof RequestHandlerError ? null : r));
 
-  await this.claimChannel(api, channel.id, ticket.settings.guild);
+  await this.claimChannel(api, channel.id, ticket.settings.guild, data.userId);
   await this.addClaimerToStaffThread(data.userId);
   await this.applyLifecycleTags(
    ticket.settings.claimTags,
@@ -256,9 +285,11 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  async ackEphemeral(
-  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+  cmd: TicketInteraction | undefined,
   content: (t: Awaited<ReturnType<TicketPlugin['t']>>) => string,
  ) {
+  if (!cmd) return;
+
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
 
@@ -275,7 +306,7 @@ export default class ChannelTicket extends BaseTicket {
  }
 
  // eslint-disable-next-line require-yield
- async *unclaim(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+ async *unclaim(data: { userId: string; cmd?: TicketCommandInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superUnclaim = super.unclaim({ userId: data.userId });
   await superUnclaim.next();
@@ -283,12 +314,13 @@ export default class ChannelTicket extends BaseTicket {
 
   await this.refreshSurface();
   await this.ackEphemeral(data.cmd, (t) => t.unclaimTicket());
+  this.queueNameSync();
 
   return this;
  }
 
  // eslint-disable-next-line require-yield
- async *take(data: { userId: string; cmd: APIMessageComponentInteraction }) {
+ async *take(data: { userId: string; cmd?: TicketCommandInteraction }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superTake = super.take({ userId: data.userId });
   await superTake.next();
@@ -307,16 +339,13 @@ export default class ChannelTicket extends BaseTicket {
    { name: `<@${data.userId}>`, emote: emotes.ticket },
   );
   await this.ackEphemeral(data.cmd, (t) => t.claimedByLabel({ label: claimerLabel.name }));
+  this.queueNameSync();
 
   return this;
  }
 
  // eslint-disable-next-line require-yield
- async *escalate(data: {
-  userId: string;
-  cmd: APIMessageComponentInteraction;
-  targetTierId: string;
- }) {
+ async *escalate(data: { userId: string; cmd?: TicketCommandInteraction; targetTierId: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   const superEscalate = super.escalate({ userId: data.userId, targetTierId: data.targetTierId });
   await superEscalate.next();
@@ -338,6 +367,7 @@ export default class ChannelTicket extends BaseTicket {
 
   await this.refreshSurface();
   await this.ackEphemeral(data.cmd, (t) => t.escalatedTo({ tier: target?.name || '' }));
+  this.queueNameSync();
 
   return this;
  }
@@ -372,6 +402,30 @@ export default class ChannelTicket extends BaseTicket {
   }
  }
 
+ async move(targetId: string) {
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const meta = { origin: ChannelTicket.name, reason: 'Moving the ticket by snippet' };
+
+  const res = await api.guilds.getChannels(ticket.settings.guild, meta);
+  if (res instanceof RequestHandlerError) {
+   throw new Error(ChannelTicketErrors.move_CantMove, { cause: res });
+  }
+
+  const channels = res.filter((channel): channel is RChannel | RThread => channel !== false);
+  const target = channels.find((channel) => channel.id === targetId);
+  if (!target) throw new Error(ChannelTicketErrors.move_TargetNotFound);
+
+  const moved = await api.guilds.setChannelPositions(
+   ticket.settings.guild,
+   movePositions(channels, ticket.channel, target),
+   meta,
+  );
+  if (moved instanceof RequestHandlerError) {
+   throw new Error(ChannelTicketErrors.move_CantMove, { cause: moved });
+  }
+ }
+
  async retagForTier(target: TicketTier | null) {
   if (!target) return;
   const ticket = await this.getTicket();
@@ -388,29 +442,42 @@ export default class ChannelTicket extends BaseTicket {
   return channel;
  }
 
- async creatorChannelName(statusPrefix?: string, username?: string): Promise<string> {
-  const ticket = await this.getTicket();
-
-  let name = username;
-  if (name === undefined) {
-   const creator = await getUser
-    .call(this.client, ticket.user)
-    .then((u) => (u instanceof RequestHandlerError ? null : u));
-   name = creator?.username;
-  }
-
-  const base = name ? `${name} ${ticket.user}` : ticket.user;
-  const status = statusPrefix ?? (await this.plugin.t(ticket.settings.guild)).opened();
-  return `[${status}] ${base}`.slice(0, 100);
+ async creatorChannelName(overrides: NameOverrides = {}): Promise<string> {
+  const { nameTemplate } = (await this.getTicket()).settings;
+  return renderName(nameTemplate, await nameValues.call(this, nameTemplate ?? '', overrides));
  }
 
- async claimChannel(api: API, channelId: string, guildId: string) {
+ async syncName() {
+  const ticket = await this.getTicket();
+  const current = await this.getChannel(ticket.channel).catch(() => null);
+  const name = await this.creatorChannelName();
+  if (current && sameName(current.name ?? '', name)) return;
+
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const res = await api.channels.edit(
+   ticket.channel,
+   { name },
+   { origin: ChannelTicket.name, reason: 'Updating the ticket name' },
+  );
+  if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, this.syncName.name);
+ }
+
+ queueNameSync() {
+  this.syncName().catch((error: Error) => this.plugin.nonFatalError(error, 'syncName'));
+ }
+
+ async setPriority(userId: string, priority: TicketPriority) {
+  await super.setPriority(userId, priority);
+  this.queueNameSync();
+ }
+
+ async claimChannel(api: API, channelId: string, guildId: string, claimerId: string) {
   this.plugin.logger.logLocation(LogLevel.debug);
   const t = await this.plugin.t(guildId);
 
   const modify = await api.channels.edit(
    channelId,
-   { name: await this.creatorChannelName(t.claimed()) },
+   { name: await this.creatorChannelName({ state: t.claimed(), staffId: claimerId }) },
    { origin: ChannelTicket.name, reason: 'Ticket claimed' },
   );
 
@@ -423,12 +490,13 @@ export default class ChannelTicket extends BaseTicket {
 
  // eslint-disable-next-line require-yield
  async *create(
-  dbOpts: { settingsId: string; userId: string },
+  dbOpts: { settingsId: string; userId: string; opener?: string },
   createOpts: {
-   cmd?: APIMessageComponentInteraction;
+   cmd?: TicketInteraction;
    userId: string;
    roleIds: string[];
    username: string;
+   text?: string;
   },
  ) {
   this.plugin.logger.logLocation(LogLevel.silly);
@@ -469,6 +537,7 @@ export default class ChannelTicket extends BaseTicket {
     await this.relayToDm(replyPayload);
    }
 
+   if (createOpts.text) await this.postOpeningText(createOpts.userId, createOpts.text);
    await this.relayIntake(createOpts.cmd);
 
    return this;
@@ -498,11 +567,11 @@ export default class ChannelTicket extends BaseTicket {
   }
  }
 
- async relayIntake(_cmd?: APIMessageComponentInteraction): Promise<void> {
+ async relayIntake(_cmd?: TicketInteraction): Promise<void> {
   return undefined;
  }
 
- async handleMissingDm(_cmd?: APIMessageComponentInteraction): Promise<boolean> {
+ async handleMissingDm(_cmd?: TicketInteraction): Promise<boolean> {
   return false;
  }
 
@@ -563,7 +632,7 @@ export default class ChannelTicket extends BaseTicket {
    throw new Error(ChannelTicketErrors.create_CategoryNotSet);
   }
 
-  const name = await this.creatorChannelName(undefined, username);
+  const name = await this.creatorChannelName({ username });
 
   const channel = await api.guilds.createChannel(
    ticketSettings.guild,
@@ -587,15 +656,7 @@ export default class ChannelTicket extends BaseTicket {
   const modify = await api.channels.editPermissionOverwrite(
    channelId,
    userId,
-   {
-    type: OverwriteType.Member,
-    allow: String(
-     PermissionFlagsBits.ViewChannel |
-      PermissionFlagsBits.SendMessages |
-      PermissionFlagsBits.AttachFiles |
-      PermissionFlagsBits.EmbedLinks,
-    ),
-   },
+   { type: OverwriteType.Member, allow: String(memberAccess) },
    {
     origin: ChannelTicket.name,
     reason: 'Setting permissions for ticket channel',
@@ -607,6 +668,55 @@ export default class ChannelTicket extends BaseTicket {
   }
 
   return modify;
+ }
+
+ async addMember(actorId: string, userId: string) {
+  await this.assertManageable(actorId);
+
+  const res = await this.grantMember(userId);
+  if (res instanceof RequestHandlerError) {
+   throw new Error(ChannelTicketErrors.manage_CantUpdateMembers, { cause: res });
+  }
+
+  const t = await this.plugin.t((await this.getTicket()).settings.guild);
+  await this.announce(t.command.added({ user: `<@${actorId}>`, target: `<@${userId}>` }), [userId]);
+ }
+
+ async removeMember(actorId: string, userId: string) {
+  await this.assertManageable(actorId);
+
+  const ticket = await this.getTicket();
+  if (ticket.user === userId) throw new Error(ChannelTicketErrors.manage_CannotRemoveCreator);
+
+  const res = await this.revokeMember(userId);
+  if (res instanceof RequestHandlerError) {
+   throw new Error(ChannelTicketErrors.manage_CantUpdateMembers, { cause: res });
+  }
+
+  const t = await this.plugin.t(ticket.settings.guild);
+  await this.announce(t.command.removed({ user: `<@${actorId}>`, target: `<@${userId}>` }));
+ }
+
+ async grantMember(userId: string): Promise<unknown> {
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
+  return api.channels.editPermissionOverwrite(
+   ticket.channel,
+   userId,
+   { type: OverwriteType.Member, allow: String(memberAccess) },
+   { origin: ChannelTicket.name, reason: 'Adding a member to the ticket' },
+  );
+ }
+
+ async revokeMember(userId: string): Promise<unknown> {
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
+  return api.channels.deletePermissionOverwrite(ticket.channel, userId, {
+   origin: ChannelTicket.name,
+   reason: 'Removing a member from the ticket',
+  });
  }
 
  async messageSent(msg: RMessage, internal: boolean = false) {

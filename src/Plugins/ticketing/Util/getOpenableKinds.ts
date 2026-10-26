@@ -2,6 +2,7 @@ import type { TicketSetting } from '@ayako/database';
 
 import type Client from '../../../Classes/Client.js';
 
+import type { SettingFilter } from './getSharedTicketGuilds.js';
 import isUnderLimit from './isUnderLimit.js';
 
 export interface OpenableKind {
@@ -14,10 +15,13 @@ export default async function (
  guildId: string,
  userId: string,
  roleIds: string[],
+ serves: SettingFilter,
 ): Promise<OpenableKind[]> {
- const settings = await this.db.client.ticketSetting.findMany({
-  where: { guild: guildId, active: true, dmEnabled: true },
- });
+ const settings = (
+  await this.db.client.ticketSetting.findMany({
+   where: { guild: guildId, active: true, dmEnabled: true },
+  })
+ ).filter(serves);
 
  const openable: OpenableKind[] = [];
 

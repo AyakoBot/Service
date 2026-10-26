@@ -21,10 +21,17 @@ export const positiveSeconds = (value: unknown): number => {
 
 export const remindKey = (kind: RemindKind, id: string) => `${ticketKey}${kind}:${id}`;
 
+export interface WarningRef {
+ channelId: string;
+ messageId: string;
+ dm: boolean;
+}
+
 export interface RemindJob {
  guildId: string;
  ticketId: string;
  kind: RemindKind;
+ warnings?: WarningRef[];
 }
 
 export const encodeJob = (job: RemindJob) => JSON.stringify(job);

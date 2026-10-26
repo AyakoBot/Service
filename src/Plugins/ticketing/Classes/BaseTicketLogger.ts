@@ -6,6 +6,7 @@ import {
  type RChannel,
  type RMessage,
  type RThread,
+ type RUser,
 } from '@ayako/utility';
 import {
  ContainerBuilder,
@@ -28,13 +29,16 @@ import { Colors } from '../../../Types/index.js';
 import { cloneMessageIntoContainer } from '../../../Util/cloneMessageIntoContainer.js';
 import getUser from '../../../Util/getUser.js';
 import languageFunctions from '../../../Util/languageFunctions.js';
+import { avatarUrl } from '../../../Util/placeholderVars.js';
 import type TicketPlugin from '../Plugin.js';
+import { isChannelKind } from '../Util/ticketName.js';
 import {
  encodeContext,
  extractBody,
  findContext,
  hasActionButton,
  TicketContextType,
+ withContext,
 } from '../Util/transcriptContext.js';
 
 import { BaseTicketLoggerErrors, TicketThreadPrefix } from './Enums.js';
@@ -57,10 +61,7 @@ export enum LogType {
 export interface LogOpts<T extends LogType> {
  type: T;
  data: T extends
-  | LogType.MessageSent
-  | LogType.MessageEdited
-  | LogType.MessageDeleted
-  | LogType.MessageInternal
+  LogType.MessageSent | LogType.MessageEdited | LogType.MessageDeleted | LogType.MessageInternal
   ? MessageLogData
   : T extends LogType.TicketClosed
     ? ClosedLogData
@@ -90,6 +91,7 @@ export default abstract class BaseTicketLogger {
  db: Database['client'];
  dbTicket: (Ticket & { settings: TicketSetting }) | null = null;
  deleteTranscript: string | null = null;
+ deletedChannel: RChannel | RThread | null = null;
 
  constructor(client: Client, ticketId: string, plugin: TicketPlugin) {
   this.client = client;
@@ -112,6 +114,10 @@ export default abstract class BaseTicketLogger {
   if (!this.dbTicket) throw new Error(BaseTicketLoggerErrors.ticketNotFound);
   return this.dbTicket;
  };
+
+ avatarFor(user: RUser | null, userId: string) {
+  return user?.avatar_url ?? avatarUrl({ id: userId, avatar: null });
+ }
 
  async getUser(userId: string) {
   const user = await getUser.call(this.client, userId);
@@ -308,14 +314,15 @@ export default abstract class BaseTicketLogger {
  async buildInternalNoteContainer(
   message: GatewayMessageDeleteDispatchData | RMessage | null,
   userId: string,
-  withContext: boolean,
+  withMarker: boolean,
  ) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const lF = languageFunctions(t.base);
+  const user = await this.getUser(userId);
 
   const authorName = t.logs.authorMessageInternal({
-   user: lF.getUser(await this.getUser(userId)),
+   user: lF.getUser(user),
    url: constants.formatters.msgURL(
     message?.guild_id || '@me',
     message?.channel_id || '',
@@ -323,15 +330,18 @@ export default abstract class BaseTicketLogger {
    ),
   });
 
-  const context = withContext
-   ? encodeContext(TicketContextType.Internal, userId, message?.id || '0')
+  const thumbnail = withMarker
+   ? withContext(
+      this.avatarFor(user, userId),
+      encodeContext(TicketContextType.Internal, userId, message?.id || '0'),
+     )
    : undefined;
 
   const container = new ContainerBuilder();
   cloneMessageIntoContainer.call(
    container,
    message,
-   context ? { authorName, rawAuthor: true, context } : { authorName, rawAuthor: true },
+   thumbnail ? { authorName, rawAuthor: true, thumbnail } : { authorName, rawAuthor: true },
   );
 
   return container;
@@ -385,6 +395,15 @@ export default abstract class BaseTicketLogger {
   payload.setFlags(MessageFlags.IsComponentsV2).setComponents([container.toJSON()]);
  }
 
+ async resolveTicketChannel(): Promise<RChannel | RThread | null> {
+  const ticket = await this.getTicket();
+  return (
+   (await this.client.cache.channels.get(ticket.channel)) ||
+   (await this.client.cache.threads.get(ticket.channel)) ||
+   this.deletedChannel
+  );
+ }
+
  async handleBaseLog<T extends LogType>(logOpts: LogOpts<T>) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
@@ -401,10 +420,10 @@ export default abstract class BaseTicketLogger {
 
   const logChannels = await this.getLogChannels().then((r) => r.filter((c) => !!c));
 
-  const channel = await this.client.cache.channels.get(ticket.settings.channel || '');
-  const ticketChannel =
-   (await this.client.cache.channels.get(ticket.channel)) ||
-   (await this.client.cache.threads.get(ticket.channel));
+  const channel = await this.client.cache.channels.get(
+   (isChannelKind(ticket.settings.type) ? ticket.settings.category : ticket.settings.channel) || '',
+  );
+  const ticketChannel = await this.resolveTicketChannel();
 
   const payload = new MessagePayload(this.client, {
    origin: BaseTicketLogger.name,

@@ -26,9 +26,9 @@ export const snippetConflict = async function (
  });
 
  const trigger = data.trigger.toLowerCase();
- const shadowed = settings
+ const clashes = settings
   .flatMap((setting) => setting.sendMessagePrefixes)
-  .some((prefix) => !!prefix && trigger.startsWith(prefix.toLowerCase()));
+  .some((prefix) => !!prefix && trigger === prefix.toLowerCase());
 
- return shadowed ? SnippetErrors.triggerPrefixConflict : null;
+ return clashes ? SnippetErrors.triggerPrefixConflict : null;
 };

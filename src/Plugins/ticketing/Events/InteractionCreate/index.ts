@@ -4,6 +4,7 @@ import {
  InteractionType,
  type APIApplicationCommandAutocompleteInteraction,
  type APIApplicationCommandInteraction,
+ type APIChatInputApplicationCommandInteraction,
  type APIMessageComponentInteraction,
  type APIModalSubmitInteraction,
  type GatewayDispatchEvents,
@@ -11,7 +12,7 @@ import {
 
 import type { ExtractPayload } from '../../../../Types/gateway.js';
 import { MoveDirection } from '../../Classes/Enums.js';
-import { tagCommandName, TicketRoute } from '../../Classes/Routes.js';
+import { tagCommandName, ticketCommandName, TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 
 import autocomplete from './autocomplete.js';
@@ -24,7 +25,9 @@ import {
 import claim from './claim.js';
 import close from './close.js';
 import closeReason from './closeReason.js';
+import contactPick from './contactPick.js';
 import create from './create.js';
+import createModal from './createModal.js';
 import del from './delete.js';
 import escalate from './escalate.js';
 import escalateTo from './escalateTo.js';
@@ -54,9 +57,20 @@ import panelPick from './panelPick.js';
 import { roleMapMove, roleMapOpen, roleMapPage, roleMapRemove } from './roleMap.js';
 import { roleMapAdd, roleMapEdit, roleMapSave } from './roleMapModal.js';
 import tag from './tag.js';
-import { tagAdd, tagDelete, tagEdit, tagManage, tagPage, tagSearch, tagSend } from './tagButton.js';
-import { tagAddModal, tagEditModal, tagSearchModal } from './tagModal.js';
+import {
+ tagAdd,
+ tagAdvanced,
+ tagAdvancedHelp,
+ tagDelete,
+ tagEdit,
+ tagManage,
+ tagPage,
+ tagSearch,
+ tagSend,
+} from './tagButton.js';
+import { tagAddModal, tagAdvancedModal, tagEditModal, tagSearchModal } from './tagModal.js';
 import take from './take.js';
+import ticketCommand from './ticketCommand.js';
 import { tierDel, tierManageOpen, tierMove, tierPage } from './tierManage.js';
 import { tierAdd, tierEdit, tierSave } from './tierModal.js';
 import unclaim from './unclaim.js';
@@ -92,6 +106,10 @@ const command = async function (this: TicketPlugin, cmd: APIApplicationCommandIn
  switch (cmd.data.name) {
   case tagCommandName: {
    tag.call(this, cmd);
+   break;
+  }
+  case ticketCommandName: {
+   ticketCommand.call(this, cmd as APIChatInputApplicationCommandInteraction);
    break;
   }
 
@@ -166,6 +184,14 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
   }
   case TicketRoute.TagDelete: {
    tagDelete.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.TagAdvanced: {
+   tagAdvanced.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.TagAdvancedHelp: {
+   tagAdvancedHelp.call(this, cmd);
    break;
   }
   case TicketRoute.TagManage: {
@@ -327,6 +353,10 @@ const select = async function (this: TicketPlugin, cmd: APIMessageComponentInter
    forceOpenKind.call(this, cmd, args);
    break;
   }
+  case TicketRoute.ContactPick: {
+   contactPick.call(this, cmd, args);
+   break;
+  }
 
   default:
    break;
@@ -337,6 +367,10 @@ const modal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction
  const [fileCall, ...args] = cmd.data.custom_id.split('_');
 
  switch (fileCall) {
+  case TicketRoute.CreateModal: {
+   createModal.call(this, cmd, args);
+   break;
+  }
   case TicketRoute.CloseReason: {
    closeReason.call(this, cmd, args);
    break;
@@ -351,6 +385,10 @@ const modal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction
   }
   case TicketRoute.TagEditModal: {
    tagEditModal.call(this, cmd, args);
+   break;
+  }
+  case TicketRoute.TagAdvancedModal: {
+   tagAdvancedModal.call(this, cmd, args);
    break;
   }
   case TicketRoute.RoleMapSave: {

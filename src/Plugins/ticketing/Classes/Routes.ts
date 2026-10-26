@@ -1,8 +1,34 @@
 export const tagCommandName = 'tag';
+export const tagInputOption = 'input';
+export const tagCommandsField = 'commands';
 export const forceOpenCommandName = 'Open Ticket';
+export const ticketCommandName = 'ticket';
+export const openingTextField = 'text';
+
+export enum TicketSubcommand {
+ Open = 'open',
+ Claim = 'claim',
+ Unclaim = 'unclaim',
+ Take = 'take',
+ Escalate = 'escalate',
+ Close = 'close',
+ Delete = 'delete',
+ Add = 'add',
+ Remove = 'remove',
+ Priority = 'priority',
+ Info = 'info',
+ List = 'list',
+}
+
+export enum TicketCommandOption {
+ User = 'user',
+ Tier = 'tier',
+ Level = 'level',
+}
 
 export enum TicketRoute {
  Create = 'tickets/create',
+ CreateModal = 'tickets/createModal',
  Claim = 'tickets/claim',
  Unclaim = 'tickets/unclaim',
  Take = 'tickets/take',
@@ -22,6 +48,9 @@ export enum TicketRoute {
  TagAddModal = 'tickets/tagAddModal',
  TagEdit = 'tickets/tagEdit',
  TagEditModal = 'tickets/tagEditModal',
+ TagAdvanced = 'tickets/tagAdvanced',
+ TagAdvancedModal = 'tickets/tagAdvancedModal',
+ TagAdvancedHelp = 'tickets/tagAdvancedHelp',
  TagDelete = 'tickets/tagDelete',
  TagManage = 'tickets/tagManage',
  TagBrowse = 'tickets/tagBrowse',
@@ -64,6 +93,7 @@ export enum TicketRoute {
  IntakeExisting = 'tickets/intakeExisting',
  IntakeUnreachable = 'tickets/intakeUnreachable',
  ForceOpenKind = 'tickets/forceOpenKind',
+ ContactPick = 'tickets/contactPick',
  ForceBlock = 'tickets/forceBlock',
  ForceBlockConfirm = 'tickets/forceBlockConfirm',
  ForceBlockCancel = 'tickets/forceBlockCancel',

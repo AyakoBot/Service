@@ -4,11 +4,7 @@ import { TicketPlacementMode } from '@ayako/database';
 import type { TicketTier } from '@ayako/database';
 import { LogLevel, txtFileWriter, type RChannel, type RThread } from '@ayako/utility';
 import { ContainerBuilder, TextDisplayBuilder } from '@discordjs/builders';
-import {
- ChannelType,
- MessageFlags,
- type APIMessageComponentInteraction,
-} from 'discord-api-types/v10';
+import { ChannelType, MessageFlags } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import type Client from '../../../Classes/Client.js';
@@ -17,7 +13,7 @@ import type TicketPlugin from '../Plugin.js';
 import { threadArchiveMinutes } from '../Util/threadArchiveDuration.js';
 
 import BaseTicket, { SurfaceState } from './BaseTicket.js';
-import ChannelTicket from './ChannelTicket.js';
+import ChannelTicket, { type TicketCommandInteraction } from './ChannelTicket.js';
 import { ThreadTicketErrors } from './Enums.js';
 
 export default class ThreadTicket extends ChannelTicket {
@@ -42,7 +38,7 @@ export default class ThreadTicket extends ChannelTicket {
    {
     archived: true,
     locked: true,
-    name: await this.creatorChannelName(t.archived()),
+    name: await this.creatorChannelName({ state: t.archived() }),
    },
    { origin: ThreadTicket.name, reason: 'Archiving ticket thread channel' },
   );
@@ -81,7 +77,7 @@ export default class ThreadTicket extends ChannelTicket {
   const modify = await api.channels.edit(
    ticket.channel,
    {
-    name: await this.creatorChannelName(statusPrefix ?? t.closed()),
+    name: await this.creatorChannelName({ state: statusPrefix ?? t.closed() }),
     locked: true,
    },
    { origin: ThreadTicket.name, reason: 'Closing ticket thread channel' },
@@ -106,7 +102,7 @@ export default class ThreadTicket extends ChannelTicket {
   }
 
   const host = await this.client.cache.channels.get(ticket.settings.channel);
-  const name = await this.creatorChannelName(undefined, username);
+  const name = await this.creatorChannelName({ username });
   const thread = this.isForumChannel(host)
    ? await this.createForumPost(api, host, name)
    : await this.createPrivateThread(api, ticket.settings.channel, name);
@@ -151,9 +147,7 @@ export default class ThreadTicket extends ChannelTicket {
  }
 
  async postInitialSurface(api: API, channel: RChannel | RThread): Promise<string> {
-  const parent = channel.parent_id
-   ? await this.client.cache.channels.get(channel.parent_id)
-   : null;
+  const parent = channel.parent_id ? await this.client.cache.channels.get(channel.parent_id) : null;
   if (this.isForumChannel(parent)) return channel.id;
 
   return super.postInitialSurface(api, channel);
@@ -184,11 +178,31 @@ export default class ThreadTicket extends ChannelTicket {
   return ChannelType.PublicThread;
  }
 
- async *escalate(data: {
-  userId: string;
-  cmd: APIMessageComponentInteraction;
-  targetTierId: string;
- }) {
+ async grantMember(userId: string): Promise<unknown> {
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
+  return api.threads.addMember(ticket.channel, userId, {
+   origin: ThreadTicket.name,
+   reason: 'Adding a member to the ticket',
+  });
+ }
+
+ async revokeMember(userId: string): Promise<unknown> {
+  const ticket = await this.getTicket();
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+
+  return api.threads.removeMember(ticket.channel, userId, {
+   origin: ThreadTicket.name,
+   reason: 'Removing a member from the ticket',
+  });
+ }
+
+ async move(_targetId: string): Promise<void> {
+  throw new Error(ThreadTicketErrors.move_ThreadTicket);
+ }
+
+ async *escalate(data: { userId: string; cmd?: TicketCommandInteraction; targetTierId: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
 
   const preTicket = await this.getTicket();
@@ -210,6 +224,7 @@ export default class ThreadTicket extends ChannelTicket {
   if (forkChannelId) await this.repostSurface();
   else await this.refreshSurface();
   await this.ackEphemeral(data.cmd, (t) => t.escalatedTo({ tier: target?.name || '' }));
+  if (!forkChannelId) this.queueNameSync();
 
   return this;
  }
@@ -222,7 +237,7 @@ export default class ThreadTicket extends ChannelTicket {
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
 
   const host = await this.client.cache.channels.get(target.channel);
-  const name = await this.creatorChannelName();
+  const name = await this.creatorChannelName({ tierId: String(target.id), staffId: null });
   const fork = this.isForumChannel(host)
    ? await this.createForumPost(api, host, name)
    : await this.createPrivateThread(api, target.channel, name);

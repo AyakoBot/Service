@@ -2,17 +2,16 @@ import { MessageFlags, type APIModalSubmitInteraction } from 'discord-api-types/
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
+import { tagCommandsField } from '../../Classes/Routes.js';
 import Snippet, { type SnippetData } from '../../Classes/Snippet.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
+import { tagCommandProblems } from '../../Util/runTagCommands.js';
 import { snippetConflict } from '../../Util/snippetConflict.js';
 import { snippetErrorText } from '../../Util/snippetErrorText.js';
 import { buildToolkit, filterSnippets } from '../../Util/tagToolkit.js';
 
-export const tagSearchModal = async function (
- this: TicketPlugin,
- cmd: APIModalSubmitInteraction,
-) {
+export const tagSearchModal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction) {
  if (!cmd.guild_id) return;
 
  const query = findModalValue(cmd.data.components, 'query') || '';
@@ -55,9 +54,8 @@ const saveSnippet = async function (
   return;
  }
 
- const saved = await (editId
-  ? Snippet.update(this.client, editId, data)
-  : Snippet.create(this.client, guildId, data)
+ const saved = await (
+  editId ? Snippet.update(this.client, editId, data) : Snippet.create(this.client, guildId, data)
  ).catch((error: Error) => error);
 
  if (saved instanceof Error) {
@@ -86,6 +84,29 @@ export const tagEditModal = async function (
  if (!(await authorizeManage.call(this, cmd))) return;
 
  await saveSnippet.call(this, cmd, cmd.guild_id, args[0]);
+};
+
+export const tagAdvancedModal = async function (
+ this: TicketPlugin,
+ cmd: APIModalSubmitInteraction,
+ args: string[],
+) {
+ if (!cmd.guild_id) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const t = await this.t(cmd.guild_id);
+ const commands = findModalValue(cmd.data.components, tagCommandsField) || '';
+ const saved = await Snippet.setCommands(this.client, args[0] ?? '', commands).catch(
+  (error: Error) => error,
+ );
+
+ if (saved instanceof Error) {
+  reply.call(this, cmd, snippetErrorText(t, saved.message, { name: '', trigger: '' }));
+  return;
+ }
+
+ const problems = await tagCommandProblems.call(this, cmd.guild_id, saved.commands);
+ reply.call(this, cmd, [t.tag.commands.saved({ name: saved.name }), ...problems].join('\n'));
 };
 
 const reply = function (this: TicketPlugin, cmd: APIModalSubmitInteraction, content: string) {

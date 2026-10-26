@@ -14,6 +14,8 @@ model TicketSetting {
  id     Decimal @id @db.Decimal
  guild  String  @db.VarChar
  name   String? @db.VarChar
+ nameTemplate String? @db.VarChar
+ anonymousRelay Boolean @default(true)
  active Boolean @default(false)
 
  logMode     TicketLogMode @default(Channel)
@@ -44,6 +46,7 @@ model TicketSetting {
  mentionUsers String[] @db.VarChar
  staffRoles   String[] @db.VarChar
  staffUsers   String[] @db.VarChar
+ claimOnReply Boolean  @default(false)
 
  denyUsers String[] @db.VarChar
  denyRoles String[] @db.VarChar
@@ -149,6 +152,7 @@ model Snippets {
  userText  String?  @db.Text
  staffText String?  @db.Text
  kinds     String[] @db.VarChar
+ commands  String?  @db.Text
 
  @@unique([guild, name])
  @@unique([guild, trigger])

@@ -1,5 +1,11 @@
 import type { Snippets } from '@ayako/database';
-import { LabelBuilder, ModalBuilder, TextInputBuilder } from '@discordjs/builders';
+import {
+ ContainerBuilder,
+ LabelBuilder,
+ ModalBuilder,
+ TextDisplayBuilder,
+ TextInputBuilder,
+} from '@discordjs/builders';
 import {
  MessageFlags,
  TextInputStyle,
@@ -7,12 +13,15 @@ import {
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import { Colors } from '../../../../Types/index.js';
+import commandMention from '../../../../Util/commandMention.js';
 import { PageDirection } from '../../Classes/Enums.js';
-import { TicketRoute } from '../../Classes/Routes.js';
+import { tagCommandName, tagCommandsField, TicketRoute } from '../../Classes/Routes.js';
 import Snippet from '../../Classes/Snippet.js';
 import type TicketPlugin from '../../Plugin.js';
 import { authorizeManage } from '../../Util/authorizeManage.js';
 import runSnippet from '../../Util/runSnippet.js';
+import { tagHelpText, triggerMaxLength } from '../../Util/tagCommands.js';
 import { buildToolkit } from '../../Util/tagToolkit.js';
 
 export const tagSend = async function (
@@ -31,7 +40,7 @@ export const tagSend = async function (
   return;
  }
 
- await runSnippet.call(this, cmd, snippet, cmd.channel.id, staffId, cmd.guild_id);
+ await runSnippet.call(this, cmd, snippet, cmd.channel.id, staffId, cmd.guild_id, '');
 };
 
 export const tagPage = async function (
@@ -85,10 +94,7 @@ export const tagDelete = async function (
  payload.update(cmd);
 };
 
-export const tagSearch = async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
-) {
+export const tagSearch = async function (this: TicketPlugin, cmd: APIMessageComponentInteraction) {
  if (!cmd.guild_id) return;
 
  const t = await this.t(cmd.guild_id);
@@ -99,10 +105,7 @@ export const tagSearch = async function (
    new LabelBuilder()
     .setLabel(t.tag.searchLabel())
     .setTextInputComponent(
-     new TextInputBuilder()
-      .setCustomId('query')
-      .setStyle(TextInputStyle.Short)
-      .setRequired(false),
+     new TextInputBuilder().setCustomId('query').setStyle(TextInputStyle.Short).setRequired(false),
     ),
   );
 
@@ -113,10 +116,7 @@ export const tagSearch = async function (
  });
 };
 
-export const tagAdd = async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
-) {
+export const tagAdd = async function (this: TicketPlugin, cmd: APIMessageComponentInteraction) {
  if (!cmd.guild_id) return;
  if (!(await authorizeManage.call(this, cmd))) return;
 
@@ -146,7 +146,7 @@ const buildSnippetModal = (
   .setCustomId('trigger')
   .setStyle(TextInputStyle.Short)
   .setRequired(false)
-  .setMaxLength(32);
+  .setMaxLength(triggerMaxLength);
  if (snippet?.trigger) triggerInput.setValue(snippet.trigger);
 
  const userInput = new TextInputBuilder()
@@ -201,6 +201,66 @@ export const tagEdit = async function (
   origin: this.name,
   reason: 'Opening snippet edit modal',
  });
+};
+
+export const tagAdvanced = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+ args: string[],
+) {
+ if (!cmd.guild_id) return;
+ if (!(await authorizeManage.call(this, cmd))) return;
+
+ const t = await this.t(cmd.guild_id);
+ const snippet = await Snippet.byId(this.client, args[0]);
+ if (!snippet) {
+  tagWarn.call(this, cmd, t.tag.errors.notFound());
+  return;
+ }
+
+ const input = new TextInputBuilder()
+  .setCustomId(tagCommandsField)
+  .setStyle(TextInputStyle.Paragraph)
+  .setRequired(false)
+  .setMaxLength(1000);
+ if (snippet.commands) input.setValue(snippet.commands);
+
+ const modal = new ModalBuilder()
+  .setCustomId(this.getRoute(TicketRoute.TagAdvancedModal, snippet.id))
+  .setTitle(t.tag.advancedTitle())
+  .addLabelComponents(
+   new LabelBuilder()
+    .setLabel(t.tag.fields.commands())
+    .setDescription(t.tag.fields.commandsHint())
+    .setTextInputComponent(input),
+  );
+
+ const api = await this.getAPI(cmd.guild_id);
+ api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {
+  origin: this.name,
+  reason: 'Opening snippet commands modal',
+ });
+};
+
+export const tagAdvancedHelp = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+) {
+ if (!cmd.guild_id) return;
+
+ const t = await this.t(cmd.guild_id);
+ const api = await this.getAPI(cmd.guild_id);
+ const command = await commandMention.call(api, tagCommandName);
+
+ new MessagePayload(this.client, { origin: this.name, reason: 'Showing snippet command help' })
+  .setComponents([
+   new ContainerBuilder()
+    .setAccentColor(Colors.Info)
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(tagHelpText(t, command)))
+    .toJSON(),
+  ])
+  .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral)
+  .reply(cmd);
 };
 
 const tagWarn = function (

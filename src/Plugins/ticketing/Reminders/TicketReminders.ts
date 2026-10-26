@@ -1,3 +1,4 @@
+import { RequestHandlerError, type API } from '@ayako/api';
 import { TicketState } from '@ayako/database';
 import type { Ticket, TicketSetting, TicketTier } from '@ayako/database';
 import {
@@ -30,15 +31,23 @@ import {
  encodeJob,
  parseTicketKey,
  positiveSeconds,
+ type RemindJob,
  RemindKind,
  remindKey,
  ticketKey,
+ type WarningRef,
 } from './keys.js';
 
 type TicketRow = Ticket & { settings: TicketSetting };
 type Translator = Awaited<ReturnType<TicketPlugin['t']>>;
 
 const concurrency = 5;
+
+const warningRef = (message: { id: string; channel_id: string }, dm: boolean): WarningRef => ({
+ channelId: message.channel_id,
+ messageId: message.id,
+ dm,
+});
 
 const jitter = () =>
  new Promise<void>((resolve) => setTimeout(resolve, Math.floor(Math.random() * 750)));
@@ -67,7 +76,7 @@ export default class TicketReminders {
   this.client = plugin.client;
  }
 
- armKind = async (ticket: TicketRow, kind: RemindKind, after: number) => {
+ armKind = async (ticket: TicketRow, kind: RemindKind, after: number, warnings?: WarningRef[]) => {
   const key = remindKey(kind, String(ticket.id));
   if (after <= 0) {
    await disarm.call(this.client, key);
@@ -77,7 +86,7 @@ export default class TicketReminders {
   await arm.call(
    this.client,
    key,
-   encodeJob({ guildId: ticket.settings.guild, ticketId: String(ticket.id), kind }),
+   encodeJob({ guildId: ticket.settings.guild, ticketId: String(ticket.id), kind, warnings }),
    after,
   );
  };
@@ -158,9 +167,9 @@ export default class TicketReminders {
   await this.setRemindAt(id, warnAfter > 0 ? Date.now() + warnAfter * 1000 : null);
  };
 
- armCloseAfterWarn = async (ticket: TicketRow) => {
+ armCloseAfterWarn = async (ticket: TicketRow, warnings: WarningRef[] = []) => {
   const closeAfter = positiveSeconds(ticket.settings.inactivityCloseAfter);
-  await this.armKind(ticket, RemindKind.InactivityClose, closeAfter);
+  await this.armKind(ticket, RemindKind.InactivityClose, closeAfter, warnings);
   const remindAt = closeAfter > 0 ? Date.now() + closeAfter * 1000 : null;
   await this.setRemindAt(String(ticket.id), remindAt);
  };
@@ -168,6 +177,50 @@ export default class TicketReminders {
  disarmInactivity = async (ticketId: string) => {
   await this.disarmKinds(ticketId, [RemindKind.InactivityWarn, RemindKind.InactivityClose]);
   await this.setRemindAt(ticketId, null);
+ };
+
+ storedWarnings = async (ticketId: string): Promise<WarningRef[]> => {
+  const key = dataKey(remindKey(RemindKind.InactivityClose, ticketId));
+  const raw = await this.client.cache.scheduleDb?.get(key);
+  return raw ? ((JSON.parse(raw) as RemindJob).warnings ?? []) : [];
+ };
+
+ nextCheckUnix = (ticket: TicketRow): number | null => {
+  const warnAfter = positiveSeconds(ticket.settings.inactivityWarnAfter);
+  const open = ticket.state === TicketState.opened || ticket.state === TicketState.claimed;
+  return open && warnAfter > 0 ? Math.floor(Date.now() / 1000) + warnAfter : null;
+ };
+
+ restartInactivity = async (ticket: TicketRow) => {
+  const id = String(ticket.id);
+  await this.disarmInactivity(id);
+  if (!this.nextCheckUnix(ticket)) return;
+
+  const warnAfter = positiveSeconds(ticket.settings.inactivityWarnAfter);
+  await this.armKind(ticket, RemindKind.InactivityWarn, warnAfter);
+  await this.setRemindAt(id, Date.now() + warnAfter * 1000);
+ };
+
+ postWarning = async (api: API, ticket: TicketRow, payload: MessagePayload) => {
+  const sent = await api.channels.createMessage(ticket.channel, payload.getAPIPayload(), {
+   origin: payload.origin,
+   reason: payload.reason,
+  });
+  if (!(sent instanceof RequestHandlerError)) return warningRef(sent, false);
+
+  this.plugin.nonFatalError(sent, 'fireInactivityWarn');
+  return null;
+ };
+
+ editWarning = async (ticket: TicketRow, ref: WarningRef, payload: MessagePayload) => {
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const meta = { origin: payload.origin, reason: payload.reason };
+  const body = payload.getAPIPayload();
+  const res = ref.dm
+   ? await api.channels.editDirectMessage(ref.channelId, ref.messageId, body, meta)
+   : await api.channels.editMessage(ref.channelId, ref.messageId, body, meta);
+
+  if (res instanceof RequestHandlerError) this.plugin.nonFatalError(res, 'editWarning');
  };
 
  reArm = async (ticket: BaseTicket, kind: RemindKind, every: number) => {
@@ -269,6 +322,28 @@ export default class TicketReminders {
    ]);
  };
 
+ buildKeptOpenPayload = (
+  t: Translator,
+  userId: string,
+  nextUnix: number | null,
+  emotes: EmoteSet,
+ ): MessagePayload => {
+  const lines = [t.inactivityKeptOpen({ user: `<@${userId}>` })];
+  if (nextUnix) lines.push(t.inactivityNextCheck({ time: `<t:${nextUnix}:R>` }));
+  const emote = constants.formatters.getEmote(emotes.timer);
+
+  return new MessagePayload(this.client, {
+   origin: 'ticketKeepOpen',
+   reason: 'Marking the inactivity warning as kept open',
+  })
+   .setFlags(MessageFlags.IsComponentsV2)
+   .setComponents([
+    new ContainerBuilder()
+     .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${emote} ${lines.join(' ')}`))
+     .toJSON(),
+   ]);
+ };
+
  fireInactivityWarn = async (ticket: BaseTicket) => {
   const row = await ticket.getTicket();
   if (row.state !== TicketState.opened && row.state !== TicketState.claimed) {
@@ -289,13 +364,14 @@ export default class TicketReminders {
   const emotes = this.client.emojis.for(api);
   const payload = this.buildInactivityWarnPayload(t, row, closeUnix, emotes);
 
-  await ticket
-   .sendMessage(payload)
-   .catch((error: Error) => this.plugin.nonFatalError(error, 'fireInactivityWarn'));
-  await ticket.relayToDm(payload);
+  const posted = await this.postWarning(api, row, payload);
+  const relayed = await ticket.relayToDm(payload);
+  const warnings = [posted, relayed && warningRef(relayed, true)].filter(
+   (ref): ref is WarningRef => !!ref,
+  );
 
   await disarm.call(this.client, remindKey(RemindKind.InactivityWarn, String(row.id)));
-  await this.armCloseAfterWarn(row);
+  await this.armCloseAfterWarn(row, warnings);
  };
 
  fireInactivityClose = async (ticket: BaseTicket) => {

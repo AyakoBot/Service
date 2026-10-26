@@ -5,6 +5,7 @@ import { LogLevel, type RChannel, type RMessage, type RThread } from '@ayako/uti
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from '@discordjs/builders';
 import {
  ButtonStyle,
+ InteractionType,
  MessageFlags,
  type APIMessage,
  type APIMessageComponentInteraction,
@@ -18,12 +19,12 @@ import constants from '../../../Classes/Constants.js';
 import { Colors } from '../../../Types/index.js';
 import TicketPlugin from '../Plugin.js';
 import { settingsBotId } from '../Util/resolveDmBotApi.js';
-import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 
 import type { SurfaceState } from './BaseTicket.js';
 import BaseTicket from './BaseTicket.js';
 import { LogType } from './BaseTicketLogger.js';
 import type ChannelTicket from './ChannelTicket.js';
+import type { TicketInteraction } from './ChannelTicket.js';
 import DmToChannelTicket from './DmToChannelTicket.js';
 import DmToThreadTicket from './DmToThreadTicket.js';
 import { DMTicketErrors } from './Enums.js';
@@ -39,7 +40,7 @@ type AbstractCtor<T = {}> = new (...args: any[]) => T;
 // eslint-disable-next-line func-style, @typescript-eslint/naming-convention
 export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: TBase) {
  abstract class DMTicket extends Base {
-  async handleMissingDm(cmd?: APIMessageComponentInteraction): Promise<boolean> {
+  async handleMissingDm(cmd?: TicketInteraction): Promise<boolean> {
    const ticket = await this.getTicket();
    if (ticket.starterDm) return false;
    if (await this.isClosed()) return false;
@@ -71,8 +72,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    return true;
   }
 
-  async relayIntake(cmd?: APIMessageComponentInteraction): Promise<void> {
-   if (!cmd || cmd.guild_id) return;
+  async relayIntake(cmd?: TicketInteraction): Promise<void> {
+   if (!cmd || cmd.guild_id || cmd.type !== InteractionType.MessageComponent) return;
 
    const ticket = await this.getTicket();
    if (!ticket.dm || cmd.channel.id !== ticket.dm) return;
@@ -127,7 +128,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   }
 
   async replyMessage(
-   cmd: APIMessageComponentInteraction | APIModalSubmitInteraction,
+   cmd: TicketInteraction,
    payload: MessagePayload,
    errorCode: (typeof DMTicketErrors)[keyof typeof DMTicketErrors],
   ) {
@@ -157,11 +158,11 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    return send;
   }
 
-  async relayToDm(payload: MessagePayload): Promise<void> {
+  async relayToDm(payload: MessagePayload): Promise<APIMessage | null> {
    const ticket = await this.getTicket();
-   if (ticket.opener) return;
+   if (ticket.opener) return null;
 
-   await this.forwardToDmChannel(payload).catch(() => null);
+   return this.forwardToDmChannel(payload).catch(() => null);
   }
 
   async getLeaveConfirmationPayload() {
@@ -223,9 +224,12 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
 
   async leaveSure(cmd: APIMessageComponentInteraction) {
    const ticket = await this.getTicket();
+   const t = await this.plugin.t(ticket.settings.guild);
 
-   const leavePayload = await this.getLeavePayload();
-   await this.forwardToDmChannel(leavePayload);
+   await this.forwardToDmChannel(await this.getLeavePayload(t.leftTicket()));
+   await this.sendMessage(await this.getLeavePayload(t.ticketLeft())).catch((error: Error) =>
+    this.plugin.nonFatalError(error, this.leaveSure.name),
+   );
 
    await this.handleBaseLog({ type: LogType.TicketLeft, data: { userId: ticket.user } });
    await this.unpinMessage();
@@ -244,7 +248,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
 
    const renamed = await api.channels.edit(
     ticket.channel,
-    { name: await this.creatorChannelName(t.closedByUser()) },
+    { name: await this.creatorChannelName({ state: t.closedByUser() }) },
     { origin: DMTicket.name, reason: 'Renaming ticket channel after user left' },
    );
    if (renamed instanceof RequestHandlerError) {
@@ -274,7 +278,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    }
   }
 
-  async getLeavePayload() {
+  async getLeavePayload(text: string) {
    const ticket = await this.getTicket();
    const t = await this.plugin.t(ticket.settings.guild);
    const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
@@ -291,9 +295,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
       iconURL: user ? user.avatar_url || '' : '',
      })
      .setColor(Colors.Warning)
-     .setDescription(
-      `${constants.formatters.getEmote(emotes.crossWithBackground)}: ${t.leftTicket()}`,
-     ),
+     .setDescription(`${constants.formatters.getEmote(emotes.crossWithBackground)}: ${text}`),
    ]);
   }
 
@@ -393,9 +395,13 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    const emotes = this.client.emojis.for(api);
 
    const fallback = { name: t.SupportTeam(), emote: emotes.tools };
-   const author = closerId
-    ? await resolveStaffLabel.call(this.client, ticket.settings.guild, closerId, fallback)
-    : fallback;
+   const author = closerId ? await this.mirrorAuthor(true, closerId) : fallback;
+   const iconUrl =
+    closerId && !ticket.settings.anonymousRelay
+     ? await this.mirrorImage(true, closerId)
+     : author.emote
+       ? constants.formatters.getEmoteUrl(author.emote)
+       : undefined;
 
    return new MessagePayload(this.client, {
     origin: this.getCloseDmPayload.name,
@@ -404,7 +410,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
     {
      author: {
       name: author.name,
-      icon_url: author.emote ? constants.formatters.getEmoteUrl(author.emote) : undefined,
+      icon_url: iconUrl,
      },
      description: t.hasClosedThreadRelay(),
      color: Colors.Warning,
@@ -413,26 +419,17 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    ]);
   }
 
-  async *create(
+  async assertCanCreate(
    dbOpts: { settingsId: string; userId: string; opener?: string },
-   createOpts: {
-    cmd?: APIMessageComponentInteraction;
-    userId: string;
-    roleIds: string[];
-    username: string;
-   },
+   createOpts: { userId: string; roleIds: string[] },
   ) {
-   this.plugin.logger.logLocation(LogLevel.silly);
-
-   await this.enforceCreateLimits(dbOpts.settingsId, dbOpts.userId);
+   await super.assertCanCreate(dbOpts, createOpts);
 
    const settings = await this.getTicketSettings(dbOpts.settingsId);
    const botId = settingsBotId.call(this.plugin, settings);
-   const hasDmTicket = await this.hasDmTicket(dbOpts.userId, botId);
-   if (hasDmTicket) throw new Error(DMTicketErrors.create_UserAlreadyInDmTicket);
-
-   const create = super.create(dbOpts, createOpts);
-   return yield* create;
+   if (await this.hasDmTicket(dbOpts.userId, botId)) {
+    throw new Error(DMTicketErrors.create_UserAlreadyInDmTicket);
+   }
   }
 
   async hasDmTicket(userId: string, botId: string | null) {
@@ -456,9 +453,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    await this.setDmChannel();
    const superCreate = await super.createChannel(api, username, settingsId);
 
-   const dmMessage = await this.forwardToDmChannel(await this.getInitDmPayload()).catch(
-    () => null,
-   );
+   const dmMessage = await this.forwardToDmChannel(await this.getInitDmPayload()).catch(() => null);
 
    if (dmMessage) {
     await this.setStarterDm(dmMessage.id);
@@ -498,7 +493,7 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
    });
   }
 
-  async *close(data: { userId: string; cmd: APIModalSubmitInteraction; reason?: string }) {
+  async *close(data: { userId: string; cmd?: APIModalSubmitInteraction; reason?: string }) {
    const superClose = yield* super.close(data);
 
    await this.forwardToDmChannel(await this.getCloseDmPayload(data.reason, data.userId)).catch(
@@ -657,19 +652,12 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
   }
 
   async cloneToDm(msg: RMessage) {
-   const ticket = await this.getTicket();
-   const t = await this.plugin.t(ticket.settings.guild);
-   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
-   const emotes = this.client.emojis.for(api);
-
-   const fallback = { name: t.SupportTeam(), emote: emotes.tools };
-   const authorName = await resolveStaffLabel.call(
-    this.client,
-    ticket.settings.guild,
-    msg.author_id,
-    fallback,
+   const container = this.buildMirrorContainer(
+    msg,
+    await this.mirrorAuthor(true, msg.author_id),
+    await this.mirrorImage(true, msg.author_id),
+    await this.forwardLabels(),
    );
-   const container = this.buildMirrorContainer(msg, authorName, await this.forwardLabels());
 
    const sent = await this.forwardToDmChannel(
     new MessagePayload(this.client, {
@@ -682,6 +670,8 @@ export function DMTicketMixin<TBase extends AbstractCtor<ChannelTicket>>(Base: T
     this.plugin.nonFatalError(error, this.cloneToDm.name);
     return null;
    });
+
+   if (sent) await this.claimOnReply(msg.author_id);
 
    return !!sent;
   }

@@ -2,7 +2,7 @@ import { inspect } from 'node:util';
 
 import { RequestHandlerError } from '@ayako/api';
 import type { Prisma, TicketSetting, TicketTier } from '@ayako/database';
-import { TicketState, TicketType } from '@ayako/database';
+import { TicketPriority, TicketState, TicketType } from '@ayako/database';
 import { LogLevel, type RMessage } from '@ayako/utility';
 import {
  ActionRowBuilder,
@@ -16,6 +16,7 @@ import {
  ButtonStyle,
  MessageFlags,
  SeparatorSpacingSize,
+ type APIMessage,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
 
@@ -29,9 +30,11 @@ import {
  contextMarkerButton,
 } from '../../../Util/cloneMessageIntoContainer.js';
 import fetchMessages from '../../../Util/fetchMessages.js';
+import { avatarUrl, iconUrl } from '../../../Util/placeholderVars.js';
 import { InfoRoute } from '../../info/Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
 import isUnderLimit from '../Util/isUnderLimit.js';
+import { priorityLabel } from '../Util/priority.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
 import {
  canUserClaimTier,
@@ -39,11 +42,13 @@ import {
  canUserTakeClaim,
  reachableTiers,
 } from '../Util/resolveTierAccess.js';
+import { systemDisplayLabel } from '../Util/systemLabel.js';
 import { countOpenForUser, matchingOpenTicket } from '../Util/ticketCounts.js';
 import {
  encodeContext,
- findMessageButtonRef,
+ findMessageRef,
  TicketContextType,
+ withContext,
 } from '../Util/transcriptContext.js';
 
 import BaseTicketLogger, { LogType } from './BaseTicketLogger.js';
@@ -83,6 +88,9 @@ const surfaceContextTypes: Record<SurfaceState, TicketContextType> = {
  [SurfaceState.Prepared]: TicketContextType.Created,
  [SurfaceState.Deleted]: TicketContextType.Closed,
 };
+
+const manageableStates = [TicketState.opened, TicketState.claimed];
+const autoClaiming = new Set<string>();
 
 const tierGlyphSlots = 4;
 
@@ -355,6 +363,55 @@ export default class BaseTicket extends BaseTicketLogger {
    .setFlags(MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral);
  }
 
+ async assertManageable(userId: string) {
+  const ticket = await this.getTicket();
+  if (!manageableStates.includes(ticket.state))
+   throw new Error(BaseTicketErrors.manage_TicketNotOpen);
+  if (!(await this.isUserStaff(userId))) throw new Error(BaseTicketErrors.manage_UserNotStaff);
+ }
+
+ async setPriority(userId: string, priority: TicketPriority) {
+  await this.assertManageable(userId);
+
+  this.dbTicket = await this.db.ticket.update({
+   where: { id: this.id },
+   data: { priority },
+   include: { settings: true },
+  });
+ }
+
+ async announce(content: string, mentionUsers: string[] = []) {
+  await this.sendMessage(
+   new MessagePayload(this.client, {
+    origin: BaseTicket.name,
+    reason: 'Announcing a ticket change',
+   })
+    .setContent(content)
+    .setAllowedMentionsUsers(mentionUsers)
+    .setAllowedMentionsRoles([]),
+  ).catch((error: Error) => this.plugin.nonFatalError(error, this.announce.name));
+ }
+
+ async describe(): Promise<string> {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const state = this.resolveSurfaceState(ticket);
+  const lastReply = this.formatRelative(ticket.lastMessageAt);
+
+  return [
+   `**${systemDisplayLabel(t, ticket.settings)}** • #${ticket.id}`,
+   `${this.stateGlyph(state, this.client.emojis.for(api))} ${this.stateLabel(state, t)}`,
+   `${t.base.t.User()}: <@${ticket.user}>`,
+   ...(ticket.opener ? [`${t.command.openedBy()}: <@${ticket.opener}>`] : []),
+   `${t.claimedBy()}: ${ticket.claimer ? `<@${ticket.claimer}>` : '-'}`,
+   this.tierLine(ticket, await this.listTiers(), t),
+   priorityLabel(t, ticket.priority),
+   `${t.command.openedAt()}: ${this.formatRelative(ticket.id) ?? '-'}`,
+   ...(lastReply ? [`${t.lastReply()}: ${lastReply}`] : []),
+  ].join('\n');
+ }
+
  async canUserClose(userId: string) {
   const isStaff = await this.isUserStaff(userId);
   if (isStaff) return true;
@@ -371,6 +428,26 @@ export default class BaseTicket extends BaseTicketLogger {
 
   const ticket = await this.getTicket();
   return canUserClaimTier.call(this.client, ticket, userId, tiers);
+ }
+
+ async claimOnReply(staffId: string) {
+  if (autoClaiming.has(this.id)) return;
+  autoClaiming.add(this.id);
+
+  try {
+   if (!(await this.getTicket()).settings.claimOnReply) return;
+
+   this.dbTicket = null;
+   const ticket = await this.getTicket();
+   if (ticket.state !== TicketState.opened || ticket.user === staffId) return;
+   if (!(await this.canUserClaim(staffId))) return;
+
+   await this.claim({ userId: staffId }).next();
+  } catch (error) {
+   this.plugin.nonFatalError(error as Error, this.claimOnReply.name);
+  } finally {
+   autoClaiming.delete(this.id);
+  }
  }
 
  async canUserDelete(userId: string) {
@@ -439,13 +516,13 @@ export default class BaseTicket extends BaseTicketLogger {
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
   await this.markClosed(api.botId, reason);
 
-  await this.postAutoCloseNotice(api.botId, reason, heading);
+  await this.postCloseNotice(api.botId, reason, heading);
   await this.refreshSurface();
 
   return this;
  }
 
- async postAutoCloseNotice(actorId: string, reason?: string, heading?: string) {
+ async postCloseNotice(actorId: string, reason?: string, heading?: string) {
   const ticket = await this.getTicket();
   const t = await this.plugin.t(ticket.settings.guild);
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
@@ -471,14 +548,18 @@ export default class BaseTicket extends BaseTicketLogger {
    );
   }
 
+  container.addActionRowComponents(
+   new ActionRowBuilder<ButtonBuilder>().addComponents(this.deleteButton(ticket, t)),
+  );
+
   await this.sendMessage(
    new MessagePayload(this.client, {
     origin: BaseTicket.name,
-    reason: 'Posting inactivity auto-close notice',
+    reason: 'Posting ticket close notice',
    })
     .setComponents([container.toJSON()])
     .setFlags(MessageFlags.IsComponentsV2),
-  ).catch((error: Error) => this.plugin.nonFatalError(error, this.postAutoCloseNotice.name));
+  ).catch((error: Error) => this.plugin.nonFatalError(error, this.postCloseNotice.name));
  }
 
  async *delete({ userId }: { userId: string }) {
@@ -493,6 +574,7 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
   await this.markDeleted();
   this.deleteTranscript = await this.getTranscript(ticket.channel, ticket.settings.guild);
+  this.deletedChannel = await this.resolveTicketChannel();
 
   yield;
 
@@ -530,19 +612,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const exists = await this.getTicket().catch(() => null);
   if (exists) throw new Error(BaseTicketErrors.create_TicketExists);
 
-  await this.enforceCreateLimits(dbOpts.settingsId, dbOpts.userId);
-
-  const settings = await this.getTicketSettings(dbOpts.settingsId);
-  if (!settings.active) throw new Error(BaseTicketErrors.create_SettingsInactive);
-
-  if (!dbOpts.opener) {
-   if (settings.denyUsers.includes(createOpts.userId)) {
-    throw new Error(BaseTicketErrors.create_UserDenied);
-   }
-   if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
-    throw new Error(BaseTicketErrors.create_RoleDenied);
-   }
-  }
+  await this.assertCanCreate(dbOpts, createOpts);
 
   const preparedEntry = await this.prepareEntry(dbOpts.userId, dbOpts.settingsId, dbOpts.opener);
   this.dbTicket = preparedEntry;
@@ -556,6 +626,24 @@ export default class BaseTicket extends BaseTicketLogger {
   this.handleBaseLog({ type: LogType.TicketCreated, data: { userId: dbOpts.userId } });
 
   return this;
+ }
+
+ async assertCanCreate(
+  dbOpts: { settingsId: string; userId: string; opener?: string },
+  createOpts: { userId: string; roleIds: string[] },
+ ) {
+  await this.enforceCreateLimits(dbOpts.settingsId, dbOpts.userId);
+
+  const settings = await this.getTicketSettings(dbOpts.settingsId);
+  if (!settings.active) throw new Error(BaseTicketErrors.create_SettingsInactive);
+  if (dbOpts.opener) return;
+
+  if (settings.denyUsers.includes(createOpts.userId)) {
+   throw new Error(BaseTicketErrors.create_UserDenied);
+  }
+  if (settings.denyRoles.some((r) => createOpts.roleIds.includes(r))) {
+   throw new Error(BaseTicketErrors.create_RoleDenied);
+  }
  }
 
  async enforceCreateLimits(settingsId: string, userId: string) {
@@ -740,6 +828,7 @@ export default class BaseTicket extends BaseTicketLogger {
    `${t.base.t.User()}: <@${ticket.user}>`,
    claimerLine,
    tierLine,
+   ...(ticket.priority !== TicketPriority.None ? [priorityLabel(t, ticket.priority)] : []),
    ...(lastReply ? [`${t.lastReply()}: ${lastReply}`] : []),
    ...(remind ? [`${t.inactivityIn()}: ${remind}`] : []),
   ];
@@ -812,17 +901,10 @@ export default class BaseTicket extends BaseTicketLogger {
     .setLabel(t.userInfo()),
   ];
 
-  if (state === SurfaceState.Closed) {
-   buttons.push(
-    new ButtonBuilder()
-     .setStyle(ButtonStyle.Danger)
-     .setCustomId(this.plugin.getRoute(TicketRoute.Delete, ticket.id))
-     .setLabel(t.base.t.Delete()),
-   );
-   return buttons;
-  }
+  if (state === SurfaceState.Closed) return [...buttons, this.deleteButton(ticket, t)];
 
-  if (state === SurfaceState.Left || state === SurfaceState.Deleted) return buttons;
+  if (state === SurfaceState.Deleted) return buttons;
+  if (state === SurfaceState.Left) return [...buttons, this.closeButton(ticket, t)];
 
   if (state === SurfaceState.Claimed) {
    buttons.push(
@@ -857,14 +939,29 @@ export default class BaseTicket extends BaseTicketLogger {
    );
   }
 
-  buttons.push(
-   new ButtonBuilder()
-    .setStyle(ButtonStyle.Danger)
-    .setCustomId(this.plugin.getRoute(TicketRoute.Close, ticket.id))
-    .setLabel(t.closeTicket()),
-  );
+  buttons.push(this.closeButton(ticket, t));
 
   return buttons;
+ }
+
+ closeButton(
+  ticket: Awaited<ReturnType<BaseTicket['getTicket']>>,
+  t: Awaited<ReturnType<TicketPlugin['t']>>,
+ ) {
+  return new ButtonBuilder()
+   .setStyle(ButtonStyle.Danger)
+   .setCustomId(this.plugin.getRoute(TicketRoute.Close, ticket.id))
+   .setLabel(t.closeTicket());
+ }
+
+ deleteButton(
+  ticket: Awaited<ReturnType<BaseTicket['getTicket']>>,
+  t: Awaited<ReturnType<TicketPlugin['t']>>,
+ ) {
+  return new ButtonBuilder()
+   .setStyle(ButtonStyle.Danger)
+   .setCustomId(this.plugin.getRoute(TicketRoute.Delete, ticket.id))
+   .setLabel(t.base.t.Delete());
  }
 
  buildSurfaceContextButton(
@@ -902,9 +999,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const ticket = await this.getTicket();
 
   const post = await this.client.cache.threads.get(ticket.channel);
-  const parent = post?.parent_id
-   ? await this.client.cache.channels.get(post.parent_id)
-   : null;
+  const parent = post?.parent_id ? await this.client.cache.channels.get(post.parent_id) : null;
   if (this.isForumChannel(parent)) {
    await this.setSurfaceMessage(ticket.channel);
    await this.refreshSurface();
@@ -976,8 +1071,8 @@ export default class BaseTicket extends BaseTicketLogger {
   return msg;
  }
 
- async relayToDm(_payload: MessagePayload): Promise<void> {
-  return;
+ async relayToDm(_payload: MessagePayload): Promise<APIMessage | null> {
+  return null;
  }
 
  async startsWithPrefix(content: string) {
@@ -987,6 +1082,32 @@ export default class BaseTicket extends BaseTicketLogger {
 
  async staffReply(msg: RMessage) {
   return this.messageSent(msg, true);
+ }
+
+ async postOpeningText(userId: string, text: string) {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const { member } = this.client.emojis.for(api);
+  const emote = member ? `${constants.formatters.getEmote(member)} ` : '';
+  const user = await this.getUser(userId);
+  const name = user?.username || t.base.t.unknownUser();
+
+  await this.sendMessage(
+   new MessagePayload(this.client, {
+    origin: BaseTicket.name,
+    reason: 'Posting what the ticket is about',
+   })
+    .setComponents([
+     new ContainerBuilder()
+      .addTextDisplayComponents(
+       new TextDisplayBuilder().setContent(`### ${emote}${name}`),
+       new TextDisplayBuilder().setContent(text),
+      )
+      .toJSON(),
+    ])
+    .setFlags(MessageFlags.IsComponentsV2),
+  ).catch((error: Error) => this.plugin.nonFatalError(error, this.postOpeningText.name));
  }
 
  async forwardToTicketChannel(msg: RMessage) {
@@ -1000,6 +1121,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const container = this.buildMirrorContainer(
    msg,
    { name, emote: emotes.member },
+   await this.mirrorImage(false, msg.author_id),
    await this.forwardLabels(),
   );
 
@@ -1016,15 +1138,65 @@ export default class BaseTicket extends BaseTicketLogger {
  buildMirrorContainer(
   msg: RMessage,
   author: { name: string; emote: { name: string | null; id: string | null } | undefined },
+  image: string,
   forwardLabels?: { forwardedFromLabel: string; forwardUnavailableLabel: string },
  ) {
   const container = new ContainerBuilder();
   cloneMessageIntoContainer.call(container, msg, {
    authorName: `${author.emote ? `${constants.formatters.getEmote(author.emote)} ` : ''}${author.name}`,
-   context: encodeContext(TicketContextType.Forwarded, msg.author_id, msg.id),
+   thumbnail: withContext(image, encodeContext(TicketContextType.Forwarded, msg.author_id, msg.id)),
    ...forwardLabels,
   });
   return container;
+ }
+
+ async mirrorAuthor(
+  isDm: boolean,
+  authorId: string,
+ ): Promise<{ name: string; emote: { name: string | null; id: string | null } | undefined }> {
+  const ticket = await this.getTicket();
+  const t = await this.plugin.t(ticket.settings.guild);
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const emotes = this.client.emojis.for(api);
+
+  if (isDm && ticket.settings.anonymousRelay) {
+   return resolveStaffLabel.call(this.client, ticket.settings.guild, authorId, {
+    name: t.SupportTeam(),
+    emote: emotes.tools,
+   });
+  }
+
+  const user = await this.getUser(authorId);
+  return { name: user?.username || t.base.t.unknownUser(), emote: emotes.member };
+ }
+
+ async mirrorImage(isDm: boolean, authorId: string): Promise<string> {
+  const ticket = await this.getTicket();
+  if (!isDm || !ticket.settings.anonymousRelay) {
+   return this.avatarFor(await this.getUser(authorId), authorId);
+  }
+
+  const icon = iconUrl(await this.mirrorGuild());
+  if (icon) return icon;
+
+  const staff = this.client.emojis.for(this.client.getBaseAPI()).tools;
+  return (
+   constants.formatters.getEmoteUrl(staff) ?? avatarUrl({ id: ticket.settings.guild, avatar: null })
+  );
+ }
+
+ async mirrorGuild() {
+  const ticket = await this.getTicket();
+  const cached = await this.client.cache.guilds.get(ticket.settings.guild);
+  if (cached) return cached;
+
+  const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
+  const fetched = await api.guilds.get(ticket.settings.guild, undefined, {
+   origin: BaseTicket.name,
+   reason: 'Resolving server icon for a mirrored message',
+  });
+
+  return fetched instanceof RequestHandlerError ? null : fetched;
  }
 
  async forwardLabels() {
@@ -1068,7 +1240,7 @@ export default class BaseTicket extends BaseTicketLogger {
   originalId: string,
   after?: string | null,
  ): Promise<string | null> {
-  const matches = (m: { components?: unknown }) => findMessageButtonRef(m.components, originalId);
+  const matches = (m: { components?: unknown }) => findMessageRef(m.components, originalId);
 
   const cached = await this.client.cache.messages.getAll(isDm ? '@me' : guildId, channelId);
   const cachedHit = cached.find(matches);
@@ -1091,27 +1263,21 @@ export default class BaseTicket extends BaseTicketLogger {
 
  async editMirror(mirror: MirrorRef, msg: RMessage) {
   const ticket = await this.getTicket();
-  const t = await this.plugin.t(ticket.settings.guild);
   const api = await this.plugin.getAPI(ticket.settings.guild, ticket.settings.botToken);
-  const emotes = this.client.emojis.for(api);
-
-  let author: { name: string; emote: { name: string | null; id: string | null } | undefined };
-  if (mirror.isDm) {
-   author = await resolveStaffLabel.call(this.client, ticket.settings.guild, msg.author_id, {
-    name: t.SupportTeam(),
-    emote: emotes.tools,
-   });
-  } else {
-   const user = await this.getUser(msg.author_id);
-   const name = user?.username || t.base.t.unknownUser();
-   author = { name: `${name}`, emote: emotes.member };
-  }
+  const author = await this.mirrorAuthor(mirror.isDm, msg.author_id);
 
   const payload = new MessagePayload(this.client, {
    origin: BaseTicket.name,
    reason: 'Editing mirrored message',
   })
-   .setComponents([this.buildMirrorContainer(msg, author, await this.forwardLabels()).toJSON()])
+   .setComponents([
+    this.buildMirrorContainer(
+     msg,
+     author,
+     await this.mirrorImage(mirror.isDm, msg.author_id),
+     await this.forwardLabels(),
+    ).toJSON(),
+   ])
    .setFlags(MessageFlags.IsComponentsV2);
 
   if (mirror.isDm) {

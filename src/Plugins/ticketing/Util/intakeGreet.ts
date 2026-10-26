@@ -5,7 +5,7 @@ import type TicketPlugin from '../Plugin.js';
 import { buildGreetingPayload } from './buildIntakePayload.js';
 import findStuckDmTickets from './findStuckDmTickets.js';
 import getSharedTicketGuilds from './getSharedTicketGuilds.js';
-import { resolveDmBotApi } from './resolveDmBotApi.js';
+import { resolveDmBotApi, servedBy } from './resolveDmBotApi.js';
 
 export default async function (
  this: TicketPlugin,
@@ -15,7 +15,11 @@ export default async function (
  attachmentUrls: string[],
  recipientId?: string,
 ) {
- const candidates = await getSharedTicketGuilds.call(this.client, userId);
+ const candidates = await getSharedTicketGuilds.call(
+  this.client,
+  userId,
+  servedBy.call(this, recipientId),
+ );
  if (!candidates.length) return;
 
  const api = await resolveDmBotApi.call(this, candidates, recipientId);

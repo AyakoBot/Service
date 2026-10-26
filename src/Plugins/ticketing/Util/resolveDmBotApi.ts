@@ -4,7 +4,7 @@ import { decrypt, getBotIdFromToken } from '@ayako/utility';
 
 import type TicketPlugin from '../Plugin.js';
 
-import type { CandidateGuild } from './getSharedTicketGuilds.js';
+import type { CandidateGuild, SettingFilter } from './getSharedTicketGuilds.js';
 
 export const safeBotId = (cipher: string): string | null => {
  try {
@@ -18,6 +18,11 @@ export const settingsBotId = function (this: TicketPlugin, settings: TicketSetti
  if (!settings.botToken) return this.getPluginAPI().botId;
 
  return safeBotId(settings.botToken);
+};
+
+export const servedBy = function (this: TicketPlugin, botId: string | undefined): SettingFilter {
+ const target = botId ?? this.getPluginAPI().botId;
+ return (settings) => settingsBotId.call(this, settings) === target;
 };
 
 export const findDmBotSetting = (

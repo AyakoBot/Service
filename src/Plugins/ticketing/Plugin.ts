@@ -44,7 +44,13 @@ import {
  type SettingsSchemaDef,
 } from '../settings/SettingsSchema.js';
 
-import { forceOpenCommandName, tagCommandName, TicketRoute } from './Classes/Routes.js';
+import { ticketCommand } from './Classes/Commands.js';
+import {
+ forceOpenCommandName,
+ tagCommandName,
+ tagInputOption,
+ TicketRoute,
+} from './Classes/Routes.js';
 import channelDelete from './Events/ChannelDelete/index.js';
 import interactionCreate from './Events/InteractionCreate/index.js';
 import messageCreate from './Events/MessageCreate/index.js';
@@ -58,6 +64,8 @@ import { BotProfilePart, botProfileImageTransform, botProfileVirtual } from './U
 import { botTokenTransform } from './Util/botTokenTransform.js';
 import { presenceEmojiTransform } from './Util/presenceEmojiTransform.js';
 import { systemDisplayLabel } from './Util/systemLabel.js';
+import { nameHelpText, nameTemplateMax } from './Util/ticketName.js';
+import { typeSwitchTransform } from './Util/typeSwitchTransform.js';
 
 type Events =
  | GatewayDispatchEvents.InteractionCreate
@@ -303,10 +311,17 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       .setDescription('The snippet to post')
       .setRequired(false)
       .setAutocomplete(true),
+    )
+    .addStringOption((option) =>
+     option
+      .setName(tagInputOption)
+      .setDescription("Values for the snippet's commands, e.g. a close reason or a user")
+      .setRequired(false),
     ),
    new ContextMenuCommandBuilder()
     .setName(forceOpenCommandName)
     .setType(ApplicationCommandType.User),
+   ticketCommand(),
   ],
   settings: [
    {
@@ -321,12 +336,14 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
   ],
  });
 
- settingsSchema = {
+ settingsSchema: SettingsSchemaDef = {
   table: 'ticketSetting',
   rowKey: 'id',
   multiRow: true,
   title: (t: TicketTranslator) => t.settings.configTitle(),
   rowLabel: (t: TicketTranslator, row: TicketSetting) => systemDisplayLabel(t, row),
+  rowSubtitle: (t: TicketTranslator, row: TicketSetting) =>
+   t.settings.systemId({ id: String(row.id) }),
   overviewDescription: (t: TicketTranslator) => t.settings.overviewDescription(),
   guide: {
    title: (t: TicketTranslator) => t.guide.title(),
@@ -668,6 +685,7 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       description: (t: TicketTranslator) => t.settings.descriptions.type(),
       arity: FieldArity.Single,
       required: true,
+      transform: typeSwitchTransform,
       options: [
        {
         value: TicketType.Channel,
@@ -758,6 +776,22 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       }),
      },
      {
+      column: 'nameTemplate',
+      editor: EditorType.String,
+      emote: EmoteName.Edit,
+      label: (t: TicketTranslator) => t.settings.fields.nameTemplate(),
+      description: (t: TicketTranslator) => t.settings.descriptions.nameTemplate(),
+      arity: FieldArity.Single,
+      validate: (value) => ({
+       ok: String(value ?? '').length <= nameTemplateMax,
+       reason: en.settings.nameVars.tooLong,
+      }),
+      help: {
+       label: (t: TicketTranslator) => t.settings.nameVars.button(),
+       text: (t: TicketTranslator) => nameHelpText(t),
+      },
+     },
+     {
       column: 'archiveCategory',
       editor: EditorType.Category,
       emote: EmoteName.Save,
@@ -832,6 +866,12 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
       arity: FieldArity.Multi,
      },
      {
+      column: 'claimOnReply',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.claimOnReply(),
+      description: (t: TicketTranslator) => t.settings.descriptions.claimOnReply(),
+     },
+     {
       column: 'staffThreads',
       editor: EditorType.Boolean,
       label: (t: TicketTranslator) => t.settings.fields.staffThreads(),
@@ -858,6 +898,16 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
          : en.settings.reasons.threadTypeOnly,
        };
       },
+     },
+     {
+      column: 'anonymousRelay',
+      editor: EditorType.Boolean,
+      label: (t: TicketTranslator) => t.settings.fields.anonymousRelay(),
+      description: (t: TicketTranslator) => t.settings.descriptions.anonymousRelay(),
+      showIf: (row) => ({
+       ok: [TicketType.dmToChannel, TicketType.dmToThread].includes(row.type),
+       reason: en.settings.reasons.dmOnly,
+      }),
      },
     ],
    },
@@ -1327,12 +1377,9 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
   ],
- } satisfies SettingsSchemaDef<
-  TicketSetting & TicketVirtualColumns,
-  TicketTranslator
- > as unknown as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<TicketSetting & TicketVirtualColumns, TicketTranslator>;
 
- snippetsSchema = {
+ snippetsSchema: SettingsSchemaDef = {
   table: 'snippets',
   rowKey: 'name',
   multiRow: true,
@@ -1374,5 +1421,5 @@ export default class TicketPlugin extends Plugin<Events, APILanguage> {
     ],
    },
   ],
- } satisfies SettingsSchemaDef<Snippets, TicketTranslator> as SettingsSchemaDef;
+ } satisfies SettingsSchemaDef<Snippets, TicketTranslator>;
 }

@@ -1,10 +1,7 @@
 import { RequestHandlerError } from '@ayako/api';
-import type {
- APIMessageComponentInteraction,
- APIModalSubmitInteraction,
-} from 'discord-api-types/v10';
 
 import type Client from '../../../Classes/Client.js';
+import type { TicketInteraction } from '../Classes/ChannelTicket.js';
 import { BaseTicketErrors } from '../Classes/Enums.js';
 import TicketPlugin from '../Plugin.js';
 
@@ -19,7 +16,7 @@ export default async function (
  }: {
   guildId: string;
   error: Error;
-  cmd: APIMessageComponentInteraction | APIModalSubmitInteraction;
+  cmd: TicketInteraction;
  },
 ) {
  const plugin = this.plugins.find((p) => p instanceof TicketPlugin) as TicketPlugin;

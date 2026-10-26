@@ -9,7 +9,7 @@ import getSharedTicketGuilds from './getSharedTicketGuilds.js';
 import getTicketClassBySettingsType from './getTicketClassBySettingsType.js';
 import { getErrorMessage } from './handleTicketError.js';
 import isUnderLimit from './isUnderLimit.js';
-import { findDmBotSetting } from './resolveDmBotApi.js';
+import { findDmBotSetting, servedBy } from './resolveDmBotApi.js';
 
 export default async function (
  this: TicketPlugin,
@@ -19,7 +19,11 @@ export default async function (
 ): Promise<boolean> {
  if (!recipientId) return false;
 
- const candidates = await getSharedTicketGuilds.call(this.client, userId);
+ const candidates = await getSharedTicketGuilds.call(
+  this.client,
+  userId,
+  servedBy.call(this, recipientId),
+ );
  const match = findDmBotSetting(candidates, recipientId);
  if (!match?.setting.dmInstantOpen) return false;
  if (![TicketType.dmToChannel, TicketType.dmToThread].includes(match.setting.type)) return false;

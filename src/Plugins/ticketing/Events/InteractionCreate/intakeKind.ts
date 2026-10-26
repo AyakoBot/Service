@@ -6,7 +6,7 @@ import type TicketPlugin from '../../Plugin.js';
 import { buildEndPayload, buildExistingPayload } from '../../Util/buildIntakePayload.js';
 import getOpenableKinds, { type OpenableKind } from '../../Util/getOpenableKinds.js';
 import isUnderLimit from '../../Util/isUnderLimit.js';
-import { resolveDmBotApi } from '../../Util/resolveDmBotApi.js';
+import { resolveDmBotApi, servedBy } from '../../Util/resolveDmBotApi.js';
 import startTicketCreate from '../../Util/startTicketCreate.js';
 
 const clearIntakeComponents = async function (
@@ -16,11 +16,8 @@ const clearIntakeComponents = async function (
  kind: OpenableKind,
 ) {
  const api =
-  (await resolveDmBotApi.call(
-   this,
-   [{ guildId, kinds: [kind.settings] }],
-   cmd.application_id,
-  )) ?? this.getPluginAPI();
+  (await resolveDmBotApi.call(this, [{ guildId, kinds: [kind.settings] }], cmd.application_id)) ??
+  this.getPluginAPI();
 
  const cleared = await api.channels.editDirectMessage(
   cmd.channel.id,
@@ -74,7 +71,13 @@ export const intakeKind = async function (
  const [settingsId] = cmd.data.values;
 
  const member = await this.client.cache.members.get(guildId, userId);
- const kinds = await getOpenableKinds.call(this.client, guildId, userId, member?.roles ?? []);
+ const kinds = await getOpenableKinds.call(
+  this.client,
+  guildId,
+  userId,
+  member?.roles ?? [],
+  servedBy.call(this, cmd.application_id),
+ );
  const kind = kinds.find((k) => String(k.settings.id) === settingsId);
 
  if (!kind) {

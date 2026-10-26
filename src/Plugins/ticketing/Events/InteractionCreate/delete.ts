@@ -1,15 +1,10 @@
-import { type APIMessageComponentInteraction } from 'discord-api-types/v10';
-
+import type { TicketCommandInteraction } from '../../Classes/ChannelTicket.js';
 import { BaseTicketErrors } from '../../Classes/Enums.js';
 import type TicketPlugin from '../../Plugin.js';
 import getTicketClassById from '../../Util/getTicketClassById.js';
 import handleTicketError from '../../Util/handleTicketError.js';
 
-export default async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
- args: string[],
-) {
+export default async function (this: TicketPlugin, cmd: TicketCommandInteraction, args: string[]) {
  if (!cmd.guild || !cmd.guild_id) return;
 
  const ticket = await getTicketClassById.call(this.client, args[0]).catch((e: Error) => e);

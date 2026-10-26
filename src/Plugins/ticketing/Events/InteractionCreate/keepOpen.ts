@@ -40,24 +40,21 @@ export default async function (
   return;
  }
 
- await this.reminders.disarmInactivity(args[0]);
-
+ const warnings = await this.reminders.storedWarnings(String(row.id));
+ const t = await this.t(row.settings.guild);
  const api = await this.getAPI(row.settings.guild, row.settings.botToken);
- await api.interactions.deferMessageUpdate(cmd.id, cmd.token, {}, {
-  origin: this.name,
-  reason: 'Acknowledging keep-open request',
- });
+ const payload = this.reminders.buildKeptOpenPayload(
+  t,
+  userId,
+  this.reminders.nextCheckUnix(row),
+  this.client.emojis.for(api),
+ );
 
- const reason = 'Removing inactivity warning after keep-open';
- if (cmd.guild_id) {
-  await api.channels.deleteMessage(cmd.message.channel_id, cmd.message.id, {
-   origin: this.name,
-   reason,
-  });
- } else {
-  await api.channels.deleteDirectMessage(cmd.message.channel_id, cmd.message.id, {
-   origin: this.name,
-   reason,
-  });
- }
+ await payload.update(cmd);
+ await this.reminders.restartInactivity(row);
+ await Promise.all(
+  warnings
+   .filter((ref) => ref.messageId !== cmd.message.id)
+   .map((ref) => this.reminders.editWarning(row, ref, payload)),
+ );
 }

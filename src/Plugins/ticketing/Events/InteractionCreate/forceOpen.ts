@@ -4,46 +4,34 @@ import {
  StringSelectMenuBuilder,
  StringSelectMenuOptionBuilder,
 } from '@discordjs/builders';
+import type { TicketSetting } from '@ayako/database';
 import {
  ApplicationCommandType,
  ButtonStyle,
  ComponentType,
  MessageFlags,
  type APIApplicationCommandInteraction,
+ type APIInteractionDataResolved,
  type APIMessageComponentInteraction,
  type APIMessageTopLevelComponent,
 } from 'discord-api-types/v10';
 
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
+import type { TicketCommandInteraction } from '../../Classes/ChannelTicket.js';
 import DmToChannelTicket from '../../Classes/DmToChannelTicket.js';
 import { TicketRoute } from '../../Classes/Routes.js';
 import type TicketPlugin from '../../Plugin.js';
 import { isForceBlocked, setForceBlock } from '../../Util/forceBlock.js';
+import { forcedTicket } from '../../Util/forcedTicket.js';
 import getForceOpenableKinds, {
- ForceOpenBlock,
+ blockReason,
  type ForceOpenCandidate,
 } from '../../Util/getForceOpenableKinds.js';
-import getTicketClassBySettingsType from '../../Util/getTicketClassBySettingsType.js';
 import handleTicketError from '../../Util/handleTicketError.js';
 import showCommandError from '../../Util/showCommandError.js';
 import { systemDisplayLabel } from '../../Util/systemLabel.js';
 
 type ForceOpenTranslator = Awaited<ReturnType<TicketPlugin['t']>>;
-
-const blockReason = (t: ForceOpenTranslator, block: ForceOpenBlock): string => {
- switch (block) {
-  case ForceOpenBlock.NotActive:
-   return t.forceOpen.blockNotActive();
-  case ForceOpenBlock.NotDmType:
-   return t.forceOpen.blockNotDmType();
-  case ForceOpenBlock.NoCustomBot:
-   return t.forceOpen.blockNoCustomBot();
-  case ForceOpenBlock.NotStaff:
-   return t.forceOpen.blockNotStaff();
-  default:
-   return t.forceOpen.blockBotUnavailable();
- }
-};
 
 const noSystemsText = (t: ForceOpenTranslator, candidates: ForceOpenCandidate[]): string => {
  const lines = candidates
@@ -58,19 +46,52 @@ const noSystemsText = (t: ForceOpenTranslator, candidates: ForceOpenCandidate[])
  return `${t.forceOpen.noSystems()}\n${lines.join('\n')}`;
 };
 
-export const forceOpenCommand = async function (
+const openWith = async function (
+ this: TicketPlugin,
+ cmd: TicketCommandInteraction,
+ settings: TicketSetting,
+ targetId: string,
+ staffId: string,
+) {
+ const t = await this.t(settings.guild);
+
+ if (await isForceBlocked.call(this.client, settings.guild, targetId)) {
+  showCommandError.call(this.client, t.forceOpen.blockedNote(), cmd, t.base);
+  return;
+ }
+
+ const member = await this.client.cache.members.get(settings.guild, targetId);
+ const user = await this.client.cache.users.get(targetId);
+
+ const { create } = forcedTicket.call(this, {
+  settings,
+  targetId,
+  staffId,
+  cmd,
+  roleIds: member?.roles ?? [],
+  username: user?.username || targetId,
+ });
+
+ create
+  .next()
+  .catch((error: Error) =>
+   handleTicketError.call(this.client, { guildId: settings.guild, error, cmd }),
+  );
+};
+
+export const forceOpenFor = async function (
  this: TicketPlugin,
  cmd: APIApplicationCommandInteraction,
+ targetId: string,
+ resolved: Pick<APIInteractionDataResolved, 'users' | 'members'> | undefined,
 ) {
- if (cmd.data.type !== ApplicationCommandType.User) return;
  if (!cmd.guild_id || !cmd.member) return;
 
  const t = await this.t(cmd.guild_id);
  const staffId = cmd.member.user.id;
- const targetId = cmd.data.target_id;
- const target = cmd.data.resolved.users[targetId];
+ const target = resolved?.users?.[targetId];
 
- if (!target || target.bot || targetId === staffId) {
+ if (!target || target.bot || targetId === staffId || !resolved?.members?.[targetId]) {
   showCommandError.call(this.client, t.forceOpen.targetInvalid(), cmd, t.base);
   return;
  }
@@ -79,6 +100,11 @@ export const forceOpenCommand = async function (
  const kinds = candidates.filter((candidate) => !candidate.block).map((c) => c.settings);
  if (!kinds.length) {
   showCommandError.call(this.client, noSystemsText(t, candidates), cmd, t.base);
+  return;
+ }
+
+ if (kinds.length === 1) {
+  await openWith.call(this, cmd, kinds[0], targetId, staffId);
   return;
  }
 
@@ -108,6 +134,15 @@ export const forceOpenCommand = async function (
   .reply(cmd);
 };
 
+export const forceOpenCommand = async function (
+ this: TicketPlugin,
+ cmd: APIApplicationCommandInteraction,
+) {
+ if (cmd.data.type !== ApplicationCommandType.User) return;
+
+ await forceOpenFor.call(this, cmd, cmd.data.target_id, cmd.data.resolved);
+};
+
 export const forceOpenKind = async function (
  this: TicketPlugin,
  cmd: APIMessageComponentInteraction,
@@ -133,36 +168,10 @@ export const forceOpenKind = async function (
   return;
  }
 
- if (await isForceBlocked.call(this.client, cmd.guild_id, targetId)) {
-  showCommandError.call(this.client, t.forceOpen.blockedNote(), cmd, t.base);
-  return;
- }
-
- const member = await this.client.cache.members.get(cmd.guild_id, targetId);
- const user = await this.client.cache.users.get(targetId);
-
- const ticket = getTicketClassBySettingsType.call(
-  this.client,
-  settings.type,
-  '0',
- ) as DmToChannelTicket;
-
- const create = ticket.create(
-  { settingsId, userId: targetId, opener: staffId },
-  { cmd, userId: targetId, roleIds: member?.roles ?? [], username: user?.username || targetId },
- );
-
- create
-  .next()
-  .catch((error: Error) =>
-   handleTicketError.call(this.client, { guildId: cmd.guild_id!, error, cmd }),
-  );
+ await openWith.call(this, cmd, settings, targetId, staffId);
 };
 
-export const forceBlock = async function (
- this: TicketPlugin,
- cmd: APIMessageComponentInteraction,
-) {
+export const forceBlock = async function (this: TicketPlugin, cmd: APIMessageComponentInteraction) {
  const ticket = await DmToChannelTicket.findTicketByDMChannelId(this.client, cmd.channel.id);
  if (!ticket) return;
 
