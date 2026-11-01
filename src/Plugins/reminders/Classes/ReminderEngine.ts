@@ -34,6 +34,25 @@ export default class ReminderEngine {
   );
  };
 
+ schedule = async (data: {
+  userId: string;
+  channelId: string;
+  reason: string;
+  durationMs: number;
+ }): Promise<ReminderRow> => {
+  const startTime = Date.now();
+  const row = await new Reminder(this.plugin, data.userId, startTime).register({
+   userId: data.userId,
+   channelId: data.channelId,
+   reason: data.reason,
+   startTime,
+   endTime: startTime + data.durationMs,
+  });
+  await this.arm(row);
+
+  return row;
+ };
+
  disarm = async (userId: string, startTime: number) => {
   await disarm.call(this.client, key(userId, startTime));
  };

@@ -14,13 +14,12 @@ import { findFocusedString, getStringOption } from '../../../Util/interactionOpt
 import parseDuration from '../../../Util/parseDuration.js';
 import type RemindersPlugin from '../Plugin.js';
 
-import DBReminder, { ReminderErrors } from './DBReminder.js';
+import DBReminder, { minDurationMs, ReminderErrors } from './DBReminder.js';
 import { commandName, ReminderOption, ReminderSub } from './Routes.js';
 
 type Sub = APIApplicationCommandInteractionDataSubcommandOption;
 
 const origin = 'Reminders';
-const minDurationMs = 10_000;
 const maxListEntries = 20;
 
 const toId = (startTime: unknown) => Number(startTime).toString(36);
@@ -37,24 +36,21 @@ export default class Reminder extends DBReminder {
   const durationMs = parseDuration(getStringOption(sub, ReminderOption.Duration)) ?? 0;
   if (durationMs < minDurationMs) throw new Error(ReminderErrors.tooShort);
 
-  const startTime = Date.now();
-  const endTime = startTime + durationMs;
-
-  const reminder = new Reminder(plugin, userId, startTime);
-  const row = await reminder.register({
+  const row = await plugin.engine.schedule({
    userId,
    channelId: cmd.channel.id,
    reason: getStringOption(sub, ReminderOption.Content),
-   startTime,
-   endTime,
+   durationMs,
   });
-  await plugin.engine.arm(row);
 
   const t = await plugin.t(cmd.guild_id ?? null);
   ephemeralNote.call(
    plugin,
    cmd,
-   t.created({ id: toId(startTime), time: `<t:${Math.floor(endTime / 1000)}:R>` }),
+   t.created({
+    id: toId(row.startTime),
+    time: `<t:${Math.floor(Number(row.endTime) / 1000)}:R>`,
+   }),
   );
  }
 

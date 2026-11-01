@@ -15,6 +15,8 @@ export enum ReminderErrors {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
+export const minDurationMs = 10_000;
+
 export default abstract class DBReminder {
  plugin: RemindersPlugin;
  userId: string;
