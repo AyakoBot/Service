@@ -53,7 +53,6 @@ export default class VerificationPlugin extends Plugin<Events, VerificationLangu
  settingName = PluginName.Verification;
  dependencies = [PluginName.Settings];
  tableName = 'VerificationSetting';
- pilotGuilds = ['1518697272525979648'];
  placeholders = verificationPlaceholders;
 
  buttonActions: ButtonAction[] = [
