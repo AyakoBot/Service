@@ -11,6 +11,8 @@ export enum GiveawaysRoute {
  PanelSave = 'giveaways/panelsave',
  PanelStart = 'giveaways/panelstart',
  Due = 'giveaways/due',
+ Remind = 'giveaways/remind',
+ RemindSubmit = 'giveaways/remindsubmit',
 }
 
 export enum GiveawaySub {

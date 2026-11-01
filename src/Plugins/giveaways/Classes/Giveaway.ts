@@ -168,7 +168,11 @@ export default class Giveaway extends DBGiveaway {
   const reason = requirementNote(t, giveaway, failed);
 
   if (failed.length && giveaway.enforcement === GiveawayEnforcement.onJoin) {
-   ephemeralNote.call(this.plugin, cmd, t.participate.refused({ reason: reason ?? '' }));
+   await this.plugin.reminders.refuse(
+    cmd,
+    giveaway,
+    t.participate.refused({ reason: reason ?? '' }),
+   );
    return 0;
   }
 

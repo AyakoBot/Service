@@ -116,6 +116,9 @@ const buttonHandlers: Partial<Record<GiveawaysRoute, ButtonHandler>> = {
  },
  [GiveawaysRoute.PanelEdit]: panelButton((plugin, cmd, target) => plugin.panel.edit(cmd, target)),
  [GiveawaysRoute.PanelStart]: panelButton((plugin, cmd, target) => plugin.panel.start(cmd, target)),
+ [GiveawaysRoute.Remind]: async (plugin, cmd, [messageId]) => {
+  if (messageId) await plugin.reminders.open(cmd, messageId);
+ },
 };
 
 type GuardedInteraction =
@@ -188,6 +191,11 @@ const modal = async function (this: GiveawaysPlugin, cmd: APIModalSubmitInteract
 
  if (route === GiveawaysRoute.Prizes && args[0]) {
   await runGuarded.call(this, cmd, () => new Giveaway(this, args[0], guildId).savePrizes(cmd));
+  return;
+ }
+
+ if (route === GiveawaysRoute.RemindSubmit && args[0]) {
+  await runGuarded.call(this, cmd, () => this.reminders.submit(cmd, args[0]));
   return;
  }
 

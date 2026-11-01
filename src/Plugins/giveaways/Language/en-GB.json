@@ -49,6 +49,17 @@
   "warned": "You entered the giveaway, but one requirement is not met yet. {{reason}}",
   "refused": "You cannot enter this giveaway yet. {{reason}}"
  },
+ "remind": {
+  "button": "Remind me",
+  "title": "Giveaway reminder",
+  "duration": "Remind me in",
+  "durationHint": "For example 2d 5h. Pre-filled to one hour before the giveaway ends.",
+  "reason": "Reminder text",
+  "reasonValue": "Giveaway: {{link}}",
+  "set": "I'll remind you {{time}}.",
+  "openDms": "The reminder arrives by DM, so keep your DMs open.",
+  "addApp": "The reminder arrives by DM from Ayako Reminders. [Add it to your apps]({{link}}) so it can reach you."
+ },
  "end": {
   "title": "Congratulations!",
   "won": "{{winners}} won the giveaway!",
@@ -314,6 +325,8 @@
   "repeatTooShort": "A recurring giveaway can repeat at most once an hour.",
   "tooManyRecurring": "This server already has 10 recurring giveaways.",
   "recurringNeedsLog": "Recurring giveaways report to the log channel. Set one in `/settings fun giveaways` first.",
-  "invalidWinners": "Winners must be between 1 and 100."
+  "invalidWinners": "Winners must be between 1 and 100.",
+  "remindTooShort": "A reminder must be at least 10 seconds away.",
+  "remindUnavailable": "Reminders are no longer available for this giveaway."
  }
 }

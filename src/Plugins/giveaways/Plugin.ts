@@ -34,6 +34,7 @@ import GiveawayEngine from './Classes/GiveawayEngine.js';
 import GiveawayLauncher from './Classes/GiveawayLauncher.js';
 import GiveawayLogger from './Classes/GiveawayLogger.js';
 import GiveawayPrizes from './Classes/GiveawayPrizes.js';
+import GiveawayReminders from './Classes/GiveawayReminders.js';
 import GiveawayRewards from './Classes/GiveawayRewards.js';
 import GiveawayTemplates from './Classes/GiveawayTemplates.js';
 import PrizePanel from './Classes/PrizePanel.js';
@@ -251,6 +252,7 @@ export default class GiveawaysPlugin extends Plugin<Events, GiveawaysLanguage> {
  templates = new GiveawayTemplates(this);
  launcher = new GiveawayLauncher(this);
  panel = new PrizePanel(this);
+ reminders = new GiveawayReminders(this);
 
  constructor(client: Client) {
   super(client);

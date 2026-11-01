@@ -43,6 +43,8 @@ export enum GiveawayErrors {
  recurringNeedsLog = 'recurringNeedsLog',
  invalidWinners = 'invalidWinners',
  overridesPersonalPrizes = 'overridesPersonalPrizes',
+ remindTooShort = 'remindTooShort',
+ remindUnavailable = 'remindUnavailable',
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
