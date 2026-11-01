@@ -21,4 +21,6 @@ test('the shared base set covers both the member and the server placeholders', (
  assert.equal(basePlaceholders.includes(MessagePlaceholder.Membercount), true);
  assert.equal(basePlaceholders.includes(MessagePlaceholder.Gif), false);
  assert.equal(basePlaceholders.includes(MessagePlaceholder.Days), false);
+ assert.equal(basePlaceholders.includes(MessagePlaceholder.HumanCount), false);
+ assert.equal(basePlaceholders.includes(MessagePlaceholder.BotCount), false);
 });

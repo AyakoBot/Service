@@ -10,6 +10,8 @@ export enum MessagePlaceholder {
  ServerId = 'serverid',
  ServerIcon = 'servericon',
  Membercount = 'membercount',
+ HumanCount = 'humancount',
+ BotCount = 'botcount',
  BoostCount = 'boostcount',
  BoostTier = 'boosttier',
 
@@ -34,6 +36,8 @@ export const serverPlaceholders = [
  MessagePlaceholder.BoostCount,
  MessagePlaceholder.BoostTier,
 ];
+
+export const countPlaceholders = [MessagePlaceholder.HumanCount, MessagePlaceholder.BotCount];
 
 export const memberPlaceholders = [
  MessagePlaceholder.User,
