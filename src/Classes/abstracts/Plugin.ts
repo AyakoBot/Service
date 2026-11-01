@@ -61,7 +61,7 @@ export enum PluginName {
  // Suggestions = 'suggestions',
  Giveaways = 'giveaways',
  Reminders = 'reminders',
- // Verification = 'verification',
+ Verification = 'verification',
  BumpReminders = 'disboard-reminders',
  // Management = 'management',
  // Moderation = 'moderation',
