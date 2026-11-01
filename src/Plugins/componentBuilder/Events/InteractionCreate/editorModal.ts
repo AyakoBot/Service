@@ -7,6 +7,7 @@ import {
 } from 'discord-api-types/v10';
 
 import { findModalValue } from '../../../../Util/findModalValue.js';
+import { displayMediaUrl, parseMediaUrl } from '../../../../Util/mediaPlaceholders.js';
 import { MediaAddKind, NodeAction, NodeKind } from '../../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../../Classes/Routes.js';
 import type ComponentBuilderPlugin from '../../Plugin.js';
@@ -36,7 +37,6 @@ import {
  makeGallery,
  makeSectionWithThumbnail,
  makeThumbnail,
- parseHttpUrl,
  setAccessory,
  textContentLimit,
  type TreeResult,
@@ -98,7 +98,7 @@ const labeled = (label: string, hint: string, input: TextInputBuilder): LabelBui
 const galleryLines = (node: WipNode): string =>
  (node.type === ComponentType.MediaGallery
   ? node.items
-     .map((item) => [item.media.url, item.description].filter(Boolean).join(' | '))
+     .map((item) => [displayMediaUrl(item.media.url), item.description].filter(Boolean).join(' | '))
      .join('\n')
   : '');
 
@@ -154,7 +154,7 @@ const editModalFor = function (
      labeled(
       t.modals.urlLabel(),
       t.modals.urlHint(),
-      shortInput(ModalField.Url, true, 1024, node.media.url),
+      shortInput(ModalField.Url, true, 1024, displayMediaUrl(node.media.url)),
      ),
      labeled(
       t.modals.altLabel(),
@@ -434,7 +434,7 @@ export const mediaAddSave = async function (
  const t = await this.t(cmd.guild_id ?? undefined);
  const target = parseAddTarget(targetArgs);
 
- const url = parseHttpUrl(value(cmd, ModalField.Url).trim());
+ const url = parseMediaUrl(value(cmd, ModalField.Url).trim());
  if (kind !== MediaAddKind.Gallery && !url) {
   await modalFail.call(this, cmd, BuilderErrorCode.InvalidUrl);
   return;

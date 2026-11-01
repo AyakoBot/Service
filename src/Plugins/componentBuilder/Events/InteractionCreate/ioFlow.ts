@@ -16,6 +16,10 @@ import {
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { isLink, resolveBuilderLink } from '../../../../Util/builderLinks.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
+import {
+ decodeMediaPlaceholders,
+ encodeMediaPlaceholders,
+} from '../../../../Util/mediaPlaceholders.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
 import { placeholderReference } from '../../../../Util/placeholderReference.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
@@ -105,7 +109,7 @@ export const importSave = async function (
   }
  }
 
- let tree: WipTree | null = normalizeImport(parsed);
+ let tree: WipTree | null = encodeMediaPlaceholders(normalizeImport(parsed));
  if (!tree) {
   ephemeralNote.call(
    this,
@@ -167,7 +171,9 @@ export const exportJson = async function (
  if (!ctx) return;
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Components JSON export' })
-  .setFiles([txtFileWriter(JSON.stringify(ctx.view.tree, null, 2), 'components')])
+  .setFiles([
+   txtFileWriter(JSON.stringify(decodeMediaPlaceholders(ctx.view.tree), null, 2), 'components'),
+  ])
   .setFlags(MessageFlags.Ephemeral)
   .reply(cmd);
 };

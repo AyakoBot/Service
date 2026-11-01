@@ -4,6 +4,7 @@ import {
  type APIStringSelectComponent,
 } from 'discord-api-types/v10';
 
+import { parseMediaUrl } from '../../../Util/mediaPlaceholders.js';
 import { parseColor } from '../../../Util/parseColor.js';
 import { customIdLimit, galleryItemLimit, selectOptionLimit } from '../Classes/Nodes.js';
 
@@ -49,7 +50,7 @@ export const parseGalleryLines = (
  const items: { url: string; description?: string }[] = [];
  for (const line of lines) {
   const [rawUrl, ...rest] = line.split('|');
-  const url = parseHttpUrl(rawUrl.trim());
+  const url = parseMediaUrl(rawUrl.trim());
   if (!url) return BuilderErrorCode.InvalidUrl;
   items.push({ url, description: rest.join('|').trim().slice(0, mediaAltLimit) || undefined });
  }
@@ -112,7 +113,7 @@ export const applyThumbnail = (
 ): TreeResult =>
  updateNode(tree, path, (node) => {
   if (node.type !== ComponentType.Thumbnail) return BuilderErrorCode.NotAllowedHere;
-  const url = parseHttpUrl(rawUrl.trim());
+  const url = parseMediaUrl(rawUrl.trim());
   if (!url) return BuilderErrorCode.InvalidUrl;
   node.media = { url };
   node.description = description.trim().slice(0, mediaAltLimit) || undefined;

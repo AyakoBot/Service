@@ -2,6 +2,7 @@ import { RequestHandlerError, type RequestHandlerErrorType } from '@ayako/api';
 import { ChannelType, type APIInteraction } from 'discord-api-types/v10';
 
 import { firstCycledStyle } from '../../../Util/buttonCycle.js';
+import { encodeMediaPlaceholders } from '../../../Util/mediaPlaceholders.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type ComponentBuilderPlugin from '../Plugin.js';
 
@@ -44,9 +45,10 @@ export const openThread = async function (
  }
 
  const t = await this.t(cmd.guild_id);
+ const encodedTree = encodeMediaPlaceholders(tree);
  const view: BuilderView = {
   marker: { execId: userId },
-  tree,
+  tree: encodedTree,
   selectedPath: null,
   nodePage: 0,
   canManage: hasManageGuild(cmd.member.permissions),
@@ -66,7 +68,7 @@ export const openThread = async function (
 
  const design = await api.channels.createMessage(
   thread.id,
-  renderDesign.call(this, t, tree).getAPIPayload(),
+  renderDesign.call(this, t, encodedTree).getAPIPayload(),
   { origin: this.name, reason: 'Posting component builder design' },
  );
  if (design instanceof RequestHandlerError) {

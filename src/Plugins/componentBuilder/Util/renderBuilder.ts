@@ -18,6 +18,7 @@ import {
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import { EmoteName } from '../../../Classes/EmoteName.js';
 import { cleanPreview } from '../../../Util/cleanPreview.js';
+import { displayMediaUrl } from '../../../Util/mediaPlaceholders.js';
 import { buttonEmoji, textEmote } from '../../settings/Util/settingsEmotes.js';
 import { NodeAction, NodeKind, wipComponentLimit } from '../Classes/Nodes.js';
 import { ComponentBuilderRoute } from '../Classes/Routes.js';
@@ -104,7 +105,7 @@ const nodePreview = (t: Translator, node: WipNode): string => {
   case ComponentType.MediaGallery:
    return t.builder.itemCount({ count: String(node.items.length) });
   case ComponentType.Thumbnail:
-   return text(node.media.url);
+   return text(displayMediaUrl(node.media.url));
   case ComponentType.Separator:
    return node.divider === false ? t.builder.spacingOnly() : t.builder.dividerLine();
   default:

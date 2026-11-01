@@ -2,6 +2,7 @@ import type { CustomComponents as CustomComponentsRow, Prisma } from '@ayako/dat
 
 import type Client from '../../Classes/Client.js';
 import type { FindManyArgs } from '../../Types/prisma.js';
+import { decodeMediaPlaceholders } from '../../Util/mediaPlaceholders.js';
 
 import type { WipTree } from './Util/componentTree.js';
 
@@ -40,7 +41,7 @@ export default class CustomComponents {
   name: string,
   components: WipTree,
  ): Promise<CustomComponentsRow> {
-  const data = components as unknown as Prisma.InputJsonValue;
+  const data = decodeMediaPlaceholders(components) as unknown as Prisma.InputJsonValue;
   const existing = await CustomComponents.byName(client, guild, name);
   if (existing) {
    return client.db.client.customComponents.update({
