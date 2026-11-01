@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { TicketPriority } from '@ayako/database';
-import { ChannelType, type RESTPatchAPIGuildChannelPositionsJSONBody } from 'discord-api-types/v10';
+import {
+ ChannelType,
+ OverwriteType,
+ type APIOverwrite,
+ type RESTPatchAPIGuildChannelPositionsJSONBody,
+} from 'discord-api-types/v10';
 
 import type TicketPlugin from '../Plugin.js';
 
@@ -49,6 +54,10 @@ export interface Placeable {
  type: ChannelType;
  position?: number;
  parent_id?: string | null;
+}
+
+export interface Overwritable extends Placeable {
+ permission_overwrites?: APIOverwrite[];
 }
 
 const commands = Object.values(TagCommand);
@@ -183,6 +192,27 @@ export const movePositions = (
    ? { id, position, parent_id: parent, lock_permissions: false }
    : { id, position },
  );
+};
+
+const overwritesOf = (channels: Overwritable[], id: string | null | undefined) =>
+ channels.find((channel) => channel.id === id)?.permission_overwrites ?? [];
+
+export const syncedOverwrites = (
+ channels: Overwritable[],
+ channelId: string,
+ target: Placeable,
+): APIOverwrite[] | null => {
+ const categoryId = target.type === ChannelType.GuildCategory ? target.id : target.parent_id;
+ const channel = channels.find((entry) => entry.id === channelId);
+ if (!channel || !channels.some((entry) => entry.id === categoryId)) return null;
+
+ const inherited = new Set(overwritesOf(channels, channel.parent_id).map((o) => o.id));
+ const granted = overwritesOf(channels, channelId).filter(
+  (o) => o.type === OverwriteType.Member && !inherited.has(o.id),
+ );
+ const kept = new Set(granted.map((o) => o.id));
+
+ return [...overwritesOf(channels, categoryId).filter((o) => !kept.has(o.id)), ...granted];
 };
 
 const reasons: Record<TagIssue, (t: Translator) => string> = {

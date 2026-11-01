@@ -597,7 +597,8 @@
   "manage.cantUpdateMembers": "Couldn't change who can see the Ticket",
   "move.threadTicket": "Thread Tickets can't be moved",
   "move.targetNotFound": "That channel doesn't exist in this server",
-  "move.cantMove": "Couldn't move the Ticket"
+  "move.cantMove": "Couldn't move the Ticket",
+  "move.cantSync": "Moved the Ticket, but couldn't sync its permissions with the category"
  },
  "command": {
   "notTicket": "Run this inside a Ticket channel or its staff thread.",

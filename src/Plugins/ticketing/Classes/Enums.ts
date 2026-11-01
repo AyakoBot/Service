@@ -83,6 +83,7 @@ enum TicketErrors3 {
  move_ThreadTicket = 'move.threadTicket',
  move_TargetNotFound = 'move.targetNotFound',
  move_CantMove = 'move.cantMove',
+ move_CantSync = 'move.cantSync',
 }
 
 export const ChannelTicketErrors = { ...BaseTicketErrors, ...TicketErrors3 } as const;

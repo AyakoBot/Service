@@ -20,7 +20,7 @@ import { Colors } from '../../../Types/index.js';
 import getUser from '../../../Util/getUser.js';
 import type TicketPlugin from '../Plugin.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
-import { movePositions } from '../Util/tagCommands.js';
+import { movePositions, syncedOverwrites } from '../Util/tagCommands.js';
 import { renderName, sameName } from '../Util/ticketName.js';
 import { nameValues, type NameOverrides } from '../Util/ticketNameValues.js';
 
@@ -384,15 +384,7 @@ export default class ChannelTicket extends BaseTicket {
    ticket.channel,
    {
     parent_id: target.category,
-    permission_overwrites:
-     category && 'permission_overwrites' in category
-      ? category.permission_overwrites?.map((o) => ({
-         id: o.id,
-         type: o.type,
-         allow: String(o.allow),
-         deny: String(o.deny),
-        }))
-      : undefined,
+    permission_overwrites: category ? await this.syncedOverwritesFor(category) : undefined,
    },
    { origin: ChannelTicket.name, reason: 'Moving ticket to escalation tier category' },
   );
@@ -400,6 +392,19 @@ export default class ChannelTicket extends BaseTicket {
   if (modify instanceof RequestHandlerError) {
    this.plugin.nonFatalError(modify, this.moveToTierSpace.name);
   }
+ }
+
+ async syncedOverwritesFor(category: RChannel | RThread) {
+  const { channel: channelId } = await this.getTicket();
+  const channel = await this.getChannel(channelId).catch(() => null);
+  const parent = channel?.parent_id
+   ? await this.getChannel(channel.parent_id).catch(() => null)
+   : null;
+  const known = [category, channel, parent].filter(
+   (entry): entry is RChannel | RThread => entry !== null,
+  );
+
+  return syncedOverwrites(known, channelId, category) ?? undefined;
  }
 
  async move(targetId: string) {
@@ -423,6 +428,18 @@ export default class ChannelTicket extends BaseTicket {
   );
   if (moved instanceof RequestHandlerError) {
    throw new Error(ChannelTicketErrors.move_CantMove, { cause: moved });
+  }
+
+  const overwrites = syncedOverwrites(channels, ticket.channel, target);
+  if (!overwrites) return;
+
+  const synced = await api.channels.edit(
+   ticket.channel,
+   { permission_overwrites: overwrites },
+   meta,
+  );
+  if (synced instanceof RequestHandlerError) {
+   throw new Error(ChannelTicketErrors.move_CantSync, { cause: synced });
   }
  }
 

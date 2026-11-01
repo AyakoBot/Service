@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { ChannelType } from 'discord-api-types/v10';
+import { ChannelType, OverwriteType } from 'discord-api-types/v10';
 
 import base from '../../../Languages/en-GB.json' with { type: 'json' };
 import createTranslator from '../../../Util/translator.js';
@@ -17,6 +17,7 @@ import {
  movePositions,
  parseTagCommands,
  planContact,
+ syncedOverwrites,
  tagHelpText,
  tagIssue,
  triggerCandidates,
@@ -204,5 +205,67 @@ describe('planContact', () => {
 
  it('returns nothing without contact', () => {
   assert.equal(planContact(parseTagCommands('claim'), user), null);
+ });
+});
+
+describe('syncedOverwrites', () => {
+ const ticket = '200000000000000009';
+ const role = (id: string, allow = '0') => ({ id, type: OverwriteType.Role, allow, deny: '0' });
+ const member = (id: string, allow = '1024') => ({
+  id,
+  type: OverwriteType.Member,
+  allow,
+  deny: '0',
+ });
+
+ const oldCategory = {
+  id: '200000000000000001',
+  type: ChannelType.GuildCategory,
+  permission_overwrites: [role('300000000000000001'), member('400000000000000001')],
+ };
+ const newCategory = {
+  id: '200000000000000002',
+  type: ChannelType.GuildCategory,
+  permission_overwrites: [role('300000000000000002', '1024'), member('400000000000000002', '0')],
+ };
+ const sibling = {
+  id: '200000000000000003',
+  type: ChannelType.GuildText,
+  parent_id: newCategory.id,
+ };
+ const topLevel = { id: '200000000000000004', type: ChannelType.GuildText, parent_id: null };
+ const channels = [
+  oldCategory,
+  newCategory,
+  sibling,
+  topLevel,
+  {
+   id: ticket,
+   type: ChannelType.GuildText,
+   parent_id: oldCategory.id,
+   permission_overwrites: [
+    role('300000000000000001'),
+    member('400000000000000001'),
+    member('400000000000000002'),
+    member('400000000000000003'),
+   ],
+  },
+ ];
+ const synced = [
+  role('300000000000000002', '1024'),
+  member('400000000000000002'),
+  member('400000000000000003'),
+ ];
+
+ it('swaps in the category overwrites and keeps the members the ticket granted', () => {
+  assert.deepEqual(syncedOverwrites(channels, ticket, newCategory), synced);
+ });
+
+ it('syncs with the category of the channel the ticket is placed below', () => {
+  assert.deepEqual(syncedOverwrites(channels, ticket, sibling), synced);
+ });
+
+ it('leaves the permissions alone when the target has no category', () => {
+  assert.equal(syncedOverwrites(channels, ticket, topLevel), null);
  });
 });
