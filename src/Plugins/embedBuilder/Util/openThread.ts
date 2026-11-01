@@ -3,6 +3,7 @@ import { ChannelType, type APIEmbed, type APIInteraction } from 'discord-api-typ
 
 import { botHasMessageContent } from '../../../Util/botMessageContent.js';
 import { firstCycledStyle } from '../../../Util/buttonCycle.js';
+import { encodeMediaPlaceholders } from '../../../Util/mediaPlaceholders.js';
 import { hasManageGuild } from '../../settings/Util/authorizeSettings.js';
 import type EmbedBuilderPlugin from '../Plugin.js';
 
@@ -45,7 +46,7 @@ export const openThread = async function (
  const t = await this.t(cmd.guild_id);
  const payload = renderBuilder.call(this, t, {
   marker: { execId: userId },
-  embed,
+  embed: encodeMediaPlaceholders(embed),
   selectedField: null,
   selectedProperty: null,
   canManage: hasManageGuild(cmd.member.permissions),

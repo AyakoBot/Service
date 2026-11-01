@@ -19,6 +19,10 @@ import {
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { isLink, resolveBuilderLink } from '../../../../Util/builderLinks.js';
 import { findModalValue } from '../../../../Util/findModalValue.js';
+import {
+ decodeMediaPlaceholders,
+ encodeMediaPlaceholders,
+} from '../../../../Util/mediaPlaceholders.js';
 import { detectMessageJsonKind, MessageJsonKind } from '../../../../Util/messageJsonKind.js';
 import { placeholderReference } from '../../../../Util/placeholderReference.js';
 import { RespondMode } from '../../../../Util/respondMode.js';
@@ -135,7 +139,7 @@ export const importSave = async function (
  let embed: APIEmbed;
  let valid: boolean;
  try {
-  embed = extractEmbed(parsed as APIEmbed | APIEmbed[] | APIMessage);
+  embed = encodeMediaPlaceholders(extractEmbed(parsed as APIEmbed | APIEmbed[] | APIMessage));
   new EmbedBuilder(embed).toJSON();
   valid = withinLimits(embed);
  } catch {
@@ -168,7 +172,9 @@ export const exportJson = async function (
  if (!ctx) return;
 
  new MessagePayload(this.client, { origin: this.name, reason: 'Embed JSON export' })
-  .setFiles([txtFileWriter(JSON.stringify(ctx.view.embed, null, 2), 'embed')])
+  .setFiles([
+   txtFileWriter(JSON.stringify(decodeMediaPlaceholders(ctx.view.embed), null, 2), 'embed'),
+  ])
   .setFlags(MessageFlags.Ephemeral)
   .reply(cmd);
 };

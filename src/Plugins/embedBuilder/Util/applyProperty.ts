@@ -1,8 +1,16 @@
 import type { APIEmbed } from 'discord-api-types/v10';
 
 import { parseColor } from '../../../Util/parseColor.js';
+import { displayMediaUrl, parseMediaUrl } from '../../../Util/mediaPlaceholders.js';
 import parseUrl from '../../../Util/parseHttpUrl.js';
 import { EmbedProperty, propertyLengths } from '../Classes/Properties.js';
+
+const mediaProperties = [
+ EmbedProperty.Image,
+ EmbedProperty.Thumbnail,
+ EmbedProperty.AuthorIcon,
+ EmbedProperty.FooterIcon,
+];
 
 export enum ApplyErrorCode {
  InvalidColor = 'invalidColor',
@@ -203,7 +211,7 @@ export const applyProperty = (
   case EmbedProperty.AuthorUrl:
   case EmbedProperty.FooterIcon: {
    if (!value) return applyUrlProperty(embed, property, null);
-   const url = parseUrl(value);
+   const url = (mediaProperties.includes(property) ? parseMediaUrl : parseUrl)(value);
    if (!url) return { ok: false, error: ApplyErrorCode.InvalidUrl };
    return applyUrlProperty(embed, property, url);
   }
@@ -231,19 +239,19 @@ export const currentValue = (
   case EmbedProperty.Url:
    return embed.url ?? '';
   case EmbedProperty.Image:
-   return embed.image?.url ?? '';
+   return displayMediaUrl(embed.image?.url ?? '');
   case EmbedProperty.Thumbnail:
-   return embed.thumbnail?.url ?? '';
+   return displayMediaUrl(embed.thumbnail?.url ?? '');
   case EmbedProperty.AuthorName:
    return embed.author?.name === blank ? '' : (embed.author?.name ?? '');
   case EmbedProperty.AuthorIcon:
-   return embed.author?.icon_url ?? '';
+   return displayMediaUrl(embed.author?.icon_url ?? '');
   case EmbedProperty.AuthorUrl:
    return embed.author?.url ?? '';
   case EmbedProperty.FooterText:
    return embed.footer?.text === blank ? '' : (embed.footer?.text ?? '');
   case EmbedProperty.FooterIcon:
-   return embed.footer?.icon_url ?? '';
+   return displayMediaUrl(embed.footer?.icon_url ?? '');
   case EmbedProperty.Color:
    return typeof embed.color === 'number'
     ? `#${embed.color.toString(16).padStart(6, '0')}`

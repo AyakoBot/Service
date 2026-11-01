@@ -3,6 +3,7 @@ import type { APIEmbed } from 'discord-api-types/v10';
 
 import type Client from '../../Classes/Client.js';
 import type { FindManyArgs } from '../../Types/prisma.js';
+import { decodeMediaPlaceholders } from '../../Util/mediaPlaceholders.js';
 
 export default class CustomEmbed {
  guild: string;
@@ -33,7 +34,7 @@ export default class CustomEmbed {
   name: string,
   embed: APIEmbed,
  ): Promise<CustomEmbedRow> {
-  const data = embed as unknown as Prisma.InputJsonValue;
+  const data = decodeMediaPlaceholders(embed) as unknown as Prisma.InputJsonValue;
   const existing = await CustomEmbed.byName(client, guild, name);
   if (existing) {
    return client.db.client.customEmbed.update({
@@ -49,7 +50,7 @@ export default class CustomEmbed {
  setEmbed(embed: APIEmbed): Promise<CustomEmbedRow> {
   return this.client.db.client.customEmbed.update({
    where: this.where,
-   data: { embed: embed as unknown as Prisma.InputJsonValue },
+   data: { embed: decodeMediaPlaceholders(embed) as unknown as Prisma.InputJsonValue },
   });
  }
 
