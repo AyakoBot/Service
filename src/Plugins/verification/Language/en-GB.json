@@ -1,0 +1,61 @@
+{
+ "title": "Verification",
+ "verify": "Verify",
+ "panelText": "Press the button below to re-/start verification!",
+ "welcome": "**Welcome to `{{guild}}`!**",
+ "hint": "Hint",
+ "hintText": "Type out the traced colored characters from left to right ➡️\nIgnore all gray decoy characters\nIgnore character cases (upper & lower case)\nThe captcha contains 4 characters",
+ "enterCode": "Enter Code",
+ "alreadyVerified": "You are already verified.",
+ "wrongInput": "That was wrong... Are you a robot?\nPress Verify to try again with a new captcha",
+ "expired": "This captcha has expired. Press Verify to get a new one.",
+ "finished": "**Thank you for verifying!**\nVerification finished!",
+ "kickMsg": "You have been kicked from `{{guild}}` because you didn't verify.\nYou can rejoin anytime with a valid invite link",
+ "kickReason": "Verification | Unverified for too long",
+ "log": {
+  "started": "Verification Started",
+  "finished": "Verification Finished",
+  "start": "> <@{{user}}> started verification"
+ },
+ "panelPosted": "Verification panel posted.",
+ "settings": {
+  "configTitle": "Verification",
+  "overviewDescription": "Captcha verification for new members with optional kick timer.",
+  "groups": { "general": "General", "roles": "Roles", "kick": "Kick" },
+  "fields": {
+   "active": "Enabled",
+   "channel": "Start Channel",
+   "logChannel": "Log Channel",
+   "pendingRole": "Pending Role",
+   "verifiedRole": "Verified Role",
+   "kick": "Kick Unverified",
+   "kickAfter": "Kick After",
+   "panelDesign": "Panel Design"
+  },
+  "descriptions": {
+   "active": "Whether verification is enabled",
+   "channel": "The channel the verification panel is posted in",
+   "logChannel": "The channel verification starts are logged in",
+   "pendingRole": "Role given on join and removed once verified",
+   "verifiedRole": "Role given once a member verifies",
+   "kick": "Kick members that stay unverified for too long",
+   "kickAfter": "How long a member may stay unverified",
+   "panelDesign": "A design saved in the embed builder or component builder. A Verify button is added unless the design already has one. Placeholders: {{list}}"
+  },
+  "postPanel": "Post Panel",
+  "postPanelDescription": "Post a new verification panel in the start channel",
+  "reasons": { "kickOnly": "Only shown while kicking is enabled" }
+ },
+ "guide": {
+  "title": "Verification Setup Guide",
+  "intro": "Pick the channel the verification panel lives in, set the verified role, post the panel, then enable the system.",
+  "advertText": "**New here?** The Setup Guide walks you through the verification options.",
+  "advertButton": "Setup Guide",
+  "enable": "Turn verification on"
+ },
+ "errors": {
+  "notEnabled": "Verification is not enabled in this server.",
+  "noChannel": "Set a start channel first.",
+  "panelFailed": "I couldn't post the panel. Check that I can view and send messages in the start channel."
+ }
+}

@@ -1,0 +1,28 @@
+//#region IGNORE
+
+generator client {
+ provider = "prisma-client-js"
+}
+
+datasource db {
+ provider = "postgresql"
+}
+
+//#endregion
+
+model VerificationSetting {
+ id              String  @id @db.VarChar
+ guild           String  @db.VarChar
+ active          Boolean @default(false)
+ channel         String? @db.VarChar
+ logChannel      String? @db.VarChar
+ pendingRole     String? @db.VarChar
+ verifiedRole    String? @db.VarChar
+ kick            Boolean @default(false)
+ kickAfter       Decimal @default(3600) @db.Decimal
+ panelMessage    String? @db.VarChar
+ panelEmbed      String? @db.VarChar
+ panelComponents String? @db.VarChar
+
+ @@index([guild])
+}
