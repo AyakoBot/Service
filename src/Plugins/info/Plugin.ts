@@ -105,6 +105,12 @@ export default class InfoPlugin extends Plugin<Events, InfoLanguage> {
         .setDescription('The ID of the Server (defaults to this Server)')
         .setRequired(false),
       )
+      .addStringOption(
+       new SlashCommandStringOption()
+        .setName(InfoOption.Invite)
+        .setDescription('An Invite to the Server (also works for Servers I am not in)')
+        .setRequired(false),
+      )
       .addBooleanOption(hideOption()),
     )
     .addSubcommand(

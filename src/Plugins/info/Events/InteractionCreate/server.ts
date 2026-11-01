@@ -1,4 +1,4 @@
-import type { RGuild } from '@ayako/utility';
+import { GuildCache, type RGuild } from '@ayako/utility';
 import {
  ActionRowBuilder,
  ButtonBuilder,
@@ -15,6 +15,8 @@ import {
  SeparatorSpacingSize,
  type APIApplicationCommandInteraction,
  type APIApplicationCommandInteractionDataSubcommandOption,
+ type APIInvite,
+ type APIInviteGuild,
 } from 'discord-api-types/v10';
 
 import type { EmoteSet } from '../../../../Classes/EmojiRegistry.js';
@@ -26,7 +28,16 @@ import { buttonEmoji, textEmote } from '../../../settings/Util/settingsEmotes.js
 import { InfoOption } from '../../Classes/Commands.js';
 import { InfoRoute, RolesTarget } from '../../Classes/Routes.js';
 import type InfoPlugin from '../../Plugin.js';
+import inviteCode from '../../Util/inviteCode.js';
 import { getHide, respond, respondError, type Translator } from '../../Util/respond.js';
+
+type GuildIdentity = Pick<RGuild, 'id' | 'name' | 'description' | 'vanity_url_code'> & {
+ owner_id?: string;
+};
+
+type GuildInvite = APIInvite & { guild: APIInviteGuild };
+
+const hasGuild = (invite: APIInvite | null): invite is GuildInvite => Boolean(invite?.guild);
 
 const acronym = (name: string): string =>
  name
@@ -40,13 +51,13 @@ const channelLine = (
  channelId: string | null | undefined,
 ): string | null => (channelId ? line(emotes.message, label, `<#${channelId}>`) : null);
 
-const identityLines = (emotes: EmoteSet, t: Translator, guild: RGuild): string[] =>
+const identityLines = (emotes: EmoteSet, t: Translator, guild: GuildIdentity): string[] =>
  [
   line(emotes.info, t.base.t.name(), `\`${guild.name}\``),
   line(emotes.heading, t.server.acronym(), `\`${acronym(guild.name)}\``),
   line(emotes.number, t.common.id(), codeId(guild.id)),
   line(emotes.calendar, t.base.t.Created(), timeOf(snowflakeToMs(guild.id), t.base)),
-  line(emotes.crown, t.server.owner(), `<@${guild.owner_id}>`),
+  guild.owner_id ? line(emotes.crown, t.server.owner(), `<@${guild.owner_id}>`) : null,
   guild.description
    ? line(emotes.paragraph, t.base.t.Description(), `\`\`\`${guild.description}\`\`\``)
    : null,
@@ -138,79 +149,76 @@ const otherLines = (emotes: EmoteSet, t: Translator, guild: RGuild): string[] =>
  ),
 ];
 
-export default async function (
- this: InfoPlugin,
- cmd: APIApplicationCommandInteraction,
- sub: APIApplicationCommandInteractionDataSubcommandOption,
-) {
- const t = await this.t(cmd.guild_id ?? cmd.locale);
- const guildId = getStringOption(sub, InfoOption.ServerId) || cmd.guild_id;
- if (!guildId) {
-  respondError.call(this, cmd, t.errors.guildOnly());
-  return;
- }
+const inviteStatLines = (emotes: EmoteSet, t: Translator, invite: GuildInvite): string[] =>
+ [
+  invite.approximate_member_count === undefined
+   ? null
+   : line(emotes.member, t.invite.approxMembers(), `\`${invite.approximate_member_count}\``),
+  invite.approximate_presence_count === undefined
+   ? null
+   : line(emotes.enabled, t.invite.approxOnline(), `\`${invite.approximate_presence_count}\``),
+  line(emotes.boost, t.server.boosts(), `\`${invite.guild.premium_subscription_count ?? 0}\``),
+ ].filter((entry): entry is string => entry !== null);
 
- const guild = await this.client.cache.guilds.get(guildId);
- if (!guild) {
-  respondError.call(this, cmd, t.errors.serverNotFound());
-  return;
- }
+const inviteOtherLines = (emotes: EmoteSet, t: Translator, guild: APIInviteGuild): string[] => [
+ line(
+  emotes.warning,
+  t.server.nsfwLevel(),
+  nameOf(t.server.nsfwLevelNames, guild.nsfw_level, t.base.t.Unknown()),
+ ),
+ line(
+  emotes.shield,
+  t.server.verificationLevel(),
+  nameOf(t.server.verificationLevelNames, guild.verification_level, t.base.t.Unknown()),
+ ),
+];
 
- const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
- const emotes = this.client.emojis.for(api);
-
+const headerContainer = (header: string, iconUrl: string | null): ContainerBuilder => {
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
+ const text = new TextDisplayBuilder().setContent(header);
+ if (!iconUrl) return container.addTextDisplayComponents(text);
 
- const header = `## ${textEmote(emotes.server)} ${t.server.title()}\n${identityLines(
-  emotes,
-  t,
-  guild,
- ).join('\n')}`;
- if (guild.icon_url) {
-  container.addSectionComponents(
-   new SectionBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
-    .setThumbnailAccessory(new ThumbnailBuilder().setURL(guild.icon_url)),
-  );
- } else {
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(header));
- }
+ return container.addSectionComponents(
+  new SectionBuilder()
+   .addTextDisplayComponents(text)
+   .setThumbnailAccessory(new ThumbnailBuilder().setURL(iconUrl)),
+ );
+};
+
+const addBlock = (container: ContainerBuilder, content: string): ContainerBuilder =>
+ container
+  .addSeparatorComponents(
+   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
+  )
+  .addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+const addBanner = (container: ContainerBuilder, bannerUrl: string | null): ContainerBuilder =>
+ bannerUrl
+  ? container.addMediaGalleryComponents(
+     new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(bannerUrl)),
+    )
+  : container;
+
+const header = (emotes: EmoteSet, t: Translator, guild: GuildIdentity): string =>
+ `## ${textEmote(emotes.server)} ${t.server.title()}\n${identityLines(emotes, t, guild).join('\n')}`;
+
+const guildPanel = async function (
+ this: InfoPlugin,
+ emotes: EmoteSet,
+ t: Translator,
+ guild: RGuild,
+): Promise<ContainerBuilder> {
+ const container = headerContainer(header(emotes, t, guild), guild.icon_url);
 
  const channels = channelLines(emotes, t, guild);
- if (channels.length) {
-  container.addSeparatorComponents(
-   new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
-  );
-  container.addTextDisplayComponents(
-   new TextDisplayBuilder().setContent(`### ${t.base.t.Channels()}\n${channels.join('\n')}`),
-  );
- }
+ if (channels.length) addBlock(container, `### ${t.base.t.Channels()}\n${channels.join('\n')}`);
 
- container.addSeparatorComponents(
-  new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
- );
- container.addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(
-   `### ${t.server.statsTitle()}\n${(await statLines.call(this, emotes, t, guild)).join('\n')}`,
-  ),
- );
+ const stats = await statLines.call(this, emotes, t, guild);
+ addBlock(container, `### ${t.server.statsTitle()}\n${stats.join('\n')}`);
+ addBlock(container, `### ${t.server.otherTitle()}\n${otherLines(emotes, t, guild).join('\n')}`);
+ addBanner(container, guild.banner_url);
 
- container.addSeparatorComponents(
-  new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small),
- );
- container.addTextDisplayComponents(
-  new TextDisplayBuilder().setContent(
-   `### ${t.server.otherTitle()}\n${otherLines(emotes, t, guild).join('\n')}`,
-  ),
- );
-
- if (guild.banner_url) {
-  container.addMediaGalleryComponents(
-   new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(guild.banner_url)),
-  );
- }
-
- container.addActionRowComponents(
+ return container.addActionRowComponents(
   new ActionRowBuilder<ButtonBuilder>().addComponents(
    new ButtonBuilder()
     .setStyle(ButtonStyle.Secondary)
@@ -224,6 +232,58 @@ export default async function (
     .setEmoji(buttonEmoji(emotes.role)),
   ),
  );
+};
 
- respond.call(this, cmd, [container], getHide(sub));
+const invitePanel = (emotes: EmoteSet, t: Translator, invite: GuildInvite): ContainerBuilder => {
+ const { guild } = invite;
+ const iconUrl = guild.icon ? GuildCache.getIconUrl(guild.icon, guild.id) : null;
+ const bannerUrl = guild.banner ? GuildCache.getBannerUrl(guild.banner, guild.id) : null;
+ const container = headerContainer(header(emotes, t, guild), iconUrl);
+
+ const stats = inviteStatLines(emotes, t, invite);
+ addBlock(container, `### ${t.server.statsTitle()}\n${stats.join('\n')}`);
+ addBlock(
+  container,
+  `### ${t.server.otherTitle()}\n${inviteOtherLines(emotes, t, guild).join('\n')}`,
+ );
+
+ return addBanner(container, bannerUrl);
+};
+
+export default async function (
+ this: InfoPlugin,
+ cmd: APIApplicationCommandInteraction,
+ sub: APIApplicationCommandInteractionDataSubcommandOption,
+) {
+ const t = await this.t(cmd.guild_id ?? cmd.locale);
+ const api = cmd.guild_id ? await this.getAPI(cmd.guild_id) : this.client.getBaseAPI();
+ const emotes = this.client.emojis.for(api);
+
+ const code = inviteCode(getStringOption(sub, InfoOption.Invite));
+ const invite = code
+  ? await api.invites.base.get(code, { with_counts: true }).catch(() => null)
+  : null;
+ if (code && !hasGuild(invite)) {
+  respondError.call(this, cmd, t.errors.inviteNotFound());
+  return;
+ }
+
+ const guildId = invite?.guild?.id || getStringOption(sub, InfoOption.ServerId) || cmd.guild_id;
+ if (!guildId) {
+  respondError.call(this, cmd, t.errors.guildOnly());
+  return;
+ }
+
+ const guild = await this.client.cache.guilds.get(guildId);
+ if (guild) {
+  respond.call(this, cmd, [await guildPanel.call(this, emotes, t, guild)], getHide(sub));
+  return;
+ }
+
+ if (hasGuild(invite)) {
+  respond.call(this, cmd, [invitePanel(emotes, t, invite)], getHide(sub));
+  return;
+ }
+
+ respondError.call(this, cmd, t.errors.serverNotFound());
 }

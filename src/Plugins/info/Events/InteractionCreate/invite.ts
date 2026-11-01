@@ -12,9 +12,8 @@ import { getStringOption } from '../../../../Util/interactionOptions.js';
 import { textEmote } from '../../../settings/Util/settingsEmotes.js';
 import { InfoOption } from '../../Classes/Commands.js';
 import type InfoPlugin from '../../Plugin.js';
+import inviteCode from '../../Util/inviteCode.js';
 import { getHide, respond, respondError } from '../../Util/respond.js';
-
-const invitePattern = /(?:discord(?:app)?\.com\/invite\/|discord\.gg\/)?([\w-]+)$/;
 
 export default async function (
  this: InfoPlugin,
@@ -22,7 +21,7 @@ export default async function (
  sub: APIApplicationCommandInteractionDataSubcommandOption,
 ) {
  const t = await this.t(cmd.guild_id ?? cmd.locale);
- const code = getStringOption(sub, InfoOption.Invite).trim().match(invitePattern)?.[1];
+ const code = inviteCode(getStringOption(sub, InfoOption.Invite));
  if (!code) {
   respondError.call(this, cmd, t.errors.inviteNotFound());
   return;
