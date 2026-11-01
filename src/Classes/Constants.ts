@@ -6,6 +6,8 @@ class Constants {
   botName: 'Ayako',
   botAddUrl: (id: string = process.env.mainID || '650691698409734151') =>
    `https://discord.com/oauth2/authorize?client_id=${id}`,
+  userInstallUrl: (id: string) =>
+   `https://discord.com/oauth2/authorize?client_id=${id}&integration_type=1&scope=applications.commands`,
  };
 
  formatters = {
