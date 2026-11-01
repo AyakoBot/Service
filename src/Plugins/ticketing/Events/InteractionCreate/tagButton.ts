@@ -15,7 +15,6 @@ import {
 import { MessagePayload } from '../../../../Classes/abstracts/MessagePayload.js';
 import { Colors } from '../../../../Types/index.js';
 import commandMention from '../../../../Util/commandMention.js';
-import { PageDirection } from '../../Classes/Enums.js';
 import { tagCommandName, tagCommandsField, TicketRoute } from '../../Classes/Routes.js';
 import Snippet from '../../Classes/Snippet.js';
 import type TicketPlugin from '../../Plugin.js';
@@ -23,6 +22,7 @@ import { authorizeManage } from '../../Util/authorizeManage.js';
 import runSnippet from '../../Util/runSnippet.js';
 import { tagHelpText, triggerMaxLength } from '../../Util/tagCommands.js';
 import { buildToolkit } from '../../Util/tagToolkit.js';
+import { queryLimit, readPageArgs, readView, viewArgs } from '../../Util/tagView.js';
 
 export const tagSend = async function (
  this: TicketPlugin,
@@ -50,12 +50,11 @@ export const tagPage = async function (
 ) {
  if (!cmd.guild_id) return;
 
- const [dir, currentArg] = args;
- const current = Number(currentArg) || 0;
- const page = dir === PageDirection.Next ? current + 1 : current - 1;
+ const view = readPageArgs(args);
+ if (view.manage && !(await authorizeManage.call(this, cmd))) return;
 
  const snippets = await Snippet.all(this.client, cmd.guild_id);
- const payload = await buildToolkit.call(this, cmd.guild_id, snippets, { page });
+ const payload = await buildToolkit.call(this, cmd.guild_id, snippets, view);
  payload.update(cmd);
 };
 
@@ -80,8 +79,9 @@ export const tagDelete = async function (
  if (!cmd.guild_id) return;
  if (!(await authorizeManage.call(this, cmd))) return;
 
+ const [id, ...rest] = args;
  const deleted = await this.client.db.client.snippets
-  .delete({ where: { id: args[0] } })
+  .delete({ where: { id } })
   .catch((error: Error) => error);
  if (deleted instanceof Error) {
   this.nonFatalError(deleted, 'tagDelete');
@@ -90,23 +90,32 @@ export const tagDelete = async function (
  }
 
  const snippets = await Snippet.all(this.client, cmd.guild_id);
- const payload = await buildToolkit.call(this, cmd.guild_id, snippets, { page: 0, manage: true });
+ const view = { ...readView(rest), manage: true };
+ const payload = await buildToolkit.call(this, cmd.guild_id, snippets, view);
  payload.update(cmd);
 };
 
-export const tagSearch = async function (this: TicketPlugin, cmd: APIMessageComponentInteraction) {
+export const tagSearch = async function (
+ this: TicketPlugin,
+ cmd: APIMessageComponentInteraction,
+ args: string[],
+) {
  if (!cmd.guild_id) return;
 
  const t = await this.t(cmd.guild_id);
+ const view = readView(args);
+ const input = new TextInputBuilder()
+  .setCustomId('query')
+  .setStyle(TextInputStyle.Short)
+  .setRequired(false)
+  .setMaxLength(queryLimit);
+ if (view.query) input.setValue(view.query);
+
  const modal = new ModalBuilder()
-  .setCustomId(this.getRoute(TicketRoute.TagSearchModal))
+  .setCustomId(this.getRoute(TicketRoute.TagSearchModal, ...viewArgs(view)))
   .setTitle(t.tag.search())
   .addLabelComponents(
-   new LabelBuilder()
-    .setLabel(t.tag.searchLabel())
-    .setTextInputComponent(
-     new TextInputBuilder().setCustomId('query').setStyle(TextInputStyle.Short).setRequired(false),
-    ),
+   new LabelBuilder().setLabel(t.tag.searchLabel()).setTextInputComponent(input),
   );
 
  const api = await this.getAPI(cmd.guild_id);
@@ -188,13 +197,18 @@ export const tagEdit = async function (
  if (!(await authorizeManage.call(this, cmd))) return;
 
  const t = await this.t(cmd.guild_id);
- const snippet = await Snippet.byId(this.client, args[0]);
+ const [id, ...rest] = args;
+ const snippet = await Snippet.byId(this.client, id);
  if (!snippet) {
   tagWarn.call(this, cmd, t.tag.errors.notFound());
   return;
  }
 
- const modal = buildSnippetModal(t, this.getRoute(TicketRoute.TagEditModal, snippet.id), snippet);
+ const modal = buildSnippetModal(
+  t,
+  this.getRoute(TicketRoute.TagEditModal, snippet.id, ...viewArgs(readView(rest))),
+  snippet,
+ );
 
  const api = await this.getAPI(cmd.guild_id);
  api.interactions.createModal(cmd.id, cmd.token, modal.toJSON(), {

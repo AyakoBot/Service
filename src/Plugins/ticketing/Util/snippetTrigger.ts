@@ -32,7 +32,7 @@ const mayContact = async function (
  const settings = await this.client.db.client.ticketSetting.findFirst({
   where: { id: systemId, guild: guildId },
  });
- return !!settings && isSettingsStaff(settings, msg.author.id, roles);
+ return !!settings && isSettingsStaff.call(this.client, settings, msg.author.id, roles);
 };
 
 const contactTrigger = async function (
@@ -104,7 +104,10 @@ export const snippetTrigger = async function (
  if (!ticket) return false;
 
  const dbTicket = await ticket.getTicket();
- if (!isSettingsStaff(dbTicket.settings, msg.author.id, msg.member?.roles ?? [])) return false;
+ const roles = msg.member?.roles ?? [];
+ if (!(await isSettingsStaff.call(this.client, dbTicket.settings, msg.author.id, roles))) {
+  return false;
+ }
 
  const { failure } = await postSnippet.call(this, match.snippet, {
   channelId: msg.channel_id,

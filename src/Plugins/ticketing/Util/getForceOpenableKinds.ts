@@ -42,7 +42,9 @@ const blockOf = async function (
  if (!settings.active) return ForceOpenBlock.NotActive;
  if (!dmTypes.includes(settings.type)) return ForceOpenBlock.NotDmType;
  if (!settings.botToken) return ForceOpenBlock.NoCustomBot;
- if (!isSettingsStaff(settings, staffId, staffRoleIds)) return ForceOpenBlock.NotStaff;
+ if (!(await isSettingsStaff.call(this.client, settings, staffId, staffRoleIds))) {
+  return ForceOpenBlock.NotStaff;
+ }
 
  const expected = safeBotId(settings.botToken);
  if (!expected) return ForceOpenBlock.BotUnavailable;

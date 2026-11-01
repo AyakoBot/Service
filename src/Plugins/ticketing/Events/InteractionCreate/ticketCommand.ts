@@ -150,10 +150,15 @@ const list: SubcommandHandler = async function (cmd, options) {
  const guildId = cmd.guild_id!;
  const roles = cmd.member?.roles ?? [];
  const t = await this.t(guildId);
- const isStaff = (settings: TicketSetting) => isSettingsStaff(settings, actorOf(cmd), roles);
+ const isStaff = (settings: TicketSetting) =>
+  isSettingsStaff.call(this.client, settings, actorOf(cmd), roles);
 
  const systems = await this.client.db.client.ticketSetting.findMany({ where: { guild: guildId } });
- if (!systems.some(isStaff)) {
+ const staffChecks = await Promise.all(systems.map(isStaff));
+ const staffSystems = new Set(
+  systems.filter((_, index) => staffChecks[index]).map((settings) => String(settings.id)),
+ );
+ if (!staffSystems.size) {
   showCommandError.call(this.client, t.command.notStaff(), cmd, t.base);
   return;
  }
@@ -169,7 +174,9 @@ const list: SubcommandHandler = async function (cmd, options) {
  });
 
  await new MessagePayload(this.client, { origin: this.name, reason: 'Listing open tickets' })
-  .setContent(listText(t, rows.filter((row) => isStaff(row.settings)).sort(byUrgency)))
+  .setContent(
+   listText(t, rows.filter((row) => staffSystems.has(String(row.settingsId))).sort(byUrgency)),
+  )
   .setAllowedMentionsUsers([])
   .setAllowedMentionsRoles([])
   .setFlags(MessageFlags.Ephemeral)

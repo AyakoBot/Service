@@ -131,6 +131,8 @@
  "tag": {
   "toolkitHeader": "Snippets",
   "noSnippets": "No snippets yet. Press **Add** to create one.",
+  "noMatches": "No snippets match this filter.",
+  "filtered": "Filter: `{{query}}`. Search with an empty field to clear it.",
   "send": "Send",
   "search": "Search",
   "searchLabel": "Filter by name or content",
@@ -583,6 +585,7 @@
   "escalate.tierNotFound": "That escalation tier could not be found. It may have been removed.",
   "escalate.cannotReach": "You can't escalate this Ticket to that tier. You may only escalate to tiers you can claim.",
   "escalate.noTiers": "No escalation tiers are configured for this Ticket system yet.",
+  "transition.stateChanged": "The Ticket changed while this action was waiting on Discord, so it was not applied. Check the Ticket and try again.",
   "delete.cantUpdateMessage": "Couldn't update the Message in the Ticket-Channel",
   "delete.cantDeleteChannel": "Couldn't delete the Ticket-Channel",
   "delete.ticketNotFound": "Couldn't find the Ticket",

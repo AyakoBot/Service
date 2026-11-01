@@ -22,6 +22,8 @@ import { PageDirection } from '../Classes/Enums.js';
 import { tagCommandName, TicketRoute } from '../Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
 
+import { pageArgs, viewArgs, type ToolkitView } from './tagView.js';
+
 export const pageSize = 5;
 
 const preview = (snippet: Snippets, max = 80) => {
@@ -50,9 +52,12 @@ export const buildToolkit = async function (
  const t = await this.t(guildId);
  const api = await this.getAPI(guildId);
  const emotes = this.client.emojis.for(api);
- const pageCount = Math.max(1, Math.ceil(snippets.length / pageSize));
+ const query = opts.query ?? '';
+ const visible = filterSnippets(snippets, query);
+ const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
  const page = Math.min(Math.max(0, opts.page), pageCount - 1);
- const slice = snippets.slice(page * pageSize, page * pageSize + pageSize);
+ const slice = visible.slice(page * pageSize, page * pageSize + pageSize);
+ const view: ToolkitView = { page, manage: !!opts.manage, query };
 
  const container = new ContainerBuilder().setAccentColor(Colors.Info);
 
@@ -67,7 +72,9 @@ export const buildToolkit = async function (
  );
 
  if (!slice.length) {
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(t.tag.noSnippets()));
+  container.addTextDisplayComponents(
+   new TextDisplayBuilder().setContent(query ? t.tag.noMatches() : t.tag.noSnippets()),
+  );
  }
 
  slice.forEach((snippet) => {
@@ -81,7 +88,7 @@ export const buildToolkit = async function (
     new ActionRowBuilder<ButtonBuilder>().addComponents(
      new ButtonBuilder()
       .setStyle(ButtonStyle.Secondary)
-      .setCustomId(this.getRoute(TicketRoute.TagEdit, snippet.id))
+      .setCustomId(this.getRoute(TicketRoute.TagEdit, snippet.id, ...viewArgs(view)))
       .setLabel(t.base.t.Edit()),
      new ButtonBuilder()
       .setStyle(ButtonStyle.Secondary)
@@ -89,7 +96,7 @@ export const buildToolkit = async function (
       .setLabel(t.tag.advanced()),
      new ButtonBuilder()
       .setStyle(ButtonStyle.Danger)
-      .setCustomId(this.getRoute(TicketRoute.TagDelete, snippet.id))
+      .setCustomId(this.getRoute(TicketRoute.TagDelete, snippet.id, ...viewArgs(view)))
       .setLabel(t.base.t.Delete()),
     ),
    );
@@ -115,24 +122,30 @@ export const buildToolkit = async function (
  const command = await commandMention.call(api, tagCommandName);
  container.addTextDisplayComponents(
   new TextDisplayBuilder().setContent(
-   `-# ${t.base.t.Page()} ${page + 1}/${pageCount}\n-# ${t.tag.commandReference({ command })}`,
+   [
+    `-# ${t.base.t.Page()} ${page + 1}/${pageCount}`,
+    query ? `-# ${t.tag.filtered({ query })}` : null,
+    `-# ${t.tag.commandReference({ command })}`,
+   ]
+    .filter(Boolean)
+    .join('\n'),
   ),
  );
 
  const nav = new ActionRowBuilder<ButtonBuilder>().addComponents(
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
-   .setCustomId(this.getRoute(TicketRoute.TagPage, PageDirection.Prev, page))
+   .setCustomId(this.getRoute(TicketRoute.TagPage, ...pageArgs(PageDirection.Prev, view)))
    .setLabel('←')
    .setDisabled(page <= 0),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
-   .setCustomId(this.getRoute(TicketRoute.TagPage, PageDirection.Next, page))
+   .setCustomId(this.getRoute(TicketRoute.TagPage, ...pageArgs(PageDirection.Next, view)))
    .setLabel('→')
    .setDisabled(page >= pageCount - 1),
   new ButtonBuilder()
    .setStyle(ButtonStyle.Secondary)
-   .setCustomId(this.getRoute(TicketRoute.TagSearch))
+   .setCustomId(this.getRoute(TicketRoute.TagSearch, ...viewArgs(view)))
    .setLabel(t.tag.search()),
  );
 

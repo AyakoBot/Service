@@ -171,7 +171,7 @@ const button = async function (this: TicketPlugin, cmd: APIMessageComponentInter
    break;
   }
   case TicketRoute.TagSearch: {
-   tagSearch.call(this, cmd);
+   tagSearch.call(this, cmd, args);
    break;
   }
   case TicketRoute.TagAdd: {
@@ -376,7 +376,7 @@ const modal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction
    break;
   }
   case TicketRoute.TagSearchModal: {
-   tagSearchModal.call(this, cmd);
+   tagSearchModal.call(this, cmd, args);
    break;
   }
   case TicketRoute.TagAddModal: {

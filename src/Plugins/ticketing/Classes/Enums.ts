@@ -50,6 +50,8 @@ enum TicketErrors2 {
  manage_UserNotStaff = 'manage.userNotStaff',
  manage_CannotRemoveCreator = 'manage.cannotRemoveCreator',
 
+ transition_StateChanged = 'transition.stateChanged',
+
  unknownTicketType = 'unknownTicketType',
  settingsNotFound = 'settingsNotFound',
 }
@@ -134,6 +136,11 @@ export enum MoveDirection {
 export enum PageDirection {
  Prev = 'prev',
  Next = 'next',
+}
+
+export enum ToolkitMode {
+ Browse = 'browse',
+ Manage = 'manage',
 }
 
 export enum TicketThreadPrefix {

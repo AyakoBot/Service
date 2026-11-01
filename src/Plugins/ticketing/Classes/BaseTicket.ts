@@ -33,6 +33,7 @@ import fetchMessages from '../../../Util/fetchMessages.js';
 import { avatarUrl, iconUrl } from '../../../Util/placeholderVars.js';
 import { InfoRoute } from '../../info/Classes/Routes.js';
 import type TicketPlugin from '../Plugin.js';
+import isSettingsStaff from '../Util/isSettingsStaff.js';
 import isUnderLimit from '../Util/isUnderLimit.js';
 import { priorityLabel } from '../Util/priority.js';
 import { resolveStaffLabel } from '../Util/resolveStaffLabel.js';
@@ -91,6 +92,10 @@ const surfaceContextTypes: Record<SurfaceState, TicketContextType> = {
 
 const manageableStates = [TicketState.opened, TicketState.claimed];
 const autoClaiming = new Set<string>();
+const recordNotFound = 'P2025';
+
+const isStaleWrite = (error: unknown) =>
+ !!error && typeof error === 'object' && 'code' in error && error.code === recordNotFound;
 
 const tierGlyphSlots = 4;
 
@@ -128,6 +133,17 @@ export default class BaseTicket extends BaseTicketLogger {
   return ticket.state === TicketState.claimed;
  };
 
+ async transition(
+  from: TicketState[],
+  data: Prisma.TicketUpdateInput,
+ ): Promise<Prisma.TicketGetPayload<{ include: { settings: true } }>> {
+  return this.db.ticket
+   .update({ where: { id: this.id, state: { in: from } }, data, include: { settings: true } })
+   .catch((error: unknown) => {
+    throw isStaleWrite(error) ? new Error(BaseTicketErrors.transition_StateChanged) : error;
+   });
+ }
+
  async *claim({ userId }: { userId: string }) {
   this.plugin.logger.logLocation(LogLevel.silly);
   if (await this.isClosed()) throw new Error(BaseTicketErrors.claim_TicketAlreadyClosed);
@@ -143,10 +159,10 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
-  const newTicket = await this.db.ticket.update({
-   where: { id: this.id },
-   data: { state: TicketState.claimed, claimer: userId, claimedAt: new Date() },
-   include: { settings: true },
+  const newTicket = await this.transition([TicketState.opened], {
+   state: TicketState.claimed,
+   claimer: userId,
+   claimedAt: new Date(),
   });
 
   this.dbTicket = newTicket;
@@ -166,10 +182,10 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
-  this.dbTicket = await this.db.ticket.update({
-   where: { id: this.id },
-   data: { state: TicketState.opened, claimer: null, claimedAt: null },
-   include: { settings: true },
+  this.dbTicket = await this.transition([TicketState.claimed], {
+   state: TicketState.opened,
+   claimer: null,
+   claimedAt: null,
   });
 
   await this.postUnclaimMarker(userId);
@@ -191,10 +207,10 @@ export default class BaseTicket extends BaseTicketLogger {
   this.plugin.logger.logLocation(LogLevel.debug);
   yield;
 
-  this.dbTicket = await this.db.ticket.update({
-   where: { id: this.id },
-   data: { state: TicketState.claimed, claimer: userId, claimedAt: new Date() },
-   include: { settings: true },
+  this.dbTicket = await this.transition([TicketState.claimed], {
+   state: TicketState.claimed,
+   claimer: userId,
+   claimedAt: new Date(),
   });
 
   this.handleBaseLog({ type: LogType.TicketClaimed, data: { userId } });
@@ -261,11 +277,7 @@ export default class BaseTicket extends BaseTicketLogger {
   };
   if (channelId && channelId !== ticket.channel) data.channel = channelId;
 
-  this.dbTicket = await this.db.ticket.update({
-   where: { id: this.id },
-   data,
-   include: { settings: true },
-  });
+  this.dbTicket = await this.transition(manageableStates, data);
 
   await this.postEscalationMarker(userId, target);
   await this.plugin.reminders.armTierReminder(this.dbTicket, target);
@@ -463,8 +475,7 @@ export default class BaseTicket extends BaseTicketLogger {
   const member = await this.client.cache.members.get(ticket.settings.guild, userId);
   if (!member) throw new Error(BaseTicketErrors.userNotFound);
 
-  const hasStaffRole = ticket.settings.staffRoles.some((r) => member.roles.includes(r));
-  return hasStaffRole;
+  return isSettingsStaff.call(this.client, ticket.settings, userId, member.roles);
  }
 
  async *close({ userId, reason }: { userId: string; reason?: string }) {

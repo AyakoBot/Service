@@ -9,16 +9,23 @@ import { authorizeManage } from '../../Util/authorizeManage.js';
 import { tagCommandProblems } from '../../Util/runTagCommands.js';
 import { snippetConflict } from '../../Util/snippetConflict.js';
 import { snippetErrorText } from '../../Util/snippetErrorText.js';
-import { buildToolkit, filterSnippets } from '../../Util/tagToolkit.js';
+import { buildToolkit } from '../../Util/tagToolkit.js';
+import { readView, type ToolkitView } from '../../Util/tagView.js';
 
-export const tagSearchModal = async function (this: TicketPlugin, cmd: APIModalSubmitInteraction) {
+export const tagSearchModal = async function (
+ this: TicketPlugin,
+ cmd: APIModalSubmitInteraction,
+ args: string[],
+) {
  if (!cmd.guild_id) return;
 
- const query = findModalValue(cmd.data.components, 'query') || '';
- const all = await Snippet.all(this.client, cmd.guild_id);
- const filtered = filterSnippets(all, query);
+ const { manage } = readView(args);
+ if (manage && !(await authorizeManage.call(this, cmd))) return;
 
- const payload = await buildToolkit.call(this, cmd.guild_id, filtered, { page: 0, query });
+ const query = (findModalValue(cmd.data.components, 'query') || '').trim();
+ const all = await Snippet.all(this.client, cmd.guild_id);
+
+ const payload = await buildToolkit.call(this, cmd.guild_id, all, { page: 0, manage, query });
  payload.update(cmd);
 };
 
@@ -38,6 +45,7 @@ const saveSnippet = async function (
  cmd: APIModalSubmitInteraction,
  guildId: string,
  editId?: string,
+ view?: ToolkitView,
 ) {
  const data = readForm(cmd);
  const t = await this.t(guildId);
@@ -64,7 +72,11 @@ const saveSnippet = async function (
  }
 
  const all = await Snippet.all(this.client, guildId);
- const payload = await buildToolkit.call(this, guildId, all, { page: 0, manage: true });
+ const payload = await buildToolkit.call(this, guildId, all, {
+  page: view?.page ?? 0,
+  query: view?.query,
+  manage: true,
+ });
  payload.update(cmd);
 };
 
@@ -83,7 +95,8 @@ export const tagEditModal = async function (
  if (!cmd.guild_id) return;
  if (!(await authorizeManage.call(this, cmd))) return;
 
- await saveSnippet.call(this, cmd, cmd.guild_id, args[0]);
+ const [id, ...rest] = args;
+ await saveSnippet.call(this, cmd, cmd.guild_id, id, readView(rest));
 };
 
 export const tagAdvancedModal = async function (
