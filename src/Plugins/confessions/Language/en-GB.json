@@ -15,7 +15,7 @@
   "headingPlain": "Confession",
   "reason": "Confession submitted",
   "hiddenNote": "Hidden from other members. Server staff can reveal who sent this.",
-  "anonymousNote": "Anonymous. Nobody can reveal who sent this.",
+  "anonymousNote": "Anonymous. Server staff can't see who sent this.",
   "submitButton": "Submit a confession",
   "replyButton": "Reply",
   "replyHeading": "Reply"
@@ -88,7 +88,7 @@
   "mediaDisabled": "Image links are not allowed in confessions on this server.",
   "notReviewer": "You are not allowed to review confessions.",
   "gone": "That confession no longer exists.",
-  "revealUnavailable": "This server uses anonymous confessions. Nobody can reveal the author.",
+  "revealUnavailable": "This server uses anonymous confessions. Staff can't reveal the author.",
   "failed": "Something went wrong sending your confession.",
   "publishFailed": "The confession could not be posted in {{channel}}: {{error}}",
   "queueFailed": "The confession could not be sent for review in {{channel}}: {{error}}",
@@ -140,7 +140,7 @@
   "descriptions": {
    "active": "Turn confessions on or off.",
    "mode": "Review holds every confession for staff approval. Screened only holds the ones your AutoMod rules flag. Direct posts everything immediately.",
-   "anonymity": "Hidden lets staff reveal and ban the real member. Anonymous keeps no record that can be reversed, by anyone, ever. Choose before you turn this on, because changing it later breaks a promise your members relied on.",
+   "anonymity": "Hidden lets staff reveal and ban the real member. Anonymous never shows the member to staff, though bans and cooldowns still work without revealing who it is.",
    "channel": "Where confessions are posted. In a forum channel, each confession becomes its own post.",
    "autoThread": "Open a thread under every confession so members can discuss it. Has no effect in a forum channel, where every confession is already its own post.",
    "reviewChannel": "Staff-only channel where confessions wait for approval and member reports arrive.",
@@ -174,7 +174,7 @@
    "anonUnmaskable": "Hidden",
    "anonUnmaskableHint": "Staff can reveal and ban the real member.",
    "anonAnonymous": "Anonymous",
-   "anonAnonymousHint": "Nobody can ever reveal the author. Disables images."
+   "anonAnonymousHint": "Staff can't reveal the author. Disables images."
   }
  },
  "guide": {
