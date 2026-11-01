@@ -5,7 +5,6 @@ import type CustomRolesPlugin from '../../Plugin.js';
 import {
  grantRole,
  openSurface,
- reassertAnchor,
  refuse,
  requireRole,
  succeed,
@@ -41,12 +40,5 @@ export const editName = async function (
 
  grantRole.call(this, surface, row.role);
 
- const notes = await reassertAnchor.call(this, surface, row.role);
- await succeed.call(
-  this,
-  cmd,
-  surface,
-  surface.t.customRole.edit({ role: `<@&${row.role}>` }),
-  notes,
- );
+ await succeed.call(this, cmd, surface, surface.t.customRole.edit({ role: `<@&${row.role}>` }));
 };

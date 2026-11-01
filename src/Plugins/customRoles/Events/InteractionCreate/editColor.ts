@@ -16,7 +16,6 @@ import {
  grantRole,
  hasFeature,
  openSurface,
- reassertAnchor,
  refuse,
  requireRole,
  succeed,
@@ -100,8 +99,7 @@ const applyColors = async function (
 
  grantRole.call(this, surface, roleId);
 
- const notes = await reassertAnchor.call(this, surface, roleId);
- await succeed.call(this, cmd, surface, surface.t.customRole.edit({ role: `<@&${roleId}>` }), notes);
+ await succeed.call(this, cmd, surface, surface.t.customRole.edit({ role: `<@&${roleId}>` }));
 };
 
 const solid = async function (
