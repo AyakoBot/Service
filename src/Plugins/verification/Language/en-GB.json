@@ -38,7 +38,7 @@
    "logChannel": "The channel verification starts are logged in",
    "pendingRole": "Role given on join and removed once verified",
    "verifiedRole": "Role given once a member verifies",
-   "kick": "Kick members that stay unverified for too long",
+   "kick": "Kick members that stay unverified for too long. Needs a Pending Role",
    "kickAfter": "How long a member may stay unverified",
    "panelDesign": "A design saved in the embed builder or component builder. A Verify button is added unless the design already has one. Placeholders: {{list}}"
   },
