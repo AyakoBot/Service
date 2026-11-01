@@ -18,6 +18,7 @@ import Plugin, {
 import type Client from '../../Classes/Client.js';
 import { EmoteName } from '../../Classes/EmoteName.js';
 import {
+ countPlaceholders,
  MessagePlaceholder,
  placeholderDoc as buildPlaceholderDoc,
  withBasePlaceholders,
@@ -78,8 +79,9 @@ export enum WelcomeGuideFlag {
  WantsGoodbye = 1 << 0,
 }
 
-const welcomePlaceholders = withBasePlaceholders(MessagePlaceholder.Gif);
-const placeholderDoc = buildPlaceholderDoc(MessagePlaceholder.Gif);
+const welcomeExtras = [...countPlaceholders, MessagePlaceholder.Gif];
+const welcomePlaceholders = withBasePlaceholders(...welcomeExtras);
+const placeholderDoc = buildPlaceholderDoc(...welcomeExtras);
 const welcomeAppends = 2;
 
 const greetingChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement];

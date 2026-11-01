@@ -1,4 +1,3 @@
-import { RequestHandlerError } from '@ayako/api';
 import {
  ComponentType,
  MessageFlags,
@@ -9,6 +8,7 @@ import {
 
 import { MessagePayload } from '../../../Classes/abstracts/MessagePayload.js';
 import interpolate from '../../../Util/interpolate.js';
+import { memberCountVars } from '../../../Util/memberCounts.js';
 import {
  memberVars,
  serverVars,
@@ -19,42 +19,23 @@ import type WelcomePlugin from '../Plugin.js';
 
 import { pickRandomGif } from './gifPool.js';
 import { getGreetingConfig, type GreetingConfig } from './welcomeConfig.js';
-import {
- gifInUrlSlot,
- hasGifPlaceholder,
- usesMemberCount,
-} from './welcomePlaceholders.js';
+import { hasGifPlaceholder, unfilledMediaSlot } from './welcomePlaceholders.js';
 
 type GreetingContent =
  | { embed: APIEmbed; components?: undefined }
  | { embed?: undefined; components: APIMessageTopLevelComponent[] };
-
-const resolveMemberCount = async function (
- this: WelcomePlugin,
- guildId: string,
- botToken: string | null,
-) {
- const api = await this.getAPI(guildId, botToken);
- const guild = await api.guilds.get(
-  guildId,
-  { with_counts: true },
-  { origin: this.name, reason: 'greeting member count' },
- );
-
- if (guild instanceof RequestHandlerError) return '';
- return String(guild.approximate_member_count ?? '');
-};
 
 const buildVars = async function (
  this: WelcomePlugin,
  guildId: string,
  user: APIUser,
  gif: string | null,
- membercount: string,
+ counts: PlaceholderVars,
 ): Promise<PlaceholderVars> {
  return {
   ...memberVars(user),
-  ...(await serverVars.call(this, guildId, membercount)),
+  ...(await serverVars.call(this, guildId)),
+  ...counts,
   gif: gif ?? '',
  };
 };
@@ -109,19 +90,17 @@ export default async function sendGreeting(
  const resolved = await resolveContent.call(this, guildId, config);
  const gif = await pickRandomGif.call(this, guildId, kind);
  const template = resolved?.components ?? resolved?.embed;
- const gifSlotUnfilled = !gif && gifInUrlSlot(template);
- if (gifSlotUnfilled) {
+ const counts = await memberCountVars.call(this, guildId, template, row.botToken);
+ const vars = await buildVars.call(this, guildId, user, gif, counts);
+
+ const unfilled = unfilledMediaSlot(template, vars);
+ if (unfilled) {
   this.logger.warn(
-   `[${kind}] guild ${guildId} places {{gif}} in a url field but the GIF pool is empty;`,
+   `[${kind}] guild ${guildId} places {{${unfilled}}} in a url field but it has no value;`,
    'falling back to the default message',
   );
  }
- const content = gifSlotUnfilled ? null : resolved;
-
- const membercount = usesMemberCount(template)
-  ? await resolveMemberCount.call(this, guildId, row.botToken)
-  : '';
- const vars = await buildVars.call(this, guildId, user, gif, membercount);
+ const content = unfilled ? null : resolved;
  const pings = buildPingContent(config, user);
 
  const payload = new MessagePayload(this.client, {
