@@ -56,7 +56,7 @@ export interface DataBaseTables {
  // suggestionvotes: PrismaTables.suggestionvotes;
  // users: PrismaTables.users;
  // blockedusers: PrismaTables.blockedusers;
- // verification: PrismaTables.verification;
+ verificationSetting: PrismaTables.VerificationSetting;
  // voterewards: PrismaTables.voterewards;
  // votesappliedrewards: PrismaTables.votesappliedrewards;
  // votes: PrismaTables.votes;
